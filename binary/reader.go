@@ -121,26 +121,34 @@ func NewNetworkReader(conn net.Conn) *NetworkReader {
 	return &NetworkReader{conn: conn}
 }
 
-func (r *NetworkReader) ReadByte() byte {
+func (r *NetworkReader) ReadByte() (byte, error) {
 	buf := make([]byte, 1)
 	n, err := r.conn.Read(buf)
 	if err != nil {
-		panic(err)
+		return 0, err
 	}
 	if n != 1 {
 		return r.ReadByte()
 	}
-	return buf[0]
+	return buf[0], nil
 }
 
-func (r *NetworkReader) ReadBytes(len int) []byte {
+func (r *NetworkReader) ReadBytes(len int) ([]byte, error) {
 	buf := make([]byte, len)
 	for i := 0; i < len; i++ {
-		buf[i] = r.ReadByte()
+		b, err := r.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		buf[i] = b
 	}
-	return buf
+	return buf, nil
 }
 
-func (r *NetworkReader) ReadInt32() int32 {
-	return (int32(r.ReadByte()) << 24) | (int32(r.ReadByte()) << 16) | (int32(r.ReadByte()) << 8) | int32(r.ReadByte())
+func (r *NetworkReader) ReadInt32() (int32, error) {
+	b, err := r.ReadBytes(4)
+	if err != nil {
+		return 0, err
+	}
+	return (int32(b[0]) << 24) | (int32(b[1]) << 16) | (int32(b[2]) << 8) | int32(b[3]), nil
 }

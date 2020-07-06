@@ -55,6 +55,21 @@ type (
 		Job                    string
 	}
 
+	GroupMuteEvent struct {
+		GroupUin    int64
+		OperatorUin int64
+		TargetUin   int64
+		Time        int32
+	}
+
+	GroupMessageRecalledEvent struct {
+		GroupUin    int64
+		OperatorUin int64
+		AuthorUin   int64
+		MessageId   int32
+		Time        int32
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []GroupMemberInfo

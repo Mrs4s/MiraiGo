@@ -9,6 +9,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/golang/protobuf/proto"
+	"io"
 	"log"
 	"math/rand"
 	"net"
@@ -54,9 +55,7 @@ type QQClient struct {
 	requestPacketRequestId int32
 	messageSeq             int32
 	groupDataTransSeq      int32
-
-	privateMessageHandlers []func(*QQClient, *message.PrivateMessage)
-	groupMessageHandlers   []func(*QQClient, *message.GroupMessage)
+	eventHandlers          *eventHandlers
 }
 
 type loginSigInfo struct {
@@ -90,6 +89,7 @@ func NewClient(uin int64, password string) *QQClient {
 			"StatSvc.register":                 decodeClientRegisterResponse,
 			"MessageSvc.PushNotify":            decodeSvcNotify,
 			"OnlinePush.PbPushGroupMsg":        decodeGroupMessagePacket,
+			"OnlinePush.ReqPush":               decodeOnlinePushReqPacket,
 			"ConfigPushSvc.PushReq":            decodePushReqPacket,
 			"MessageSvc.PbGetMsg":              decodeMessageSvcPacket,
 			"friendlist.getFriendGroupList":    decodeFriendGroupListResponse,
@@ -102,6 +102,7 @@ func NewClient(uin int64, password string) *QQClient {
 		requestPacketRequestId: 1921334513,
 		messageSeq:             22911,
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
+		eventHandlers:          &eventHandlers{},
 	}
 	rand.Read(cli.RandomKey)
 	return cli
@@ -112,11 +113,10 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if c.running {
 		return nil, ErrAlreadyRunning
 	}
-	conn, err := net.Dial("tcp", "125.94.60.146:80") //TODO: more servers
+	err := c.connect()
 	if err != nil {
 		return nil, err
 	}
-	c.Conn = conn
 	c.running = true
 	go c.loop()
 	seq, packet := c.buildLoginPacket()
@@ -214,10 +214,13 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 			continue
 		}
 		r := binary.NewNetworkReader(conn)
-		r.ReadByte()
-		hl := r.ReadInt32()
-		r.ReadBytes(4)
-		payload := r.ReadBytes(int(hl))
+		_, err = r.ReadByte()
+		if err != nil {
+			continue
+		}
+		hl, _ := r.ReadInt32()
+		_, _ = r.ReadBytes(4)
+		payload, _ := r.ReadBytes(int(hl))
 		_ = conn.Close()
 		rsp := pb.RspDataHighwayHead{}
 		if proto.Unmarshal(payload, &rsp) != nil {
@@ -303,9 +306,18 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	return nil
 }
 
+func (c *QQClient) connect() error {
+	conn, err := net.Dial("tcp", "125.94.60.146:80") //TODO: more servers
+	if err != nil {
+		return err
+	}
+	c.Conn = conn
+	return nil
+}
+
 func (c *QQClient) registerClient() {
-	seq, packet := c.buildClientRegisterPacket()
-	_, _ = c.sendAndWait(seq, packet)
+	_, packet := c.buildClientRegisterPacket()
+	_ = c.send(packet)
 }
 
 func (c *QQClient) nextSeq() uint16 {
@@ -363,7 +375,20 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 func (c *QQClient) loop() {
 	reader := binary.NewNetworkReader(c.Conn)
 	for c.running {
-		data := reader.ReadBytes(int(reader.ReadInt32()) - 4)
+		l, err := reader.ReadInt32()
+		if err == io.EOF || err == io.ErrClosedPipe {
+			err = c.connect()
+			if err != nil {
+				c.running = false
+				return
+			}
+			reader = binary.NewNetworkReader(c.Conn)
+			c.registerClient()
+		}
+		if l <= 0 {
+			continue
+		}
+		data, err := reader.ReadBytes(int(l) - 4)
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
 			log.Println("parse incoming packet error: " + err.Error())

@@ -139,7 +139,7 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 	return seq, packet
 }
 
-func (c *QQClient) buildPushResponsePacket(t int32, pktSeq int64, jceBuf []byte) (uint16, []byte) {
+func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := jce.NewJceWriter()
 	req.WriteInt32(t, 1)
@@ -160,6 +160,10 @@ func (c *QQClient) buildPushResponsePacket(t int32, pktSeq int64, jceBuf []byte)
 	}
 	packet := packets.BuildUniPacket(c.Uin, seq, "ConfigPushSvc.PushResp", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
+}
+
+func (c *QQClient) buildOnlinePushRespPacket() {
+
 }
 
 func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendListCount, groupStartIndex, groupListCount int16) (uint16, []byte) {

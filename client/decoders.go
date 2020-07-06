@@ -109,7 +109,7 @@ func decodePushReqPacket(c *QQClient, payload []byte) (interface{}, error) {
 	t := r.ReadInt32(1)
 	r.ReadSlice(&jceBuf, 2)
 	seq := r.ReadInt64(3)
-	_, pkt := c.buildPushResponsePacket(t, seq, jceBuf)
+	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
 	return nil, c.send(pkt)
 }
 
@@ -279,4 +279,55 @@ func decodeGroupImageStoreResponse(c *QQClient, payload []byte) (interface{}, er
 		UploadIp:   rsp.Uint32UpIp,
 		UploadPort: rsp.Uint32UpPort,
 	}, nil
+}
+
+func decodeOnlinePushReqPacket(c *QQClient, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	jr := jce.NewJceReader(data.Map["req"]["OnlinePushPack.SvcReqPushMsg"][1:])
+	msgInfos := []jce.PushMessageInfo{}
+	jr.ReadSlice(&msgInfos, 2)
+	for _, m := range msgInfos {
+		if m.MsgType == 732 {
+			r := binary.NewReader(m.VMsg)
+			groupId := int64(uint32(r.ReadInt32()))
+			iType := r.ReadByte()
+			r.ReadByte()
+			switch iType {
+			case 0x0c: // 群内禁言
+				operator := int64(uint32(r.ReadInt32()))
+				if operator == c.Uin {
+					continue
+				}
+				r.ReadBytes(6)
+				target := int64(uint32(r.ReadInt32()))
+				t := r.ReadInt32()
+				c.dispatchGroupMuteEvent(&GroupMuteEvent{
+					GroupUin:    groupId,
+					OperatorUin: operator,
+					TargetUin:   target,
+					Time:        t,
+				})
+			case 0x11: // 撤回消息
+				r.ReadByte()
+				b := pb.NotifyMsgBody{}
+				_ = proto.Unmarshal(r.ReadAvailable(), &b)
+				if b.OptMsgRecall == nil {
+					continue
+				}
+				for _, rm := range b.OptMsgRecall.RecalledMsgList {
+					c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
+						GroupUin:    groupId,
+						OperatorUin: b.OptMsgRecall.Uin,
+						AuthorUin:   rm.AuthorUin,
+						MessageId:   rm.Seq,
+						Time:        rm.Time,
+					})
+				}
+			}
+		}
+	}
+	return nil, nil
 }

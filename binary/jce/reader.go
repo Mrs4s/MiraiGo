@@ -414,3 +414,7 @@ func (r *JceReader) ReadObject(i interface{}, tag int) {
 		o.ReadFrom(r)
 	}
 }
+
+func (r *JceReader) ReadAvailable() []byte {
+	return r.readBytes(r.buf.Len())
+}

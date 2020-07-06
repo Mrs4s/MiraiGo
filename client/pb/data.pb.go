@@ -1474,6 +1474,243 @@ func (x *MessageItem) GetSig() []byte {
 	return nil
 }
 
+type NotifyMsgBody struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	OptMsgRecall *MessageRecallReminder `protobuf:"bytes,11,opt,name=optMsgRecall,proto3" json:"optMsgRecall,omitempty"`
+	ServiceType  int32                  `protobuf:"varint,13,opt,name=serviceType,proto3" json:"serviceType,omitempty"`
+}
+
+func (x *NotifyMsgBody) Reset() {
+	*x = NotifyMsgBody{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_data_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *NotifyMsgBody) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NotifyMsgBody) ProtoMessage() {}
+
+func (x *NotifyMsgBody) ProtoReflect() protoreflect.Message {
+	mi := &file_data_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NotifyMsgBody.ProtoReflect.Descriptor instead.
+func (*NotifyMsgBody) Descriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *NotifyMsgBody) GetOptMsgRecall() *MessageRecallReminder {
+	if x != nil {
+		return x.OptMsgRecall
+	}
+	return nil
+}
+
+func (x *NotifyMsgBody) GetServiceType() int32 {
+	if x != nil {
+		return x.ServiceType
+	}
+	return 0
+}
+
+type MessageRecallReminder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Uin             int64                  `protobuf:"varint,1,opt,name=uin,proto3" json:"uin,omitempty"`
+	Nickname        []byte                 `protobuf:"bytes,2,opt,name=nickname,proto3" json:"nickname,omitempty"`
+	RecalledMsgList []*RecalledMessageMeta `protobuf:"bytes,3,rep,name=recalledMsgList,proto3" json:"recalledMsgList,omitempty"`
+	ReminderContent []byte                 `protobuf:"bytes,4,opt,name=reminderContent,proto3" json:"reminderContent,omitempty"`
+	Userdef         []byte                 `protobuf:"bytes,5,opt,name=userdef,proto3" json:"userdef,omitempty"`
+	GroupType       int32                  `protobuf:"varint,6,opt,name=groupType,proto3" json:"groupType,omitempty"`
+	OpType          int32                  `protobuf:"varint,7,opt,name=opType,proto3" json:"opType,omitempty"`
+}
+
+func (x *MessageRecallReminder) Reset() {
+	*x = MessageRecallReminder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_data_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *MessageRecallReminder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MessageRecallReminder) ProtoMessage() {}
+
+func (x *MessageRecallReminder) ProtoReflect() protoreflect.Message {
+	mi := &file_data_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MessageRecallReminder.ProtoReflect.Descriptor instead.
+func (*MessageRecallReminder) Descriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *MessageRecallReminder) GetUin() int64 {
+	if x != nil {
+		return x.Uin
+	}
+	return 0
+}
+
+func (x *MessageRecallReminder) GetNickname() []byte {
+	if x != nil {
+		return x.Nickname
+	}
+	return nil
+}
+
+func (x *MessageRecallReminder) GetRecalledMsgList() []*RecalledMessageMeta {
+	if x != nil {
+		return x.RecalledMsgList
+	}
+	return nil
+}
+
+func (x *MessageRecallReminder) GetReminderContent() []byte {
+	if x != nil {
+		return x.ReminderContent
+	}
+	return nil
+}
+
+func (x *MessageRecallReminder) GetUserdef() []byte {
+	if x != nil {
+		return x.Userdef
+	}
+	return nil
+}
+
+func (x *MessageRecallReminder) GetGroupType() int32 {
+	if x != nil {
+		return x.GroupType
+	}
+	return 0
+}
+
+func (x *MessageRecallReminder) GetOpType() int32 {
+	if x != nil {
+		return x.OpType
+	}
+	return 0
+}
+
+type RecalledMessageMeta struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Seq       int32 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`
+	Time      int32 `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty"`
+	MsgRandom int32 `protobuf:"varint,3,opt,name=msgRandom,proto3" json:"msgRandom,omitempty"`
+	MsgType   int32 `protobuf:"varint,4,opt,name=msgType,proto3" json:"msgType,omitempty"`
+	MsgFlag   int32 `protobuf:"varint,5,opt,name=msgFlag,proto3" json:"msgFlag,omitempty"`
+	AuthorUin int64 `protobuf:"varint,6,opt,name=authorUin,proto3" json:"authorUin,omitempty"`
+}
+
+func (x *RecalledMessageMeta) Reset() {
+	*x = RecalledMessageMeta{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_data_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RecalledMessageMeta) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecalledMessageMeta) ProtoMessage() {}
+
+func (x *RecalledMessageMeta) ProtoReflect() protoreflect.Message {
+	mi := &file_data_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecalledMessageMeta.ProtoReflect.Descriptor instead.
+func (*RecalledMessageMeta) Descriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *RecalledMessageMeta) GetSeq() int32 {
+	if x != nil {
+		return x.Seq
+	}
+	return 0
+}
+
+func (x *RecalledMessageMeta) GetTime() int32 {
+	if x != nil {
+		return x.Time
+	}
+	return 0
+}
+
+func (x *RecalledMessageMeta) GetMsgRandom() int32 {
+	if x != nil {
+		return x.MsgRandom
+	}
+	return 0
+}
+
+func (x *RecalledMessageMeta) GetMsgType() int32 {
+	if x != nil {
+		return x.MsgType
+	}
+	return 0
+}
+
+func (x *RecalledMessageMeta) GetMsgFlag() int32 {
+	if x != nil {
+		return x.MsgFlag
+	}
+	return 0
+}
+
+func (x *RecalledMessageMeta) GetAuthorUin() int64 {
+	if x != nil {
+		return x.AuthorUin
+	}
+	return 0
+}
+
 var File_data_proto protoreflect.FileDescriptor
 
 var file_data_proto_rawDesc = []byte{
@@ -1700,8 +1937,42 @@ var file_data_proto_rawDesc = []byte{
 	0x01, 0x28, 0x05, 0x52, 0x06, 0x6d, 0x73, 0x67, 0x53, 0x65, 0x71, 0x12, 0x16, 0x0a, 0x06, 0x6d,
 	0x73, 0x67, 0x55, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x06, 0x6d, 0x73, 0x67,
 	0x55, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x69, 0x67, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0c,
-	0x52, 0x03, 0x73, 0x69, 0x67, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x52, 0x03, 0x73, 0x69, 0x67, 0x22, 0x6d, 0x0a, 0x0d, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x4d,
+	0x73, 0x67, 0x42, 0x6f, 0x64, 0x79, 0x12, 0x3a, 0x0a, 0x0c, 0x6f, 0x70, 0x74, 0x4d, 0x73, 0x67,
+	0x52, 0x65, 0x63, 0x61, 0x6c, 0x6c, 0x18, 0x0b, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x4d,
+	0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x52, 0x65, 0x63, 0x61, 0x6c, 0x6c, 0x52, 0x65, 0x6d, 0x69,
+	0x6e, 0x64, 0x65, 0x72, 0x52, 0x0c, 0x6f, 0x70, 0x74, 0x4d, 0x73, 0x67, 0x52, 0x65, 0x63, 0x61,
+	0x6c, 0x6c, 0x12, 0x20, 0x0a, 0x0b, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x54, 0x79, 0x70,
+	0x65, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0b, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
+	0x54, 0x79, 0x70, 0x65, 0x22, 0xff, 0x01, 0x0a, 0x15, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x52, 0x65, 0x63, 0x61, 0x6c, 0x6c, 0x52, 0x65, 0x6d, 0x69, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x10,
+	0x0a, 0x03, 0x75, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x75, 0x69, 0x6e,
+	0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0c, 0x52, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3e, 0x0a, 0x0f,
+	0x72, 0x65, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x64, 0x4d, 0x73, 0x67, 0x4c, 0x69, 0x73, 0x74, 0x18,
+	0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x52, 0x65, 0x63, 0x61, 0x6c, 0x6c, 0x65, 0x64,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4d, 0x65, 0x74, 0x61, 0x52, 0x0f, 0x72, 0x65, 0x63,
+	0x61, 0x6c, 0x6c, 0x65, 0x64, 0x4d, 0x73, 0x67, 0x4c, 0x69, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x0f,
+	0x72, 0x65, 0x6d, 0x69, 0x6e, 0x64, 0x65, 0x72, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18,
+	0x04, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x0f, 0x72, 0x65, 0x6d, 0x69, 0x6e, 0x64, 0x65, 0x72, 0x43,
+	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x64, 0x65,
+	0x66, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x07, 0x75, 0x73, 0x65, 0x72, 0x64, 0x65, 0x66,
+	0x12, 0x1c, 0x0a, 0x09, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x54, 0x79, 0x70, 0x65, 0x18, 0x06, 0x20,
+	0x01, 0x28, 0x05, 0x52, 0x09, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x54, 0x79, 0x70, 0x65, 0x12, 0x16,
+	0x0a, 0x06, 0x6f, 0x70, 0x54, 0x79, 0x70, 0x65, 0x18, 0x07, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06,
+	0x6f, 0x70, 0x54, 0x79, 0x70, 0x65, 0x22, 0xab, 0x01, 0x0a, 0x13, 0x52, 0x65, 0x63, 0x61, 0x6c,
+	0x6c, 0x65, 0x64, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4d, 0x65, 0x74, 0x61, 0x12, 0x10,
+	0x0a, 0x03, 0x73, 0x65, 0x71, 0x18, 0x01, 0x20, 0x01, 0x28, 0x05, 0x52, 0x03, 0x73, 0x65, 0x71,
+	0x12, 0x12, 0x0a, 0x04, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04,
+	0x74, 0x69, 0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6d, 0x73, 0x67, 0x52, 0x61, 0x6e, 0x64, 0x6f,
+	0x6d, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x6d, 0x73, 0x67, 0x52, 0x61, 0x6e, 0x64,
+	0x6f, 0x6d, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x05, 0x52, 0x07, 0x6d, 0x73, 0x67, 0x54, 0x79, 0x70, 0x65, 0x12, 0x18, 0x0a, 0x07,
+	0x6d, 0x73, 0x67, 0x46, 0x6c, 0x61, 0x67, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x07, 0x6d,
+	0x73, 0x67, 0x46, 0x6c, 0x61, 0x67, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72,
+	0x55, 0x69, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f,
+	0x72, 0x55, 0x69, 0x6e, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1716,23 +1987,26 @@ func file_data_proto_rawDescGZIP() []byte {
 	return file_data_proto_rawDescData
 }
 
-var file_data_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_data_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_data_proto_goTypes = []interface{}{
-	(*DeviceInfo)(nil),           // 0: DeviceInfo
-	(*RequestBody)(nil),          // 1: RequestBody
-	(*ConfigSeq)(nil),            // 2: ConfigSeq
-	(*D50ReqBody)(nil),           // 3: D50ReqBody
-	(*D388ReqBody)(nil),          // 4: D388ReqBody
-	(*D388RespBody)(nil),         // 5: D388RespBody
-	(*ReqDataHighwayHead)(nil),   // 6: ReqDataHighwayHead
-	(*RspDataHighwayHead)(nil),   // 7: RspDataHighwayHead
-	(*DataHighwayHead)(nil),      // 8: DataHighwayHead
-	(*SegHead)(nil),              // 9: SegHead
-	(*TryUpImgReq)(nil),          // 10: TryUpImgReq
-	(*TryUpImgResp)(nil),         // 11: TryUpImgResp
-	(*ImgInfo)(nil),              // 12: ImgInfo
-	(*DeleteMessageRequest)(nil), // 13: DeleteMessageRequest
-	(*MessageItem)(nil),          // 14: MessageItem
+	(*DeviceInfo)(nil),            // 0: DeviceInfo
+	(*RequestBody)(nil),           // 1: RequestBody
+	(*ConfigSeq)(nil),             // 2: ConfigSeq
+	(*D50ReqBody)(nil),            // 3: D50ReqBody
+	(*D388ReqBody)(nil),           // 4: D388ReqBody
+	(*D388RespBody)(nil),          // 5: D388RespBody
+	(*ReqDataHighwayHead)(nil),    // 6: ReqDataHighwayHead
+	(*RspDataHighwayHead)(nil),    // 7: RspDataHighwayHead
+	(*DataHighwayHead)(nil),       // 8: DataHighwayHead
+	(*SegHead)(nil),               // 9: SegHead
+	(*TryUpImgReq)(nil),           // 10: TryUpImgReq
+	(*TryUpImgResp)(nil),          // 11: TryUpImgResp
+	(*ImgInfo)(nil),               // 12: ImgInfo
+	(*DeleteMessageRequest)(nil),  // 13: DeleteMessageRequest
+	(*MessageItem)(nil),           // 14: MessageItem
+	(*NotifyMsgBody)(nil),         // 15: NotifyMsgBody
+	(*MessageRecallReminder)(nil), // 16: MessageRecallReminder
+	(*RecalledMessageMeta)(nil),   // 17: RecalledMessageMeta
 }
 var file_data_proto_depIdxs = []int32{
 	2,  // 0: RequestBody.rpt_config_list:type_name -> ConfigSeq
@@ -1744,11 +2018,13 @@ var file_data_proto_depIdxs = []int32{
 	9,  // 6: RspDataHighwayHead.msgSeghead:type_name -> SegHead
 	12, // 7: TryUpImgResp.msgImgInfo:type_name -> ImgInfo
 	14, // 8: DeleteMessageRequest.items:type_name -> MessageItem
-	9,  // [9:9] is the sub-list for method output_type
-	9,  // [9:9] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	16, // 9: NotifyMsgBody.optMsgRecall:type_name -> MessageRecallReminder
+	17, // 10: MessageRecallReminder.recalledMsgList:type_name -> RecalledMessageMeta
+	11, // [11:11] is the sub-list for method output_type
+	11, // [11:11] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_data_proto_init() }
@@ -1937,6 +2213,42 @@ func file_data_proto_init() {
 				return nil
 			}
 		}
+		file_data_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NotifyMsgBody); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_data_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*MessageRecallReminder); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_data_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RecalledMessageMeta); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1944,7 +2256,7 @@ func file_data_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_data_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   15,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

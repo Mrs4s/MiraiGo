@@ -5,7 +5,6 @@ type IJecStruct interface {
 	ReadFrom(*JceReader)
 }
 
-// TODO: code gen
 type (
 	RequestPacket struct {
 		IVersion     int16             `jceId:"1"`
@@ -65,6 +64,28 @@ type (
 		IsSetStatus        byte   `jceId:"34"`
 		ServerBuf          []byte `jceId:"35"`
 		SetMute            byte   `jceId:"36"`
+	}
+
+	PushMessageInfo struct {
+		FromUin        int64  `jceId:"0"`
+		MsgTime        int64  `jceId:"1"`
+		MsgType        int16  `jceId:"2"`
+		MsgSeq         int16  `jceId:"3"`
+		Msg            string `jceId:"4"`
+		RealMsgTime    int32  `jceId:"5"`
+		VMsg           []byte `jceId:"6"`
+		AppShareID     int64  `jceId:"7"`
+		MsgCookies     []byte `jceId:"8"`
+		AppShareCookie []byte `jceId:"9"`
+		MsgUid         int64  `jceId:"10"`
+		LastChangeTime int64  `jceId:"11"`
+		FromInstId     int64  `jceId:"14"`
+		RemarkOfSender []byte `jceId:"15"`
+		FromMobile     string `jceId:"16"`
+		FromName       string `jceId:"17"`
+	}
+
+	SvcRespPushMsg struct {
 	}
 
 	FriendListRequest struct {
@@ -394,4 +415,21 @@ func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.SpecialTitle = r.ReadString(23)
 	pkt.SpecialTitleExpireTime = r.ReadInt64(24)
 	pkt.Job = r.ReadString(25)
+}
+
+func (pkt *PushMessageInfo) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
+	pkt.FromUin = r.ReadInt64(0)
+	pkt.MsgTime = r.ReadInt64(1)
+	pkt.MsgType = r.ReadInt16(2)
+	pkt.MsgSeq = r.ReadInt16(3)
+	pkt.Msg = r.ReadString(4)
+	pkt.VMsg = r.ReadAny(6).([]byte)
+	pkt.FromMobile = r.ReadString(16)
+	pkt.FromName = r.ReadString(17)
 }
