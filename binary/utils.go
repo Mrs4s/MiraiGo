@@ -3,12 +3,10 @@ package binary
 import (
 	"bytes"
 	"compress/zlib"
-	"crypto/rand"
 	binary2 "encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"io"
-	"math/big"
 	"strings"
 )
 
@@ -18,19 +16,6 @@ func ZlibUncompress(src []byte) []byte {
 	r, _ := zlib.NewReader(b)
 	io.Copy(&out, r)
 	return out.Bytes()
-}
-
-func RandomString(len int) string {
-	var res string
-	var str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-	b := bytes.NewBufferString(str)
-	length := b.Len()
-	bigInt := big.NewInt(int64(length))
-	for i := 0; i < len; i++ {
-		randomInt, _ := rand.Int(rand.Reader, bigInt)
-		res += string(str[randomInt.Int64()])
-	}
-	return res
 }
 
 func CalculateImageResourceId(md5 []byte) string {

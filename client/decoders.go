@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func decodeLoginResponse(c *QQClient, payload []byte) (interface{}, error) {
+func decodeLoginResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	reader := binary.NewReader(payload)
 	reader.ReadUInt16() // sub command
 	t := reader.ReadByte()
@@ -91,7 +91,7 @@ func decodeLoginResponse(c *QQClient, payload []byte) (interface{}, error) {
 	return nil, nil // ?
 }
 
-func decodeClientRegisterResponse(c *QQClient, payload []byte) (interface{}, error) {
+func decodeClientRegisterResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -99,7 +99,7 @@ func decodeClientRegisterResponse(c *QQClient, payload []byte) (interface{}, err
 	return nil, nil
 }
 
-func decodePushReqPacket(c *QQClient, payload []byte) (interface{}, error) {
+func decodePushReqPacket(c *QQClient, s uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -113,7 +113,7 @@ func decodePushReqPacket(c *QQClient, payload []byte) (interface{}, error) {
 	return nil, c.send(pkt)
 }
 
-func decodeMessageSvcPacket(c *QQClient, payload []byte) (interface{}, error) {
+func decodeMessageSvcPacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	rsp := msg.GetMessageResponse{}
 	err := proto.Unmarshal(payload, &rsp)
 	if err != nil {
@@ -163,7 +163,7 @@ func decodeMessageSvcPacket(c *QQClient, payload []byte) (interface{}, error) {
 	return nil, err
 }
 
-func decodeGroupMessagePacket(c *QQClient, payload []byte) (interface{}, error) {
+func decodeGroupMessagePacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -176,12 +176,12 @@ func decodeGroupMessagePacket(c *QQClient, payload []byte) (interface{}, error) 
 	return nil, nil
 }
 
-func decodeSvcNotify(c *QQClient, payload []byte) (interface{}, error) {
+func decodeSvcNotify(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	_, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	return nil, c.send(pkt)
 }
 
-func decodeFriendGroupListResponse(c *QQClient, payload []byte) (interface{}, error) {
+func decodeFriendGroupListResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -206,7 +206,7 @@ func decodeFriendGroupListResponse(c *QQClient, payload []byte) (interface{}, er
 	return rsp, nil
 }
 
-func decodeGroupListResponse(c *QQClient, payload []byte) (interface{}, error) {
+func decodeGroupListResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -229,7 +229,7 @@ func decodeGroupListResponse(c *QQClient, payload []byte) (interface{}, error) {
 	return l, nil
 }
 
-func decodeGroupMemberListResponse(c *QQClient, payload []byte) (interface{}, error) {
+func decodeGroupMemberListResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -258,7 +258,7 @@ func decodeGroupMemberListResponse(c *QQClient, payload []byte) (interface{}, er
 	}, nil
 }
 
-func decodeGroupImageStoreResponse(c *QQClient, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -281,15 +281,29 @@ func decodeGroupImageStoreResponse(c *QQClient, payload []byte) (interface{}, er
 	}, nil
 }
 
-func decodeOnlinePushReqPacket(c *QQClient, payload []byte) (interface{}, error) {
+func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	jr := jce.NewJceReader(data.Map["req"]["OnlinePushPack.SvcReqPushMsg"][1:])
 	msgInfos := []jce.PushMessageInfo{}
+	uin := jr.ReadInt64(0)
 	jr.ReadSlice(&msgInfos, 2)
+	_ = c.send(c.buildDeleteOnlinePushPacket(uin, seq, msgInfos))
+	seqExists := func(ms int16) bool {
+		for _, s := range c.onlinePushCache {
+			if ms == s {
+				return true
+			}
+		}
+		return false
+	}
 	for _, m := range msgInfos {
+		if seqExists(m.MsgSeq) {
+			continue
+		}
+		c.onlinePushCache = append(c.onlinePushCache, m.MsgSeq)
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
 			groupId := int64(uint32(r.ReadInt32()))
@@ -329,5 +343,6 @@ func decodeOnlinePushReqPacket(c *QQClient, payload []byte) (interface{}, error)
 			}
 		}
 	}
+
 	return nil, nil
 }

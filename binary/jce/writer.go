@@ -112,6 +112,18 @@ func (w *JceWriter) WriteInt64Slice(l []int64, tag int) {
 	}
 }
 
+func (w *JceWriter) WriteJceStructSlice(l []IJceStruct, tag int) {
+	w.writeHead(9, tag)
+	if len(l) == 0 {
+		w.WriteInt32(0, 0)
+		return
+	}
+	w.WriteInt32(int32(len(l)), 0)
+	for _, v := range l {
+		w.WriteJceStruct(v, 0)
+	}
+}
+
 func (w *JceWriter) WriteMap(m interface{}, tag int) {
 	if m == nil {
 		w.writeHead(8, tag)
@@ -158,12 +170,14 @@ func (w *JceWriter) WriteObject(i interface{}, tag int) {
 		w.WriteBytes(o, tag)
 	case []int64:
 		w.WriteInt64Slice(o, tag)
-	case IJecStruct:
+	case IJceStruct:
 		w.WriteJceStruct(o, tag)
+	case []IJceStruct:
+		w.WriteJceStructSlice(o, tag)
 	}
 }
 
-func (w *JceWriter) WriteJceStructRaw(s IJecStruct) {
+func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 	var (
 		t = reflect.TypeOf(s).Elem()
 		v = reflect.ValueOf(s).Elem()
@@ -181,7 +195,7 @@ func (w *JceWriter) WriteJceStructRaw(s IJecStruct) {
 	}
 }
 
-func (w *JceWriter) WriteJceStruct(s IJecStruct, tag int) {
+func (w *JceWriter) WriteJceStruct(s IJceStruct, tag int) {
 	w.writeHead(10, tag)
 	w.WriteJceStructRaw(s)
 	w.writeHead(11, 0)

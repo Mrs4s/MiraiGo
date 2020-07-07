@@ -348,7 +348,7 @@ func (r *JceReader) readObject(t reflect.Type, tag int) reflect.Value {
 		r.ReadObject(&s, tag)
 		return reflect.ValueOf(s)
 	case reflect.Slice:
-		s := reflect.New(t.Elem()).Interface().(IJecStruct)
+		s := reflect.New(t.Elem()).Interface().(IJceStruct)
 		r.readHead()
 		s.ReadFrom(r)
 		r.skipToStructEnd()
@@ -410,7 +410,7 @@ func (r *JceReader) ReadObject(i interface{}, tag int) {
 		*o = r.ReadFloat64(tag)
 	case *string:
 		*o = r.ReadString(tag)
-	case IJecStruct:
+	case IJceStruct:
 		o.ReadFrom(r)
 	}
 }

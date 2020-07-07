@@ -10,6 +10,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 	"math/rand"
 	"strconv"
@@ -327,6 +328,33 @@ func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint1
 	return seq, packet
 }
 
+func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []jce.PushMessageInfo) []byte {
+	req := &jce.SvcRespPushMsg{Uin: uin}
+	for _, m := range delMsg {
+		req.DelInfos = append(req.DelInfos, &jce.DelMsgInfo{
+			FromUin:    m.FromUin,
+			MsgSeq:     m.MsgSeq,
+			MsgCookies: m.MsgCookies,
+			MsgTime:    m.MsgTime,
+		})
+	}
+	b := append([]byte{0x0A}, req.ToBytes()...)
+	b = append(b, 0x0B)
+	buf := &jce.RequestDataVersion3{
+		Map: map[string][]byte{"resp": b},
+	}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		IRequestId:   int32(seq),
+		SServantName: "OnlinePush",
+		SFuncName:    "SvcRespPushMsg",
+		SBuffer:      buf.ToBytes(),
+		Context:      make(map[string]string),
+		Status:       make(map[string]string),
+	}
+	return packets.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+}
+
 func (c *QQClient) buildGroupSendingPacket(groupCode int64, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
@@ -350,7 +378,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, m *message.SendingMe
 
 func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 [16]byte, size int32) (uint16, []byte) {
 	seq := c.nextSeq()
-	name := binary.RandomString(16) + ".gif"
+	name := utils.RandomString(16) + ".gif"
 	req := &pb.D388ReqBody{
 		NetType: 3,
 		Subcmd:  1,

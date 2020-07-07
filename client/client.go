@@ -33,7 +33,7 @@ type QQClient struct {
 	RandomKey               []byte
 	Conn                    net.Conn
 
-	decoders map[string]func(*QQClient, []byte) (interface{}, error)
+	decoders map[string]func(*QQClient, uint16, []byte) (interface{}, error)
 	handlers map[uint16]func(interface{}, error)
 
 	syncCookie       []byte
@@ -52,6 +52,7 @@ type QQClient struct {
 	running          bool
 
 	lastMessageSeq         int32
+	onlinePushCache        []int16 // reset on reconnect
 	requestPacketRequestId int32
 	messageSeq             int32
 	groupDataTransSeq      int32
@@ -84,7 +85,7 @@ func NewClient(uin int64, password string) *QQClient {
 		SequenceId:              0x3635,
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
-		decoders: map[string]func(*QQClient, []byte) (interface{}, error){
+		decoders: map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 			"wtlogin.login":                    decodeLoginResponse,
 			"StatSvc.register":                 decodeClientRegisterResponse,
 			"MessageSvc.PushNotify":            decodeSvcNotify,
@@ -312,6 +313,7 @@ func (c *QQClient) connect() error {
 		return err
 	}
 	c.Conn = conn
+	c.onlinePushCache = []int16{}
 	return nil
 }
 
@@ -411,7 +413,7 @@ func (c *QQClient) loop() {
 				}
 				return
 			}
-			rsp, err := decoder(c, payload)
+			rsp, err := decoder(c, pkt.SequenceId, payload)
 			if err != nil {
 				log.Println("decode", pkt.CommandName, "error:", err)
 			}

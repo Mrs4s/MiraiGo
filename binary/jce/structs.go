@@ -1,7 +1,7 @@
 package jce
 
-type IJecStruct interface {
-	ToBytes() []byte
+type IJceStruct interface {
+	//ToBytes() []byte
 	ReadFrom(*JceReader)
 }
 
@@ -86,6 +86,25 @@ type (
 	}
 
 	SvcRespPushMsg struct {
+		Uin         int64        `jceId:"0"`
+		DelInfos    []IJceStruct `jceId:"1"`
+		Svrip       int32        `jceId:"2"`
+		PushToken   []byte       `jceId:"3"`
+		ServiceType int32        `jceId:"4"`
+	}
+
+	DelMsgInfo struct {
+		FromUin    int64  `jceId:"0"`
+		MsgTime    int64  `jceId:"1"`
+		MsgSeq     int16  `jceId:"2"`
+		MsgCookies []byte `jceId:"3"`
+		Cmd        int16  `jceId:"4"`
+		MsgType    int64  `jceId:"5"`
+		AppId      int64  `jceId:"6"`
+		SendTime   int64  `jceId:"7"`
+		SsoSeq     int32  `jceId:"8"`
+		SsoIp      int32  `jceId:"9"`
+		ClientIp   int32  `jceId:"10"`
 	}
 
 	FriendListRequest struct {
@@ -304,12 +323,6 @@ func (pkt *RequestDataVersion3) ReadFrom(r *JceReader) {
 	})
 }
 
-func (pkt *RequestDataVersion2) ToBytes() []byte {
-	w := NewJceWriter()
-	w.WriteJceStructRaw(pkt)
-	return w.Bytes()
-}
-
 func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
 	pkt.Map = make(map[string]map[string][]byte)
 	r.ReadMapF(0, func(k interface{}, v interface{}) {
@@ -340,12 +353,6 @@ func (pkt *FriendListRequest) ReadFrom(r *JceReader) {
 
 }
 
-func (pkt *FriendInfo) ToBytes() []byte {
-	w := NewJceWriter()
-	w.WriteJceStructRaw(pkt)
-	return w.Bytes()
-}
-
 func (pkt *FriendInfo) ReadFrom(r *JceReader) {
 	pkt.FriendUin = r.ReadInt64(0)
 	pkt.GroupId = r.ReadByte(1)
@@ -370,12 +377,6 @@ func (pkt *TroopListRequest) ReadFrom(r *JceReader) {
 
 }
 
-func (pkt *TroopNumber) ToBytes() []byte {
-	w := NewJceWriter()
-	w.WriteJceStructRaw(pkt)
-	return w.Bytes()
-}
-
 func (pkt *TroopNumber) ReadFrom(r *JceReader) {
 	pkt.GroupUin = r.ReadInt64(0)
 	pkt.GroupCode = r.ReadInt64(1)
@@ -396,12 +397,6 @@ func (pkt *TroopMemberListRequest) ReadFrom(r *JceReader) {
 
 }
 
-func (pkt *TroopMemberInfo) ToBytes() []byte {
-	w := NewJceWriter()
-	w.WriteJceStructRaw(pkt)
-	return w.Bytes()
-}
-
 func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.MemberUin = r.ReadInt64(0)
 	pkt.FaceId = r.ReadInt16(1)
@@ -417,12 +412,6 @@ func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.Job = r.ReadString(25)
 }
 
-func (pkt *PushMessageInfo) ToBytes() []byte {
-	w := NewJceWriter()
-	w.WriteJceStructRaw(pkt)
-	return w.Bytes()
-}
-
 func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
 	pkt.FromUin = r.ReadInt64(0)
 	pkt.MsgTime = r.ReadInt64(1)
@@ -430,6 +419,20 @@ func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
 	pkt.MsgSeq = r.ReadInt16(3)
 	pkt.Msg = r.ReadString(4)
 	pkt.VMsg = r.ReadAny(6).([]byte)
+	pkt.MsgCookies = r.ReadAny(8).([]byte)
+	pkt.MsgUid = r.ReadInt64(10)
 	pkt.FromMobile = r.ReadString(16)
 	pkt.FromName = r.ReadString(17)
+}
+
+func (pkt *SvcRespPushMsg) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SvcRespPushMsg) ReadFrom(r *JceReader) {
+}
+
+func (pkt *DelMsgInfo) ReadFrom(r *JceReader) {
 }
