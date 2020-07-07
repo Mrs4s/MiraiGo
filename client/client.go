@@ -79,9 +79,13 @@ func init() {
 
 // NewClient create new qq client
 func NewClient(uin int64, password string) *QQClient {
+	return NewClientMd5(uin, md5.Sum([]byte(password)))
+}
+
+func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	cli := &QQClient{
 		Uin:                     uin,
-		PasswordMd5:             md5.Sum([]byte(password)),
+		PasswordMd5:             passwordMd5,
 		SequenceId:              0x3635,
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
