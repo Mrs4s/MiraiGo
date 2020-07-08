@@ -7,7 +7,8 @@ var (
 )
 
 type (
-	LoginError    int
+	LoginError int
+
 	LoginResponse struct {
 		Success bool
 		Error   LoginError
@@ -15,6 +16,9 @@ type (
 		// Captcha info
 		CaptchaImage []byte
 		CaptchaSign  []byte
+
+		// Unsafe device
+		VerifyUrl string
 
 		// other error
 		ErrorMessage string
@@ -91,5 +95,6 @@ const (
 	NeedCaptcha       LoginError = 1
 	DeviceLockError              = 2
 	OtherLoginError              = 3
+	UnsafeDeviceError            = 4
 	UnknownLoginError            = -1
 )

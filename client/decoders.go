@@ -56,14 +56,17 @@ func decodeLoginResponse(c *QQClient, seq uint16, payload []byte) (interface{}, 
 	} // need captcha
 
 	if t == 160 {
-
+		return LoginResponse{
+			Success:      false,
+			Error:        UnsafeDeviceError,
+			VerifyUrl:    string(m[0x204]),
+			ErrorMessage: "",
+		}, nil
 	}
 
 	if t == 204 {
-		return LoginResponse{
-			Success: false,
-			Error:   DeviceLockError,
-		}, nil
+		c.t104 = m[0x104]
+		return c.sendAndWait(c.buildDeviceLockLoginPacket(m[0x402]))
 	} // drive lock
 
 	if t149, ok := m[0x149]; ok {
