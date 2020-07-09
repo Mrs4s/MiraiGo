@@ -165,12 +165,11 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		}
 	}
 	g := &message.GroupMessage{
-		Id:              m.Head.MsgSeq,
-		GroupUin:        m.Head.GroupInfo.GroupCode,
-		GroupName:       string(m.Head.GroupInfo.GroupName),
-		Sender:          sender,
-		Elements:        parseMessageElems(m.Body.RichText.Elems),
-		IsAdministrator: false,
+		Id:        m.Head.MsgSeq,
+		GroupUin:  m.Head.GroupInfo.GroupCode,
+		GroupName: string(m.Head.GroupInfo.GroupName),
+		Sender:    sender,
+		Elements:  parseMessageElems(m.Body.RichText.Elems),
 	}
 	return g
 }

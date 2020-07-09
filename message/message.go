@@ -12,12 +12,11 @@ type PrivateMessage struct {
 }
 
 type GroupMessage struct {
-	Id              int32
-	GroupUin        int64
-	GroupName       string
-	Sender          *Sender
-	Elements        []IMessageElement
-	IsAdministrator bool
+	Id        int32
+	GroupUin  int64
+	GroupName string
+	Sender    *Sender
+	Elements  []IMessageElement
 }
 
 type SendingMessage struct {

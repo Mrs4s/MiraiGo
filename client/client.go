@@ -8,6 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 	"io"
 	"log"
@@ -182,9 +183,26 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	return r, nil
 }
 
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) {
-	_, pkt := c.buildGroupSendingPacket(groupCode, m)
-	c.send(pkt)
+func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) int32 {
+	eid := utils.RandomString(6)
+	mr := int32(rand.Uint32())
+	ch := make(chan int32)
+	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
+		if e.Rand == mr {
+			ch <- e.Seq
+			c.onGroupMessageReceipt(eid)
+		}
+	})
+	_, pkt := c.buildGroupSendingPacket(groupCode, mr, m)
+	_ = c.send(pkt)
+	var mid int32
+	select {
+	case mid = <-ch:
+	case <-time.After(time.Second * 5):
+		c.onGroupMessageReceipt(eid)
+		return -1
+	}
+	return mid
 }
 
 func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {

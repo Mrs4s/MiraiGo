@@ -91,6 +91,11 @@ type (
 		UploadIp   []int32
 		UploadPort []int32
 	}
+
+	groupMessageReceiptEvent struct {
+		Rand int32
+		Seq  int32
+	}
 )
 
 const (

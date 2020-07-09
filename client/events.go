@@ -3,15 +3,17 @@ package client
 import (
 	"errors"
 	"github.com/Mrs4s/MiraiGo/message"
+	"sync"
 )
 
 var ErrEventUndefined = errors.New("event undefined")
 
 type eventHandlers struct {
-	privateMessageHandlers []func(*QQClient, *message.PrivateMessage)
-	groupMessageHandlers   []func(*QQClient, *message.GroupMessage)
-	groupMuteEventHandlers []func(*QQClient, *GroupMuteEvent)
-	groupRecalledHandlers  []func(*QQClient, *GroupMessageRecalledEvent)
+	privateMessageHandlers      []func(*QQClient, *message.PrivateMessage)
+	groupMessageHandlers        []func(*QQClient, *message.GroupMessage)
+	groupMuteEventHandlers      []func(*QQClient, *GroupMuteEvent)
+	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
+	groupMessageReceiptHandlers sync.Map
 }
 
 func (c *QQClient) OnEvent(i interface{}) error {
@@ -60,6 +62,14 @@ func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
 	}
 }
 
+func (c *QQClient) onGroupMessageReceipt(id string, f ...func(*QQClient, *groupMessageReceiptEvent)) {
+	if len(f) == 0 {
+		c.eventHandlers.groupMessageReceiptHandlers.Delete(id)
+		return
+	}
+	c.eventHandlers.groupMessageReceiptHandlers.LoadOrStore(id, f[0])
+}
+
 func (c *QQClient) dispatchFriendMessage(msg *message.PrivateMessage) {
 	if msg == nil {
 		return
@@ -102,6 +112,13 @@ func (c *QQClient) dispatchGroupMessageRecalledEvent(e *GroupMessageRecalledEven
 			f(c, e)
 		})
 	}
+}
+
+func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent) {
+	c.eventHandlers.groupMessageReceiptHandlers.Range(func(_, f interface{}) bool {
+		go f.(func(*QQClient, *groupMessageReceiptEvent))(c, e)
+		return true
+	})
 }
 
 func cover(f func()) {

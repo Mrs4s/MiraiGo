@@ -12,7 +12,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
-	"math/rand"
 	"strconv"
 )
 
@@ -368,7 +367,7 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 	return packets.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 }
 
-func (c *QQClient) buildGroupSendingPacket(groupCode int64, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
@@ -379,7 +378,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, m *message.SendingMe
 			},
 		},
 		MsgSeq:     c.nextMessageSeq(),
-		MsgRand:    int32(rand.Uint32()),
+		MsgRand:    r,
 		SyncCookie: EmptyBytes,
 		MsgVia:     1,
 		MsgCtrl:    nil,
