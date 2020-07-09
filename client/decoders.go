@@ -224,7 +224,7 @@ func decodeGroupListResponse(c *QQClient, seq uint16, payload []byte) (interface
 			Code:           g.GroupCode,
 			Name:           g.GroupName,
 			Memo:           g.GroupMemo,
-			OwnerUin:       uint32(g.GroupOwnerUin),
+			OwnerUin:       g.GroupOwnerUin,
 			MemberCount:    uint16(g.MemberNum),
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
 		})
@@ -241,9 +241,9 @@ func decodeGroupMemberListResponse(c *QQClient, seq uint16, payload []byte) (int
 	members := []jce.TroopMemberInfo{}
 	r.ReadSlice(&members, 3)
 	next := r.ReadInt64(4)
-	var l []GroupMemberInfo
+	var l []*GroupMemberInfo
 	for _, m := range members {
-		l = append(l, GroupMemberInfo{
+		l = append(l, &GroupMemberInfo{
 			Uin:                    m.MemberUin,
 			Nickname:               m.Nick,
 			CardName:               m.Name,
@@ -252,7 +252,12 @@ func decodeGroupMemberListResponse(c *QQClient, seq uint16, payload []byte) (int
 			LastSpeakTime:          m.LastSpeakTime,
 			SpecialTitle:           m.SpecialTitle,
 			SpecialTitleExpireTime: m.SpecialTitleExpireTime,
-			Job:                    m.Job,
+			Permission: func() MemberPermission {
+				if m.Flag == 1 {
+					return Administrator
+				}
+				return Member
+			}(),
 		})
 	}
 	return groupMemberListResponse{

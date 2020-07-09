@@ -264,9 +264,9 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 	return r, nil
 }
 
-func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]GroupMemberInfo, error) {
+func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error) {
 	var nextUin int64
-	var list []GroupMemberInfo
+	var list []*GroupMemberInfo
 	for {
 		data, err := c.sendAndWait(c.buildGroupMemberListRequestPacket(group.Uin, group.Code, nextUin))
 		if err != nil {
@@ -274,6 +274,12 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]GroupMemberInfo, error) 
 		}
 		rsp := data.(groupMemberListResponse)
 		nextUin = rsp.NextUin
+		for _, m := range rsp.list {
+			if m.Uin == group.OwnerUin {
+				m.Permission = Owner
+				break
+			}
+		}
 		list = append(list, rsp.list...)
 		if nextUin == 0 {
 			return list, nil
@@ -305,7 +311,7 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	for _, m := range g.Members {
 		f := m
 		if f.Uin == uin {
-			return &f
+			return f
 		}
 	}
 	return nil

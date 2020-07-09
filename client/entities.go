@@ -9,6 +9,8 @@ var (
 type (
 	LoginError int
 
+	MemberPermission int
+
 	LoginResponse struct {
 		Success bool
 		Error   LoginError
@@ -41,10 +43,10 @@ type (
 		Code           int64
 		Name           string
 		Memo           string
-		OwnerUin       uint32
+		OwnerUin       int64
 		MemberCount    uint16
 		MaxMemberCount uint16
-		Members        []GroupMemberInfo
+		Members        []*GroupMemberInfo
 	}
 
 	GroupMemberInfo struct {
@@ -56,7 +58,7 @@ type (
 		LastSpeakTime          int64
 		SpecialTitle           string
 		SpecialTitleExpireTime int64
-		Job                    string
+		Permission             MemberPermission
 	}
 
 	GroupMuteEvent struct {
@@ -76,7 +78,7 @@ type (
 
 	groupMemberListResponse struct {
 		NextUin int64
-		list    []GroupMemberInfo
+		list    []*GroupMemberInfo
 	}
 
 	groupImageUploadResponse struct {
@@ -93,8 +95,11 @@ type (
 
 const (
 	NeedCaptcha       LoginError = 1
-	DeviceLockError              = 2
 	OtherLoginError              = 3
 	UnsafeDeviceError            = 4
 	UnknownLoginError            = -1
+
+	Owner MemberPermission = iota
+	Administrator
+	Member
 )

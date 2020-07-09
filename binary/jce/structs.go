@@ -407,9 +407,9 @@ func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.MemberLevel = r.ReadInt64(14)
 	pkt.JoinTime = r.ReadInt64(15)
 	pkt.LastSpeakTime = r.ReadInt64(16)
+	pkt.Flag = r.ReadInt64(18)
 	pkt.SpecialTitle = r.ReadString(23)
 	pkt.SpecialTitleExpireTime = r.ReadInt64(24)
-	pkt.Job = r.ReadString(25)
 }
 
 func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
