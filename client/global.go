@@ -181,7 +181,7 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 			res = append(res, message.NewText(elem.Text.Str))
 		}
 		if elem.CustomFace != nil {
-			res = append(res, message.NewNetImage(elem.CustomFace.FilePath, "http://gchat.qpic.cn/"+elem.CustomFace.OrigUrl))
+			res = append(res, message.NewNetImage(elem.CustomFace.FilePath, "http://gchat.qpic.cn"+elem.CustomFace.OrigUrl))
 		}
 		if elem.NotOnlineImage != nil {
 			var img string

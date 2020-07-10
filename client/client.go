@@ -3,7 +3,6 @@ package client
 import (
 	"crypto/md5"
 	"errors"
-	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -431,7 +430,6 @@ func (c *QQClient) loop() {
 				continue
 			}
 		}
-		fmt.Println(pkt.CommandName)
 		go func() {
 			decoder, ok := c.decoders[pkt.CommandName]
 			if !ok {
