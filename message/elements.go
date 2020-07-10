@@ -34,6 +34,12 @@ func NewNetImage(filename, url string) *ImageElement {
 	}
 }
 
+func NewImage(data []byte) *ImageElement {
+	return &ImageElement{
+		Data: data,
+	}
+}
+
 func NewGroupImage(id string, md5 []byte) *GroupImageElement {
 	return &GroupImageElement{
 		ImageId: id,
