@@ -182,7 +182,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	return r, nil
 }
 
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) int32 {
+func (c *QQClient) SendGroupMessage(groupUin int64, m *message.SendingMessage) int32 {
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
@@ -192,7 +192,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 			c.onGroupMessageReceipt(eid)
 		}
 	})
-	_, pkt := c.buildGroupSendingPacket(groupCode, mr, m)
+	_, pkt := c.buildGroupSendingPacket(utils.ToGroupCode(groupUin), mr, m)
 	_ = c.send(pkt)
 	var mid int32
 	select {
@@ -204,9 +204,9 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 	return mid
 }
 
-func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {
+func (c *QQClient) UploadGroupImage(groupUin int64, img []byte) (*message.GroupImageElement, error) {
 	h := md5.Sum(img)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, h, int32(len(img)))
+	seq, pkt := c.buildGroupImageStorePacket(utils.ToGroupCode(groupUin), h, int32(len(img)))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
@@ -430,6 +430,7 @@ func (c *QQClient) loop() {
 				continue
 			}
 		}
+		//fmt.Println(pkt.CommandName)
 		go func() {
 			decoder, ok := c.decoders[pkt.CommandName]
 			if !ok {

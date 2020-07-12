@@ -94,6 +94,13 @@ func (msg *SendingMessage) Append(e IMessageElement) *SendingMessage {
 	return msg
 }
 
+func (s *Sender) DisplayName() string {
+	if s.CardName == "" {
+		return s.Nickname
+	}
+	return s.CardName
+}
+
 func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 	for _, elem := range elems {
 		switch e := elem.(type) {

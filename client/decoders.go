@@ -7,7 +7,12 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/golang/protobuf/proto"
+	"sync"
 	"time"
+)
+
+var (
+	groupJoinLock = new(sync.Mutex)
 )
 
 func decodeLoginResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
@@ -143,19 +148,35 @@ func decodeMessageSvcPacket(c *QQClient, seq uint16, payload []byte) (interface{
 				MsgUid:  message.Head.MsgUid,
 			}
 			delItems = append(delItems, delItem)
-
 			if message.Head.ToUin != c.Uin {
 				continue
 			}
-			if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
-				continue
+			switch message.Head.MsgType {
+			case 33:
+				groupJoinLock.Lock()
+				group := c.FindGroup(message.Head.FromUin)
+				if message.Head.AuthUin == c.Uin {
+					if group != nil {
+						groupJoinLock.Unlock()
+						continue
+					}
+					if c.ReloadGroupList() != nil {
+						groupJoinLock.Unlock()
+						continue
+					}
+					c.dispatchNewGroupEvent(c.FindGroup(message.Head.FromUin))
+				}
+				groupJoinLock.Unlock()
+			case 166:
+				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
+					continue
+				}
+				if c.lastMessageSeq >= message.Head.MsgSeq {
+					continue
+				}
+				c.lastMessageSeq = message.Head.MsgSeq
+				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			}
-			if c.lastMessageSeq >= message.Head.MsgSeq {
-				continue
-			}
-			c.lastMessageSeq = message.Head.MsgSeq
-
-			c.dispatchFriendMessage(c.parsePrivateMessage(message))
 		}
 	}
 	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
