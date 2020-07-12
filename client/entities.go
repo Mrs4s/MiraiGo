@@ -108,3 +108,10 @@ const (
 	Administrator
 	Member
 )
+
+func (m *GroupMemberInfo) DisplayName() string {
+	if m.CardName == "" {
+		return m.Nickname
+	}
+	return m.CardName
+}
