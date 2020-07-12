@@ -86,6 +86,10 @@ func NewAt(target int64, display ...string) *AtElement {
 	}
 }
 
+func AtAll() *AtElement {
+	return NewAt(0)
+}
+
 func (e *TextElement) Type() ElementType {
 	return Text
 }

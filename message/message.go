@@ -119,7 +119,12 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 						w.WriteUInt16(1)
 						w.WriteUInt16(0)
 						w.WriteUInt16(uint16(len(e.Display)))
-						w.WriteByte(0)
+						w.WriteByte(func() byte {
+							if e.Target == 0 {
+								return 1
+							}
+							return 0
+						}())
 						w.WriteUInt32(uint32(e.Target))
 						w.WriteUInt16(0)
 					}),
