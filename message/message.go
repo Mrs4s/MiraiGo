@@ -3,6 +3,7 @@ package message
 import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"strconv"
 )
 
 type PrivateMessage struct {
@@ -40,10 +41,16 @@ const (
 	Text ElementType = iota
 	Image
 	Face
+	At
+	Reply
 )
 
 func (s *Sender) IsAnonymous() bool {
 	return s.Uin == 80000000
+}
+
+func NewSendingMessage() *SendingMessage {
+	return &SendingMessage{}
 }
 
 func (msg *PrivateMessage) ToString() (res string) {
@@ -52,9 +59,11 @@ func (msg *PrivateMessage) ToString() (res string) {
 		case *TextElement:
 			res += e.Content
 		case *ImageElement:
-			res += " [Image= " + e.Filename + " ] "
+			res += "[Image:" + e.Filename + "]"
 		case *FaceElement:
-			res += " [" + e.Name + "] "
+			res += "[" + e.Name + "]"
+		case *AtElement:
+			res += e.Display
 		}
 	}
 	return
@@ -66,11 +75,15 @@ func (msg *GroupMessage) ToString() (res string) {
 		case *TextElement:
 			res += e.Content
 		case *ImageElement:
-			res += " [Image= " + e.Filename + " ] "
+			res += "[Image:" + e.Filename + "]"
 		case *FaceElement:
-			res += " [" + e.Name + "] "
+			res += "[" + e.Name + "]"
 		case *GroupImageElement:
-			res += "[Image= " + e.ImageId + " ]"
+			res += "[Image: " + e.ImageId + "]"
+		case *AtElement:
+			res += e.Display
+		case *ReplyElement:
+			res += "[Reply:" + strconv.FormatInt(int64(e.ReplySeq), 10) + "]"
 		}
 	}
 	return
@@ -98,6 +111,21 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 					Buf:   []byte{0x00, 0x01, 0x00, 0x04, 0x52, 0xCC, 0xF5, 0xD0},
 				},
 			})
+		case *AtElement:
+			r = append(r, &msg.Elem{
+				Text: &msg.Text{
+					Str: e.Display,
+					Attr6Buf: binary.NewWriterF(func(w *binary.Writer) {
+						w.WriteUInt16(1)
+						w.WriteUInt16(0)
+						w.WriteUInt16(uint16(len(e.Display)))
+						w.WriteByte(0)
+						w.WriteUInt32(uint32(e.Target))
+						w.WriteUInt16(0)
+					}),
+				},
+			})
+			r = append(r, &msg.Elem{Text: &msg.Text{Str: " "}})
 		case *GroupImageElement:
 			r = append(r, &msg.Elem{
 				CustomFace: &msg.CustomFace{

@@ -170,7 +170,7 @@ message Elem {
     //ApolloActMsg? apolloMsg = 42;
     //GroupPubAccountInfo? groupPubAccInfo = 43;
     //BlessingMessage? blessMsg = 44;
-    //SourceMsg? srcMsg = 45;
+    SourceMsg srcMsg = 45;
     //LolaMsg? lolaMsg = 46;
     //GroupBusinessMsg? groupBusinessMsg = 47;
     //WorkflowNotifyMsg? msgWorkflowNotify = 48;
@@ -359,6 +359,20 @@ message VideoFile {
     int32 thumbDownloadFlag = 22;
     int32 videoDownloadFlag = 23;
     bytes pbReserve = 24;
+}
+
+message SourceMsg {
+    repeated int32 origSeqs = 1;
+    int64 senderUin = 2;
+    int32 time = 3;
+    int32 flag = 4;
+    repeated Elem elems = 5;
+    int32 type = 6;
+    bytes richMsg = 7;
+    bytes pbReserve = 8;
+    bytes srcMsg = 9;
+    int64 toUin = 10;
+    bytes troopName = 11;   
 }
 
 message Face {

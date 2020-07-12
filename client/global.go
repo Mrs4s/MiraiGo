@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/md5"
+	"github.com/Mrs4s/MiraiGo/binary"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -177,8 +178,25 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 	var res []message.IMessageElement
 	for _, elem := range elems {
+		if elem.SrcMsg != nil {
+			if len(elem.SrcMsg.OrigSeqs) != 0 {
+				r := &message.ReplyElement{
+					ReplySeq: elem.SrcMsg.OrigSeqs[0],
+					Elements: parseMessageElems(elem.SrcMsg.Elems),
+				}
+				res = append(res, r)
+			}
+			continue
+		}
 		if elem.Text != nil {
-			res = append(res, message.NewText(elem.Text.Str))
+			if len(elem.Text.Attr6Buf) == 0 {
+				res = append(res, message.NewText(elem.Text.Str))
+			} else {
+				att6 := binary.NewReader(elem.Text.Attr6Buf)
+				att6.ReadBytes(7)
+				target := int64(uint32(att6.ReadInt32()))
+				res = append(res, message.NewAt(target, elem.Text.Str))
+			}
 		}
 		if elem.CustomFace != nil {
 			res = append(res, message.NewNetImage(elem.CustomFace.FilePath, "http://gchat.qpic.cn"+elem.CustomFace.OrigUrl))

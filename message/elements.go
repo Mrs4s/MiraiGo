@@ -1,6 +1,9 @@
 package message
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 type TextElement struct {
 	Content string
@@ -21,6 +24,16 @@ type GroupImageElement struct {
 type FaceElement struct {
 	Index int32
 	Name  string
+}
+
+type AtElement struct {
+	Target  int64
+	Display string
+}
+
+type ReplyElement struct {
+	ReplySeq int32
+	Elements []IMessageElement
 }
 
 func NewText(s string) *TextElement {
@@ -59,6 +72,20 @@ func NewFace(index int32) *FaceElement {
 	}
 }
 
+func NewAt(target int64, display ...string) *AtElement {
+	dis := "@" + strconv.FormatInt(target, 10)
+	if target == 0 {
+		dis = "@全体成员"
+	}
+	if len(display) != 0 {
+		dis = display[0]
+	}
+	return &AtElement{
+		Target:  target,
+		Display: dis,
+	}
+}
+
 func (e *TextElement) Type() ElementType {
 	return Text
 }
@@ -73,6 +100,14 @@ func (e *FaceElement) Type() ElementType {
 
 func (e *GroupImageElement) Type() ElementType {
 	return Image
+}
+
+func (e *AtElement) Type() ElementType {
+	return At
+}
+
+func (e *ReplyElement) Type() ElementType {
+	return Reply
 }
 
 var faceMap = map[int]string{
