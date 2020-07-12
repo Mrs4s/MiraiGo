@@ -164,7 +164,7 @@ func decodeMessageSvcPacket(c *QQClient, seq uint16, payload []byte) (interface{
 						groupJoinLock.Unlock()
 						continue
 					}
-					c.dispatchNewGroupEvent(c.FindGroup(message.Head.FromUin))
+					c.dispatchJoinGroupEvent(c.FindGroup(message.Head.FromUin))
 				}
 				groupJoinLock.Unlock()
 			case 166:
