@@ -122,7 +122,7 @@ func readT125(data []byte) (openId, openKey []byte) {
 func readT11A(data []byte) (nick string, age, gender uint16) {
 	reader := binary.NewReader(data)
 	reader.ReadUInt16()
-	age = reader.ReadUInt16()
+	age = uint16(reader.ReadByte())
 	gender = uint16(reader.ReadByte())
 	nick = reader.ReadStringLimit(int(reader.ReadByte()) & 0xff)
 	return
