@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -57,6 +58,8 @@ type QQClient struct {
 	messageSeq             int32
 	groupDataTransSeq      int32
 	eventHandlers          *eventHandlers
+
+	groupListLock *sync.Mutex
 }
 
 type loginSigInfo struct {
@@ -109,6 +112,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		messageSeq:             22911,
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
 		eventHandlers:          &eventHandlers{},
+		groupListLock:          new(sync.Mutex),
 	}
 	rand.Read(cli.RandomKey)
 	return cli
@@ -267,6 +271,8 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
+	c.groupListLock.Lock()
+	defer c.groupListLock.Unlock()
 	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
 	if err != nil {
 		return nil, err

@@ -1,12 +1,9 @@
 package client
 
 import (
-	"errors"
 	"github.com/Mrs4s/MiraiGo/message"
 	"sync"
 )
-
-var ErrEventUndefined = errors.New("event undefined")
 
 type eventHandlers struct {
 	privateMessageHandlers      []func(*QQClient, *message.PrivateMessage)
@@ -14,28 +11,9 @@ type eventHandlers struct {
 	groupMuteEventHandlers      []func(*QQClient, *GroupMuteEvent)
 	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
 	joinGroupHandlers           []func(*QQClient, *GroupInfo)
+	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
 	memberJoinedHandlers        []func(*QQClient, *GroupInfo, *GroupMemberInfo)
 	groupMessageReceiptHandlers sync.Map
-}
-
-func (c *QQClient) OnEvent(i interface{}) error {
-	switch f := i.(type) {
-	case func(*QQClient, *message.PrivateMessage):
-		c.OnPrivateMessage(f)
-	case func(*QQClient, *message.GroupMessage):
-		c.OnGroupMessage(f)
-	case func(*QQClient, *GroupMuteEvent):
-		c.OnGroupMuted(f)
-	case func(*QQClient, *GroupMessageRecalledEvent):
-		c.OnGroupMessageRecalled(f)
-	case func(*QQClient, *GroupInfo):
-		c.OnJoinGroup(f)
-	case func(*QQClient, *GroupInfo, *GroupMemberInfo):
-		c.OnGroupMemberJoined(f)
-	default:
-		return ErrEventUndefined
-	}
-	return nil
 }
 
 func (c *QQClient) OnPrivateMessage(f func(*QQClient, *message.PrivateMessage)) {
@@ -60,6 +38,10 @@ func (c *QQClient) OnGroupMuted(f func(*QQClient, *GroupMuteEvent)) {
 
 func (c *QQClient) OnJoinGroup(f func(*QQClient, *GroupInfo)) {
 	c.eventHandlers.joinGroupHandlers = append(c.eventHandlers.joinGroupHandlers, f)
+}
+
+func (c *QQClient) OnLeaveGroup(f func(*QQClient, *GroupLeaveEvent)) {
+	c.eventHandlers.leaveGroupHandlers = append(c.eventHandlers.leaveGroupHandlers, f)
 }
 
 func (c *QQClient) OnGroupMemberJoined(f func(*QQClient, *GroupInfo, *GroupMemberInfo)) {
@@ -135,6 +117,17 @@ func (c *QQClient) dispatchJoinGroupEvent(group *GroupInfo) {
 	for _, f := range c.eventHandlers.joinGroupHandlers {
 		cover(func() {
 			f(c, group)
+		})
+	}
+}
+
+func (c *QQClient) dispatchLeaveGroupEvent(e *GroupLeaveEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.leaveGroupHandlers {
+		cover(func() {
+			f(c, e)
 		})
 	}
 }

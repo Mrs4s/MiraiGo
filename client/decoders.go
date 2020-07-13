@@ -385,6 +385,24 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				}
 			}
 		}
+		if m.MsgType == 528 {
+			vr := jce.NewJceReader(m.VMsg)
+			subType := vr.ReadInt64(0)
+			probuf := vr.ReadAny(10).([]byte)
+			switch subType {
+			case 0xD4:
+				d4 := pb.SubD4{}
+				if err := proto.Unmarshal(probuf, &d4); err != nil {
+					return nil, err
+				}
+				if g := c.FindGroup(d4.Uin); g != nil {
+					if err := c.ReloadGroupList(); err != nil {
+						return nil, err
+					}
+					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
+				}
+			}
+		}
 	}
 
 	return nil, nil
@@ -395,6 +413,27 @@ func decodeOnlinePushTransPacket(c *QQClient, seq uint16, payload []byte) (inter
 	err := proto.Unmarshal(payload, &info)
 	if err != nil {
 		return nil, err
+	}
+	data := binary.NewReader(info.MsgData)
+	if info.MsgType == 34 {
+		data.ReadInt32()
+		data.ReadByte()
+		_ = int64(uint32(data.ReadInt32()))
+		typ := int32(data.ReadByte())
+		operator := int64(uint32(data.ReadInt32()))
+		switch typ {
+		case 0x03:
+			if g := c.FindGroup(info.FromUin); g != nil {
+				if err = c.ReloadGroupList(); err != nil {
+					return nil, err
+				}
+				c.dispatchLeaveGroupEvent(&GroupLeaveEvent{
+					Group:    g,
+					Operator: g.FindMember(operator),
+				})
+			}
+		}
+
 	}
 	return nil, nil
 }

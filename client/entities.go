@@ -76,6 +76,11 @@ type (
 		Time        int32
 	}
 
+	GroupLeaveEvent struct {
+		Group    *GroupInfo
+		Operator *GroupMemberInfo
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []*GroupMemberInfo

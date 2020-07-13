@@ -180,3 +180,7 @@ message RecalledMessageMeta {
     int32 msgFlag = 5;
     int64 authorUin = 6;   
 }
+
+message SubD4 {
+    int64 uin = 1;
+}
