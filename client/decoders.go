@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	groupJoinLock = new(sync.Mutex)
+	groupJoinLock  = new(sync.Mutex)
+	groupLeaveLock = new(sync.Mutex)
 )
 
 func decodeLoginResponse(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
@@ -395,12 +396,15 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				if err := proto.Unmarshal(probuf, &d4); err != nil {
 					return nil, err
 				}
+				groupLeaveLock.Lock()
 				if g := c.FindGroup(d4.Uin); g != nil {
 					if err := c.ReloadGroupList(); err != nil {
+						groupLeaveLock.Unlock()
 						return nil, err
 					}
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 				}
+				groupLeaveLock.Unlock()
 			}
 		}
 	}
@@ -423,6 +427,8 @@ func decodeOnlinePushTransPacket(c *QQClient, seq uint16, payload []byte) (inter
 		operator := int64(uint32(data.ReadInt32()))
 		switch typ {
 		case 0x03:
+			groupLeaveLock.Lock()
+			defer groupLeaveLock.Unlock()
 			if g := c.FindGroup(info.FromUin); g != nil {
 				if err = c.ReloadGroupList(); err != nil {
 					return nil, err

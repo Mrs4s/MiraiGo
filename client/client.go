@@ -262,6 +262,8 @@ func (c *QQClient) UploadGroupImage(groupUin int64, img []byte) (*message.GroupI
 }
 
 func (c *QQClient) ReloadGroupList() error {
+	c.groupListLock.Lock()
+	defer c.groupListLock.Unlock()
 	list, err := c.GetGroupList()
 	if err != nil {
 		return err
@@ -271,8 +273,6 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
-	c.groupListLock.Lock()
-	defer c.groupListLock.Unlock()
 	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
 	if err != nil {
 		return nil, err
