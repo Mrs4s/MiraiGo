@@ -14,6 +14,7 @@ type eventHandlers struct {
 	groupMuteEventHandlers      []func(*QQClient, *GroupMuteEvent)
 	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
 	joinGroupHandlers           []func(*QQClient, *GroupInfo)
+	memberJoinedHandlers        []func(*QQClient, *GroupInfo, *GroupMemberInfo)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -29,6 +30,8 @@ func (c *QQClient) OnEvent(i interface{}) error {
 		c.OnGroupMessageRecalled(f)
 	case func(*QQClient, *GroupInfo):
 		c.OnJoinGroup(f)
+	case func(*QQClient, *GroupInfo, *GroupMemberInfo):
+		c.OnGroupMemberJoined(f)
 	default:
 		return ErrEventUndefined
 	}
@@ -57,6 +60,10 @@ func (c *QQClient) OnGroupMuted(f func(*QQClient, *GroupMuteEvent)) {
 
 func (c *QQClient) OnJoinGroup(f func(*QQClient, *GroupInfo)) {
 	c.eventHandlers.joinGroupHandlers = append(c.eventHandlers.joinGroupHandlers, f)
+}
+
+func (c *QQClient) OnGroupMemberJoined(f func(*QQClient, *GroupInfo, *GroupMemberInfo)) {
+	c.eventHandlers.memberJoinedHandlers = append(c.eventHandlers.memberJoinedHandlers, f)
 }
 
 func (c *QQClient) OnGroupMessageRecalled(f func(*QQClient, *GroupMessageRecalledEvent)) {
@@ -128,6 +135,17 @@ func (c *QQClient) dispatchJoinGroupEvent(group *GroupInfo) {
 	for _, f := range c.eventHandlers.joinGroupHandlers {
 		cover(func() {
 			f(c, group)
+		})
+	}
+}
+
+func (c *QQClient) dispatchNewMemberEvent(group *GroupInfo, mem *GroupMemberInfo) {
+	if group == nil || mem == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.memberJoinedHandlers {
+		cover(func() {
+			f(c, group, mem)
 		})
 	}
 }

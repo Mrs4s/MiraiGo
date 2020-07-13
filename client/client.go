@@ -95,6 +95,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MessageSvc.PushNotify":            decodeSvcNotify,
 			"OnlinePush.PbPushGroupMsg":        decodeGroupMessagePacket,
 			"OnlinePush.ReqPush":               decodeOnlinePushReqPacket,
+			"OnlinePush.PbPushTransMsg":        decodeOnlinePushTransPacket,
 			"ConfigPushSvc.PushReq":            decodePushReqPacket,
 			"MessageSvc.PbGetMsg":              decodeMessageSvcPacket,
 			"friendlist.getFriendGroupList":    decodeFriendGroupListResponse,

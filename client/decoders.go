@@ -156,15 +156,25 @@ func decodeMessageSvcPacket(c *QQClient, seq uint16, payload []byte) (interface{
 				groupJoinLock.Lock()
 				group := c.FindGroup(message.Head.FromUin)
 				if message.Head.AuthUin == c.Uin {
-					if group != nil {
-						groupJoinLock.Unlock()
-						continue
+					if group == nil && c.ReloadGroupList() == nil {
+						c.dispatchJoinGroupEvent(c.FindGroup(message.Head.FromUin))
 					}
-					if c.ReloadGroupList() != nil {
-						groupJoinLock.Unlock()
-						continue
+				} else {
+					if group != nil && group.FindMember(message.Head.AuthUin) == nil {
+						mem := &GroupMemberInfo{
+							Uin: message.Head.AuthUin,
+							Nickname: func() string {
+								if message.Head.AuthNick == "" {
+									return message.Head.FromNick
+								}
+								return message.Head.AuthNick
+							}(),
+							JoinTime:   time.Now().Unix(),
+							Permission: Member,
+						}
+						group.Members = append(group.Members, mem)
+						c.dispatchNewMemberEvent(group, mem)
 					}
-					c.dispatchJoinGroupEvent(c.FindGroup(message.Head.FromUin))
 				}
 				groupJoinLock.Unlock()
 			case 166:
@@ -377,5 +387,14 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 		}
 	}
 
+	return nil, nil
+}
+
+func decodeOnlinePushTransPacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
+	info := msg.TransMsgInfo{}
+	err := proto.Unmarshal(payload, &info)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }

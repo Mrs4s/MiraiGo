@@ -526,6 +526,22 @@ message SyncCookie {
     int64 const4 = 14;
 }
 
+message TransMsgInfo {
+    int64 fromUin = 1;
+    int64 toUin = 2;
+    int32 msgType = 3;
+    int32 msgSubtype = 4;
+    int32 msgSeq = 5;
+    int64 msgUid = 6;
+    int32 msgTime = 7;
+    int32 realMsgTime = 8;
+    string nickName = 9;
+    bytes msgData = 10;
+    int32 svrIp = 11;
+    ExtGroupKeyInfo extGroupKeyInfo = 12;
+    int32 generalFlag = 17;
+}
+
 enum SyncFlag {
     START = 0;
     CONTINUME = 1;
