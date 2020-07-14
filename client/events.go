@@ -12,8 +12,9 @@ type eventHandlers struct {
 	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
 	joinGroupHandlers           []func(*QQClient, *GroupInfo)
 	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
-	memberJoinedHandlers        []func(*QQClient, *GroupInfo, *GroupMemberInfo)
+	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
 	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
+	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -45,12 +46,16 @@ func (c *QQClient) OnLeaveGroup(f func(*QQClient, *GroupLeaveEvent)) {
 	c.eventHandlers.leaveGroupHandlers = append(c.eventHandlers.leaveGroupHandlers, f)
 }
 
-func (c *QQClient) OnGroupMemberJoined(f func(*QQClient, *GroupInfo, *GroupMemberInfo)) {
+func (c *QQClient) OnGroupMemberJoined(f func(*QQClient, *MemberJoinGroupEvent)) {
 	c.eventHandlers.memberJoinedHandlers = append(c.eventHandlers.memberJoinedHandlers, f)
 }
 
 func (c *QQClient) OnGroupMemberLeaved(f func(*QQClient, *MemberLeaveGroupEvent)) {
 	c.eventHandlers.memberLeavedHandlers = append(c.eventHandlers.memberLeavedHandlers, f)
+}
+
+func (c *QQClient) OnGroupMemberPermissionChanged(f func(*QQClient, *MemberPermissionChangedEvent)) {
+	c.eventHandlers.permissionChangedHandlers = append(c.eventHandlers.permissionChangedHandlers, f)
 }
 
 func (c *QQClient) OnGroupMessageRecalled(f func(*QQClient, *GroupMessageRecalledEvent)) {
@@ -137,13 +142,13 @@ func (c *QQClient) dispatchLeaveGroupEvent(e *GroupLeaveEvent) {
 	}
 }
 
-func (c *QQClient) dispatchNewMemberEvent(group *GroupInfo, mem *GroupMemberInfo) {
-	if group == nil || mem == nil {
+func (c *QQClient) dispatchNewMemberEvent(e *MemberJoinGroupEvent) {
+	if e == nil {
 		return
 	}
 	for _, f := range c.eventHandlers.memberJoinedHandlers {
 		cover(func() {
-			f(c, group, mem)
+			f(c, e)
 		})
 	}
 }
@@ -153,6 +158,17 @@ func (c *QQClient) dispatchMemberLeaveEvent(e *MemberLeaveGroupEvent) {
 		return
 	}
 	for _, f := range c.eventHandlers.memberLeavedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchPermissionChanged(e *MemberPermissionChangedEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.permissionChangedHandlers {
 		cover(func() {
 			f(c, e)
 		})

@@ -86,10 +86,22 @@ type (
 		Operator *GroupMemberInfo
 	}
 
+	MemberJoinGroupEvent struct {
+		Group  *GroupInfo
+		Member *GroupMemberInfo
+	}
+
 	MemberLeaveGroupEvent struct {
 		Group    *GroupInfo
 		Member   *GroupMemberInfo
 		Operator *GroupMemberInfo
+	}
+
+	MemberPermissionChangedEvent struct {
+		Group         *GroupInfo
+		Member        *GroupMemberInfo
+		OldPermission MemberPermission
+		NewPermission MemberPermission
 	}
 
 	groupMemberListResponse struct {

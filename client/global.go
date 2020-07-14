@@ -6,6 +6,7 @@ import (
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
 	"math/rand"
 )
@@ -131,7 +132,7 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 }
 
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
-	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
+	group := c.FindGroup(utils.ToGroupUin(m.Head.GroupInfo.GroupCode))
 	if group == nil {
 		return nil
 	}
@@ -162,7 +163,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	g := &message.GroupMessage{
 		Id:        m.Head.MsgSeq,
-		GroupUin:  m.Head.GroupInfo.GroupCode,
+		GroupUin:  group.Uin,
 		GroupName: string(m.Head.GroupInfo.GroupName),
 		Sender:    sender,
 		Elements:  parseMessageElems(m.Body.RichText.Elems),

@@ -174,7 +174,10 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 							Permission: Member,
 						}
 						group.Members = append(group.Members, mem)
-						c.dispatchNewMemberEvent(group, mem)
+						c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+							Group:  group,
+							Member: mem,
+						})
 					}
 				}
 				groupJoinLock.Unlock()
@@ -457,6 +460,36 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 			}
 		}
 
+	}
+	if info.MsgType == 44 {
+		data.ReadBytes(5)
+		var4 := int32(data.ReadByte())
+		var var5 int64 = 0
+		target := int64(uint32(data.ReadInt32()))
+		if var4 != 0 && var4 != 1 {
+			var5 = int64(uint32(data.ReadInt32()))
+		}
+		if g := c.FindGroup(info.FromUin); g != nil {
+			if var5 == 0 && data.Len() == 1 {
+				newPermission := func() MemberPermission {
+					if data.ReadByte() == 1 {
+						return Administrator
+					}
+					return Member
+				}()
+				mem := g.FindMember(target)
+				if mem.Permission != newPermission {
+					old := mem.Permission
+					mem.Permission = newPermission
+					c.dispatchPermissionChanged(&MemberPermissionChangedEvent{
+						Group:         g,
+						Member:        mem,
+						OldPermission: old,
+						NewPermission: newPermission,
+					})
+				}
+			}
+		}
 	}
 	return nil, nil
 }
