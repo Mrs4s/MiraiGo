@@ -341,6 +341,20 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	return nil
 }
 
+func (g *GroupInfo) RemoveMember(uin int64) {
+	if g.memLock == nil {
+		g.memLock = new(sync.Mutex)
+	}
+	g.memLock.Lock()
+	defer g.memLock.Unlock()
+	for i, m := range g.Members {
+		if m.Uin == uin {
+			g.Members = append(g.Members[:i], g.Members[i+1:]...)
+			break
+		}
+	}
+}
+
 func (c *QQClient) connect() error {
 	conn, err := net.Dial("tcp", "125.94.60.146:80") //TODO: more servers
 	if err != nil {

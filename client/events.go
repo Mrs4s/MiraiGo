@@ -13,6 +13,7 @@ type eventHandlers struct {
 	joinGroupHandlers           []func(*QQClient, *GroupInfo)
 	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
 	memberJoinedHandlers        []func(*QQClient, *GroupInfo, *GroupMemberInfo)
+	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -46,6 +47,10 @@ func (c *QQClient) OnLeaveGroup(f func(*QQClient, *GroupLeaveEvent)) {
 
 func (c *QQClient) OnGroupMemberJoined(f func(*QQClient, *GroupInfo, *GroupMemberInfo)) {
 	c.eventHandlers.memberJoinedHandlers = append(c.eventHandlers.memberJoinedHandlers, f)
+}
+
+func (c *QQClient) OnGroupMemberLeaved(f func(*QQClient, *MemberLeaveGroupEvent)) {
+	c.eventHandlers.memberLeavedHandlers = append(c.eventHandlers.memberLeavedHandlers, f)
 }
 
 func (c *QQClient) OnGroupMessageRecalled(f func(*QQClient, *GroupMessageRecalledEvent)) {
@@ -139,6 +144,17 @@ func (c *QQClient) dispatchNewMemberEvent(group *GroupInfo, mem *GroupMemberInfo
 	for _, f := range c.eventHandlers.memberJoinedHandlers {
 		cover(func() {
 			f(c, group, mem)
+		})
+	}
+}
+
+func (c *QQClient) dispatchMemberLeaveEvent(e *MemberLeaveGroupEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.memberLeavedHandlers {
+		cover(func() {
+			f(c, e)
 		})
 	}
 }

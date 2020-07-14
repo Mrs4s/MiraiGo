@@ -1,6 +1,9 @@
 package client
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 var (
 	ErrAlreadyRunning = errors.New("already running")
@@ -47,6 +50,8 @@ type (
 		MemberCount    uint16
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
+
+		memLock *sync.Mutex
 	}
 
 	GroupMemberInfo struct {
@@ -78,6 +83,12 @@ type (
 
 	GroupLeaveEvent struct {
 		Group    *GroupInfo
+		Operator *GroupMemberInfo
+	}
+
+	MemberLeaveGroupEvent struct {
+		Group    *GroupInfo
+		Member   *GroupMemberInfo
 		Operator *GroupMemberInfo
 	}
 
