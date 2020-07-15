@@ -215,6 +215,9 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				}
 				c.lastMessageSeq = message.Head.MsgSeq
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
+			case 187:
+				_, pkt := c.buildSystemMsgNewFriendPacket()
+				_ = c.send(pkt)
 			}
 		}
 	}
@@ -528,27 +531,49 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 		return nil, nil
 	}
 	st := rsp.Groupmsgs[0]
-	// 其他SubType不关心
-	if st.Msg.SubType == 1 {
-		switch st.Msg.C2CInviteJoinGroupFlag {
-		case 0: //成员申请
-			c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
-				RequestId:     st.MsgSeq,
-				Message:       st.Msg.MsgAdditional,
-				RequesterUin:  st.ReqUin,
-				RequesterNick: st.Msg.ReqUinNick,
-				GroupCode:     st.Msg.GroupCode,
-				GroupName:     st.Msg.GroupName,
-			})
-		case 1: // 被邀请
-			c.dispatchGroupInvitedEvent(&GroupInvitedEvent{
-				EventId:     st.MsgSeq,
-				InvitorUin:  st.Msg.ActionUin,
-				InvitorNick: st.Msg.ActionUinNick,
-				GroupCode:   st.Msg.GroupCode,
-				GroupName:   st.Msg.GroupName,
-			})
+	if st.Msg != nil {
+		// 其他SubType不关心
+		if st.Msg.SubType == 1 {
+			switch st.Msg.C2CInviteJoinGroupFlag {
+			case 0: //成员申请
+				c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
+					RequestId:     st.MsgSeq,
+					Message:       st.Msg.MsgAdditional,
+					RequesterUin:  st.ReqUin,
+					RequesterNick: st.Msg.ReqUinNick,
+					GroupCode:     st.Msg.GroupCode,
+					GroupName:     st.Msg.GroupName,
+				})
+			case 1: // 被邀请
+				c.dispatchGroupInvitedEvent(&GroupInvitedEvent{
+					EventId:     st.MsgSeq,
+					InvitorUin:  st.Msg.ActionUin,
+					InvitorNick: st.Msg.ActionUinNick,
+					GroupCode:   st.Msg.GroupCode,
+					GroupName:   st.Msg.GroupName,
+				})
+			}
 		}
+	}
+	return nil, nil
+}
+
+func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := structmsg.RspSystemMsgNew{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if len(rsp.Friendmsgs) == 0 {
+		return nil, nil
+	}
+	st := rsp.Friendmsgs[0]
+	if st.Msg != nil {
+		c.dispatchNewFriendRequest(&NewFriendRequest{
+			RequestId:     st.MsgSeq,
+			Message:       st.Msg.MsgAdditional,
+			RequesterUin:  st.ReqUin,
+			RequesterNick: st.Msg.ReqUinNick,
+		})
 	}
 	return nil, nil
 }

@@ -18,6 +18,7 @@ type eventHandlers struct {
 	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
 	groupInvitedHandlers        []func(*QQClient, *GroupInvitedEvent)
 	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
+	friendRequestHandlers       []func(*QQClient, *NewFriendRequest)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -75,6 +76,10 @@ func (c *QQClient) OnGroupInvited(f func(*QQClient, *GroupInvitedEvent)) {
 
 func (c *QQClient) OnUserWantJoinGroup(f func(*QQClient, *UserJoinGroupRequest)) {
 	c.eventHandlers.joinRequestHandlers = append(c.eventHandlers.joinRequestHandlers, f)
+}
+
+func (c *QQClient) OnNewFriendRequest(f func(*QQClient, *NewFriendRequest)) {
+	c.eventHandlers.friendRequestHandlers = append(c.eventHandlers.friendRequestHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
@@ -224,6 +229,17 @@ func (c *QQClient) dispatchJoinGroupRequest(r *UserJoinGroupRequest) {
 		return
 	}
 	for _, f := range c.eventHandlers.joinRequestHandlers {
+		cover(func() {
+			f(c, r)
+		})
+	}
+}
+
+func (c *QQClient) dispatchNewFriendRequest(r *NewFriendRequest) {
+	if r == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.friendRequestHandlers {
 		cover(func() {
 			f(c, r)
 		})

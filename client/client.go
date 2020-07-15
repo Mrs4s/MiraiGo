@@ -3,7 +3,6 @@ package client
 import (
 	"crypto/md5"
 	"errors"
-	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -95,19 +94,20 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		decoders: map[string]func(*QQClient, uint16, []byte) (interface{}, error){
-			"wtlogin.login":                           decodeLoginResponse,
-			"StatSvc.register":                        decodeClientRegisterResponse,
-			"MessageSvc.PushNotify":                   decodeSvcNotify,
-			"OnlinePush.PbPushGroupMsg":               decodeGroupMessagePacket,
-			"OnlinePush.ReqPush":                      decodeOnlinePushReqPacket,
-			"OnlinePush.PbPushTransMsg":               decodeOnlinePushTransPacket,
-			"ConfigPushSvc.PushReq":                   decodePushReqPacket,
-			"MessageSvc.PbGetMsg":                     decodeMessageSvcPacket,
-			"friendlist.getFriendGroupList":           decodeFriendGroupListResponse,
-			"friendlist.GetTroopListReqV2":            decodeGroupListResponse,
-			"friendlist.GetTroopMemberListReq":        decodeGroupMemberListResponse,
-			"ImgStore.GroupPicUp":                     decodeGroupImageStoreResponse,
-			"ProfileService.Pb.ReqSystemMsgNew.Group": decodeSystemMsgGroupPacket,
+			"wtlogin.login":                            decodeLoginResponse,
+			"StatSvc.register":                         decodeClientRegisterResponse,
+			"MessageSvc.PushNotify":                    decodeSvcNotify,
+			"OnlinePush.PbPushGroupMsg":                decodeGroupMessagePacket,
+			"OnlinePush.ReqPush":                       decodeOnlinePushReqPacket,
+			"OnlinePush.PbPushTransMsg":                decodeOnlinePushTransPacket,
+			"ConfigPushSvc.PushReq":                    decodePushReqPacket,
+			"MessageSvc.PbGetMsg":                      decodeMessageSvcPacket,
+			"friendlist.getFriendGroupList":            decodeFriendGroupListResponse,
+			"friendlist.GetTroopListReqV2":             decodeGroupListResponse,
+			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
+			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
+			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
+			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
 		},
 		handlers:               map[uint16]func(interface{}, error){},
 		sigInfo:                &loginSigInfo{},
@@ -464,7 +464,7 @@ func (c *QQClient) loop() {
 				continue
 			}
 		}
-		fmt.Println(pkt.CommandName)
+		//fmt.Println(pkt.CommandName)
 		go func() {
 			decoder, ok := c.decoders[pkt.CommandName]
 			if !ok {

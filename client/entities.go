@@ -121,6 +121,13 @@ type (
 		GroupName     string
 	}
 
+	NewFriendRequest struct {
+		RequestId     int64
+		Message       string
+		RequesterUin  int64
+		RequesterNick string
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []*GroupMemberInfo

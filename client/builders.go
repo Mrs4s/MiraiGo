@@ -503,3 +503,24 @@ func (c *QQClient) buildSystemMsgNewGroupPacket() (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+// ProfileService.Pb.ReqSystemMsgNew.Friend
+func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &structmsg.ReqSystemMsgNew{
+		MsgNum:    20,
+		Version:   1000,
+		Checktype: 2,
+		Flag: &structmsg.FlagInfo{
+			FrdMsgDiscuss2ManyChat:       1,
+			FrdMsgGetBusiCard:            1,
+			FrdMsgNeedWaitingMsg:         1,
+			FrdMsgUint32NeedAllUnreadMsg: 1,
+			GrpMsgMaskInviteAutoJoin:     1,
+		},
+		FriendMsgTypeFlag: 1,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
