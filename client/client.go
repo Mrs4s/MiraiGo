@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/md5"
 	"errors"
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -187,7 +188,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	return r, nil
 }
 
-func (c *QQClient) SendGroupMessage(groupUin int64, m *message.SendingMessage) int32 {
+func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) int32 {
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
@@ -197,7 +198,7 @@ func (c *QQClient) SendGroupMessage(groupUin int64, m *message.SendingMessage) i
 			c.onGroupMessageReceipt(eid)
 		}
 	})
-	_, pkt := c.buildGroupSendingPacket(utils.ToGroupCode(groupUin), mr, m)
+	_, pkt := c.buildGroupSendingPacket(groupCode, mr, m)
 	_ = c.send(pkt)
 	var mid int32
 	select {
@@ -321,10 +322,20 @@ func (c *QQClient) FindFriend(uin int64) *FriendInfo {
 	return nil
 }
 
-func (c *QQClient) FindGroup(uin int64) *GroupInfo {
+func (c *QQClient) FindGroupByUin(uin int64) *GroupInfo {
 	for _, g := range c.GroupList {
 		f := g
 		if f.Uin == uin {
+			return f
+		}
+	}
+	return nil
+}
+
+func (c *QQClient) FindGroup(code int64) *GroupInfo {
+	for _, g := range c.GroupList {
+		f := g
+		if f.Code == code {
 			return f
 		}
 	}
@@ -451,7 +462,7 @@ func (c *QQClient) loop() {
 				continue
 			}
 		}
-		//fmt.Println(pkt.CommandName)
+		fmt.Println(pkt.CommandName)
 		go func() {
 			decoder, ok := c.decoders[pkt.CommandName]
 			if !ok {

@@ -6,7 +6,6 @@ import (
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
 	"math/rand"
 )
@@ -98,7 +97,7 @@ func (info *DeviceInfo) GenNewTgtgtKey() {
 }
 
 func (info *DeviceInfo) GenDeviceInfoData() []byte {
-	msg := &devinfo.DeviceInfo{
+	m := &devinfo.DeviceInfo{
 		Bootloader:   string(info.Bootloader),
 		ProcVersion:  string(info.ProcVersion),
 		Codename:     string(info.Version.CodeName),
@@ -109,7 +108,7 @@ func (info *DeviceInfo) GenDeviceInfoData() []byte {
 		BaseBand:     string(info.BaseBand),
 		InnerVersion: string(info.Version.Incremental),
 	}
-	data, err := proto.Marshal(msg)
+	data, err := proto.Marshal(m)
 	if err != nil {
 		panic(err)
 	}
@@ -132,7 +131,7 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 }
 
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
-	group := c.FindGroup(utils.ToGroupUin(m.Head.GroupInfo.GroupCode))
+	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
 	if group == nil {
 		return nil
 	}
@@ -163,7 +162,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	g := &message.GroupMessage{
 		Id:        m.Head.MsgSeq,
-		GroupUin:  group.Uin,
+		GroupCode: group.Code,
 		GroupName: string(m.Head.GroupInfo.GroupName),
 		Sender:    sender,
 		Elements:  parseMessageElems(m.Body.RichText.Elems),

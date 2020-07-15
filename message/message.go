@@ -14,7 +14,7 @@ type PrivateMessage struct {
 
 type GroupMessage struct {
 	Id        int32
-	GroupUin  int64
+	GroupCode int64
 	GroupName string
 	Sender    *Sender
 	Elements  []IMessageElement

@@ -67,14 +67,14 @@ type (
 	}
 
 	GroupMuteEvent struct {
-		GroupUin    int64
+		GroupCode   int64
 		OperatorUin int64
 		TargetUin   int64
 		Time        int32
 	}
 
 	GroupMessageRecalledEvent struct {
-		GroupUin    int64
+		GroupCode   int64
 		OperatorUin int64
 		AuthorUin   int64
 		MessageId   int32

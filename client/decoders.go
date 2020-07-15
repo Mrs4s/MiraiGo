@@ -155,10 +155,10 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			switch message.Head.MsgType {
 			case 33:
 				groupJoinLock.Lock()
-				group := c.FindGroup(message.Head.FromUin)
+				group := c.FindGroupByUin(message.Head.FromUin)
 				if message.Head.AuthUin == c.Uin {
 					if group == nil && c.ReloadGroupList() == nil {
-						c.dispatchJoinGroupEvent(c.FindGroup(message.Head.FromUin))
+						c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.FromUin))
 					}
 				} else {
 					if group != nil && group.FindMember(message.Head.AuthUin) == nil {
@@ -366,7 +366,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				target := int64(uint32(r.ReadInt32()))
 				t := r.ReadInt32()
 				c.dispatchGroupMuteEvent(&GroupMuteEvent{
-					GroupUin:    groupId,
+					GroupCode:   groupId,
 					OperatorUin: operator,
 					TargetUin:   target,
 					Time:        t,
@@ -380,7 +380,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				}
 				for _, rm := range b.OptMsgRecall.RecalledMsgList {
 					c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
-						GroupUin:    groupId,
+						GroupCode:   groupId,
 						OperatorUin: b.OptMsgRecall.Uin,
 						AuthorUin:   rm.AuthorUin,
 						MessageId:   rm.Seq,
@@ -400,7 +400,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					return nil, err
 				}
 				groupLeaveLock.Lock()
-				if g := c.FindGroup(d4.Uin); g != nil {
+				if g := c.FindGroupByUin(d4.Uin); g != nil {
 					if err := c.ReloadGroupList(); err != nil {
 						groupLeaveLock.Unlock()
 						return nil, err
@@ -428,7 +428,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 		target := int64(uint32(data.ReadInt32()))
 		typ := int32(data.ReadByte())
 		operator := int64(uint32(data.ReadInt32()))
-		if g := c.FindGroup(info.FromUin); g != nil {
+		if g := c.FindGroupByUin(info.FromUin); g != nil {
 			switch typ {
 			case 0x03:
 				groupLeaveLock.Lock()
@@ -469,7 +469,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 		if var4 != 0 && var4 != 1 {
 			var5 = int64(uint32(data.ReadInt32()))
 		}
-		if g := c.FindGroup(info.FromUin); g != nil {
+		if g := c.FindGroupByUin(info.FromUin); g != nil {
 			if var5 == 0 && data.Len() == 1 {
 				newPermission := func() MemberPermission {
 					if data.ReadByte() == 1 {
