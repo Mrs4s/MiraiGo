@@ -1,0 +1,241 @@
+syntax = "proto3";
+
+option go_package = ".;structmsg";
+
+message AddFrdSNInfo {
+  int32 notSeeDynamic = 1;
+  int32 setSn = 2;
+}
+
+message FlagInfo {
+  int32 grpMsgKickAdmin = 1;
+  int32 grpMsgHiddenGrp = 2;
+  int32 grpMsgWordingDown = 3;
+  int32 frdMsgGetBusiCard = 4;
+  int32 grpMsgGetOfficialAccount = 5;
+  int32 grpMsgGetPayInGroup = 6;
+  int32 frdMsgDiscuss2ManyChat = 7;
+  int32 grpMsgNotAllowJoinGrpInviteNotFrd = 8;
+  int32 frdMsgNeedWaitingMsg = 9;
+  int32 frdMsgUint32NeedAllUnreadMsg = 10;
+  int32 grpMsgNeedAutoAdminWording = 11;
+  int32 grpMsgGetTransferGroupMsgFlag = 12;
+  int32 grpMsgGetQuitPayGroupMsgFlag = 13;
+  int32 grpMsgSupportInviteAutoJoin = 14;
+  int32 grpMsgMaskInviteAutoJoin = 15;
+  int32 grpMsgGetDisbandedByAdmin = 16;
+  int32 grpMsgGetC2cInviteJoinGroup = 17;
+}
+
+message FriendInfo {
+  string msgJointFriend = 1;
+  string msgBlacklist = 2;
+}
+
+message GroupInfo {
+  int32 groupAuthType = 1;
+  int32 displayAction = 2;
+  string msgAlert = 3;
+  string msgDetailAlert = 4;
+  string msgOtherAdminDone = 5;
+  int32 appPrivilegeFlag = 6;
+}
+
+message MsgInviteExt {
+  int32 srcType = 1;
+  int64 srcCode = 2;
+  int32 waitState = 3;
+}
+
+message MsgPayGroupExt {
+  int64 joinGrpTime = 1;
+  int64 quitGrpTime = 2;
+}
+
+message ReqNextSystemMsg {
+  int32 msgNum = 1;
+  int64 followingFriendSeq = 2;
+  int64 followingGroupSeq = 3;
+  int32  checktype = 4;
+  FlagInfo flag = 5;
+  int32 language = 6;
+  int32 version = 7;
+  int64 friendMsgTypeFlag = 8;
+}
+
+message ReqSystemMsg {
+  int32 msgNum = 1;
+  int64 latestFriendSeq = 2;
+  int64 latestGroupSeq = 3;
+  int32 version = 4;
+  int32 language = 5;
+}
+
+message ReqSystemMsgAction {
+  int32  msgType = 1;
+  int64 msgSeq = 2;
+  int64 reqUin = 3;
+  int32 subType = 4;
+  int32 srcId = 5;
+  int32 subSrcId = 6;
+  int32 groupMsgType = 7;
+  SystemMsgActionInfo actionInfo = 8;
+  int32 language = 9;
+}
+
+message ReqSystemMsgNew {
+  int32 msgNum = 1;
+  int64 latestFriendSeq = 2;
+  int64 latestGroupSeq = 3;
+  int32 version = 4;
+  int32 checktype = 5;
+  FlagInfo flag = 6;
+  int32 language = 7;
+  bool isGetFrdRibbon = 8;
+  bool isGetGrpRibbon = 9;
+  int64 friendMsgTypeFlag = 10;
+}
+message ReqSystemMsgRead {
+  int64 latestFriendSeq = 1;
+  int64 latestGroupSeq = 2;
+  int32 type = 3;
+  int32 checktype = 4;
+}
+message RspHead {
+  int32 result = 1;
+  string msgFail = 2;
+}
+message RspNextSystemMsg {
+  RspHead head = 1;
+  repeated StructMsg msgs = 2;
+  int64 followingFriendSeq = 3;
+  int64 followingGroupSeq = 4;
+  int32  checktype = 5;
+  string gameNick = 100;
+  bytes undecidForQim = 101;
+  int32 unReadCount3 = 102;
+}
+message RspSystemMsg {
+  RspHead head = 1;
+  repeated StructMsg msgs = 2;
+  int32 unreadCount = 3;
+  int64 latestFriendSeq = 4;
+  int64 latestGroupSeq = 5;
+  int64 followingFriendSeq = 6;
+  int64 followingGroupSeq = 7;
+  string msgDisplay = 8;
+}
+
+message RspSystemMsgAction {
+  RspHead head = 1;
+  string msgDetail = 2;
+  int32 type = 3;
+  string msgInvalidDecided = 5;
+  int32 remarkResult = 6;
+}
+message RspSystemMsgNew {
+  RspHead head = 1;
+  int32 unreadFriendCount = 2;
+  int32 unreadGroupCount = 3;
+  int64 latestFriendSeq = 4;
+  int64 latestGroupSeq = 5;
+  int64 followingFriendSeq = 6;
+  int64 followingGroupSeq = 7;
+  repeated StructMsg friendmsgs = 9;
+  repeated StructMsg groupmsgs = 10;
+  StructMsg msgRibbonFriend = 11;
+  StructMsg msgRibbonGroup = 12;
+  string msgDisplay = 13;
+  string grpMsgDisplay = 14;
+  int32 over = 15;
+  int32  checktype = 20;
+  string gameNick = 100;
+  bytes undecidForQim = 101;
+  int32 unReadCount3 = 102;
+}
+message RspSystemMsgRead {
+  RspHead head = 1;
+  int32 type = 2;
+  int32  checktype = 3;
+}
+message StructMsg {
+  int32 version = 1;
+  int32  msgType = 2;
+  int64 msgSeq = 3;
+  int64 msgTime = 4;
+  int64 reqUin = 5;
+  int32 unreadFlag = 6;
+  SystemMsg msg = 50;
+}
+message SystemMsg {
+  int32 subType = 1;
+  string msgTitle = 2;
+  string msgDescribe = 3;
+  string msgAdditional = 4;
+  string msgSource = 5;
+  string msgDecided = 6;
+  int32 srcId = 7;
+  int32 subSrcId = 8;
+  repeated SystemMsgAction actions = 9;
+  int64 groupCode = 10;
+  int64 actionUin = 11;
+  int32 groupMsgType = 12;
+  int32 groupInviterRole = 13;
+  FriendInfo friendInfo = 14;
+  GroupInfo groupInfo = 15;
+  int64 actorUin = 16;
+  string msgActorDescribe = 17;
+  string msgAdditionalList = 18;
+  int32 relation = 19;
+  int32 reqsubtype = 20;
+  int64 cloneUin = 21;
+  int64 discussUin = 22;
+  int64 eimGroupId = 23;
+  MsgInviteExt msgInviteExtinfo = 24;
+  MsgPayGroupExt msgPayGroupExtinfo = 25;
+  int32 sourceFlag = 26;
+  bytes gameNick = 27;
+  bytes gameMsg = 28;
+  int32 groupFlagext3 = 29;
+  int64 groupOwnerUin = 30;
+  int32 doubtFlag = 31;
+  bytes warningTips = 32;
+  bytes nameMore = 33;
+  int32 reqUinFaceid = 50;
+  string reqUinNick = 51;
+  string groupName = 52;
+  string actionUinNick = 53;
+  string msgQna = 54;
+  string msgDetail = 55;
+  int32 groupExtFlag = 57;
+  string actorUinNick = 58;
+  string picUrl = 59;
+  string cloneUinNick = 60;
+  string reqUinBusinessCard = 61;
+  string eimGroupIdName = 63;
+  string reqUinPreRemark = 64;
+  string actionUinQqNick = 65;
+  string actionUinRemark = 66;
+  int32 reqUinGender = 67;
+  int32 reqUinAge = 68;
+  int32 c2cInviteJoinGroupFlag = 69;
+  int32 cardSwitch = 101;
+}
+message SystemMsgAction {
+  string name = 1;
+  string result = 2;
+  int32 action = 3;
+  SystemMsgActionInfo actionInfo = 4;
+  string detailName = 5;
+}
+message SystemMsgActionInfo {
+  int32  type = 1;
+  int64 groupCode = 2;
+  bytes sig = 3;
+  string msg = 50;
+  int32 groupId = 51;
+  string remark = 52;
+  bool blacklist = 53;
+  AddFrdSNInfo addFrdSNInfo = 54;
+}
+   

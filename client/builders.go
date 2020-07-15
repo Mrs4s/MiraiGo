@@ -6,6 +6,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
@@ -109,6 +110,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 	return seq, packet
 }
 
+// StatSvc.register
 func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	svc := &jce.SvcReqRegister{
@@ -156,6 +158,7 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 	return seq, packet
 }
 
+// ConfigPushSvc.PushResp
 func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := jce.NewJceWriter()
@@ -179,6 +182,7 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 	return seq, packet
 }
 
+// friendlist.getFriendGroupList
 func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendListCount, groupStartIndex, groupListCount int16) (uint16, []byte) {
 	seq := c.nextSeq()
 	d50, _ := proto.Marshal(&pb.D50ReqBody{
@@ -238,6 +242,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 	return seq, packet
 }
 
+// friendlist.GetTroopListReqV2
 func (c *QQClient) buildGroupListRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &jce.TroopListRequest{
@@ -270,6 +275,7 @@ func (c *QQClient) buildGroupListRequestPacket() (uint16, []byte) {
 	return seq, packet
 }
 
+// friendlist.GetTroopMemberListReq
 func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUin int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &jce.TroopMemberListRequest{
@@ -297,6 +303,7 @@ func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUi
 	return seq, packet
 }
 
+// MessageSvc.PbGetMsg
 func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	cook := c.syncCookie
@@ -332,6 +339,7 @@ func (c *QQClient) buildStopGetMessagePacket(msgTime int64) []byte {
 	return pkt
 }
 
+// MessageSvc.PbDeleteMsg
 func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &pb.DeleteMessageRequest{Items: msg}
@@ -340,6 +348,7 @@ func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint1
 	return seq, packet
 }
 
+// OnlinePush.RespPush
 func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []jce.PushMessageInfo) []byte {
 	req := &jce.SvcRespPushMsg{Uin: uin}
 	for _, m := range delMsg {
@@ -367,6 +376,7 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 	return packets.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 }
 
+// MessageSvc.PbSendMsg
 func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
@@ -388,6 +398,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.
 	return seq, packet
 }
 
+// ImgStore.GroupPicUp
 func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 [16]byte, size int32) (uint16, []byte) {
 	seq := c.nextSeq()
 	name := utils.RandomString(16) + ".gif"
@@ -459,4 +470,36 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 		r = append(r, w.Bytes())
 	})
 	return
+}
+
+// ProfileService.Pb.ReqSystemMsgNew.Group
+func (c *QQClient) buildSystemMsgNewGroupPacket() (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &structmsg.ReqSystemMsgNew{
+		MsgNum:    5,
+		Version:   100,
+		Checktype: 3,
+		Flag: &structmsg.FlagInfo{
+			GrpMsgKickAdmin:                   1,
+			GrpMsgHiddenGrp:                   1,
+			GrpMsgWordingDown:                 1,
+			GrpMsgGetOfficialAccount:          1,
+			GrpMsgGetPayInGroup:               1,
+			FrdMsgDiscuss2ManyChat:            1,
+			GrpMsgNotAllowJoinGrpInviteNotFrd: 1,
+			FrdMsgNeedWaitingMsg:              1,
+			FrdMsgUint32NeedAllUnreadMsg:      1,
+			GrpMsgNeedAutoAdminWording:        1,
+			GrpMsgGetTransferGroupMsgFlag:     1,
+			GrpMsgGetQuitPayGroupMsgFlag:      1,
+			GrpMsgSupportInviteAutoJoin:       1,
+			GrpMsgMaskInviteAutoJoin:          1,
+			GrpMsgGetDisbandedByAdmin:         1,
+			GrpMsgGetC2CInviteJoinGroup:       1,
+		},
+		FriendMsgTypeFlag: 1,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
 }

@@ -16,6 +16,8 @@ type eventHandlers struct {
 	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
 	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
 	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
+	groupInvitedHandlers        []func(*QQClient, *GroupInvitedEvent)
+	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -65,6 +67,14 @@ func (c *QQClient) OnGroupMemberPermissionChanged(f func(*QQClient, *MemberPermi
 
 func (c *QQClient) OnGroupMessageRecalled(f func(*QQClient, *GroupMessageRecalledEvent)) {
 	c.eventHandlers.groupRecalledHandlers = append(c.eventHandlers.groupRecalledHandlers, f)
+}
+
+func (c *QQClient) OnGroupInvited(f func(*QQClient, *GroupInvitedEvent)) {
+	c.eventHandlers.groupInvitedHandlers = append(c.eventHandlers.groupInvitedHandlers, f)
+}
+
+func (c *QQClient) OnUserWantJoinGroup(f func(*QQClient, *UserJoinGroupRequest)) {
+	c.eventHandlers.joinRequestHandlers = append(c.eventHandlers.joinRequestHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
@@ -196,6 +206,28 @@ func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent)
 		go f.(func(*QQClient, *groupMessageReceiptEvent))(c, e)
 		return true
 	})
+}
+
+func (c *QQClient) dispatchGroupInvitedEvent(e *GroupInvitedEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.groupInvitedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchJoinGroupRequest(r *UserJoinGroupRequest) {
+	if r == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.joinRequestHandlers {
+		cover(func() {
+			f(c, r)
+		})
+	}
 }
 
 func cover(f func()) {

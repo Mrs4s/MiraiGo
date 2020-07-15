@@ -104,6 +104,23 @@ type (
 		NewPermission MemberPermission
 	}
 
+	GroupInvitedEvent struct {
+		EventId     int64
+		InvitorUin  int64
+		InvitorNick string
+		GroupCode   int64
+		GroupName   string
+	}
+
+	UserJoinGroupRequest struct {
+		RequestId     int64
+		Message       string
+		RequesterUin  int64
+		RequesterNick string
+		GroupCode     int64
+		GroupName     string
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []*GroupMemberInfo
