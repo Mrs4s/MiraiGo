@@ -7,6 +7,7 @@ import (
 
 type eventHandlers struct {
 	privateMessageHandlers      []func(*QQClient, *message.PrivateMessage)
+	tempMessageHandlers         []func(*QQClient, *message.TempMessage)
 	groupMessageHandlers        []func(*QQClient, *message.GroupMessage)
 	groupMuteEventHandlers      []func(*QQClient, *GroupMuteEvent)
 	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
@@ -28,6 +29,10 @@ func (c *QQClient) OnPrivateMessageF(filter func(*message.PrivateMessage) bool, 
 			f(client, msg)
 		}
 	})
+}
+
+func (c *QQClient) OnTempMessage(f func(*QQClient, *message.TempMessage)) {
+	c.eventHandlers.tempMessageHandlers = append(c.eventHandlers.tempMessageHandlers, f)
 }
 
 func (c *QQClient) OnGroupMessage(f func(*QQClient, *message.GroupMessage)) {
@@ -81,6 +86,17 @@ func (c *QQClient) dispatchFriendMessage(msg *message.PrivateMessage) {
 		return
 	}
 	for _, f := range c.eventHandlers.privateMessageHandlers {
+		cover(func() {
+			f(c, msg)
+		})
+	}
+}
+
+func (c *QQClient) dispatchTempMessage(msg *message.TempMessage) {
+	if msg == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.tempMessageHandlers {
 		cover(func() {
 			f(c, msg)
 		})

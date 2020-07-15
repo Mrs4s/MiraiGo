@@ -130,6 +130,22 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 	}
 }
 
+func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
+	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GroupUin)
+	mem := group.FindMember(msg.Head.FromUin)
+	return &message.TempMessage{
+		Id:        msg.Head.MsgSeq,
+		GroupCode: group.Code,
+		GroupName: group.Name,
+		Sender: &message.Sender{
+			Uin:      mem.Uin,
+			Nickname: mem.Nickname,
+			CardName: mem.CardName,
+		},
+		Elements: parseMessageElems(msg.Body.RichText.Elems),
+	}
+}
+
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
 	if group == nil {

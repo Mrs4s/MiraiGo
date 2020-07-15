@@ -196,7 +196,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 			}
 			return 1
 		}(),
-		Uin:         int64(c.Uin),
+		Uin:         c.Uin,
 		StartIndex:  friendStartIndex,
 		FriendCount: friendListCount,
 		GroupId:     0,

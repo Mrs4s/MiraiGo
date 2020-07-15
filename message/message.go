@@ -12,6 +12,14 @@ type PrivateMessage struct {
 	Elements []IMessageElement
 }
 
+type TempMessage struct {
+	Id        int32
+	GroupCode int64
+	GroupName string
+	Sender    *Sender
+	Elements  []IMessageElement
+}
+
 type GroupMessage struct {
 	Id        int32
 	GroupCode int64
@@ -54,6 +62,22 @@ func NewSendingMessage() *SendingMessage {
 }
 
 func (msg *PrivateMessage) ToString() (res string) {
+	for _, elem := range msg.Elements {
+		switch e := elem.(type) {
+		case *TextElement:
+			res += e.Content
+		case *ImageElement:
+			res += "[Image:" + e.Filename + "]"
+		case *FaceElement:
+			res += "[" + e.Name + "]"
+		case *AtElement:
+			res += e.Display
+		}
+	}
+	return
+}
+
+func (msg *TempMessage) ToString() (res string) {
 	for _, elem := range msg.Elements {
 		switch e := elem.(type) {
 		case *TextElement:

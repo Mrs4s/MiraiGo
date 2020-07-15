@@ -54,6 +54,7 @@ type QQClient struct {
 	running          bool
 
 	lastMessageSeq         int32
+	lastMessageSeqTmp      sync.Map
 	onlinePushCache        []int16 // reset on reconnect
 	requestPacketRequestId int32
 	messageSeq             int32

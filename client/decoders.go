@@ -153,7 +153,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				continue
 			}
 			switch message.Head.MsgType {
-			case 33:
+			case 33: // 加群同步
 				groupJoinLock.Lock()
 				group := c.FindGroupByUin(message.Head.FromUin)
 				if message.Head.AuthUin == c.Uin {
@@ -181,7 +181,28 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					}
 				}
 				groupJoinLock.Unlock()
-			case 166:
+			case 141: // 临时会话
+				if message.Head.C2CTmpMsgHead == nil {
+					continue
+				}
+				group := c.FindGroupByUin(message.Head.C2CTmpMsgHead.GroupUin)
+				if group == nil {
+					continue
+				}
+				mem := group.FindMember(message.Head.FromUin)
+				if mem == nil || message.Head.FromUin == c.Uin {
+					continue
+				}
+				lastSeq, ok := c.lastMessageSeqTmp.Load(mem.Uin)
+				if !ok {
+					c.lastMessageSeqTmp.Store(mem.Uin, int32(-1))
+					lastSeq = int32(-1)
+				}
+				if message.Head.MsgSeq > lastSeq.(int32) {
+					c.lastMessageSeqTmp.Store(mem.Uin, message.Head.MsgSeq)
+					c.dispatchTempMessage(c.parseTempMessage(message))
+				}
+			case 166: // 好友消息
 				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
 					continue
 				}
