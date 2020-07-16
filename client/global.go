@@ -245,3 +245,9 @@ func (b *groupMessageBuilder) build() *msg.Message {
 	}
 	return base
 }
+
+func packRequestDataV3(data []byte) (r []byte) {
+	r = append([]byte{0x0A}, data...)
+	r = append(r, 0x0B)
+	return
+}

@@ -32,7 +32,7 @@ message FriendInfo {
   string msgBlacklist = 2;
 }
 
-message GroupInfo {
+message SGroupInfo {
   int32 groupAuthType = 1;
   int32 displayAction = 2;
   string msgAlert = 3;
@@ -182,7 +182,7 @@ message SystemMsg {
   int32 groupMsgType = 12;
   int32 groupInviterRole = 13;
   FriendInfo friendInfo = 14;
-  GroupInfo groupInfo = 15;
+  SGroupInfo groupInfo = 15;
   int64 actorUin = 16;
   string msgActorDescribe = 17;
   string msgAdditionalList = 18;

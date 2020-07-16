@@ -165,10 +165,8 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 	req.WriteInt32(t, 1)
 	req.WriteInt64(pktSeq, 2)
 	req.WriteBytes(jceBuf, 3)
-	b := append([]byte{0x0A}, req.Bytes()...)
-	b = append(b, 0x0B)
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"PushResp": b},
+		Map: map[string][]byte{"PushResp": packRequestDataV3(req.Bytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -223,10 +221,8 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		D6B:             []byte{},
 		SnsTypeList:     []int64{13580, 13581, 13582},
 	}
-	b := append([]byte{0x0A}, req.ToBytes()...)
-	b = append(b, 0x0B)
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"FL": b},
+		Map: map[string][]byte{"FL": packRequestDataV3(req.ToBytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
