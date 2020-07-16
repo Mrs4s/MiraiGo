@@ -344,6 +344,11 @@ func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	return nil
 }
 
+func (c *QQClient) SolveGroupJoinRequest(req *UserJoinGroupRequest, accept bool) {
+	_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, false, accept, false)
+	_ = c.send(pkt)
+}
+
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	for _, m := range g.Members {
 		f := m

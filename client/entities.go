@@ -119,6 +119,8 @@ type (
 		RequesterNick string
 		GroupCode     int64
 		GroupName     string
+
+		client *QQClient
 	}
 
 	NewFriendRequest struct {
@@ -166,4 +168,12 @@ func (m *GroupMemberInfo) DisplayName() string {
 		return m.Nickname
 	}
 	return m.CardName
+}
+
+func (r *UserJoinGroupRequest) Accept() {
+	r.client.SolveGroupJoinRequest(r, true)
+}
+
+func (r *UserJoinGroupRequest) Reject() {
+	r.client.SolveGroupJoinRequest(r, false)
 }

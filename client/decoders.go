@@ -543,6 +543,7 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					RequesterNick: st.Msg.ReqUinNick,
 					GroupCode:     st.Msg.GroupCode,
 					GroupName:     st.Msg.GroupName,
+					client:        c,
 				})
 			case 1: // 被邀请
 				c.dispatchGroupInvitedEvent(&GroupInvitedEvent{
