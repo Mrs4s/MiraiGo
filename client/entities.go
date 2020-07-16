@@ -130,6 +130,8 @@ type (
 		Message       string
 		RequesterUin  int64
 		RequesterNick string
+
+		client *QQClient
 	}
 
 	groupMemberListResponse struct {
@@ -186,4 +188,12 @@ func (r *GroupInvitedRequest) Accept() {
 
 func (r *GroupInvitedRequest) Reject() {
 	r.client.SolveGroupJoinRequest(r, false)
+}
+
+func (r *NewFriendRequest) Accept() {
+	r.client.SolveFriendRequest(r, true)
+}
+
+func (r *NewFriendRequest) Reject() {
+	r.client.SolveFriendRequest(r, false)
 }

@@ -229,7 +229,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	return nil, err
 }
 
-func decodeGroupMessagePacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
+func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -594,6 +594,7 @@ func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interfa
 			Message:       st.Msg.MsgAdditional,
 			RequesterUin:  st.ReqUin,
 			RequesterNick: st.Msg.ReqUinNick,
+			client:        c,
 		})
 	}
 	return nil, nil

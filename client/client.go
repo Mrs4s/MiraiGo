@@ -356,6 +356,11 @@ func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept bool) {
 	}
 }
 
+func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
+	_, pkt := c.buildSystemMsgFriendActionPacket(req.RequestId, req.RequesterUin, accept)
+	_ = c.send(pkt)
+}
+
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	for _, m := range g.Members {
 		f := m
