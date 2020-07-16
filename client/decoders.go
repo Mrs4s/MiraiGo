@@ -242,7 +242,7 @@ func decodeGroupMessagePacket(c *QQClient, seq uint16, payload []byte) (interfac
 		})
 		return nil, nil
 	}
-	if pkt.Message.Content.PkgNum > 1 {
+	if pkt.Message.Content != nil && pkt.Message.Content.PkgNum > 1 {
 		var builder *groupMessageBuilder
 		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
 		if !ok {
