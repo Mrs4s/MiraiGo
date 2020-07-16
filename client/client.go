@@ -344,9 +344,15 @@ func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	return nil
 }
 
-func (c *QQClient) SolveGroupJoinRequest(req *UserJoinGroupRequest, accept bool) {
-	_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, false, accept, false)
-	_ = c.send(pkt)
+func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept bool) {
+	switch req := i.(type) {
+	case *UserJoinGroupRequest:
+		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, false, accept, false)
+		_ = c.send(pkt)
+	case *GroupInvitedRequest:
+		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, true, accept, false)
+		_ = c.send(pkt)
+	}
 }
 
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
@@ -359,7 +365,7 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	return nil
 }
 
-func (g *GroupInfo) RemoveMember(uin int64) {
+func (g *GroupInfo) removeMember(uin int64) {
 	if g.memLock == nil {
 		g.memLock = new(sync.Mutex)
 	}

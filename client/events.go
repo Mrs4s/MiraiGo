@@ -16,7 +16,7 @@ type eventHandlers struct {
 	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
 	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
 	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
-	groupInvitedHandlers        []func(*QQClient, *GroupInvitedEvent)
+	groupInvitedHandlers        []func(*QQClient, *GroupInvitedRequest)
 	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
 	friendRequestHandlers       []func(*QQClient, *NewFriendRequest)
 	groupMessageReceiptHandlers sync.Map
@@ -70,7 +70,7 @@ func (c *QQClient) OnGroupMessageRecalled(f func(*QQClient, *GroupMessageRecalle
 	c.eventHandlers.groupRecalledHandlers = append(c.eventHandlers.groupRecalledHandlers, f)
 }
 
-func (c *QQClient) OnGroupInvited(f func(*QQClient, *GroupInvitedEvent)) {
+func (c *QQClient) OnGroupInvited(f func(*QQClient, *GroupInvitedRequest)) {
 	c.eventHandlers.groupInvitedHandlers = append(c.eventHandlers.groupInvitedHandlers, f)
 }
 
@@ -213,7 +213,7 @@ func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent)
 	})
 }
 
-func (c *QQClient) dispatchGroupInvitedEvent(e *GroupInvitedEvent) {
+func (c *QQClient) dispatchGroupInvitedEvent(e *GroupInvitedRequest) {
 	if e == nil {
 		return
 	}

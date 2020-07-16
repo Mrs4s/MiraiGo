@@ -104,12 +104,14 @@ type (
 		NewPermission MemberPermission
 	}
 
-	GroupInvitedEvent struct {
-		EventId     int64
+	GroupInvitedRequest struct {
+		RequestId   int64
 		InvitorUin  int64
 		InvitorNick string
 		GroupCode   int64
 		GroupName   string
+
+		client *QQClient
 	}
 
 	UserJoinGroupRequest struct {
@@ -175,5 +177,13 @@ func (r *UserJoinGroupRequest) Accept() {
 }
 
 func (r *UserJoinGroupRequest) Reject() {
+	r.client.SolveGroupJoinRequest(r, false)
+}
+
+func (r *GroupInvitedRequest) Accept() {
+	r.client.SolveGroupJoinRequest(r, true)
+}
+
+func (r *GroupInvitedRequest) Reject() {
 	r.client.SolveGroupJoinRequest(r, false)
 }

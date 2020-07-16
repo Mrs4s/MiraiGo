@@ -470,7 +470,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 				})
 			case 0x82:
 				if m := g.FindMember(target); m != nil {
-					g.RemoveMember(m.Uin)
+					g.removeMember(m.Uin)
 					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
 						Group:  g,
 						Member: m,
@@ -478,7 +478,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 				}
 			case 0x83:
 				if m := g.FindMember(target); m != nil {
-					g.RemoveMember(m.Uin)
+					g.removeMember(m.Uin)
 					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
 						Group:    g,
 						Member:   m,
@@ -546,12 +546,13 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					client:        c,
 				})
 			case 1: // 被邀请
-				c.dispatchGroupInvitedEvent(&GroupInvitedEvent{
-					EventId:     st.MsgSeq,
+				c.dispatchGroupInvitedEvent(&GroupInvitedRequest{
+					RequestId:   st.MsgSeq,
 					InvitorUin:  st.Msg.ActionUin,
 					InvitorNick: st.Msg.ActionUinNick,
 					GroupCode:   st.Msg.GroupCode,
 					GroupName:   st.Msg.GroupName,
+					client:      c,
 				})
 			}
 		}
