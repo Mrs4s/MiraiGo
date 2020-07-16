@@ -229,7 +229,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	return nil, err
 }
 
-func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupMessagePacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -240,6 +240,25 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 			Rand: pkt.Message.Body.RichText.Attr.Random,
 			Seq:  pkt.Message.Head.MsgSeq,
 		})
+		return nil, nil
+	}
+	if pkt.Message.Content.PkgNum > 1 {
+		var builder *groupMessageBuilder
+		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
+		if !ok {
+			builder = &groupMessageBuilder{
+				MessageSeq:   pkt.Message.Content.DivSeq,
+				MessageCount: pkt.Message.Content.PkgNum,
+			}
+			c.groupMsgBuilders.Store(pkt.Message.Content.DivSeq, builder)
+		} else {
+			builder = i.(*groupMessageBuilder)
+		}
+		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
+		if int32(len(builder.MessageSlices)) >= builder.MessageCount {
+			c.groupMsgBuilders.Delete(pkt.Message.Content.DivSeq)
+			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
+		}
 		return nil, nil
 	}
 	c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message))

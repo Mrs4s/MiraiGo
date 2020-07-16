@@ -109,6 +109,7 @@ message UinPairMessage {
 
 message Message {
     MessageHead head = 1;
+    ContentHead content = 2;
     MessageBody body = 3;   
 }
 

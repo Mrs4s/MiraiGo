@@ -8,6 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"google.golang.org/protobuf/proto"
 	"math/rand"
+	"sort"
 )
 
 type DeviceInfo struct {
@@ -42,6 +43,12 @@ type Version struct {
 	Release     []byte
 	CodeName    []byte
 	Sdk         uint32
+}
+
+type groupMessageBuilder struct {
+	MessageSeq    int32
+	MessageCount  int32
+	MessageSlices []*msg.Message
 }
 
 var SystemDeviceInfo = &DeviceInfo{
@@ -226,4 +233,15 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 		}
 	}
 	return res
+}
+
+func (b *groupMessageBuilder) build() *msg.Message {
+	sort.Slice(b.MessageSlices, func(i, j int) bool {
+		return b.MessageSlices[i].Content.PkgIndex < b.MessageSlices[i].Content.PkgIndex
+	})
+	base := b.MessageSlices[0]
+	for _, m := range b.MessageSlices[1:] {
+		base.Body.RichText.Elems = append(base.Body.RichText.Elems, m.Body.RichText.Elems...)
+	}
+	return base
 }

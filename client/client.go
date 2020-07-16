@@ -54,6 +54,7 @@ type QQClient struct {
 
 	lastMessageSeq         int32
 	lastMessageSeqTmp      sync.Map
+	groupMsgBuilders       sync.Map
 	onlinePushCache        []int16 // reset on reconnect
 	requestPacketRequestId int32
 	messageSeq             int32
