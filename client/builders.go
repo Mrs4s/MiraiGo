@@ -395,7 +395,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.
 }
 
 // ImgStore.GroupPicUp
-func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 [16]byte, size int32) (uint16, []byte) {
+func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size int32) (uint16, []byte) {
 	seq := c.nextSeq()
 	name := utils.RandomString(16) + ".gif"
 	req := &pb.D388ReqBody{
@@ -405,7 +405,7 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 [16]byte, siz
 			{
 				GroupCode:    groupCode,
 				SrcUin:       c.Uin,
-				FileMd5:      md5[:],
+				FileMd5:      md5,
 				FileSize:     int64(size),
 				FileName:     name,
 				SrcTerm:      5,

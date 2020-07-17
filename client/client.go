@@ -214,9 +214,9 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 	return mid
 }
 
-func (c *QQClient) UploadGroupImage(groupUin int64, img []byte) (*message.GroupImageElement, error) {
+func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {
 	h := md5.Sum(img)
-	seq, pkt := c.buildGroupImageStorePacket(utils.ToGroupCode(groupUin), h, int32(len(img)))
+	seq, pkt := c.buildGroupImageStorePacket(groupCode, h[:], int32(len(img)))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
@@ -264,6 +264,21 @@ func (c *QQClient) UploadGroupImage(groupUin int64, img []byte) (*message.GroupI
 		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
 	}
 	return nil, errors.New("upload failed")
+}
+
+func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
+	r, err := c.sendAndWait(c.buildGroupImageStorePacket(groupCode, hash, size))
+	if err != nil {
+		return nil, err
+	}
+	rsp := r.(groupImageUploadResponse)
+	if rsp.ResultCode != 0 {
+		return nil, errors.New(rsp.Message)
+	}
+	if rsp.IsExists {
+		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash), nil
+	}
+	return nil, errors.New("image not exists")
 }
 
 func (c *QQClient) ReloadGroupList() error {
