@@ -20,9 +20,15 @@ func ZlibUncompress(src []byte) []byte {
 
 func CalculateImageResourceId(md5 []byte) string {
 	return strings.ToUpper(fmt.Sprintf(
-		"{%s-%s-%s-%s-%s}.png",
-		hex.EncodeToString(md5[0:4]), hex.EncodeToString(md5[4:6]), hex.EncodeToString(md5[6:8]),
-		hex.EncodeToString(md5[8:10]), hex.EncodeToString(md5[10:]),
+		"{%s}.png", GenUUID(md5),
+	))
+}
+
+func GenUUID(h []byte) string {
+	return strings.ToUpper(fmt.Sprintf(
+		"%s-%s-%s-%s-%s",
+		hex.EncodeToString(h[0:4]), hex.EncodeToString(h[4:6]), hex.EncodeToString(h[6:8]),
+		hex.EncodeToString(h[8:10]), hex.EncodeToString(h[10:]),
 	))
 }
 

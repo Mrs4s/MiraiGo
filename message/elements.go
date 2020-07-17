@@ -41,12 +41,6 @@ func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
 }
 
-func NewImage(data []byte) *ImageElement {
-	return &ImageElement{
-		Data: data,
-	}
-}
-
 func NewGroupImage(id string, md5 []byte) *GroupImageElement {
 	return &GroupImageElement{
 		ImageId: id,

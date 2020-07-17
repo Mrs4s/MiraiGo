@@ -2,10 +2,12 @@ package client
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"github.com/Mrs4s/MiraiGo/binary"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
 	"math/rand"
 	"sort"
@@ -45,12 +47,21 @@ type Version struct {
 	Sdk         uint32
 }
 
+type DeviceInfoFile struct {
+	Display     string `json:"display"`
+	FingerPrint string `json:"finger_print"`
+	BootId      string `json:"boot_id"`
+	ProcVersion string `json:"proc_version"`
+	IMEI        string `json:"imei"`
+}
+
 type groupMessageBuilder struct {
 	MessageSeq    int32
 	MessageCount  int32
 	MessageSlices []*msg.Message
 }
 
+// default
 var SystemDeviceInfo = &DeviceInfo{
 	Display:     []byte("MIRAI.123456.001"),
 	Product:     []byte("mirai"),
@@ -81,6 +92,7 @@ var SystemDeviceInfo = &DeviceInfo{
 }
 
 var EmptyBytes = []byte{}
+var NumberRange = "0123456789"
 
 func init() {
 	r := make([]byte, 16)
@@ -89,6 +101,50 @@ func init() {
 	SystemDeviceInfo.IMSIMd5 = t[:]
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
+}
+
+func GenRandomDevice() {
+	r := make([]byte, 16)
+	rand.Read(r)
+	SystemDeviceInfo.Display = []byte("MIRAI." + utils.RandomStringRange(6, NumberRange) + ".001")
+	SystemDeviceInfo.FingerPrint = []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, NumberRange) + ":user/release-keys")
+	SystemDeviceInfo.BootId = []byte(binary.GenUUID(r))
+	SystemDeviceInfo.ProcVersion = []byte("Linux version 3.0.31-" + utils.RandomString(8) + " (android-build@xxx.xxx.xxx.xxx.com)")
+	rand.Read(r)
+	t := md5.Sum(r)
+	SystemDeviceInfo.IMSIMd5 = t[:]
+	SystemDeviceInfo.IMEI = utils.RandomStringRange(15, NumberRange)
+	SystemDeviceInfo.AndroidId = SystemDeviceInfo.Display
+	SystemDeviceInfo.GenNewGuid()
+	SystemDeviceInfo.GenNewTgtgtKey()
+}
+
+func (info *DeviceInfo) ToJson() []byte {
+	f := &DeviceInfoFile{
+		Display:     string(info.Display),
+		FingerPrint: string(info.FingerPrint),
+		BootId:      string(info.BootId),
+		ProcVersion: string(info.ProcVersion),
+		IMEI:        info.IMEI,
+	}
+	d, _ := json.Marshal(f)
+	return d
+}
+
+func (info *DeviceInfo) ReadJson(d []byte) error {
+	var f DeviceInfoFile
+	if err := json.Unmarshal(d, &f); err != nil {
+		return err
+	}
+	info.Display = []byte(f.Display)
+	info.FingerPrint = []byte(f.FingerPrint)
+	info.BootId = []byte(f.BootId)
+	info.ProcVersion = []byte(f.ProcVersion)
+	info.IMEI = f.IMEI
+	info.AndroidId = SystemDeviceInfo.Display
+	SystemDeviceInfo.GenNewGuid()
+	SystemDeviceInfo.GenNewTgtgtKey()
+	return nil
 }
 
 func (info *DeviceInfo) GenNewGuid() {
