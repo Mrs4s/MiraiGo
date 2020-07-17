@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"math/rand"
 	"sort"
+	"strings"
 )
 
 type DeviceInfo struct {
@@ -287,8 +288,13 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 		if elem.CustomFace != nil {
 			res = append(res, &message.ImageElement{
 				Filename: elem.CustomFace.FilePath,
-				Url:      "http://gchat.qpic.cn" + elem.CustomFace.OrigUrl,
-				Md5:      elem.CustomFace.Md5,
+				Url: func() string {
+					if elem.CustomFace.OrigUrl == "" {
+						return "http://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
+					}
+					return "http://gchat.qpic.cn" + elem.CustomFace.OrigUrl
+				}(),
+				Md5: elem.CustomFace.Md5,
 			})
 		}
 		if elem.NotOnlineImage != nil {
