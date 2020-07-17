@@ -11,6 +11,7 @@ type TextElement struct {
 
 type ImageElement struct {
 	Filename string
+	Size     int32
 	Url      string
 	Md5      []byte
 	Data     []byte

@@ -288,6 +288,7 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 		if elem.CustomFace != nil {
 			res = append(res, &message.ImageElement{
 				Filename: elem.CustomFace.FilePath,
+				Size:     elem.CustomFace.Size,
 				Url: func() string {
 					if elem.CustomFace.OrigUrl == "" {
 						return "http://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
@@ -306,6 +307,7 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 			}
 			res = append(res, &message.ImageElement{
 				Filename: elem.NotOnlineImage.FilePath,
+				Size:     elem.NotOnlineImage.FileLen,
 				Url:      img,
 				Md5:      elem.NotOnlineImage.PicMd5,
 			})
