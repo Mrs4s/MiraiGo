@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
+	"strconv"
 )
 
 var ErrUnknownFlag = errors.New("unknown flag")
@@ -122,7 +123,10 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 		return nil, errors.New("dropped")
 	}
 	seqId := reader.ReadInt32()
-	reader.ReadInt32()                            // return code
+	retCode := reader.ReadInt32()
+	if retCode != 0 {
+		return nil, errors.New("return code unsuccessful: " + strconv.FormatInt(int64(retCode), 10))
+	}
 	reader.ReadBytes(int(reader.ReadInt32()) - 4) // extra data
 	commandName := reader.ReadString()
 	sessionId := reader.ReadBytes(int(reader.ReadInt32()) - 4)

@@ -12,6 +12,7 @@ type TextElement struct {
 type ImageElement struct {
 	Filename string
 	Url      string
+	Md5      []byte
 	Data     []byte
 }
 
@@ -38,13 +39,6 @@ type ReplyElement struct {
 
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
-}
-
-func NewNetImage(filename, url string) *ImageElement {
-	return &ImageElement{
-		Filename: filename,
-		Url:      url,
-	}
 }
 
 func NewImage(data []byte) *ImageElement {

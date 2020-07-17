@@ -109,6 +109,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
+			//"MultiMsg.ApplyDown":                       decodeMultiMsgDownPacket,
 		},
 		handlers:               map[uint16]func(interface{}, error){},
 		sigInfo:                &loginSigInfo{},

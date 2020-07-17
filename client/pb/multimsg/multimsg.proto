@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option go_package = ".;multimsg";
+
+message ExternMsg {
+  int32 channelType = 1;
+}
+message MultiMsgApplyDownReq {
+  bytes msgResid = 1;
+  int32 msgType = 2;
+  int64 srcUin = 3;
+}
+message MultiMsgApplyDownRsp {
+  int32 result = 1;
+  bytes thumbDownPara = 2;
+  bytes msgKey = 3;
+  repeated int32 uint32DownIp = 4;
+  repeated int32 uint32DownPort = 5;
+  bytes msgResid = 6;
+  ExternMsg msgExternInfo = 7;
+  repeated bytes bytesDownIpV6 = 8;
+  repeated int32 uint32DownV6Port = 9;
+}
+message MultiMsgApplyUpReq {
+  int64 dstUin = 1;
+  int64 msgSize = 2;
+  bytes msgMd5 = 3;
+  int32 msgType = 4;
+  int32 applyId = 5;
+}
+message MultiMsgApplyUpRsp {
+  int32 result = 1;
+  string msgResid = 2;
+  bytes msgUkey = 3;
+  repeated int32 uint32UpIp = 4;
+  repeated int32 uint32UpPort = 5;
+  int64 blockSize = 6;
+  int64 upOffset = 7;
+  int32 applyId = 8;
+  bytes msgKey = 9;
+  bytes msgSig = 10;
+  ExternMsg msgExternInfo = 11;
+  repeated bytes bytesUpIpV6 = 12;
+  repeated int32 uint32UpV6Port = 13;
+}
+message ReqBody {
+  int32 subcmd = 1;
+  int32 termType = 2;
+  int32 platformType = 3;
+  int32 netType = 4;
+  string buildVer = 5;
+  repeated MultiMsgApplyUpReq multimsgApplyupReq = 6;
+  repeated MultiMsgApplyDownReq multimsgApplydownReq = 7;
+  int32 buType = 8;
+  int32 reqChannelType = 9;
+}
+message RspBody {
+  int32 subcmd = 1;
+  repeated MultiMsgApplyUpRsp multimsgApplyupRsp = 2;
+  repeated MultiMsgApplyDownRsp multimsgApplydownRsp = 3;
+}
+    

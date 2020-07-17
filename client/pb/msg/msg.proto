@@ -3,548 +3,556 @@ syntax = "proto3";
 option go_package = ".;msg";
 
 message GetMessageRequest {
-    SyncFlag syncFlag = 1;
-    bytes syncCookie = 2;
-    int32 rambleFlag = 3;
-    int32 latestRambleNumber = 4;
-    int32 otherRambleNumber = 5;
-    int32 onlineSyncFlag = 6;
-    int32 contextFlag = 7;
-    int32 whisperSessionId = 8;
-    int32 msgReqType = 9;
-    bytes pubaccountCookie = 10;
-    bytes msgCtrlBuf = 11;
-    bytes serverBuf = 12;
+  SyncFlag syncFlag = 1;
+  bytes syncCookie = 2;
+  int32 rambleFlag = 3;
+  int32 latestRambleNumber = 4;
+  int32 otherRambleNumber = 5;
+  int32 onlineSyncFlag = 6;
+  int32 contextFlag = 7;
+  int32 whisperSessionId = 8;
+  int32 msgReqType = 9;
+  bytes pubaccountCookie = 10;
+  bytes msgCtrlBuf = 11;
+  bytes serverBuf = 12;
 }
 
 message SendMessageRequest {
-    RoutingHead routingHead = 1;
-    ContentHead contentHead = 2;
-    MessageBody msgBody = 3;
-    int32 msgSeq = 4;
-    int32 msgRand = 5;
-    bytes syncCookie = 6;
-    //MsgComm.AppShareInfo? appShare = 7;
-    int32 msgVia = 8;
-    int32 dataStatist = 9;
-    //MultiMsgAssist? multiMsgAssist = 10;
-    //PbInputNotifyInfo? inputNotifyInfo = 11;
-    MsgCtrl msgCtrl = 12;
-    //ImReceipt.ReceiptReq? receiptReq = 13;
-    int32 multiSendSeq = 14;
-   
+  RoutingHead routingHead = 1;
+  ContentHead contentHead = 2;
+  MessageBody msgBody = 3;
+  int32 msgSeq = 4;
+  int32 msgRand = 5;
+  bytes syncCookie = 6;
+  //MsgComm.AppShareInfo? appShare = 7;
+  int32 msgVia = 8;
+  int32 dataStatist = 9;
+  //MultiMsgAssist? multiMsgAssist = 10;
+  //PbInputNotifyInfo? inputNotifyInfo = 11;
+  MsgCtrl msgCtrl = 12;
+  //ImReceipt.ReceiptReq? receiptReq = 13;
+  int32 multiSendSeq = 14;
+
 }
 
 message RoutingHead {
-    C2C c2c = 1;
-    Grp grp = 2;
-    GrpTmp grpTmp = 3;
-    /*
-    Dis dis = 4;
-    DisTmp disTmp = 5;
-    WPATmp? wpaTmp = 6;
-    SecretFileHead? secretFile = 7;
-    PublicPlat? publicPlat = 8;
-    TransMsg? transMsg = 9;
-    AddressListTmp? addressList = 10;
-    RichStatusTmp? richStatusTmp = 11;
-    TransCmd? transCmd = 12;
-    AccostTmp? accostTmp = 13;
-    PubGroupTmp? pubGroupTmp = 14;
-    Trans0x211? trans0x211 = 15;
-    BusinessWPATmp? businessWpaTmp = 16;
-    AuthTmp? authTmp = 17;
-    BsnsTmp? bsnsTmp = 18;
-    QQQueryBusinessTmp? qqQuerybusinessTmp = 19;
-    NearByDatingTmp? nearbyDatingTmp = 20;
-    NearByAssistantTmp? nearbyAssistantTmp = 21;
-    CommTmp? commTmp = 22;   
-    */
+  C2C c2c = 1;
+  Grp grp = 2;
+  GrpTmp grpTmp = 3;
+  /*
+  Dis dis = 4;
+  DisTmp disTmp = 5;
+  WPATmp? wpaTmp = 6;
+  SecretFileHead? secretFile = 7;
+  PublicPlat? publicPlat = 8;
+  TransMsg? transMsg = 9;
+  AddressListTmp? addressList = 10;
+  RichStatusTmp? richStatusTmp = 11;
+  TransCmd? transCmd = 12;
+  AccostTmp? accostTmp = 13;
+  PubGroupTmp? pubGroupTmp = 14;
+  Trans0x211? trans0x211 = 15;
+  BusinessWPATmp? businessWpaTmp = 16;
+  AuthTmp? authTmp = 17;
+  BsnsTmp? bsnsTmp = 18;
+  QQQueryBusinessTmp? qqQuerybusinessTmp = 19;
+  NearByDatingTmp? nearbyDatingTmp = 20;
+  NearByAssistantTmp? nearbyAssistantTmp = 21;
+  CommTmp? commTmp = 22;
+  */
 }
 
 message C2C {
-    int64 toUin = 1;
+  int64 toUin = 1;
 }
 
 message Grp {
-    int64 groupCode = 1;
+  int64 groupCode = 1;
 }
 
 message GrpTmp {
-    int64 groupUin = 1;
-    int64 toUin = 2;
+  int64 groupUin = 1;
+  int64 toUin = 2;
 }
 
 message MsgCtrl {
-    int32 msgFlag = 1;
+  int32 msgFlag = 1;
 }
 
 message GetMessageResponse {
-    int32 result = 1;
-    string errorMessage = 2;
-    bytes syncCookie = 3;
-    SyncFlag syncFlag = 4;
-    repeated UinPairMessage uinPairMsgs = 5;
-    int64 bindUin = 6;
-    int32 msgRspType = 7;
-    bytes pubAccountCookie = 8;
-    bool isPartialSync = 9;
-    bytes msgCtrlBuf = 10;
+  int32 result = 1;
+  string errorMessage = 2;
+  bytes syncCookie = 3;
+  SyncFlag syncFlag = 4;
+  repeated UinPairMessage uinPairMsgs = 5;
+  int64 bindUin = 6;
+  int32 msgRspType = 7;
+  bytes pubAccountCookie = 8;
+  bool isPartialSync = 9;
+  bytes msgCtrlBuf = 10;
 }
 
 message PushMessagePacket {
-    Message message = 1;
-    int32 svrip = 2;
-    bytes pushToken = 3;
-    int32 pingFLag = 4;
-    int32 generalFlag = 9;
+  Message message = 1;
+  int32 svrip = 2;
+  bytes pushToken = 3;
+  int32 pingFLag = 4;
+  int32 generalFlag = 9;
 }
 
 message UinPairMessage {
-    int32 lastReadTime = 1;
-    int64 peerUin = 2;
-    int32 msgCompleted = 3;
-    repeated Message messages = 4;
+  int32 lastReadTime = 1;
+  int64 peerUin = 2;
+  int32 msgCompleted = 3;
+  repeated Message messages = 4;
 }
 
 message Message {
-    MessageHead head = 1;
-    ContentHead content = 2;
-    MessageBody body = 3;   
+  MessageHead head = 1;
+  ContentHead content = 2;
+  MessageBody body = 3;
 }
 
 message MessageBody {
-    RichText richText = 1;
-    bytes msgContent = 2;
-    bytes msgEncryptContent = 3;   
+  RichText richText = 1;
+  bytes msgContent = 2;
+  bytes msgEncryptContent = 3;
 }
 
 message RichText {
-    Attr attr = 1;
-    repeated Elem elems = 2;
-    NotOnlineFile notOnlineFile = 3;
-    Ptt ptt = 4;
+  Attr attr = 1;
+  repeated Elem elems = 2;
+  NotOnlineFile notOnlineFile = 3;
+  Ptt ptt = 4;
 }
 
 message Elem {
-    Text text = 1;
-    Face face = 2;
-    OnlineImage onlineImage = 3;
-    NotOnlineImage notOnlineImage = 4;
-    //TransElem transElemInfo = 5;
-    //MarketFace marketFace = 6;
-    //ElemFlags elemFlags = 7;
-    CustomFace customFace = 8;
-    //ElemFlags2 elemFlags2 = 9;
-    //FunFace funFace = 10;
-    //SecretFileMsg secretFile = 11;
-    //RichMsg richMsg = 12;
-    GroupFile groupFile = 13;
-    //PubGroup pubGroup = 14;
-    //MarketTrans marketTrans = 15;
-    ExtraInfo extraInfo = 16;
-    //ShakeWindow? shakeWindow = 17;
-    //PubAccount? pubAccount = 18;
-    VideoFile videoFile = 19;
-    //TipsInfo? tipsInfo = 20;
-    AnonymousGroupMessage anonGroupMsg = 21;
-    //QQLiveOld? qqLiveOld = 22;
-    //LifeOnlineAccount? lifeOnline = 23;
-    //QQWalletMsg? qqwalletMsg = 24;
-    //CrmElem? crmElem = 25;
-    //ConferenceTipsInfo? conferenceTipsInfo = 26;
-    //RedBagInfo? redbagInfo = 27;
-    //LowVersionTips? lowVersionTips = 28;
-    //bytes bankcodeCtrlInfo = 29;
-    //NearByMessageType? nearByMsg = 30;
-    CustomElem customElem = 31;
-    //LocationInfo? locationInfo = 32;
-    //PubAccInfo? pubAccInfo = 33;
-    //SmallEmoji? smallEmoji = 34;
-    //FSJMessageElem? fsjMsgElem = 35;
-    //ArkAppElem? arkApp = 36;
-    //GeneralFlags? generalFlags = 37;
-    //CustomFace? hcFlashPic = 38;
-    //DeliverGiftMsg? deliverGiftMsg = 39;
-    //BitAppMsg? bitappMsg = 40;
-    //OpenQQData? openQqData = 41;
-    //ApolloActMsg? apolloMsg = 42;
-    //GroupPubAccountInfo? groupPubAccInfo = 43;
-    //BlessingMessage? blessMsg = 44;
-    SourceMsg srcMsg = 45;
-    //LolaMsg? lolaMsg = 46;
-    //GroupBusinessMsg? groupBusinessMsg = 47;
-    //WorkflowNotifyMsg? msgWorkflowNotify = 48;
-    //PatsElem? patElem = 49;
-    //GroupPostElem? groupPostElem = 50;
-    //LightAppElem? lightApp = 51;
-    //EIMInfo? eimInfo = 52;
-    //CommonElem? commonElem = 53;  
+  Text text = 1;
+  Face face = 2;
+  OnlineImage onlineImage = 3;
+  NotOnlineImage notOnlineImage = 4;
+  //TransElem transElemInfo = 5;
+  //MarketFace marketFace = 6;
+  //ElemFlags elemFlags = 7;
+  CustomFace customFace = 8;
+  //ElemFlags2 elemFlags2 = 9;
+  //FunFace funFace = 10;
+  //SecretFileMsg secretFile = 11;
+  RichMsg richMsg = 12;
+  GroupFile groupFile = 13;
+  //PubGroup pubGroup = 14;
+  //MarketTrans marketTrans = 15;
+  ExtraInfo extraInfo = 16;
+  //ShakeWindow? shakeWindow = 17;
+  //PubAccount? pubAccount = 18;
+  VideoFile videoFile = 19;
+  //TipsInfo? tipsInfo = 20;
+  AnonymousGroupMessage anonGroupMsg = 21;
+  //QQLiveOld? qqLiveOld = 22;
+  //LifeOnlineAccount? lifeOnline = 23;
+  //QQWalletMsg? qqwalletMsg = 24;
+  //CrmElem? crmElem = 25;
+  //ConferenceTipsInfo? conferenceTipsInfo = 26;
+  //RedBagInfo? redbagInfo = 27;
+  //LowVersionTips? lowVersionTips = 28;
+  //bytes bankcodeCtrlInfo = 29;
+  //NearByMessageType? nearByMsg = 30;
+  CustomElem customElem = 31;
+  //LocationInfo? locationInfo = 32;
+  //PubAccInfo? pubAccInfo = 33;
+  //SmallEmoji? smallEmoji = 34;
+  //FSJMessageElem? fsjMsgElem = 35;
+  //ArkAppElem? arkApp = 36;
+  //GeneralFlags? generalFlags = 37;
+  //CustomFace? hcFlashPic = 38;
+  //DeliverGiftMsg? deliverGiftMsg = 39;
+  //BitAppMsg? bitappMsg = 40;
+  //OpenQQData? openQqData = 41;
+  //ApolloActMsg? apolloMsg = 42;
+  //GroupPubAccountInfo? groupPubAccInfo = 43;
+  //BlessingMessage? blessMsg = 44;
+  SourceMsg srcMsg = 45;
+  //LolaMsg? lolaMsg = 46;
+  //GroupBusinessMsg? groupBusinessMsg = 47;
+  //WorkflowNotifyMsg? msgWorkflowNotify = 48;
+  //PatsElem? patElem = 49;
+  //GroupPostElem? groupPostElem = 50;
+  //LightAppElem? lightApp = 51;
+  //EIMInfo? eimInfo = 52;
+  //CommonElem? commonElem = 53;
+}
+
+message RichMsg {
+  bytes template1 = 1;
+  int32 serviceId = 2;
+  bytes msgResId = 3;
+  int32 rand = 4;
+  int32 seq = 5;
 }
 
 message CustomElem {
-    bytes desc = 1;
-    bytes data = 2;
-    int32  enumType = 3;
-    bytes ext = 4;
-    bytes sound = 5;   
+  bytes desc = 1;
+  bytes data = 2;
+  int32  enumType = 3;
+  bytes ext = 4;
+  bytes sound = 5;
 }
 
 message Text {
-    string str = 1;
-    string link = 2;
-    bytes attr6Buf = 3;
-    bytes attr7Buf = 4;
-    bytes buf = 11;
-    bytes pbReserve = 12;   
+  string str = 1;
+  string link = 2;
+  bytes attr6Buf = 3;
+  bytes attr7Buf = 4;
+  bytes buf = 11;
+  bytes pbReserve = 12;
 }
 
 message Attr {
-    int32 codePage = 1;
-    int32 time = 2;
-    int32 random = 3;
-    int32 color = 4;
-    int32 size = 5;
-    int32 effect = 6;
-    int32 charSet = 7;
-    int32 pitchAndFamily = 8;
-    string fontName = 9;
-    bytes reserveData = 10;   
+  int32 codePage = 1;
+  int32 time = 2;
+  int32 random = 3;
+  int32 color = 4;
+  int32 size = 5;
+  int32 effect = 6;
+  int32 charSet = 7;
+  int32 pitchAndFamily = 8;
+  string fontName = 9;
+  bytes reserveData = 10;
 }
 
 message Ptt {
-    int32 fileType = 1;
-    int64 srcUin = 2;
-    bytes fileUuid = 3;
-    bytes fileMd5 = 4;
-    bytes fileName = 5;
-    int32 fileSize = 6;
-    bytes reserve = 7;
-    int32 fileId = 8;
-    int32 serverIp = 9;
-    int32 serverPort = 10;
-    bool boolValid = 11;
-    bytes signature = 12;
-    bytes shortcut = 13;
-    bytes fileKey = 14;
-    int32 magicPttIndex = 15;
-    int32 voiceSwitch = 16;
-    bytes pttUrl = 17;
-    bytes groupFileKey = 18;
-    int32 time = 19;
-    bytes downPara = 20;
-    int32 format = 29;
-    bytes pbReserve = 30;
-    repeated bytes bytesPttUrls = 31;
-    int32 downloadFlag = 32;
+  int32 fileType = 1;
+  int64 srcUin = 2;
+  bytes fileUuid = 3;
+  bytes fileMd5 = 4;
+  bytes fileName = 5;
+  int32 fileSize = 6;
+  bytes reserve = 7;
+  int32 fileId = 8;
+  int32 serverIp = 9;
+  int32 serverPort = 10;
+  bool boolValid = 11;
+  bytes signature = 12;
+  bytes shortcut = 13;
+  bytes fileKey = 14;
+  int32 magicPttIndex = 15;
+  int32 voiceSwitch = 16;
+  bytes pttUrl = 17;
+  bytes groupFileKey = 18;
+  int32 time = 19;
+  bytes downPara = 20;
+  int32 format = 29;
+  bytes pbReserve = 30;
+  repeated bytes bytesPttUrls = 31;
+  int32 downloadFlag = 32;
 
 }
 
 message OnlineImage {
-    bytes guid = 1;
-    bytes filePath = 2;
-    bytes oldVerSendFile = 3;
+  bytes guid = 1;
+  bytes filePath = 2;
+  bytes oldVerSendFile = 3;
 }
 
 message NotOnlineImage {
-    string filePath = 1;
-    int32 fileLen = 2;
-    string downloadPath = 3;
-    bytes oldVerSendFile = 4;
-    int32 imgType = 5;
-    bytes previewsImage = 6;
-    bytes picMd5 = 7;
-    int32 picHeight = 8;
-    int32 picWidth = 9;
-    string resId = 10;
-    bytes flag = 11;
-    string thumbUrl = 12;
-    int32 original = 13;
-    string bigUrl = 14;
-    string origUrl = 15;
-    int32 bizType = 16;
-    int32 result = 17;
-    int32 index = 18;
-    bytes opFaceBuf = 19;
-    bool oldPicMd5 = 20;
-    int32 thumbWidth = 21;
-    int32 thumbHeight = 22;
-    int32 fileId = 23;
-    int32 showLen = 24;
-    int32 downloadLen = 25;
-    bytes pbReserve = 29;   
+  string filePath = 1;
+  int32 fileLen = 2;
+  string downloadPath = 3;
+  bytes oldVerSendFile = 4;
+  int32 imgType = 5;
+  bytes previewsImage = 6;
+  bytes picMd5 = 7;
+  int32 picHeight = 8;
+  int32 picWidth = 9;
+  string resId = 10;
+  bytes flag = 11;
+  string thumbUrl = 12;
+  int32 original = 13;
+  string bigUrl = 14;
+  string origUrl = 15;
+  int32 bizType = 16;
+  int32 result = 17;
+  int32 index = 18;
+  bytes opFaceBuf = 19;
+  bool oldPicMd5 = 20;
+  int32 thumbWidth = 21;
+  int32 thumbHeight = 22;
+  int32 fileId = 23;
+  int32 showLen = 24;
+  int32 downloadLen = 25;
+  bytes pbReserve = 29;
 }
 
 message NotOnlineFile {
-    int32 fileType = 1;
-    bytes sig = 2;
-    bytes fileUuid = 3;
-    bytes fileMd5 = 4;
-    bytes fileName = 5;
-    int64 fileSize = 6;
-    bytes note = 7;
-    int32 reserved = 8;
-    int32 subcmd = 9;
-    int32 microCloud = 10;
-    repeated bytes bytesFileUrls = 11;
-    int32 downloadFlag = 12;
-    int32 dangerEvel = 50;
-    int32 lifeTime = 51;
-    int32 uploadTime = 52;
-    int32 absFileType = 53;
-    int32 clientType = 54;
-    int32 expireTime = 55;
-    bytes pbReserve = 56;
+  int32 fileType = 1;
+  bytes sig = 2;
+  bytes fileUuid = 3;
+  bytes fileMd5 = 4;
+  bytes fileName = 5;
+  int64 fileSize = 6;
+  bytes note = 7;
+  int32 reserved = 8;
+  int32 subcmd = 9;
+  int32 microCloud = 10;
+  repeated bytes bytesFileUrls = 11;
+  int32 downloadFlag = 12;
+  int32 dangerEvel = 50;
+  int32 lifeTime = 51;
+  int32 uploadTime = 52;
+  int32 absFileType = 53;
+  int32 clientType = 54;
+  int32 expireTime = 55;
+  bytes pbReserve = 56;
 }
 
 message ExtraInfo {
-    bytes nick = 1;
-    bytes groupCard = 2;
-    int32 level = 3;
-    int32 flags = 4;
-    int32 groupMask = 5;
-    int32 msgTailId = 6;
-    bytes senderTitle = 7;
-    bytes apnsTips = 8;
-    int64 uin = 9;
-    int32 msgStateFlag = 10;
-    int32 apnsSoundType = 11;
-    int32 newGroupFlag = 12;   
+  bytes nick = 1;
+  bytes groupCard = 2;
+  int32 level = 3;
+  int32 flags = 4;
+  int32 groupMask = 5;
+  int32 msgTailId = 6;
+  bytes senderTitle = 7;
+  bytes apnsTips = 8;
+  int64 uin = 9;
+  int32 msgStateFlag = 10;
+  int32 apnsSoundType = 11;
+  int32 newGroupFlag = 12;
 }
 
 message GroupFile {
-    bytes filename = 1;
-    int64 fileSize = 2;
-    bytes fileId = 3;
-    bytes batchId = 4;
-    bytes fileKey = 5;
-    bytes mark = 6;
-    int64 sequence = 7;
-    bytes batchItemId = 8;
-    int32 feedMsgTime = 9;
-    bytes pbReserve = 10;   
+  bytes filename = 1;
+  int64 fileSize = 2;
+  bytes fileId = 3;
+  bytes batchId = 4;
+  bytes fileKey = 5;
+  bytes mark = 6;
+  int64 sequence = 7;
+  bytes batchItemId = 8;
+  int32 feedMsgTime = 9;
+  bytes pbReserve = 10;
 }
 
 message AnonymousGroupMessage {
-    int32 flags = 1;
-    bytes anonId = 2;
-    bytes anonNick = 3;
-    int32 headPortrait = 4;
-    int32 expireTime = 5;
-    int32 bubbleId = 6;
-    bytes rankColor = 7;
+  int32 flags = 1;
+  bytes anonId = 2;
+  bytes anonNick = 3;
+  int32 headPortrait = 4;
+  int32 expireTime = 5;
+  int32 bubbleId = 6;
+  bytes rankColor = 7;
 }
 
 message VideoFile {
-    bytes fileUuid = 1;
-    bytes fileMd5 = 2;
-    bytes fileName = 3;
-    int32 fileFormat = 4;
-    int32 fileTime = 5;
-    int32 fileSize = 6;
-    int32 thumbWidth = 7;
-    int32 thumbHeight = 8;
-    bytes thumbFileMd5 = 9;
-    bytes source = 10;
-    int32 thumbFileSize = 11;
-    int32 busiType = 12;
-    int32 fromChatType = 13;
-    int32 toChatType = 14;
-    bool boolSupportProgressive = 15;
-    int32 fileWidth = 16;
-    int32 fileHeight = 17;
-    int32 subBusiType = 18;
-    int32 videoAttr = 19;
-    repeated bytes bytesThumbFileUrls = 20;
-    repeated bytes bytesVideoFileUrls = 21;
-    int32 thumbDownloadFlag = 22;
-    int32 videoDownloadFlag = 23;
-    bytes pbReserve = 24;
+  bytes fileUuid = 1;
+  bytes fileMd5 = 2;
+  bytes fileName = 3;
+  int32 fileFormat = 4;
+  int32 fileTime = 5;
+  int32 fileSize = 6;
+  int32 thumbWidth = 7;
+  int32 thumbHeight = 8;
+  bytes thumbFileMd5 = 9;
+  bytes source = 10;
+  int32 thumbFileSize = 11;
+  int32 busiType = 12;
+  int32 fromChatType = 13;
+  int32 toChatType = 14;
+  bool boolSupportProgressive = 15;
+  int32 fileWidth = 16;
+  int32 fileHeight = 17;
+  int32 subBusiType = 18;
+  int32 videoAttr = 19;
+  repeated bytes bytesThumbFileUrls = 20;
+  repeated bytes bytesVideoFileUrls = 21;
+  int32 thumbDownloadFlag = 22;
+  int32 videoDownloadFlag = 23;
+  bytes pbReserve = 24;
 }
 
 message SourceMsg {
-    repeated int32 origSeqs = 1;
-    int64 senderUin = 2;
-    int32 time = 3;
-    int32 flag = 4;
-    repeated Elem elems = 5;
-    int32 type = 6;
-    bytes richMsg = 7;
-    bytes pbReserve = 8;
-    bytes srcMsg = 9;
-    int64 toUin = 10;
-    bytes troopName = 11;   
+  repeated int32 origSeqs = 1;
+  int64 senderUin = 2;
+  int32 time = 3;
+  int32 flag = 4;
+  repeated Elem elems = 5;
+  int32 type = 6;
+  bytes richMsg = 7;
+  bytes pbReserve = 8;
+  bytes srcMsg = 9;
+  int64 toUin = 10;
+  bytes troopName = 11;
 }
 
 message Face {
-    int32 index = 1;
-    bytes old = 2;
-    bytes buf = 11;
+  int32 index = 1;
+  bytes old = 2;
+  bytes buf = 11;
 }
 
 message CustomFace {
-    bytes guid = 1;
-    string filePath = 2;
-    string shortcut = 3;
-    bytes buffer = 4;
-    bytes flag = 5;
-    bytes oldData = 6;
-    int32 fileId = 7;
-    int32 serverIp = 8;
-    int32 serverPort = 9;
-    int32 fileType = 10;
-    bytes signature = 11;
-    int32 useful = 12;
-    bytes md5 = 13;
-    string thumbUrl = 14;
-    string bigUrl = 15;
-    string origUrl = 16;
-    int32 bizType = 17;
-    int32 repeatIndex = 18;
-    int32 repeatImage = 19;
-    int32 imageType = 20;
-    int32 index = 21;
-    int32 width = 22;
-    int32 height = 23;
-    int32 source = 24;
-    int32 size = 25;
-    int32 origin = 26;
-    int32 thumbWidth = 27;
-    int32 thumbHeight = 28;
-    int32 showLen = 29;
-    int32 downloadLen = 30;
-    string _400Url = 31;
-    int32 _400Width = 32;
-    int32 _400Height = 33;
-    bytes pbReserve = 34;   
+  bytes guid = 1;
+  string filePath = 2;
+  string shortcut = 3;
+  bytes buffer = 4;
+  bytes flag = 5;
+  bytes oldData = 6;
+  int32 fileId = 7;
+  int32 serverIp = 8;
+  int32 serverPort = 9;
+  int32 fileType = 10;
+  bytes signature = 11;
+  int32 useful = 12;
+  bytes md5 = 13;
+  string thumbUrl = 14;
+  string bigUrl = 15;
+  string origUrl = 16;
+  int32 bizType = 17;
+  int32 repeatIndex = 18;
+  int32 repeatImage = 19;
+  int32 imageType = 20;
+  int32 index = 21;
+  int32 width = 22;
+  int32 height = 23;
+  int32 source = 24;
+  int32 size = 25;
+  int32 origin = 26;
+  int32 thumbWidth = 27;
+  int32 thumbHeight = 28;
+  int32 showLen = 29;
+  int32 downloadLen = 30;
+  string _400Url = 31;
+  int32 _400Width = 32;
+  int32 _400Height = 33;
+  bytes pbReserve = 34;
 }
 
 message ContentHead {
-    int32 pkgNum = 1;
-    int32 pkgIndex = 2;
-    int32 divSeq = 3;
-    int32 autoReply = 4;   
+  int32 pkgNum = 1;
+  int32 pkgIndex = 2;
+  int32 divSeq = 3;
+  int32 autoReply = 4;
 }
 
 message MessageHead {
-    int64 fromUin = 1;
-    int64 toUin = 2;
-    int32 msgType = 3;
-    int32 c2cCmd = 4;
-    int32 msgSeq = 5;
-    int32 msgTime = 6;
-    int64 msgUid = 7;
-    C2CTempMessageHead c2cTmpMsgHead = 8;
-    GroupInfo groupInfo = 9;
-    int32 fromAppid = 10;
-    int32 fromInstid = 11;
-    int32 userActive = 12;
-    DiscussInfo discussInfo = 13;
-    string fromNick = 14;
-    int64 authUin = 15;
-    string authNick = 16;
-    int32 msgFlag = 17;
-    string authRemark = 18;
-    string groupName = 19;
-    MutilTransHead mutiltransHead = 20;
-    InstCtrl msgInstCtrl = 21;
-    int32 publicAccountGroupSendFlag = 22;
-    int32 wseqInC2cMsghead = 23;
-    int64 cpid = 24;
-    ExtGroupKeyInfo extGroupKeyInfo = 25;
-    string multiCompatibleText = 26;
-    int32 authSex = 27;
-    bool isSrcMsg = 28;
-   
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 msgType = 3;
+  int32 c2cCmd = 4;
+  int32 msgSeq = 5;
+  int32 msgTime = 6;
+  int64 msgUid = 7;
+  C2CTempMessageHead c2cTmpMsgHead = 8;
+  GroupInfo groupInfo = 9;
+  int32 fromAppid = 10;
+  int32 fromInstid = 11;
+  int32 userActive = 12;
+  DiscussInfo discussInfo = 13;
+  string fromNick = 14;
+  int64 authUin = 15;
+  string authNick = 16;
+  int32 msgFlag = 17;
+  string authRemark = 18;
+  string groupName = 19;
+  MutilTransHead mutiltransHead = 20;
+  InstCtrl msgInstCtrl = 21;
+  int32 publicAccountGroupSendFlag = 22;
+  int32 wseqInC2cMsghead = 23;
+  int64 cpid = 24;
+  ExtGroupKeyInfo extGroupKeyInfo = 25;
+  string multiCompatibleText = 26;
+  int32 authSex = 27;
+  bool isSrcMsg = 28;
+
 }
 
 message GroupInfo {
-    int64 groupCode = 1;
-    int32 groupType = 2;
-    int64 groupInfoSeq = 3;
-    string groupCard = 4;
-    bytes groupRank = 5;
-    int32 groupLevel = 6;
-    int32 groupCardType = 7;
-    bytes groupName = 8;   
+  int64 groupCode = 1;
+  int32 groupType = 2;
+  int64 groupInfoSeq = 3;
+  string groupCard = 4;
+  bytes groupRank = 5;
+  int32 groupLevel = 6;
+  int32 groupCardType = 7;
+  bytes groupName = 8;
 }
 
 message DiscussInfo {
-    int64 discussUin = 1;
-    int32 discussType = 2;
-    int64 discussInfoSeq = 3;
-    bytes discussRemark = 4;
-    bytes discussName = 5;   
+  int64 discussUin = 1;
+  int32 discussType = 2;
+  int64 discussInfoSeq = 3;
+  bytes discussRemark = 4;
+  bytes discussName = 5;
 }
 
 message MutilTransHead{
-    int32 status = 1;
-    int32 msgId = 2;   
+  int32 status = 1;
+  int32 msgId = 2;
 }
 
 message C2CTempMessageHead {
-    int32 c2cType = 1;
-    int32 serviceType = 2;
-    int64 groupUin = 3;
-    int64 groupCode = 4;
-    bytes sig = 5;
-    int32 sigType = 6;
-    string fromPhone = 7;
-    string toPhone = 8;
-    int32 lockDisplay = 9;
-    int32 directionFlag = 10;
-    bytes reserved = 11;
+  int32 c2cType = 1;
+  int32 serviceType = 2;
+  int64 groupUin = 3;
+  int64 groupCode = 4;
+  bytes sig = 5;
+  int32 sigType = 6;
+  string fromPhone = 7;
+  string toPhone = 8;
+  int32 lockDisplay = 9;
+  int32 directionFlag = 10;
+  bytes reserved = 11;
 }
 
 message InstCtrl {
-    repeated InstInfo msgSendToInst = 1;
-    repeated InstInfo msgExcludeInst = 2;
-    InstInfo msgFromInst = 3;
+  repeated InstInfo msgSendToInst = 1;
+  repeated InstInfo msgExcludeInst = 2;
+  InstInfo msgFromInst = 3;
 
 }
 
 message InstInfo {
-    int32 apppid = 1;
-    int32 instid = 2;
-    int32 platform = 3;
-    int32 enumDeviceType = 10;
+  int32 apppid = 1;
+  int32 instid = 2;
+  int32 platform = 3;
+  int32 enumDeviceType = 10;
 }
 
 message ExtGroupKeyInfo {
-    int32 curMaxSeq = 1;
-    int64 curTime = 2;   
+  int32 curMaxSeq = 1;
+  int64 curTime = 2;
 }
 
 message SyncCookie {
-    int64 time1 = 1;
-    int64 time = 2;
-    int64 ran1 = 3;
-    int64 ran2 = 4;
-    int64 const1 = 5;
-    int64 const2 = 11;
-    int64 const3 = 12;
-    int64 lastSyncTime = 13;
-    int64 const4 = 14;
+  int64 time1 = 1;
+  int64 time = 2;
+  int64 ran1 = 3;
+  int64 ran2 = 4;
+  int64 const1 = 5;
+  int64 const2 = 11;
+  int64 const3 = 12;
+  int64 lastSyncTime = 13;
+  int64 const4 = 14;
 }
 
 message TransMsgInfo {
-    int64 fromUin = 1;
-    int64 toUin = 2;
-    int32 msgType = 3;
-    int32 msgSubtype = 4;
-    int32 msgSeq = 5;
-    int64 msgUid = 6;
-    int32 msgTime = 7;
-    int32 realMsgTime = 8;
-    string nickName = 9;
-    bytes msgData = 10;
-    int32 svrIp = 11;
-    ExtGroupKeyInfo extGroupKeyInfo = 12;
-    int32 generalFlag = 17;
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 msgType = 3;
+  int32 msgSubtype = 4;
+  int32 msgSeq = 5;
+  int64 msgUid = 6;
+  int32 msgTime = 7;
+  int32 realMsgTime = 8;
+  string nickName = 9;
+  bytes msgData = 10;
+  int32 svrIp = 11;
+  ExtGroupKeyInfo extGroupKeyInfo = 12;
+  int32 generalFlag = 17;
 }
 
 enum SyncFlag {
-    START = 0;
-    CONTINUME = 1;
-    STOP = 2;
+  START = 0;
+  CONTINUME = 1;
+  STOP = 2;
 }

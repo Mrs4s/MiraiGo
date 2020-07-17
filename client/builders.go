@@ -585,3 +585,28 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqId, requester int64, acce
 	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgAction.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+/*
+func (c *QQClient) buildMultiMsgDownRequestPacket()  (uint16, []byte){
+	seq := c.nextSeq()
+	req := &multimsg.ReqBody{
+		Subcmd:               2,
+		TermType:             5,
+		PlatformType:         9,
+		NetType:              3,
+		BuildVer:             "8.2.0.1296",
+		MultimsgApplydownReq: []*multimsg.MultiMsgApplyDownReq{
+			{
+				MsgResid: []byte("xxx"),
+				MsgType:  3,
+				SrcUin:   000,
+			},
+		},
+		BuType:               2,
+		ReqChannelType:       2,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+*/

@@ -216,8 +216,24 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 				res = append(res, message.NewAt(target, elem.Text.Str))
 			}
 		}
+		if elem.RichMsg != nil {
+			var content string
+			if elem.RichMsg.Template1[0] == 0 {
+				content = string(elem.RichMsg.Template1[1:])
+			}
+			if elem.RichMsg.Template1[0] == 1 {
+				content = string(binary.ZlibUncompress(elem.RichMsg.Template1[1:]))
+			}
+			if content != "" {
+				res = append(res, message.NewText(content))
+			}
+		}
 		if elem.CustomFace != nil {
-			res = append(res, message.NewNetImage(elem.CustomFace.FilePath, "http://gchat.qpic.cn"+elem.CustomFace.OrigUrl))
+			res = append(res, &message.ImageElement{
+				Filename: elem.CustomFace.FilePath,
+				Url:      "http://gchat.qpic.cn" + elem.CustomFace.OrigUrl,
+				Md5:      elem.CustomFace.Md5,
+			})
 		}
 		if elem.NotOnlineImage != nil {
 			var img string
@@ -226,7 +242,11 @@ func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
 			} else {
 				img = "http://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.ResId + "/0?term=2"
 			}
-			res = append(res, message.NewNetImage(elem.NotOnlineImage.FilePath, img))
+			res = append(res, &message.ImageElement{
+				Filename: elem.NotOnlineImage.FilePath,
+				Url:      img,
+				Md5:      elem.NotOnlineImage.PicMd5,
+			})
 		}
 		if elem.Face != nil {
 			res = append(res, message.NewFace(elem.Face.Index))
