@@ -113,12 +113,14 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 	if flag1 != 0x0A && flag1 != 0x0B {
 		return nil, ErrDecryptFailed
 	}
-	return parseSsoFrame(decrypted, flag2), nil
+	return parseSsoFrame(decrypted, flag2)
 }
 
-func parseSsoFrame(payload []byte, flag2 byte) *IncomingPacket {
+func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	reader := binary.NewReader(payload)
-	reader.ReadInt32() // packet len
+	if reader.ReadInt32()-4 > int32(reader.Len()) {
+		return nil, errors.New("dropped")
+	}
 	seqId := reader.ReadInt32()
 	reader.ReadInt32()                            // return code
 	reader.ReadBytes(int(reader.ReadInt32()) - 4) // extra data
@@ -131,7 +133,7 @@ func parseSsoFrame(payload []byte, flag2 byte) *IncomingPacket {
 			CommandName: commandName,
 			SessionId:   sessionId,
 			Payload:     []byte{},
-		}
+		}, nil
 	}
 	compressedFlag := reader.ReadInt32()
 	packet := func() []byte {
@@ -158,7 +160,7 @@ func parseSsoFrame(payload []byte, flag2 byte) *IncomingPacket {
 		CommandName: commandName,
 		SessionId:   sessionId,
 		Payload:     packet,
-	}
+	}, nil
 }
 
 func (pkt *IncomingPacket) DecryptPayload(random []byte) ([]byte, error) {
