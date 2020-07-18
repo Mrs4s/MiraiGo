@@ -11,7 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 	"math/rand"
 	"sort"
-	"strings"
 )
 
 type DeviceInfo struct {
@@ -190,7 +189,7 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 			Uin:      friend.Uin,
 			Nickname: friend.Nickname,
 		},
-		Elements: parseMessageElems(msg.Body.RichText.Elems),
+		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
 }
 
@@ -206,7 +205,7 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 			Nickname: mem.Nickname,
 			CardName: mem.CardName,
 		},
-		Elements: parseMessageElems(msg.Body.RichText.Elems),
+		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
 }
 
@@ -245,78 +244,11 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		GroupCode: group.Code,
 		GroupName: string(m.Head.GroupInfo.GroupName),
 		Sender:    sender,
-		Elements:  parseMessageElems(m.Body.RichText.Elems),
+		Time:      m.Head.MsgTime,
+		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
+		//OriginalElements: m.Body.RichText.Elems,
 	}
 	return g
-}
-
-func parseMessageElems(elems []*msg.Elem) []message.IMessageElement {
-	var res []message.IMessageElement
-	for _, elem := range elems {
-		if elem.SrcMsg != nil {
-			if len(elem.SrcMsg.OrigSeqs) != 0 {
-				r := &message.ReplyElement{
-					ReplySeq: elem.SrcMsg.OrigSeqs[0],
-					Elements: parseMessageElems(elem.SrcMsg.Elems),
-				}
-				res = append(res, r)
-			}
-			continue
-		}
-		if elem.Text != nil {
-			if len(elem.Text.Attr6Buf) == 0 {
-				res = append(res, message.NewText(elem.Text.Str))
-			} else {
-				att6 := binary.NewReader(elem.Text.Attr6Buf)
-				att6.ReadBytes(7)
-				target := int64(uint32(att6.ReadInt32()))
-				res = append(res, message.NewAt(target, elem.Text.Str))
-			}
-		}
-		if elem.RichMsg != nil {
-			var content string
-			if elem.RichMsg.Template1[0] == 0 {
-				content = string(elem.RichMsg.Template1[1:])
-			}
-			if elem.RichMsg.Template1[0] == 1 {
-				content = string(binary.ZlibUncompress(elem.RichMsg.Template1[1:]))
-			}
-			if content != "" {
-				res = append(res, message.NewText(content))
-			}
-		}
-		if elem.CustomFace != nil {
-			res = append(res, &message.ImageElement{
-				Filename: elem.CustomFace.FilePath,
-				Size:     elem.CustomFace.Size,
-				Url: func() string {
-					if elem.CustomFace.OrigUrl == "" {
-						return "http://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
-					}
-					return "http://gchat.qpic.cn" + elem.CustomFace.OrigUrl
-				}(),
-				Md5: elem.CustomFace.Md5,
-			})
-		}
-		if elem.NotOnlineImage != nil {
-			var img string
-			if elem.NotOnlineImage.OrigUrl != "" {
-				img = "http://c2cpicdw.qpic.cn" + elem.NotOnlineImage.OrigUrl
-			} else {
-				img = "http://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.ResId + "/0?term=2"
-			}
-			res = append(res, &message.ImageElement{
-				Filename: elem.NotOnlineImage.FilePath,
-				Size:     elem.NotOnlineImage.FileLen,
-				Url:      img,
-				Md5:      elem.NotOnlineImage.PicMd5,
-			})
-		}
-		if elem.Face != nil {
-			res = append(res, message.NewFace(elem.Face.Index))
-		}
-	}
-	return res
 }
 
 func (b *groupMessageBuilder) build() *msg.Message {

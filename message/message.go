@@ -4,6 +4,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"strconv"
+	"strings"
 )
 
 type PrivateMessage struct {
@@ -25,7 +26,9 @@ type GroupMessage struct {
 	GroupCode int64
 	GroupName string
 	Sender    *Sender
+	Time      int32
 	Elements  []IMessageElement
+	//OriginalElements []*msg.Elem
 }
 
 type SendingMessage struct {
@@ -127,6 +130,23 @@ func (s *Sender) DisplayName() string {
 
 func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 	for _, elem := range elems {
+		if reply, ok := elem.(*ReplyElement); ok {
+			r = append(r, &msg.Elem{
+				SrcMsg: &msg.SourceMsg{
+					OrigSeqs:  []int32{reply.ReplySeq},
+					SenderUin: reply.Sender,
+					Time:      reply.Time,
+					Flag:      1,
+					Elems:     ToProtoElems(reply.Elements),
+					RichMsg:   []byte{},
+					PbReserve: []byte{},
+					SrcMsg:    []byte{},
+					TroopName: []byte{},
+				},
+			})
+		}
+	}
+	for _, elem := range elems {
 		switch e := elem.(type) {
 		case *TextElement:
 			r = append(r, &msg.Elem{
@@ -176,4 +196,75 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 		}
 	}
 	return
+}
+
+func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
+	var res []IMessageElement
+	for _, elem := range elems {
+		if elem.SrcMsg != nil {
+			if len(elem.SrcMsg.OrigSeqs) != 0 {
+				r := &ReplyElement{
+					ReplySeq: elem.SrcMsg.OrigSeqs[0],
+					Time:     elem.SrcMsg.Time,
+					Sender:   elem.SrcMsg.SenderUin,
+					Elements: ParseMessageElems(elem.SrcMsg.Elems),
+				}
+				res = append(res, r)
+			}
+			continue
+		}
+		if elem.Text != nil {
+			if len(elem.Text.Attr6Buf) == 0 {
+				res = append(res, NewText(elem.Text.Str))
+			} else {
+				att6 := binary.NewReader(elem.Text.Attr6Buf)
+				att6.ReadBytes(7)
+				target := int64(uint32(att6.ReadInt32()))
+				res = append(res, NewAt(target, elem.Text.Str))
+			}
+		}
+		if elem.RichMsg != nil {
+			var content string
+			if elem.RichMsg.Template1[0] == 0 {
+				content = string(elem.RichMsg.Template1[1:])
+			}
+			if elem.RichMsg.Template1[0] == 1 {
+				content = string(binary.ZlibUncompress(elem.RichMsg.Template1[1:]))
+			}
+			if content != "" {
+				res = append(res, NewText(content))
+			}
+		}
+		if elem.CustomFace != nil {
+			res = append(res, &ImageElement{
+				Filename: elem.CustomFace.FilePath,
+				Size:     elem.CustomFace.Size,
+				Url: func() string {
+					if elem.CustomFace.OrigUrl == "" {
+						return "http://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
+					}
+					return "http://gchat.qpic.cn" + elem.CustomFace.OrigUrl
+				}(),
+				Md5: elem.CustomFace.Md5,
+			})
+		}
+		if elem.NotOnlineImage != nil {
+			var img string
+			if elem.NotOnlineImage.OrigUrl != "" {
+				img = "http://c2cpicdw.qpic.cn" + elem.NotOnlineImage.OrigUrl
+			} else {
+				img = "http://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.ResId + "/0?term=2"
+			}
+			res = append(res, &ImageElement{
+				Filename: elem.NotOnlineImage.FilePath,
+				Size:     elem.NotOnlineImage.FileLen,
+				Url:      img,
+				Md5:      elem.NotOnlineImage.PicMd5,
+			})
+		}
+		if elem.Face != nil {
+			res = append(res, NewFace(elem.Face.Index))
+		}
+	}
+	return res
 }

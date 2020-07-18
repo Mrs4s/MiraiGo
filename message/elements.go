@@ -35,7 +35,11 @@ type AtElement struct {
 
 type ReplyElement struct {
 	ReplySeq int32
+	Sender   int64
+	Time     int32
 	Elements []IMessageElement
+
+	//original []*msg.Elem
 }
 
 func NewText(s string) *TextElement {
@@ -83,6 +87,16 @@ func NewAt(target int64, display ...string) *AtElement {
 
 func AtAll() *AtElement {
 	return NewAt(0)
+}
+
+func NewReply(m *GroupMessage) *ReplyElement {
+	return &ReplyElement{
+		ReplySeq: m.Id,
+		Sender:   m.Sender.Uin,
+		Time:     m.Time,
+		//original: m.OriginalElements,
+		Elements: m.Elements,
+	}
 }
 
 func (e *TextElement) Type() ElementType {
