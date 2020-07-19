@@ -2,6 +2,7 @@ syntax = "proto3";
 
 option go_package = ".;pb";
 
+
 message DeviceInfo {
     string bootloader = 1;
     string procVersion = 2;
@@ -120,7 +121,7 @@ message TryUpImgReq {
     bytes fileIndex = 17;
     int64 dstUin = 18;
     int32 srvUpload = 19;
-    bytes transferUrl = 20;   
+    bytes transferUrl = 20;
 }
 
 message TryUpImgResp {
@@ -140,7 +141,7 @@ message ImgInfo {
     int32 fileType = 2;
     int64 fileSize = 3;
     int32 fileWidth = 4;
-    int32 fileHeight = 5;   
+    int32 fileHeight = 5;
 }
 
 message DeleteMessageRequest {

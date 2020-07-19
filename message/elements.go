@@ -23,6 +23,12 @@ type GroupImageElement struct {
 	Url     string
 }
 
+type FriendImageElement struct {
+	ImageId string
+	Md5     []byte
+	Url     string
+}
+
 type FaceElement struct {
 	Index int32
 	Name  string
@@ -112,6 +118,10 @@ func (e *FaceElement) Type() ElementType {
 }
 
 func (e *GroupImageElement) Type() ElementType {
+	return Image
+}
+
+func (e *FriendImageElement) Type() ElementType {
 	return Image
 }
 

@@ -2,9 +2,11 @@ package client
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -13,7 +15,14 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"math/rand"
 	"strconv"
+	"time"
+)
+
+var (
+	syncConst1 = rand.Int63()
+	syncConst2 = rand.Int63()
 )
 
 func (c *QQClient) buildLoginPacket() (uint16, []byte) {
@@ -383,7 +392,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.
 				Elems: message.ToProtoElems(m.Elements),
 			},
 		},
-		MsgSeq:     c.nextMessageSeq(),
+		MsgSeq:     c.nextGroupSeq(),
 		MsgRand:    r,
 		SyncCookie: EmptyBytes,
 		MsgVia:     1,
@@ -391,6 +400,66 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// MessageSvc.PbSendMsg
+func (c *QQClient) buildFriendSendingPacket(target int64, r int32, m *message.SendingMessage) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &msg.SendMessageRequest{
+		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: target}},
+		ContentHead: &msg.ContentHead{PkgNum: 1},
+		MsgBody: &msg.MessageBody{
+			RichText: &msg.RichText{
+				Elems: message.ToProtoElems(m.Elements),
+			},
+		},
+		MsgSeq:  c.nextFriendSeq(),
+		MsgRand: r,
+		SyncCookie: func() []byte {
+			cookie := &msg.SyncCookie{
+				Time:   time.Now().Unix(),
+				Ran1:   rand.Int63(),
+				Ran2:   rand.Int63(),
+				Const1: syncConst1,
+				Const2: syncConst2,
+				Const3: 0x1d,
+			}
+			b, _ := proto.Marshal(cookie)
+			return b
+		}(),
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// LongConn.OffPicUp
+func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &cmd0x352.ReqBody{
+		Subcmd: 1,
+		MsgTryupImgReq: []*cmd0x352.D352TryUpImgReq{
+			{
+				SrcUin:       int32(c.Uin),
+				DstUin:       int32(target),
+				FileMd5:      md5,
+				FileSize:     size,
+				Filename:     hex.EncodeToString(md5) + ".jpg",
+				SrcTerm:      5,
+				PlatformType: 9,
+				BuType:       1,
+				ImgOriginal:  1,
+				ImgType:      1000,
+				BuildVer:     "8.2.7.4410",
+				FileIndex:    EmptyBytes,
+				SrvUpload:    1,
+				TransferUrl:  EmptyBytes,
+			},
+		},
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "LongConn.OffPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 

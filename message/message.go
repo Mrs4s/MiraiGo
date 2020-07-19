@@ -194,6 +194,18 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 						0x2D, 0x45, 0x41, 0x45, 0x33, 0x2D, 0x42, 0x33, 0x37, 0x43, 0x2D, 0x31, 0x30, 0x31, 0x46, 0x31, 0x45, 0x45, 0x42, 0x46, 0x35, 0x42, 0x35, 0x7D, 0x2E, 0x70, 0x6E, 0x67, 0x41},
 				},
 			})
+		case *FriendImageElement:
+			r = append(r, &msg.Elem{
+				NotOnlineImage: &msg.NotOnlineImage{
+					FilePath:     e.ImageId,
+					ResId:        e.ImageId,
+					OldPicMd5:    false,
+					PicMd5:       e.Md5,
+					DownloadPath: e.ImageId,
+					Original:     1,
+					PbReserve:    []byte{0x78, 0x02},
+				},
+			})
 		}
 	}
 	return

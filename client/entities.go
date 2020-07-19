@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrAlreadyRunning = errors.New("already running")
+	ErrAlreadyOnline = errors.New("already online")
 )
 
 type (
@@ -139,12 +139,13 @@ type (
 		list    []*GroupMemberInfo
 	}
 
-	groupImageUploadResponse struct {
+	imageUploadResponse struct {
 		ResultCode int32
 		Message    string
 
 		IsExists bool
 
+		ResourceId string
 		UploadKey  []byte
 		UploadIp   []int32
 		UploadPort []int32

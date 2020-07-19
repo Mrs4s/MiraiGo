@@ -5,6 +5,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/golang/protobuf/proto"
@@ -211,7 +212,9 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					continue
 				}
 				if c.lastMessageSeq >= message.Head.MsgSeq {
-					continue
+					if c.lastMessageSeq-message.Head.MsgSeq < 1000 {
+						continue
+					}
 				}
 				c.lastMessageSeq = message.Head.MsgSeq
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
@@ -360,18 +363,55 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	}
 	rsp := pkt.MsgTryupImgRsp[0]
 	if rsp.Result != 0 {
-		return groupImageUploadResponse{
+		return imageUploadResponse{
 			ResultCode: rsp.Result,
 			Message:    rsp.FailMsg,
 		}, nil
 	}
 	if rsp.BoolFileExit {
-		return groupImageUploadResponse{IsExists: true}, nil
+		return imageUploadResponse{IsExists: true}, nil
 	}
-	return groupImageUploadResponse{
+	return imageUploadResponse{
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.Uint32UpIp,
 		UploadPort: rsp.Uint32UpPort,
+	}, nil
+}
+
+func decodeOffPicUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := cmd0x352.RspBody{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.FailMsg != "" {
+		return imageUploadResponse{
+			ResultCode: -1,
+			Message:    rsp.FailMsg,
+		}, nil
+	}
+	if rsp.Subcmd != 1 || len(rsp.MsgTryupImgRsp) == 0 {
+		return imageUploadResponse{
+			ResultCode: -2,
+		}, nil
+	}
+	imgRsp := rsp.MsgTryupImgRsp[0]
+	if imgRsp.Result != 0 {
+		return imageUploadResponse{
+			ResultCode: imgRsp.Result,
+			Message:    imgRsp.FailMsg,
+		}, nil
+	}
+	if imgRsp.BoolFileExit {
+		return imageUploadResponse{
+			IsExists:   true,
+			ResourceId: imgRsp.UpResid,
+		}, nil
+	}
+	return imageUploadResponse{
+		ResourceId: imgRsp.UpResid,
+		UploadKey:  imgRsp.UpUkey,
+		UploadIp:   imgRsp.Uint32UpIp,
+		UploadPort: imgRsp.Uint32UpPort,
 	}, nil
 }
 

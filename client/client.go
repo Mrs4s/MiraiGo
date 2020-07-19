@@ -4,11 +4,9 @@ import (
 	"crypto/md5"
 	"errors"
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
 	"io"
 	"log"
 	"math/rand"
@@ -28,6 +26,7 @@ type QQClient struct {
 	Gender     uint16
 	FriendList []*FriendInfo
 	GroupList  []*GroupInfo
+	Online     bool
 
 	SequenceId              uint16
 	OutGoingPacketSessionId []byte
@@ -50,14 +49,14 @@ type QQClient struct {
 	timeDiff         int64
 	sigInfo          *loginSigInfo
 	pwdFlag          bool
-	running          bool
 
 	lastMessageSeq         int32
 	lastMessageSeqTmp      sync.Map
 	groupMsgBuilders       sync.Map
 	onlinePushCache        []int16 // reset on reconnect
 	requestPacketRequestId int32
-	messageSeq             int32
+	groupSeq               int32
+	friendSeq              int32
 	groupDataTransSeq      int32
 	eventHandlers          *eventHandlers
 
@@ -107,6 +106,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"friendlist.GetTroopListReqV2":             decodeGroupListResponse,
 			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
 			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
+			"LongConn.OffPicUp":                        decodeOffPicUpResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
 			//"MultiMsg.ApplyDown":                       decodeMultiMsgDownPacket,
@@ -114,7 +114,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		handlers:               map[uint16]func(interface{}, error){},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
-		messageSeq:             22911,
+		groupSeq:               22911,
+		friendSeq:              22911,
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
 		eventHandlers:          &eventHandlers{},
 		groupListLock:          new(sync.Mutex),
@@ -125,14 +126,14 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 
 // Login send login request
 func (c *QQClient) Login() (*LoginResponse, error) {
-	if c.running {
-		return nil, ErrAlreadyRunning
+	if c.Online {
+		return nil, ErrAlreadyOnline
 	}
 	err := c.connect()
 	if err != nil {
 		return nil, err
 	}
-	c.running = true
+	c.Online = true
 	go c.loop()
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
@@ -226,6 +227,12 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 	return ret
 }
 
+func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) {
+	mr := int32(rand.Uint32())
+	_, pkt := c.buildFriendSendingPacket(target, mr, m)
+	_ = c.send(pkt)
+}
+
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
 	_, pkt := c.buildGroupRecallPacket(groupCode, msgId, msgInternalId)
 	_ = c.send(pkt)
@@ -238,7 +245,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(groupImageUploadResponse)
+	rsp := r.(imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -247,40 +254,44 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 	}
 	for i, ip := range rsp.UploadIp {
 		updServer := binary.UInt32ToIPV4Address(uint32(ip))
-		conn, err := net.DialTimeout("tcp", updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), time.Second*5)
+		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), rsp.UploadKey, img)
 		if err != nil {
-			continue
-		}
-		if conn.SetDeadline(time.Now().Add(time.Second*10)) != nil {
-			_ = conn.Close()
-			continue
-		}
-		pkt := c.buildImageUploadPacket(img, rsp.UploadKey, 2, h)
-		for _, p := range pkt {
-			_, err = conn.Write(p)
-		}
-		if err != nil {
-			continue
-		}
-		r := binary.NewNetworkReader(conn)
-		_, err = r.ReadByte()
-		if err != nil {
-			continue
-		}
-		hl, _ := r.ReadInt32()
-		_, _ = r.ReadBytes(4)
-		payload, _ := r.ReadBytes(int(hl))
-		_ = conn.Close()
-		rsp := pb.RspDataHighwayHead{}
-		if proto.Unmarshal(payload, &rsp) != nil {
-			continue
-		}
-		if rsp.ErrorCode != 0 {
-			return nil, errors.New("upload failed")
+			return nil, err
 		}
 		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
 	}
 	return nil, errors.New("upload failed")
+}
+
+func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
+	return c.uploadPrivateImage(target, img, 0)
+}
+
+func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*message.FriendImageElement, error) {
+	count++
+	h := md5.Sum(img)
+	i, err := c.sendAndWait(c.buildOffPicUpPacket(target, h[:], int32(len(img))))
+	if err != nil {
+		return nil, err
+	}
+	rsp := i.(imageUploadResponse)
+	if rsp.ResultCode != 0 {
+		return nil, errors.New(rsp.Message)
+	}
+	if !rsp.IsExists {
+		if _, err = c.UploadGroupImage(0, img); err != nil {
+			return nil, err
+		}
+		// safe
+		if count >= 5 {
+			return nil, errors.New("upload failed")
+		}
+		return c.uploadPrivateImage(target, img, count)
+	}
+	return &message.FriendImageElement{
+		ImageId: rsp.ResourceId,
+		Md5:     h[:],
+	}, nil
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
@@ -288,7 +299,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(groupImageUploadResponse)
+	rsp := r.(imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -448,9 +459,15 @@ func (c *QQClient) nextPacketSeq() int32 {
 	return s
 }
 
-func (c *QQClient) nextMessageSeq() int32 {
-	s := atomic.LoadInt32(&c.messageSeq)
-	atomic.AddInt32(&c.messageSeq, 2)
+func (c *QQClient) nextGroupSeq() int32 {
+	s := atomic.LoadInt32(&c.groupSeq)
+	atomic.AddInt32(&c.groupSeq, 2)
+	return s
+}
+
+func (c *QQClient) nextFriendSeq() int32 {
+	s := atomic.LoadInt32(&c.friendSeq)
+	atomic.AddInt32(&c.friendSeq, 2)
 	return s
 }
 
@@ -487,12 +504,12 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 
 func (c *QQClient) loop() {
 	reader := binary.NewNetworkReader(c.Conn)
-	for c.running {
+	for c.Online {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			err = c.connect()
 			if err != nil {
-				c.running = false
+				c.Online = false
 				return
 			}
 			reader = binary.NewNetworkReader(c.Conn)
@@ -537,7 +554,7 @@ func (c *QQClient) loop() {
 }
 
 func (c *QQClient) heartbeat() {
-	for c.running {
+	for c.Online {
 		time.Sleep(time.Second * 30)
 		seq := c.nextSeq()
 		sso := packets.BuildSsoPacket(seq, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
