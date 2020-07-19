@@ -22,12 +22,13 @@ type TempMessage struct {
 }
 
 type GroupMessage struct {
-	Id        int32
-	GroupCode int64
-	GroupName string
-	Sender    *Sender
-	Time      int32
-	Elements  []IMessageElement
+	Id         int32
+	InternalId int32
+	GroupCode  int64
+	GroupName  string
+	Sender     *Sender
+	Time       int32
+	Elements   []IMessageElement
 	//OriginalElements []*msg.Elem
 }
 

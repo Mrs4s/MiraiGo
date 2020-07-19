@@ -35,6 +35,46 @@ message SendMessageRequest {
 
 }
 
+message MsgWithDrawReq {
+  repeated C2CMsgWithDrawReq c2cWithDraw = 1;
+  repeated GroupMsgWithDrawReq groupWithDraw = 2;
+}
+
+message C2CMsgWithDrawReq{
+  repeated C2CMsgInfo msgInfo = 1;
+  int32 longMessageFlag = 2;
+  bytes reserved = 3;
+  int32 subCmd = 4;
+}
+
+message GroupMsgWithDrawReq{
+  int32 subCmd = 1;
+  int32 groupType = 2;
+  int64 groupCode = 3;
+  repeated GroupMsgInfo msgList = 4;
+  bytes userDef = 5;
+}
+
+message GroupMsgInfo {
+  int32 msgSeq = 1;
+  int32 msgRandom = 2;
+  int32 msgType = 3;
+}
+
+message C2CMsgInfo {
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 msgSeq = 3;
+  int64 msgUid = 4;
+  int64 msgTime = 5;
+  int32 msgRandom = 6;
+  int32 pkgNum = 7;
+  int32 pkgIndex = 8;
+  int32 divSeq = 9;
+  int32 msgType = 10;
+  RoutingHead routingHead = 20;
+}
+
 message RoutingHead {
   C2C c2c = 1;
   Grp grp = 2;

@@ -14,6 +14,7 @@ func ZlibUncompress(src []byte) []byte {
 	b := bytes.NewReader(src)
 	var out bytes.Buffer
 	r, _ := zlib.NewReader(b)
+	defer r.Close()
 	io.Copy(&out, r)
 	return out.Bytes()
 }

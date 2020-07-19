@@ -192,26 +192,43 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	return r, nil
 }
 
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) int32 {
+func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
 		if e.Rand == mr {
 			ch <- e.Seq
-			c.onGroupMessageReceipt(eid)
 		}
 	})
+	defer c.onGroupMessageReceipt(eid)
 	_, pkt := c.buildGroupSendingPacket(groupCode, mr, m)
 	_ = c.send(pkt)
 	var mid int32
+	ret := &message.GroupMessage{
+		Id:         -1,
+		InternalId: mr,
+		GroupCode:  groupCode,
+		Sender: &message.Sender{
+			Uin:      c.Uin,
+			Nickname: c.Nickname,
+			IsFriend: true,
+		},
+		Time:     int32(time.Now().Unix()),
+		Elements: m.Elements,
+	}
 	select {
 	case mid = <-ch:
 	case <-time.After(time.Second * 5):
-		c.onGroupMessageReceipt(eid)
-		return -1
+		return ret
 	}
-	return mid
+	ret.Id = mid
+	return ret
+}
+
+func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
+	_, pkt := c.buildGroupRecallPacket(groupCode, msgId, msgInternalId)
+	_ = c.send(pkt)
 }
 
 func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {

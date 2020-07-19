@@ -248,6 +248,9 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
 		//OriginalElements: m.Body.RichText.Elems,
 	}
+	if m.Body.RichText.Attr != nil {
+		g.InternalId = m.Body.RichText.Attr.Random
+	}
 	return g
 }
 
