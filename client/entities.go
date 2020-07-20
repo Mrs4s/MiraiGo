@@ -104,6 +104,10 @@ type (
 		NewPermission MemberPermission
 	}
 
+	ClientDisconnectedEvent struct {
+		Message string
+	}
+
 	GroupInvitedRequest struct {
 		RequestId   int64
 		InvitorUin  int64

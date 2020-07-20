@@ -103,6 +103,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"OnlinePush.PbPushTransMsg":                decodeOnlinePushTransPacket,
 			"ConfigPushSvc.PushReq":                    decodePushReqPacket,
 			"MessageSvc.PbGetMsg":                      decodeMessageSvcPacket,
+			"MessageSvc.PushForceOffline":              decodeForceOfflinePacket,
 			"friendlist.getFriendGroupList":            decodeFriendGroupListResponse,
 			"friendlist.GetTroopListReqV2":             decodeGroupListResponse,
 			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
@@ -576,6 +577,7 @@ func (c *QQClient) loop() {
 			}
 		}()
 	}
+	c.Conn.Close()
 }
 
 func (c *QQClient) heartbeat() {

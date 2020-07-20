@@ -652,3 +652,17 @@ func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interfa
 	}
 	return nil, nil
 }
+
+func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	r := jce.NewJceReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
+	tips := r.ReadString(2)
+	if c.Online {
+		c.Online = false
+		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: tips})
+	}
+	return nil, nil
+}
