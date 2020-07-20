@@ -176,7 +176,7 @@ const (
 )
 
 func (g *GroupInfo) UpdateName(newName string) {
-	if g.AdministratorOrOwner() && strings.Count(newName, "") <= 20 {
+	if g.AdministratorOrOwner() && newName != "" && strings.Count(newName, "") <= 20 {
 		g.bot.updateGroupName(g.Code, newName)
 		g.Name = newName
 	}
