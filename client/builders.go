@@ -17,7 +17,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"math/rand"
 	"strconv"
-	"time"
 )
 
 var (
@@ -404,7 +403,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildFriendSendingPacket(target int64, r int32, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: target}},
@@ -414,11 +413,11 @@ func (c *QQClient) buildFriendSendingPacket(target int64, r int32, m *message.Se
 				Elems: message.ToProtoElems(m.Elements),
 			},
 		},
-		MsgSeq:  c.nextFriendSeq(),
+		MsgSeq:  msgSeq,
 		MsgRand: r,
 		SyncCookie: func() []byte {
 			cookie := &msg.SyncCookie{
-				Time:   time.Now().Unix(),
+				Time:   time,
 				Ran1:   rand.Int63(),
 				Ran2:   rand.Int63(),
 				Const1: syncConst1,

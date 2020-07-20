@@ -10,6 +10,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/golang/protobuf/proto"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -208,6 +209,18 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					c.dispatchTempMessage(c.parseTempMessage(message))
 				}
 			case 166: // 好友消息
+				if message.Head.FromUin == c.Uin {
+					for {
+						frdSeq := atomic.LoadInt32(&c.friendSeq)
+						if frdSeq < message.Head.MsgSeq {
+							if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, message.Head.MsgSeq) {
+								break
+							}
+						} else {
+							break
+						}
+					}
+				}
 				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
 					continue
 				}

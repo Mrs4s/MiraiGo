@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -144,6 +145,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if l.Success {
 		c.registerClient()
 		go c.heartbeat()
+		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	}
 	return &l, nil
 }
@@ -227,10 +229,24 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 	return ret
 }
 
-func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) {
+func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *message.PrivateMessage {
 	mr := int32(rand.Uint32())
-	_, pkt := c.buildFriendSendingPacket(target, mr, m)
+	seq := c.nextFriendSeq()
+	t := time.Now().Unix()
+	_, pkt := c.buildFriendSendingPacket(target, seq, mr, t, m)
 	_ = c.send(pkt)
+	return &message.PrivateMessage{
+		Id:         seq,
+		InternalId: mr,
+		Target:     target,
+		Time:       int32(t),
+		Sender: &message.Sender{
+			Uin:      c.Uin,
+			Nickname: c.Nickname,
+			IsFriend: true,
+		},
+		Elements: m.Elements,
+	}
 }
 
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
@@ -256,7 +272,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 		updServer := binary.UInt32ToIPV4Address(uint32(ip))
 		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), rsp.UploadKey, img)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
 	}
@@ -270,16 +286,10 @@ func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.Friend
 func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*message.FriendImageElement, error) {
 	count++
 	h := md5.Sum(img)
-	i, err := c.sendAndWait(c.buildOffPicUpPacket(target, h[:], int32(len(img))))
+	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
 	if err != nil {
-		return nil, err
-	}
-	rsp := i.(imageUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if !rsp.IsExists {
-		if _, err = c.UploadGroupImage(0, img); err != nil {
+		// use group highway upload and query again for image id.
+		if _, err = c.UploadGroupImage(target, img); err != nil {
 			return nil, err
 		}
 		// safe
@@ -288,10 +298,7 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 		}
 		return c.uploadPrivateImage(target, img, count)
 	}
-	return &message.FriendImageElement{
-		ImageId: rsp.ResourceId,
-		Md5:     h[:],
-	}, nil
+	return e, nil
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
@@ -307,6 +314,24 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash), nil
 	}
 	return nil, errors.New("image not exists")
+}
+
+func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*message.FriendImageElement, error) {
+	i, err := c.sendAndWait(c.buildOffPicUpPacket(target, hash, size))
+	if err != nil {
+		return nil, err
+	}
+	rsp := i.(imageUploadResponse)
+	if rsp.ResultCode != 0 {
+		return nil, errors.New(rsp.Message)
+	}
+	if !rsp.IsExists {
+		return nil, errors.New("image not exists")
+	}
+	return &message.FriendImageElement{
+		ImageId: rsp.ResourceId,
+		Md5:     hash,
+	}, nil
 }
 
 func (c *QQClient) ReloadGroupList() error {
@@ -467,7 +492,7 @@ func (c *QQClient) nextGroupSeq() int32 {
 
 func (c *QQClient) nextFriendSeq() int32 {
 	s := atomic.LoadInt32(&c.friendSeq)
-	atomic.AddInt32(&c.friendSeq, 2)
+	atomic.AddInt32(&c.friendSeq, 1)
 	return s
 }
 

@@ -183,14 +183,20 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 	if friend == nil {
 		return nil
 	}
-	return &message.PrivateMessage{
-		Id: msg.Head.MsgSeq,
+	ret := &message.PrivateMessage{
+		Id:     msg.Head.MsgSeq,
+		Target: c.Uin,
+		Time:   msg.Head.MsgTime,
 		Sender: &message.Sender{
 			Uin:      friend.Uin,
 			Nickname: friend.Nickname,
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
+	if msg.Body.RichText.Attr != nil {
+		ret.InternalId = msg.Body.RichText.Attr.Random
+	}
+	return ret
 }
 
 func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {

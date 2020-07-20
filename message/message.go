@@ -8,9 +8,12 @@ import (
 )
 
 type PrivateMessage struct {
-	Id       int32
-	Sender   *Sender
-	Elements []IMessageElement
+	Id         int32
+	InternalId int32
+	Target     int64
+	Time       int32
+	Sender     *Sender
+	Elements   []IMessageElement
 }
 
 type TempMessage struct {
@@ -118,7 +121,9 @@ func (msg *GroupMessage) ToString() (res string) {
 }
 
 func (msg *SendingMessage) Append(e IMessageElement) *SendingMessage {
-	msg.Elements = append(msg.Elements, e)
+	if e != nil {
+		msg.Elements = append(msg.Elements, e)
+	}
 	return msg
 }
 
