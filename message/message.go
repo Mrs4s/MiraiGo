@@ -3,6 +3,7 @@ package message
 import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -121,7 +122,8 @@ func (msg *GroupMessage) ToString() (res string) {
 }
 
 func (msg *SendingMessage) Append(e IMessageElement) *SendingMessage {
-	if e != nil {
+	v := reflect.ValueOf(e)
+	if v.Kind() == reflect.Ptr && !v.IsNil() {
 		msg.Elements = append(msg.Elements, e)
 	}
 	return msg
