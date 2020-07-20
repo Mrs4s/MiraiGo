@@ -373,9 +373,9 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 		rsp := data.(groupMemberListResponse)
 		nextUin = rsp.NextUin
 		for _, m := range rsp.list {
+			m.Group = group
 			if m.Uin == group.OwnerUin {
 				m.Permission = Owner
-				break
 			}
 		}
 		list = append(list, rsp.list...)
@@ -431,6 +431,10 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_ = c.send(pkt)
 }
 
+func (g *GroupInfo) SelfPermission() MemberPermission {
+	return g.FindMember(g.bot.Uin).Permission
+}
+
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	for _, m := range g.Members {
 		f := m
@@ -439,6 +443,10 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 		}
 	}
 	return nil
+}
+
+func (c *QQClient) EditMemberCard(groupCode, memberUin int64, card string) {
+	_, _ = c.sendAndWait(c.buildEditGroupTagPacket(groupCode, memberUin, card))
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
@@ -518,6 +526,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 		return nil, err
 	}
 	ch := make(chan T)
+	defer close(ch)
 	c.handlers[seq] = func(i interface{}, err error) {
 		ch <- T{
 			Response: i,

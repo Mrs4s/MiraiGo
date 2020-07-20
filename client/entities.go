@@ -51,10 +51,12 @@ type (
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
 
+		bot     *QQClient
 		memLock *sync.Mutex
 	}
 
 	GroupMemberInfo struct {
+		Group                  *GroupInfo
 		Uin                    int64
 		Nickname               string
 		CardName               string
@@ -177,6 +179,24 @@ func (m *GroupMemberInfo) DisplayName() string {
 		return m.Nickname
 	}
 	return m.CardName
+}
+
+func (m *GroupMemberInfo) EditCard(card string) {
+	if m.Manageable() {
+		m.Group.bot.EditMemberCard(m.Group.Code, m.Uin, card)
+		m.CardName = card
+	}
+}
+
+func (m *GroupMemberInfo) Manageable() bool {
+	if m.Uin == m.Group.bot.Uin {
+		return true
+	}
+	self := m.Group.SelfPermission()
+	if self == Member || m.Permission == Owner {
+		return false
+	}
+	return m.Permission != Administrator
 }
 
 func (r *UserJoinGroupRequest) Accept() {

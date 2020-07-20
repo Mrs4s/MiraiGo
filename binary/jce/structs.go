@@ -28,6 +28,7 @@ type (
 	}
 
 	SvcReqRegister struct {
+		IJceStruct
 		Uin                int64  `jceId:"0"`
 		Bid                int64  `jceId:"1"`
 		ConnType           byte   `jceId:"2"`
@@ -86,6 +87,7 @@ type (
 	}
 
 	SvcRespPushMsg struct {
+		IJceStruct
 		Uin         int64        `jceId:"0"`
 		DelInfos    []IJceStruct `jceId:"1"`
 		Svrip       int32        `jceId:"2"`
@@ -94,6 +96,7 @@ type (
 	}
 
 	DelMsgInfo struct {
+		IJceStruct
 		FromUin    int64  `jceId:"0"`
 		MsgTime    int64  `jceId:"1"`
 		MsgSeq     int16  `jceId:"2"`
@@ -108,6 +111,7 @@ type (
 	}
 
 	FriendListRequest struct {
+		IJceStruct
 		Reqtype         int32   `jceId:"0"`
 		IfReflush       byte    `jceId:"1"`
 		Uin             int64   `jceId:"2"`
@@ -189,6 +193,7 @@ type (
 	}
 
 	TroopListRequest struct {
+		IJceStruct
 		Uin              int64   `jceId:"0"`
 		GetMSFMsgFlag    byte    `jceId:"1"`
 		Cookies          []byte  `jceId:"2"`
@@ -239,6 +244,7 @@ type (
 	}
 
 	TroopMemberListRequest struct {
+		IJceStruct
 		Uin                int64 `jceId:"0"`
 		GroupCode          int64 `jceId:"1"`
 		NextUin            int64 `jceId:"2"`
@@ -285,6 +291,25 @@ type (
 		BigClubFlag            int64  `jceId:"37"`
 		Nameplate              int64  `jceId:"38"`
 		GroupHonor             []byte `jceId:"39"`
+	}
+
+	ModifyGroupCardRequest struct {
+		IJceStruct
+		Zero      int64        `jceId:"0"`
+		GroupCode int64        `jceId:"1"`
+		NewSeq    int64        `jceId:"2"`
+		UinInfo   []IJceStruct `jceId:"3"`
+	}
+
+	UinInfo struct {
+		IJceStruct
+		Uin    int64  `jceId:"0"`
+		Flag   int64  `jceId:"1"`
+		Name   string `jceId:"2"`
+		Gender byte   `jceId:"3"`
+		Phone  string `jceId:"4"`
+		Email  string `jceId:"5"`
+		Remark string `jceId:"6"`
 	}
 )
 
@@ -339,18 +364,10 @@ func (pkt *SvcReqRegister) ToBytes() []byte {
 	return w.Bytes()
 }
 
-func (pkt *SvcReqRegister) ReadFrom(r *JceReader) {
-
-}
-
 func (pkt *FriendListRequest) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()
-}
-
-func (pkt *FriendListRequest) ReadFrom(r *JceReader) {
-
 }
 
 func (pkt *FriendInfo) ReadFrom(r *JceReader) {
@@ -373,10 +390,6 @@ func (pkt *TroopListRequest) ToBytes() []byte {
 	return w.Bytes()
 }
 
-func (pkt *TroopListRequest) ReadFrom(r *JceReader) {
-
-}
-
 func (pkt *TroopNumber) ReadFrom(r *JceReader) {
 	pkt.GroupUin = r.ReadInt64(0)
 	pkt.GroupCode = r.ReadInt64(1)
@@ -391,10 +404,6 @@ func (pkt *TroopMemberListRequest) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()
-}
-
-func (pkt *TroopMemberListRequest) ReadFrom(r *JceReader) {
-
 }
 
 func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
@@ -431,8 +440,8 @@ func (pkt *SvcRespPushMsg) ToBytes() []byte {
 	return w.Bytes()
 }
 
-func (pkt *SvcRespPushMsg) ReadFrom(r *JceReader) {
-}
-
-func (pkt *DelMsgInfo) ReadFrom(r *JceReader) {
+func (pkt *ModifyGroupCardRequest) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
 }

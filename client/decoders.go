@@ -311,7 +311,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	return rsp, nil
 }
 
-func decodeGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -329,6 +329,7 @@ func decodeGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}
 			OwnerUin:       g.GroupOwnerUin,
 			MemberCount:    uint16(g.MemberNum),
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
+			bot:            c,
 		})
 	}
 	return l, nil

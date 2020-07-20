@@ -678,6 +678,33 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 	return seq, packet
 }
 
+// friendlist.ModifyGroupCardReq
+func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag string) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &jce.ModifyGroupCardRequest{
+		GroupCode: groupCode,
+		UinInfo: []jce.IJceStruct{
+			&jce.UinInfo{
+				Uin:  memberUin,
+				Flag: 31,
+				Name: newTag,
+			},
+		},
+	}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"MGCREQ": packRequestDataV3(req.ToBytes())}}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		IRequestId:   c.nextPacketSeq(),
+		SServantName: "mqq.IMService.FriendListServiceServantObj",
+		SFuncName:    "ModifyGroupCardReq",
+		SBuffer:      buf.ToBytes(),
+		Context:      map[string]string{},
+		Status:       map[string]string{},
+	}
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.ModifyGroupCardReq", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
+
 /*
 func (c *QQClient) buildMultiMsgDownRequestPacket()  (uint16, []byte){
 	seq := c.nextSeq()
