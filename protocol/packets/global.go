@@ -91,11 +91,6 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 	}
 	reader.ReadString() // uin string
 	decrypted := func() (data []byte) {
-		defer func() {
-			if pan := recover(); pan != nil {
-				// TODO: bot.client.tryDecryptOrNull
-			}
-		}()
 		switch flag2 {
 		case 0:
 			return reader.ReadAvailable()

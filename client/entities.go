@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"strings"
 	"sync"
 )
 
@@ -174,6 +175,19 @@ const (
 	Member
 )
 
+func (g *GroupInfo) UpdateName(newName string) {
+	if g.AdministratorOrOwner() && strings.Count(newName, "") <= 20 {
+		g.bot.updateGroupName(g.Code, newName)
+		g.Name = newName
+	}
+}
+
+func (g *GroupInfo) MuteAll(mute bool) {
+	if g.AdministratorOrOwner() {
+		g.bot.groupMuteAll(g.Code, mute)
+	}
+}
+
 func (m *GroupMemberInfo) DisplayName() string {
 	if m.CardName == "" {
 		return m.Nickname
@@ -182,9 +196,16 @@ func (m *GroupMemberInfo) DisplayName() string {
 }
 
 func (m *GroupMemberInfo) EditCard(card string) {
-	if m.Manageable() {
-		m.Group.bot.EditMemberCard(m.Group.Code, m.Uin, card)
+	if m.Manageable() && strings.Count(card, "") <= 20 {
+		m.Group.bot.editMemberCard(m.Group.Code, m.Uin, card)
 		m.CardName = card
+	}
+}
+
+func (m *GroupMemberInfo) EditSpecialTitle(title string) {
+	if m.Group.SelfPermission() == Owner && strings.Count(title, "") <= 6 {
+		m.Group.bot.editMemberSpecialTitle(m.Group.Code, m.Uin, title)
+		m.SpecialTitle = title
 	}
 }
 

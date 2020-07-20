@@ -8,6 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
@@ -701,8 +702,73 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.ModifyGroupCardReq", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.ModifyGroupCardReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
+}
+
+// OidbSvc.0x8fc_2
+func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.D8FCReqBody{
+		GroupCode: groupCode,
+		MemLevelInfo: []*oidb.D8FCMemberInfo{
+			{
+				Uin:                    memberUin,
+				UinName:                []byte(newTitle),
+				SpecialTitle:           []byte(newTitle),
+				SpecialTitleExpireTime: -1,
+			},
+		},
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     2300,
+		ServiceType: 2,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8fc_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0x89a_0
+func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) (uint16, []byte) {
+	seq := c.nextSeq()
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:    2202,
+		Bodybuffer: b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x89a_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0x89a_0
+func (c *QQClient) buildGroupNameUpdatePacket(groupCode int64, newName string) (uint16, []byte) {
+	body := &oidb.D89AReqBody{
+		GroupCode: groupCode,
+		StGroupInfo: &oidb.D89AGroupinfo{
+			IngGroupName: []byte(newName),
+		},
+	}
+	return c.buildGroupOperationPacket(body)
+}
+
+// OidbSvc.0x89a_0
+func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, []byte) {
+	body := &oidb.D89AReqBody{
+		GroupCode: groupCode,
+		StGroupInfo: &oidb.D89AGroupinfo{
+			ShutupTime: func() int32 {
+				if mute {
+					return 1
+				}
+				return 0
+			}(),
+		},
+	}
+	return c.buildGroupOperationPacket(body)
 }
 
 /*

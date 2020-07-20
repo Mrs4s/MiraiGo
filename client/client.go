@@ -435,6 +435,10 @@ func (g *GroupInfo) SelfPermission() MemberPermission {
 	return g.FindMember(g.bot.Uin).Permission
 }
 
+func (g *GroupInfo) AdministratorOrOwner() bool {
+	return g.SelfPermission() == Administrator || g.SelfPermission() == Owner
+}
+
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	for _, m := range g.Members {
 		f := m
@@ -445,8 +449,20 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	return nil
 }
 
-func (c *QQClient) EditMemberCard(groupCode, memberUin int64, card string) {
+func (c *QQClient) editMemberCard(groupCode, memberUin int64, card string) {
 	_, _ = c.sendAndWait(c.buildEditGroupTagPacket(groupCode, memberUin, card))
+}
+
+func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title string) {
+	_, _ = c.sendAndWait(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
+}
+
+func (c *QQClient) updateGroupName(groupCode int64, newName string) {
+	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
+}
+
+func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {
+	_, _ = c.sendAndWait(c.buildGroupMuteAllPacket(groupCode, mute))
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
