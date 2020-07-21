@@ -555,18 +555,26 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 
 func (c *QQClient) loop() {
 	reader := binary.NewNetworkReader(c.Conn)
+	retry := 0
 	for c.Online {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			err = c.connect()
 			if err != nil {
 				c.Online = false
-				return
+				c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "Connection lost."})
+				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
 			c.registerClient()
 		}
 		if l <= 0 {
+			retry++
+			time.Sleep(time.Second * 3)
+			if retry > 10 {
+				c.Online = false
+				c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "Connection lost."})
+			}
 			continue
 		}
 		data, err := reader.ReadBytes(int(l) - 4)
@@ -582,6 +590,7 @@ func (c *QQClient) loop() {
 				continue
 			}
 		}
+		retry = 0
 		//fmt.Println(pkt.CommandName)
 		go func() {
 			decoder, ok := c.decoders[pkt.CommandName]
