@@ -329,7 +329,7 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 			OwnerUin:       g.GroupOwnerUin,
 			MemberCount:    uint16(g.MemberNum),
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
-			bot:            c,
+			client:         c,
 		})
 	}
 	return l, nil

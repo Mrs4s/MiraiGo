@@ -771,27 +771,26 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 	return c.buildGroupOperationPacket(body)
 }
 
-/*
-func (c *QQClient) buildMultiMsgDownRequestPacket()  (uint16, []byte){
+// OidbSvc.0x8a0_0
+func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := &multimsg.ReqBody{
-		Subcmd:               2,
-		TermType:             5,
-		PlatformType:         9,
-		NetType:              3,
-		BuildVer:             "8.2.0.1296",
-		MultimsgApplydownReq: []*multimsg.MultiMsgApplyDownReq{
+	body := &oidb.D8A0ReqBody{
+		OptUint64GroupCode: groupCode,
+		MsgKickList: []*oidb.D8A0KickMemberInfo{
 			{
-				MsgResid: []byte("xxx"),
-				MsgType:  3,
-				SrcUin:   000,
+				OptUint32Operate:   5,
+				OptUint64MemberUin: memberUin,
+				OptUint32Flag:      1,
 			},
 		},
-		BuType:               2,
-		ReqChannelType:       2,
+		KickMsg: []byte(kickMsg),
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:    2208,
+		Bodybuffer: b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
-*/

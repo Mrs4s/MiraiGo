@@ -432,7 +432,7 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 }
 
 func (g *GroupInfo) SelfPermission() MemberPermission {
-	return g.FindMember(g.bot.Uin).Permission
+	return g.FindMember(g.client.Uin).Permission
 }
 
 func (g *GroupInfo) AdministratorOrOwner() bool {
@@ -463,6 +463,10 @@ func (c *QQClient) updateGroupName(groupCode int64, newName string) {
 
 func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {
 	_, _ = c.sendAndWait(c.buildGroupMuteAllPacket(groupCode, mute))
+}
+
+func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string) {
+	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg))
 }
 
 func (g *GroupInfo) removeMember(uin int64) {

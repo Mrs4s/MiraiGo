@@ -52,7 +52,7 @@ type (
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
 
-		bot     *QQClient
+		client  *QQClient
 		memLock *sync.Mutex
 	}
 
@@ -177,14 +177,14 @@ const (
 
 func (g *GroupInfo) UpdateName(newName string) {
 	if g.AdministratorOrOwner() && newName != "" && strings.Count(newName, "") <= 20 {
-		g.bot.updateGroupName(g.Code, newName)
+		g.client.updateGroupName(g.Code, newName)
 		g.Name = newName
 	}
 }
 
 func (g *GroupInfo) MuteAll(mute bool) {
 	if g.AdministratorOrOwner() {
-		g.bot.groupMuteAll(g.Code, mute)
+		g.client.groupMuteAll(g.Code, mute)
 	}
 }
 
@@ -197,20 +197,26 @@ func (m *GroupMemberInfo) DisplayName() string {
 
 func (m *GroupMemberInfo) EditCard(card string) {
 	if m.Manageable() && strings.Count(card, "") <= 20 {
-		m.Group.bot.editMemberCard(m.Group.Code, m.Uin, card)
+		m.Group.client.editMemberCard(m.Group.Code, m.Uin, card)
 		m.CardName = card
 	}
 }
 
 func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 	if m.Group.SelfPermission() == Owner && strings.Count(title, "") <= 6 {
-		m.Group.bot.editMemberSpecialTitle(m.Group.Code, m.Uin, title)
+		m.Group.client.editMemberSpecialTitle(m.Group.Code, m.Uin, title)
 		m.SpecialTitle = title
 	}
 }
 
+func (m *GroupMemberInfo) Kick(msg string) {
+	if m.Uin != m.Group.client.Uin && m.Manageable() {
+		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg)
+	}
+}
+
 func (m *GroupMemberInfo) Manageable() bool {
-	if m.Uin == m.Group.bot.Uin {
+	if m.Uin == m.Group.client.Uin {
 		return true
 	}
 	self := m.Group.SelfPermission()

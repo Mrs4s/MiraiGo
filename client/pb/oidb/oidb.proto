@@ -3,121 +3,144 @@ syntax = "proto3";
 option go_package = ".;oidb";
 
 message OIDBSSOPkg {
-    int32 command = 1;
-    int32 serviceType = 2;
-    int32 result = 3;
-    bytes bodybuffer = 4;
-    string errorMsg = 5;
-    string clientVersion = 6;   
+  int32 command = 1;
+  int32 serviceType = 2;
+  int32 result = 3;
+  bytes bodybuffer = 4;
+  string errorMsg = 5;
+  string clientVersion = 6;
 }
 
+message D8A0RspBody {
+  int64 optUint64GroupCode = 1;
+  repeated D8A0KickResult msgKickResult = 2;
+}
+message D8A0KickResult {
+  int32 optUint32Result = 1;
+  int64 optUint64MemberUin = 2;
+}
+message D8A0KickMemberInfo {
+  int32 optUint32Operate = 1;
+  int64 optUint64MemberUin = 2;
+  int32 optUint32Flag = 3;
+  bytes optBytesMsg = 4;
+}
+message D8A0ReqBody {
+  int64 optUint64GroupCode = 1;
+  repeated D8A0KickMemberInfo msgKickList = 2;
+  repeated int64 kickList = 3;
+  int32 kickFlag = 4;
+  bytes kickMsg = 5;
+}
+
+
 message D8FCReqBody {
-    int64 groupCode = 1;
-    int32 showFlag = 2;
-    repeated D8FCMemberInfo memLevelInfo = 3;
-    repeated D8FCLevelName levelName = 4;
-    int32 updateTime = 5;
-    int32 officeMode = 6;
-    int32 groupOpenAppid = 7;
-    D8FCClientInfo msgClientInfo = 8;
-    bytes authKey = 9;
+  int64 groupCode = 1;
+  int32 showFlag = 2;
+  repeated D8FCMemberInfo memLevelInfo = 3;
+  repeated D8FCLevelName levelName = 4;
+  int32 updateTime = 5;
+  int32 officeMode = 6;
+  int32 groupOpenAppid = 7;
+  D8FCClientInfo msgClientInfo = 8;
+  bytes authKey = 9;
 }
 
 message D89AReqBody {
-    int64 groupCode = 1;
-    D89AGroupinfo stGroupInfo = 2;
-    int64 originalOperatorUin = 3;
-    int32 reqGroupOpenAppid = 4;
+  int64 groupCode = 1;
+  D89AGroupinfo stGroupInfo = 2;
+  int64 originalOperatorUin = 3;
+  int32 reqGroupOpenAppid = 4;
 }
 
 message D89AGroupinfo {
-    int32 groupExtAdmNum = 1;
-    int32 flag = 2;
-    bytes ingGroupName = 3;
-    bytes ingGroupMemo = 4;
-    bytes ingGroupFingerMemo = 5;
-    bytes ingGroupAioSkinUrl = 6;
-    bytes ingGroupBoardSkinUrl = 7;
-    bytes ingGroupCoverSkinUrl = 8;
-    int32 groupGrade = 9;
-    int32 activeMemberNum = 10;
-    int32 certificationType = 11;
-    bytes ingCertificationText = 12;
-    bytes ingGroupRichFingerMemo = 13;
-    D89AGroupNewGuidelinesInfo stGroupNewguidelines = 14;
-    int32 groupFace = 15;
-    int32 addOption = 16;
-    int32 shutupTime = 17;
-    int32 groupTypeFlag = 18;
-    bytes stringGroupTag = 19;
-    D89AGroupGeoInfo msgGroupGeoInfo = 20;
-    int32 groupClassExt = 21;
-    bytes ingGroupClassText = 22;
-    int32 appPrivilegeFlag = 23;
-    int32 appPrivilegeMask = 24;
-    D89AGroupExInfoOnly stGroupExInfo = 25;
-    int32 groupSecLevel = 26;
-    int32 groupSecLevelInfo = 27;
-    int64 subscriptionUin = 28;
-    int32 allowMemberInvite = 29;
-    bytes ingGroupQuestion = 30;
-    bytes ingGroupAnswer = 31;
-    int32 groupFlagext3 = 32;
-    int32 groupFlagext3Mask = 33;
-    int32 groupOpenAppid = 34;
-    int32 noFingerOpenFlag = 35;
-    int32 noCodeFingerOpenFlag = 36;
-    int64 rootId = 37;
-    int32 msgLimitFrequency = 38;
+  int32 groupExtAdmNum = 1;
+  int32 flag = 2;
+  bytes ingGroupName = 3;
+  bytes ingGroupMemo = 4;
+  bytes ingGroupFingerMemo = 5;
+  bytes ingGroupAioSkinUrl = 6;
+  bytes ingGroupBoardSkinUrl = 7;
+  bytes ingGroupCoverSkinUrl = 8;
+  int32 groupGrade = 9;
+  int32 activeMemberNum = 10;
+  int32 certificationType = 11;
+  bytes ingCertificationText = 12;
+  bytes ingGroupRichFingerMemo = 13;
+  D89AGroupNewGuidelinesInfo stGroupNewguidelines = 14;
+  int32 groupFace = 15;
+  int32 addOption = 16;
+  int32 shutupTime = 17;
+  int32 groupTypeFlag = 18;
+  bytes stringGroupTag = 19;
+  D89AGroupGeoInfo msgGroupGeoInfo = 20;
+  int32 groupClassExt = 21;
+  bytes ingGroupClassText = 22;
+  int32 appPrivilegeFlag = 23;
+  int32 appPrivilegeMask = 24;
+  D89AGroupExInfoOnly stGroupExInfo = 25;
+  int32 groupSecLevel = 26;
+  int32 groupSecLevelInfo = 27;
+  int64 subscriptionUin = 28;
+  int32 allowMemberInvite = 29;
+  bytes ingGroupQuestion = 30;
+  bytes ingGroupAnswer = 31;
+  int32 groupFlagext3 = 32;
+  int32 groupFlagext3Mask = 33;
+  int32 groupOpenAppid = 34;
+  int32 noFingerOpenFlag = 35;
+  int32 noCodeFingerOpenFlag = 36;
+  int64 rootId = 37;
+  int32 msgLimitFrequency = 38;
 }
 message D89AGroupNewGuidelinesInfo {
-    bool boolEnabled = 1;
-    bytes ingContent = 2;
+  bool boolEnabled = 1;
+  bytes ingContent = 2;
 }
 message D89AGroupExInfoOnly {
-    int32 tribeId = 1;
-    int32 moneyForAddGroup = 2;
+  int32 tribeId = 1;
+  int32 moneyForAddGroup = 2;
 }
 
 message D89AGroupGeoInfo {
-    int32 cityId = 1;
-    int64 longtitude = 2;
-    int64 latitude = 3;
-    bytes ingGeoContent = 4;
-    int64 poiId = 5;
+  int32 cityId = 1;
+  int64 longtitude = 2;
+  int64 latitude = 3;
+  bytes ingGeoContent = 4;
+  int64 poiId = 5;
 }
 
 message D8FCMemberInfo {
-    int64 uin = 1;
-    int32 point = 2;
-    int32 activeDay = 3;
-    int32 level = 4;
-    bytes specialTitle = 5;
-    int32 specialTitleExpireTime = 6;
-    bytes uinName = 7;
-    bytes memberCardName = 8;
-    bytes phone = 9;
-    bytes email = 10;
-    bytes remark = 11;
-    int32 gender = 12;
-    bytes job = 13;
-    int32 tribeLevel = 14;
-    int32 tribePoint = 15;
-    repeated D8FCCardNameElem richCardName = 16;
-    bytes commRichCardName = 17;   
+  int64 uin = 1;
+  int32 point = 2;
+  int32 activeDay = 3;
+  int32 level = 4;
+  bytes specialTitle = 5;
+  int32 specialTitleExpireTime = 6;
+  bytes uinName = 7;
+  bytes memberCardName = 8;
+  bytes phone = 9;
+  bytes email = 10;
+  bytes remark = 11;
+  int32 gender = 12;
+  bytes job = 13;
+  int32 tribeLevel = 14;
+  int32 tribePoint = 15;
+  repeated D8FCCardNameElem richCardName = 16;
+  bytes commRichCardName = 17;
 }
 
 message D8FCCardNameElem {
-    int32 enumCardType = 1;
-    bytes value = 2;
+  int32 enumCardType = 1;
+  bytes value = 2;
 }
 
 message D8FCLevelName {
-    int32 level = 1;
-    string name = 2;
+  int32 level = 1;
+  string name = 2;
 }
 
 message D8FCClientInfo {
-    int32 implat = 1;
-    string ingClientver = 2;
+  int32 implat = 1;
+  string ingClientver = 2;
 }
