@@ -215,6 +215,14 @@ func (m *GroupMemberInfo) Kick(msg string) {
 	}
 }
 
+func (m *GroupMemberInfo) Mute(time uint32) {
+	if m.Uin != m.Group.client.Uin && m.Manageable() {
+		if time < 2592000 {
+			m.Group.client.groupMute(m.Group.Code, m.Uin, time)
+		}
+	}
+}
+
 func (m *GroupMemberInfo) Manageable() bool {
 	if m.Uin == m.Group.client.Uin {
 		return true

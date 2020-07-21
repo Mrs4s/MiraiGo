@@ -465,6 +465,10 @@ func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {
 	_, _ = c.sendAndWait(c.buildGroupMuteAllPacket(groupCode, mute))
 }
 
+func (c *QQClient) groupMute(groupCode, memberUin int64, time uint32) {
+	_, _ = c.sendAndWait(c.buildGroupMutePacket(groupCode, memberUin, time))
+}
+
 func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string) {
 	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg))
 }

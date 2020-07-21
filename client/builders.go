@@ -794,3 +794,22 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+// OidbSvc.0x570_8
+func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &oidb.OIDBSSOPkg{
+		Command:     1392,
+		ServiceType: 8,
+		Bodybuffer: binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt32(uint32(groupCode))
+			w.WriteByte(32)
+			w.WriteUInt16(1)
+			w.WriteUInt32(uint32(memberUin))
+			w.WriteUInt32(time)
+		}),
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
