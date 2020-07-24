@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (c *QQClient) highwayUploadImage(ser string, updKey, img []byte) error {
+func (c *QQClient) highwayUploadImage(ser string, updKey, img []byte, cmdId int32) error {
 	conn, err := net.DialTimeout("tcp", ser, time.Second*5)
 	if err != nil {
 		return err
@@ -20,7 +20,7 @@ func (c *QQClient) highwayUploadImage(ser string, updKey, img []byte) error {
 		return err
 	}
 	h := md5.Sum(img)
-	pkt := c.buildImageUploadPacket(img, updKey, 2, h)
+	pkt := c.buildImageUploadPacket(img, updKey, cmdId, h)
 	for _, p := range pkt {
 		_, err = conn.Write(p)
 	}

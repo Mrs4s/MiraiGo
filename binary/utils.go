@@ -2,6 +2,7 @@ package binary
 
 import (
 	"bytes"
+	"compress/gzip"
 	"compress/zlib"
 	binary2 "encoding/binary"
 	"encoding/hex"
@@ -17,6 +18,22 @@ func ZlibUncompress(src []byte) []byte {
 	defer r.Close()
 	io.Copy(&out, r)
 	return out.Bytes()
+}
+
+func ZlibCompress(data []byte) []byte {
+	buf := new(bytes.Buffer)
+	w := zlib.NewWriter(buf)
+	_, _ = w.Write(data)
+	w.Close()
+	return buf.Bytes()
+}
+
+func GZipCompress(data []byte) []byte {
+	buf := new(bytes.Buffer)
+	w := gzip.NewWriter(buf)
+	_, _ = w.Write(data)
+	w.Close()
+	return buf.Bytes()
 }
 
 func CalculateImageResourceId(md5 []byte) string {

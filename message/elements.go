@@ -48,6 +48,11 @@ type ReplyElement struct {
 	//original []*msg.Elem
 }
 
+type ServiceElement struct {
+	Id      int32
+	Content string
+}
+
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
 }
@@ -127,6 +132,10 @@ func (e *FriendImageElement) Type() ElementType {
 
 func (e *AtElement) Type() ElementType {
 	return At
+}
+
+func (e *ServiceElement) Type() ElementType {
+	return Service
 }
 
 func (e *ReplyElement) Type() ElementType {

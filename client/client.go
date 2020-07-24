@@ -3,13 +3,18 @@ package client
 import (
 	"crypto/md5"
 	"errors"
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/golang/protobuf/proto"
 	"io"
 	"log"
+	"math"
 	"math/rand"
 	"net"
 	"strconv"
@@ -59,6 +64,7 @@ type QQClient struct {
 	groupSeq               int32
 	friendSeq              int32
 	groupDataTransSeq      int32
+	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
 
 	groupListLock *sync.Mutex
@@ -111,13 +117,14 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"LongConn.OffPicUp":                        decodeOffPicUpResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
-			//"MultiMsg.ApplyDown":                       decodeMultiMsgDownPacket,
+			"MultiMsg.ApplyUp":                         decodeMultiApplyUpResponse,
 		},
 		handlers:               map[uint16]func(interface{}, error){},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
 		groupSeq:               22911,
 		friendSeq:              22911,
+		highwayApplyUpSeq:      77918,
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
 		eventHandlers:          &eventHandlers{},
 		groupListLock:          new(sync.Mutex),
@@ -250,6 +257,48 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	}
 }
 
+// TODO: Need fix
+func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
+	if len(m.Nodes) >= 200 {
+		return nil
+	}
+	group := c.FindGroup(groupCode)
+	ts := time.Now().Unix()
+	seq := c.nextGroupSeq()
+	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
+	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, group.Uin))
+	if err != nil {
+		return nil
+	}
+	rsp := i.(*multimsg.MultiMsgApplyUpRsp)
+	body, _ := proto.Marshal(&longmsg.LongReqBody{
+		Subcmd:       1,
+		TermType:     5,
+		PlatformType: 9,
+		MsgUpReq: []*longmsg.LongMsgUpReq{
+			{
+				MsgType:    3,
+				DstUin:     group.Uin,
+				MsgContent: data,
+				StoreType:  2,
+				MsgUkey:    rsp.MsgUkey,
+			},
+		},
+	})
+	for i, ip := range rsp.Uint32UpIp {
+		updServer := binary.UInt32ToIPV4Address(uint32(ip))
+		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.Uint32UpPort[i]), 10), rsp.MsgSig, body, 27)
+		if err == nil {
+			var pv string
+			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
+				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
+			}
+			return c.SendGroupMessage(groupCode, genForwardMessage(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts))
+		}
+	}
+	return nil
+}
+
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
 	_, pkt := c.buildGroupRecallPacket(groupCode, msgId, msgInternalId)
 	_ = c.send(pkt)
@@ -271,7 +320,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 	}
 	for i, ip := range rsp.UploadIp {
 		updServer := binary.UInt32ToIPV4Address(uint32(ip))
-		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), rsp.UploadKey, img)
+		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), rsp.UploadKey, img, 2)
 		if err != nil {
 			continue
 		}
@@ -532,6 +581,12 @@ func (c *QQClient) nextFriendSeq() int32 {
 func (c *QQClient) nextGroupDataTransSeq() int32 {
 	s := atomic.LoadInt32(&c.groupDataTransSeq)
 	atomic.AddInt32(&c.groupDataTransSeq, 2)
+	return s
+}
+
+func (c *QQClient) nextHighwayApplySeq() int32 {
+	s := atomic.LoadInt32(&c.highwayApplyUpSeq)
+	atomic.AddInt32(&c.highwayApplyUpSeq, 2)
 	return s
 }
 

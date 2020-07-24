@@ -1,57 +1,73 @@
 package message
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/golang/protobuf/proto"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
-type PrivateMessage struct {
-	Id         int32
-	InternalId int32
-	Target     int64
-	Time       int32
-	Sender     *Sender
-	Elements   []IMessageElement
-}
+type (
+	PrivateMessage struct {
+		Id         int32
+		InternalId int32
+		Target     int64
+		Time       int32
+		Sender     *Sender
+		Elements   []IMessageElement
+	}
 
-type TempMessage struct {
-	Id        int32
-	GroupCode int64
-	GroupName string
-	Sender    *Sender
-	Elements  []IMessageElement
-}
+	TempMessage struct {
+		Id        int32
+		GroupCode int64
+		GroupName string
+		Sender    *Sender
+		Elements  []IMessageElement
+	}
 
-type GroupMessage struct {
-	Id         int32
-	InternalId int32
-	GroupCode  int64
-	GroupName  string
-	Sender     *Sender
-	Time       int32
-	Elements   []IMessageElement
-	//OriginalElements []*msg.Elem
-}
+	GroupMessage struct {
+		Id         int32
+		InternalId int32
+		GroupCode  int64
+		GroupName  string
+		Sender     *Sender
+		Time       int32
+		Elements   []IMessageElement
+		//OriginalElements []*msg.Elem
+	}
 
-type SendingMessage struct {
-	Elements []IMessageElement
-}
+	SendingMessage struct {
+		Elements []IMessageElement
+	}
 
-type Sender struct {
-	Uin      int64
-	Nickname string
-	CardName string
-	IsFriend bool
-}
+	ForwardMessage struct {
+		Nodes []*ForwardNode
+	}
 
-type IMessageElement interface {
-	Type() ElementType
-}
+	ForwardNode struct {
+		SenderId   int64
+		SenderName string
+		Time       int32
+		Message    []IMessageElement
+	}
 
-type ElementType int
+	Sender struct {
+		Uin      int64
+		Nickname string
+		CardName string
+		IsFriend bool
+	}
+
+	IMessageElement interface {
+		Type() ElementType
+	}
+
+	ElementType int
+)
 
 const (
 	Text ElementType = iota
@@ -59,6 +75,7 @@ const (
 	Face
 	At
 	Reply
+	Service
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -136,7 +153,7 @@ func (s *Sender) DisplayName() string {
 	return s.CardName
 }
 
-func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
+func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 	for _, elem := range elems {
 		if reply, ok := elem.(*ReplyElement); ok {
 			r = append(r, &msg.Elem{
@@ -145,7 +162,7 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 					SenderUin: reply.Sender,
 					Time:      reply.Time,
 					Flag:      1,
-					Elems:     ToProtoElems(reply.Elements),
+					Elems:     ToProtoElems(reply.Elements, false),
 					RichMsg:   []byte{},
 					PbReserve: []byte{},
 					SrcMsg:    []byte{},
@@ -154,6 +171,9 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 			})
 		}
 	}
+	imgOld := []byte{0x15, 0x36, 0x20, 0x39, 0x32, 0x6B, 0x41, 0x31, 0x00, 0x38, 0x37, 0x32, 0x66, 0x30, 0x36, 0x36, 0x30, 0x33, 0x61, 0x65, 0x31, 0x30, 0x33, 0x62, 0x37, 0x20, 0x20, 0x20, 0x20, 0x20,
+		0x20, 0x35, 0x30, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x7B, 0x30, 0x31, 0x45, 0x39, 0x34, 0x35, 0x31, 0x42, 0x2D, 0x37, 0x30, 0x45, 0x44,
+		0x2D, 0x45, 0x41, 0x45, 0x33, 0x2D, 0x42, 0x33, 0x37, 0x43, 0x2D, 0x31, 0x30, 0x31, 0x46, 0x31, 0x45, 0x45, 0x42, 0x46, 0x35, 0x42, 0x35, 0x7D, 0x2E, 0x70, 0x6E, 0x67, 0x41}
 	for _, elem := range elems {
 		switch e := elem.(type) {
 		case *TextElement:
@@ -190,15 +210,22 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 				},
 			})
 			r = append(r, &msg.Elem{Text: &msg.Text{Str: " "}})
+		case *ImageElement:
+			r = append(r, &msg.Elem{
+				CustomFace: &msg.CustomFace{
+					FilePath: e.Filename,
+					Md5:      e.Md5,
+					Flag:     make([]byte, 4),
+					OldData:  imgOld,
+				},
+			})
 		case *GroupImageElement:
 			r = append(r, &msg.Elem{
 				CustomFace: &msg.CustomFace{
 					FilePath: e.ImageId,
 					Md5:      e.Md5[:],
 					Flag:     make([]byte, 4),
-					OldData: []byte{0x15, 0x36, 0x20, 0x39, 0x32, 0x6B, 0x41, 0x31, 0x00, 0x38, 0x37, 0x32, 0x66, 0x30, 0x36, 0x36, 0x30, 0x33, 0x61, 0x65, 0x31, 0x30, 0x33, 0x62, 0x37, 0x20, 0x20, 0x20, 0x20, 0x20,
-						0x20, 0x35, 0x30, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x7B, 0x30, 0x31, 0x45, 0x39, 0x34, 0x35, 0x31, 0x42, 0x2D, 0x37, 0x30, 0x45, 0x44,
-						0x2D, 0x45, 0x41, 0x45, 0x33, 0x2D, 0x42, 0x33, 0x37, 0x43, 0x2D, 0x31, 0x30, 0x31, 0x46, 0x31, 0x45, 0x45, 0x42, 0x46, 0x35, 0x42, 0x35, 0x7D, 0x2E, 0x70, 0x6E, 0x67, 0x41},
+					OldData:  imgOld,
 				},
 			})
 		case *FriendImageElement:
@@ -213,6 +240,34 @@ func ToProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 					PbReserve:    []byte{0x78, 0x02},
 				},
 			})
+		case *ServiceElement:
+			if e.Id == 35 {
+				r = append(r, &msg.Elem{
+					RichMsg: &msg.RichMsg{
+						Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+						ServiceId: e.Id,
+						MsgResId:  []byte{},
+					},
+				})
+				r = append(r, &msg.Elem{
+					Text: &msg.Text{
+						Str: "你的QQ暂不支持查看[转发多条消息]，请期待后续版本。",
+					},
+				})
+			}
+		}
+	}
+	if generalFlags {
+		for _, elem := range elems {
+			switch elem.(type) {
+			case *ServiceElement:
+				d, _ := hex.DecodeString("08 09 78 00 C8 01 00 F0 01 00 F8 01 00 90 02 00 C8 02 00 98 03 00 A0 03 20 B0 03 00 C0 03 00 D0 03 00 E8 03 00 8A 04 02 08 03 90 04 80 80 80 10 B8 04 00 C0 04 00")
+				r = append(r, &msg.Elem{
+					GeneralFlags: &msg.GeneralFlags{
+						PbReserve: d,
+					},
+				})
+			}
 		}
 	}
 	return
@@ -287,4 +342,54 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 	}
 	return res
+}
+
+func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCode int64) ([]byte, []byte) {
+	var msgs []*msg.Message
+	for _, node := range forMsg.Nodes {
+		msgs = append(msgs, &msg.Message{
+			Head: &msg.MessageHead{
+				FromUin: node.SenderId,
+				MsgSeq:  seq,
+				MsgTime: node.Time,
+				MsgUid:  0x01000000000000000 | int64(random),
+				MutiltransHead: &msg.MutilTransHead{
+					MsgId: 1,
+				},
+				MsgType: 82,
+				GroupInfo: &msg.GroupInfo{
+					GroupCode: groupCode,
+					GroupCard: node.SenderName,
+				},
+			},
+			Body: &msg.MessageBody{
+				RichText: &msg.RichText{
+					Elems: ToProtoElems(node.Message, false),
+				},
+			},
+		})
+	}
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	return data, hash[:]
+}
+
+func ToReadableString(m []IMessageElement) (r string) {
+	for _, elem := range m {
+		switch e := elem.(type) {
+		case *TextElement:
+			r += e.Content
+		case *ImageElement:
+			r += "[图片]"
+		case *FaceElement:
+			r += "/" + e.Name
+		case *GroupImageElement:
+			r += "[图片]"
+		case *AtElement:
+			r += e.Display
+		}
+	}
+	return
 }

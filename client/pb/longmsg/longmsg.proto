@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option go_package = ".;longmsg";
+
+message LongMsgDeleteReq {
+  bytes msgResid = 1;
+  int32 msgType = 2;
+}
+message LongMsgDeleteRsp {
+  int32 result = 1;
+  bytes msgResid = 2;
+}
+message LongMsgDownReq {
+  int32 srcUin = 1;
+  bytes msgResid = 2;
+  int32 msgType = 3;
+  int32 needCache = 4;
+}
+message LongMsgDownRsp {
+  int32 result = 1;
+  bytes msgResid = 2;
+  bytes msgContent = 3;
+}
+message LongMsgUpReq {
+  int32 msgType = 1;
+  int64 dstUin = 2;
+  int32 msgId = 3;
+  bytes msgContent = 4;
+  int32 storeType = 5;
+  bytes msgUkey = 6;
+  int32 needCache = 7;
+}
+message LongMsgUpRsp {
+  int32 result = 1;
+  int32 msgId = 2;
+  bytes msgResid = 3;
+}
+message LongReqBody {
+  int32 subcmd = 1;
+  int32 termType = 2;
+  int32 platformType = 3;
+  repeated LongMsgUpReq msgUpReq = 4;
+  repeated LongMsgDownReq msgDownReq = 5;
+  repeated LongMsgDeleteReq msgDelReq = 6;
+  int32 agentType = 10;
+}
+message LongRspBody {
+  int32 subcmd = 1;
+  repeated LongMsgUpRsp msgUpRsp = 2;
+  repeated LongMsgDownRsp msgDownRsp = 3;
+  repeated LongMsgDeleteRsp msgDelRsp = 4;
+}
+   

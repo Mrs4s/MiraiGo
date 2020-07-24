@@ -203,7 +203,7 @@ message Elem {
   //SmallEmoji? smallEmoji = 34;
   //FSJMessageElem? fsjMsgElem = 35;
   //ArkAppElem? arkApp = 36;
-  //GeneralFlags? generalFlags = 37;
+  GeneralFlags generalFlags = 37;
   //CustomFace? hcFlashPic = 38;
   //DeliverGiftMsg? deliverGiftMsg = 39;
   //BitAppMsg? bitappMsg = 40;
@@ -589,6 +589,41 @@ message TransMsgInfo {
   int32 svrIp = 11;
   ExtGroupKeyInfo extGroupKeyInfo = 12;
   int32 generalFlag = 17;
+}
+
+message GeneralFlags {
+  int32 bubbleDiyTextId = 1;
+  int32 groupFlagNew = 2;
+  int64 uin = 3;
+  bytes rpId = 4;
+  int32 prpFold = 5;
+  int32 longTextFlag = 6;
+  string longTextResid = 7;
+  int32 groupType = 8;
+  int32 toUinFlag = 9;
+  int32 glamourLevel = 10;
+  int32 memberLevel = 11;
+  int64 groupRankSeq = 12;
+  int32 olympicTorch = 13;
+  bytes babyqGuideMsgCookie = 14;
+  int32 uin32ExpertFlag = 15;
+  int32 bubbleSubId = 16;
+  int64 pendantId = 17;
+  bytes rpIndex = 18;
+  bytes pbReserve = 19;
+}
+
+
+message PbMultiMsgItem {
+  string fileName = 1;
+  bytes buffer = 2;
+}
+message PbMultiMsgNew {
+  repeated Message msg = 1;
+}
+message PbMultiMsgTransmit {
+  repeated Message msg = 1;
+  repeated PbMultiMsgItem pbItemList = 2;
 }
 
 enum SyncFlag {

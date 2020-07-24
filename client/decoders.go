@@ -7,6 +7,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/golang/protobuf/proto"
 	"sync"
@@ -666,4 +667,22 @@ func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: tips})
 	}
 	return nil, nil
+}
+
+func decodeMultiApplyUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	body := multimsg.MultiRspBody{}
+	if err := proto.Unmarshal(payload, &body); err != nil {
+		return nil, err
+	}
+	if len(body.MultimsgApplyupRsp) == 0 {
+		return nil, errors.New("rsp is empty")
+	}
+	rsp := body.MultimsgApplyupRsp[0]
+	switch rsp.Result {
+	case 0:
+		return rsp, nil
+	case 193:
+		return nil, errors.New("too large")
+	}
+	return nil, errors.New("failed")
 }

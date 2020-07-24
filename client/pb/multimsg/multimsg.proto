@@ -43,7 +43,7 @@ message MultiMsgApplyUpRsp {
   repeated bytes bytesUpIpV6 = 12;
   repeated int32 uint32UpV6Port = 13;
 }
-message ReqBody {
+message MultiReqBody {
   int32 subcmd = 1;
   int32 termType = 2;
   int32 platformType = 3;
@@ -54,9 +54,8 @@ message ReqBody {
   int32 buType = 8;
   int32 reqChannelType = 9;
 }
-message RspBody {
+message MultiRspBody {
   int32 subcmd = 1;
   repeated MultiMsgApplyUpRsp multimsgApplyupRsp = 2;
   repeated MultiMsgApplyDownRsp multimsgApplydownRsp = 3;
 }
-    

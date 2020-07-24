@@ -8,6 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -384,19 +385,34 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 // MessageSvc.PbSendMsg
 func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
+	forward := func() bool {
+		for _, elem := range m.Elements {
+			if e, ok := elem.(*message.ServiceElement); ok {
+				if e.Id == 35 {
+					return true
+				}
+			}
+		}
+		return false
+	}()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
 		ContentHead: &msg.ContentHead{PkgNum: 1},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m.Elements),
+				Elems: message.ToProtoElems(m.Elements, true),
 			},
 		},
 		MsgSeq:     c.nextGroupSeq(),
 		MsgRand:    r,
 		SyncCookie: EmptyBytes,
 		MsgVia:     1,
-		MsgCtrl:    nil,
+		MsgCtrl: func() *msg.MsgCtrl {
+			if forward {
+				return &msg.MsgCtrl{MsgFlag: 4}
+			}
+			return nil
+		}(),
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
@@ -411,7 +427,7 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r int32, time 
 		ContentHead: &msg.ContentHead{PkgNum: 1},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m.Elements),
+				Elems: message.ToProtoElems(m.Elements, false),
 			},
 		},
 		MsgSeq:  msgSeq,
@@ -507,6 +523,9 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 				Seq: func() int32 {
 					if commandId == 2 {
 						return c.nextGroupDataTransSeq()
+					}
+					if commandId == 27 {
+						return c.nextHighwayApplySeq()
 					}
 					return c.nextGroupDataTransSeq()
 				}(),
@@ -811,5 +830,29 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// MultiMsg.ApplyUp
+func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, groupUin int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &multimsg.MultiReqBody{
+		Subcmd:       1,
+		TermType:     5,
+		PlatformType: 9,
+		NetType:      3,
+		BuildVer:     "8.2.0.1296",
+		MultimsgApplyupReq: []*multimsg.MultiMsgApplyUpReq{
+			{
+				DstUin:  groupUin,
+				MsgSize: int64(len(data)),
+				MsgMd5:  hash,
+				MsgType: 3,
+			},
+		},
+		BuType: 2,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
