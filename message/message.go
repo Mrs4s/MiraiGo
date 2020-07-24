@@ -352,13 +352,15 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 				FromUin: node.SenderId,
 				MsgSeq:  seq,
 				MsgTime: node.Time,
-				MsgUid:  0x01000000000000000 | int64(random),
+				MsgUid:  0x01000000000000000 | (int64(random) & 0xFFFF_FFFF),
 				MutiltransHead: &msg.MutilTransHead{
 					MsgId: 1,
 				},
 				MsgType: 82,
 				GroupInfo: &msg.GroupInfo{
 					GroupCode: groupCode,
+					GroupRank: []byte{},
+					GroupName: []byte{},
 					GroupCard: node.SenderName,
 				},
 			},

@@ -257,16 +257,15 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	}
 }
 
-// TODO: Need fix
+// 目前似乎iOS端无法正常打开转发消息，经测试数据上传正常，应该是解析问题。iOS目前没有越狱设备抓不到日志，有空再测试。
 func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
 	if len(m.Nodes) >= 200 {
 		return nil
 	}
-	group := c.FindGroup(groupCode)
 	ts := time.Now().Unix()
 	seq := c.nextGroupSeq()
 	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
-	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, group.Uin))
+	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, utils.ToGroupUin(groupCode)))
 	if err != nil {
 		return nil
 	}
@@ -278,7 +277,7 @@ func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage
 		MsgUpReq: []*longmsg.LongMsgUpReq{
 			{
 				MsgType:    3,
-				DstUin:     group.Uin,
+				DstUin:     utils.ToGroupUin(groupCode),
 				MsgContent: data,
 				StoreType:  2,
 				MsgUkey:    rsp.MsgUkey,
@@ -674,7 +673,7 @@ func (c *QQClient) loop() {
 			}
 		}()
 	}
-	c.Conn.Close()
+	_ = c.Conn.Close()
 }
 
 func (c *QQClient) heartbeat() {

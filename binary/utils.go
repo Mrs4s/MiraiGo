@@ -32,8 +32,17 @@ func GZipCompress(data []byte) []byte {
 	buf := new(bytes.Buffer)
 	w := gzip.NewWriter(buf)
 	_, _ = w.Write(data)
-	w.Close()
+	_ = w.Close()
 	return buf.Bytes()
+}
+
+func GZipUncompress(src []byte) []byte {
+	b := bytes.NewReader(src)
+	var out bytes.Buffer
+	r, _ := gzip.NewReader(b)
+	defer r.Close()
+	_, _ = io.Copy(&out, r)
+	return out.Bytes()
 }
 
 func CalculateImageResourceId(md5 []byte) string {
