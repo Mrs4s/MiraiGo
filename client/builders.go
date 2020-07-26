@@ -856,3 +856,26 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, groupUin int64) (u
 	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+// MultiMsg.ApplyDown
+func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &multimsg.MultiReqBody{
+		Subcmd:       2,
+		TermType:     5,
+		PlatformType: 9,
+		NetType:      3,
+		BuildVer:     "8.2.0.1296",
+		MultimsgApplydownReq: []*multimsg.MultiMsgApplyDownReq{
+			{
+				MsgResid: []byte(resId),
+				MsgType:  3,
+			},
+		},
+		BuType:         2,
+		ReqChannelType: 2,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}

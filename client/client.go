@@ -118,6 +118,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
 			"MultiMsg.ApplyUp":                         decodeMultiApplyUpResponse,
+			"MultiMsg.ApplyDown":                       decodeMultiApplyDownResponse,
 		},
 		handlers:               map[uint16]func(interface{}, error){},
 		sigInfo:                &loginSigInfo{},
@@ -257,7 +258,30 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	}
 }
 
-// 目前似乎iOS端无法正常打开转发消息，经测试数据上传正常，应该是解析问题。iOS目前没有越狱设备抓不到日志，有空再测试。
+func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
+	i, err := c.sendAndWait(c.buildMultiApplyDownPacket(resId))
+	if err != nil {
+		return nil
+	}
+	multiMsg := i.(*msg.PbMultiMsgTransmit)
+	ret := &message.ForwardMessage{}
+	for _, m := range multiMsg.Msg {
+		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
+			SenderId: m.Head.FromUin,
+			SenderName: func() string {
+				if m.Head.MsgType == 82 {
+					return m.Head.GroupInfo.GroupCard
+				}
+				return m.Head.FromNick
+			}(),
+			Time:    m.Head.MsgTime,
+			Message: message.ParseMessageElems(m.Body.RichText.Elems),
+		})
+	}
+	return ret
+}
+
+// 目前手机端无法解析，可能是加密的问题，等待修复
 func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
 	if len(m.Nodes) >= 200 {
 		return nil

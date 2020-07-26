@@ -2,13 +2,16 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
+	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 	"sync"
 	"sync/atomic"
@@ -685,4 +688,38 @@ func decodeMultiApplyUpResponse(c *QQClient, _ uint16, payload []byte) (interfac
 		return nil, errors.New("too large")
 	}
 	return nil, errors.New("failed")
+}
+
+func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	body := multimsg.MultiRspBody{}
+	if err := proto.Unmarshal(payload, &body); err != nil {
+		return nil, err
+	}
+	if len(body.MultimsgApplydownRsp) == 0 {
+		return nil, errors.New("not found")
+	}
+	rsp := body.MultimsgApplydownRsp[0]
+	i := binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0]))
+	b, err := utils.HttpGetBytes(fmt.Sprintf("http://%s:%d%s", i, body.MultimsgApplydownRsp[0].Uint32DownPort[0], string(rsp.ThumbDownPara)))
+	if err != nil {
+		return nil, err
+	}
+	tea := binary.NewTeaCipher(body.MultimsgApplydownRsp[0].MsgKey)
+	r := binary.NewReader(b[1:])
+	i1 := r.ReadInt32()
+	i2 := r.ReadInt32()
+	if i1 > 0 {
+		r.ReadBytes(int(i1)) // highway head
+	}
+	data := tea.Decrypt(r.ReadBytes(int(i2)))
+	lb := longmsg.LongRspBody{}
+	if err = proto.Unmarshal(data, &lb); err != nil {
+		return nil, err
+	}
+	uc := binary.GZipUncompress(lb.MsgDownRsp[0].MsgContent)
+	mt := msg.PbMultiMsgTransmit{}
+	if err = proto.Unmarshal(uc, &mt); err != nil {
+		return nil, err
+	}
+	return &mt, nil
 }
