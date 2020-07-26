@@ -13,6 +13,8 @@ func HttpGetBytes(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header["User-Agent"] = []string{"QQ/8.2.0.1296 CFNetwork/1126"}
+	req.Header["Met-Type"] = []string{"Wifi"}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
