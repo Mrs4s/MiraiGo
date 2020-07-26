@@ -7,6 +7,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/golang/protobuf/proto"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -76,6 +77,7 @@ const (
 	At
 	Reply
 	Service
+	Forward
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -307,6 +309,11 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				content = string(binary.ZlibUncompress(elem.RichMsg.Template1[1:]))
 			}
 			if content != "" {
+				if elem.RichMsg.ServiceId == 35 {
+					reg := regexp.MustCompile(`m_resid="(\w+?.*?)"`)
+					res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})
+					continue
+				}
 				res = append(res, NewText(content))
 			}
 		}

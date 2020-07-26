@@ -278,7 +278,7 @@ func packRequestDataV3(data []byte) (r []byte) {
 	return
 }
 
-func genForwardMessage(resId, preview, title, brief, source, summary string, ts int64) *message.SendingMessage {
+func genForwardCard(resId, preview, title, brief, source, summary string, ts int64) *message.SendingMessage {
 	template := fmt.Sprintf(`
         <?xml version='1.0' encoding='UTF-8'?>
         <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">

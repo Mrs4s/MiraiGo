@@ -53,6 +53,10 @@ type ServiceElement struct {
 	Content string
 }
 
+type ForwardElement struct {
+	ResId string
+}
+
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
 }
@@ -140,6 +144,10 @@ func (e *ServiceElement) Type() ElementType {
 
 func (e *ReplyElement) Type() ElementType {
 	return Reply
+}
+
+func (e *ForwardElement) Type() ElementType {
+	return Forward
 }
 
 var faceMap = map[int]string{
