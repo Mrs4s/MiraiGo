@@ -679,6 +679,11 @@ func (c *QQClient) loop() {
 		retry = 0
 		//fmt.Println(pkt.CommandName)
 		go func() {
+			defer func() {
+				if pan := recover(); pan != nil {
+					//
+				}
+			}()
 			decoder, ok := c.decoders[pkt.CommandName]
 			if !ok {
 				if f, ok := c.handlers[pkt.SequenceId]; ok {
