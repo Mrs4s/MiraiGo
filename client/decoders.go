@@ -672,6 +672,13 @@ func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	return nil, nil
 }
 
+func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
+	if c.Online {
+		c.Online = false
+		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "服务器端强制下线."})
+	}
+}
+
 func decodeMultiApplyUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	body := multimsg.MultiRspBody{}
 	if err := proto.Unmarshal(payload, &body); err != nil {

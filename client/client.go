@@ -103,6 +103,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		decoders: map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 			"wtlogin.login":                            decodeLoginResponse,
 			"StatSvc.register":                         decodeClientRegisterResponse,
+			"StatSvc.ReqMSFOffline":                    decodeMSFOfflinePacket,
 			"MessageSvc.PushNotify":                    decodeSvcNotify,
 			"OnlinePush.PbPushGroupMsg":                decodeGroupMessagePacket,
 			"OnlinePush.ReqPush":                       decodeOnlinePushReqPacket,
