@@ -717,7 +717,7 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 	i1 := r.ReadInt32()
 	i2 := r.ReadInt32()
 	if i1 > 0 {
-		r.ReadBytes(int(i1)) // highway head
+		r.ReadBytes(int(i1)) // im msg head
 	}
 	data := tea.Decrypt(r.ReadBytes(int(i2)))
 	lb := longmsg.LongRspBody{}

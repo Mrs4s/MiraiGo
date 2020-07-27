@@ -282,7 +282,6 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	return ret
 }
 
-// 目前手机端无法解析，可能是加密的问题，等待修复
 func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
 	if len(m.Nodes) >= 200 {
 		return nil

@@ -378,7 +378,13 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 			},
 		})
 	}
-	trans := &msg.PbMultiMsgTransmit{Msg: msgs}
+	buf, _ := proto.Marshal(&msg.PbMultiMsgNew{Msg: msgs})
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
+		{
+			FileName: "MultiMsg",
+			Buffer:   buf,
+		},
+	}}
 	b, _ := proto.Marshal(trans)
 	data := binary.GZipCompress(b)
 	hash := md5.Sum(data)
