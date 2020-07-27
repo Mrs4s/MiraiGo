@@ -677,6 +677,7 @@ func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error
 		c.Online = false
 		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "服务器端强制下线."})
 	}
+	return nil, nil
 }
 
 func decodeMultiApplyUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
