@@ -279,17 +279,7 @@ func packRequestDataV3(data []byte) (r []byte) {
 }
 
 func genForwardCard(resId, preview, title, brief, source, summary string, ts int64) *message.SendingMessage {
-	template := fmt.Sprintf(`
-        <?xml version='1.0' encoding='UTF-8'?>
-        <msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0">
-            <item layout="1">
-               <title color="#000000" size="34">%s</title>
-                %s
-                <hr></hr>
-                <summary size="26" color="#808080">%s</summary>
-            </item>
-            <source name="%s"></source>
-        </msg>`, brief, resId, ts, title, preview, summary, source)
+	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`, brief, resId, ts, title, preview, summary, source)
 	return &message.SendingMessage{Elements: []message.IMessageElement{
 		&message.ServiceElement{
 			Id:      35,
