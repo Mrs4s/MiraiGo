@@ -40,7 +40,7 @@ type QQClient struct {
 	Conn                    net.Conn
 
 	decoders map[string]func(*QQClient, uint16, []byte) (interface{}, error)
-	handlers map[uint16]func(interface{}, error)
+	handlers sync.Map
 
 	syncCookie       []byte
 	pubAccountCookie []byte
@@ -121,7 +121,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MultiMsg.ApplyUp":                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                       decodeMultiApplyDownResponse,
 		},
-		handlers:               map[uint16]func(interface{}, error){},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
 		groupSeq:               22911,
@@ -629,14 +628,19 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 	}
 	ch := make(chan T)
 	defer close(ch)
-	c.handlers[seq] = func(i interface{}, err error) {
+	c.handlers.Store(seq, func(i interface{}, err error) {
 		ch <- T{
 			Response: i,
 			Error:    err,
 		}
+	})
+	select {
+	case rsp := <-ch:
+		return rsp.Response, rsp.Error
+	case <-time.After(time.Second * 15):
+		c.handlers.Delete(seq)
+		return nil, errors.New("time out")
 	}
-	rsp := <-ch
-	return rsp.Response, rsp.Error
 }
 
 func (c *QQClient) loop() {
@@ -686,9 +690,9 @@ func (c *QQClient) loop() {
 			}()
 			decoder, ok := c.decoders[pkt.CommandName]
 			if !ok {
-				if f, ok := c.handlers[pkt.SequenceId]; ok {
-					delete(c.handlers, pkt.SequenceId)
-					f(nil, nil)
+				if f, ok := c.handlers.Load(pkt.SequenceId); ok {
+					c.handlers.Delete(pkt.SequenceId)
+					f.(func(i interface{}, err error))(nil, nil)
 				}
 				return
 			}
@@ -696,9 +700,9 @@ func (c *QQClient) loop() {
 			if err != nil {
 				log.Println("decode", pkt.CommandName, "error:", err)
 			}
-			if f, ok := c.handlers[pkt.SequenceId]; ok {
-				delete(c.handlers, pkt.SequenceId)
-				f(rsp, err)
+			if f, ok := c.handlers.Load(pkt.SequenceId); ok {
+				c.handlers.Delete(pkt.SequenceId)
+				f.(func(i interface{}, err error))(rsp, err)
 			}
 		}()
 	}

@@ -1,5 +1,5 @@
 # MiraiGo
-qq-android协议的golang实现 移植于Mirai
+qq-android协议的golang实现 移植于mirai
 
 # 警告
 本项目目前还处于功能填充阶段，将来API和项目结构可能会有调整，目前不推荐使用。
