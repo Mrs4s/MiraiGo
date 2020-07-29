@@ -51,6 +51,8 @@ type ReplyElement struct {
 type ServiceElement struct {
 	Id      int32
 	Content string
+	ResId   string
+	SubType string
 }
 
 type ForwardElement struct {

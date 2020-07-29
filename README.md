@@ -17,7 +17,8 @@ qq-android协议的golang实现 移植于mirai
 - [x] 表情
 - [x] At
 - [x] 回复
-- [ ] 长消息
+- [x] 长消息
+- [ ] 富文本 ( xml/json/小程序 等 )
 - [x] 合并转发
 
 #### 事件

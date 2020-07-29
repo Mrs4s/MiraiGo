@@ -383,18 +383,8 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, forward bool, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
-	forward := func() bool {
-		for _, elem := range m.Elements {
-			if e, ok := elem.(*message.ServiceElement); ok {
-				if e.Id == 35 {
-					return true
-				}
-			}
-		}
-		return false
-	}()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
 		ContentHead: &msg.ContentHead{PkgNum: 1},
@@ -834,7 +824,7 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 }
 
 // MultiMsg.ApplyUp
-func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, groupUin int64) (uint16, []byte) {
+func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &multimsg.MultiReqBody{
 		Subcmd:       1,
@@ -850,7 +840,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, groupUin int64) (u
 				MsgType: 3,
 			},
 		},
-		BuType: 2,
+		BuType: buType,
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)

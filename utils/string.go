@@ -21,3 +21,23 @@ func RandomStringRange(len int, str string) string {
 	}
 	return res
 }
+
+func ChineseLength(str string, limit int) int {
+	sum := 0
+	for _, r := range []rune(str) {
+		switch {
+		case r >= '\u0000' && r <= '\u007F':
+			sum += 1
+		case r >= '\u0080' && r <= '\u07FF':
+			sum += 2
+		case r >= '\u0800' && r <= '\uFFFF':
+			sum += 3
+		default:
+			sum += 4
+		}
+		if sum >= limit {
+			break
+		}
+	}
+	return sum
+}

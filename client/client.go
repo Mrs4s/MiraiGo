@@ -205,6 +205,25 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 }
 
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {
+	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
+	msgLen := message.EstimateLength(m.Elements, 703)
+	if msgLen > 5000 || imgCount > 50 {
+		return nil
+	}
+	if msgLen > 702 || imgCount > 2 {
+		return c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
+			{
+				SenderId:   c.Uin,
+				SenderName: c.Nickname,
+				Time:       int32(time.Now().Unix()),
+				Message:    m.Elements,
+			},
+		}})
+	}
+	return c.sendGroupMessage(groupCode, false, m)
+}
+
+func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
@@ -214,7 +233,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	_, pkt := c.buildGroupSendingPacket(groupCode, mr, m)
+	_, pkt := c.buildGroupSendingPacket(groupCode, mr, forward, m)
 	_ = c.send(pkt)
 	var mid int32
 	ret := &message.GroupMessage{
@@ -281,14 +300,24 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	return ret
 }
 
-func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
+func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
+	return c.sendGroupLongOrForwardMessage(groupCode, false, m)
+}
+
+func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m *message.ForwardMessage) *message.GroupMessage {
 	if len(m.Nodes) >= 200 {
 		return nil
 	}
 	ts := time.Now().Unix()
 	seq := c.nextGroupSeq()
 	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
-	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, utils.ToGroupUin(groupCode)))
+	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, func() int32 {
+		if isLong {
+			return 1
+		} else {
+			return 2
+		}
+	}(), utils.ToGroupUin(groupCode)))
 	if err != nil {
 		return nil
 	}
@@ -311,11 +340,24 @@ func (c *QQClient) SendForwardMessage(groupCode int64, m *message.ForwardMessage
 		updServer := binary.UInt32ToIPV4Address(uint32(ip))
 		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.Uint32UpPort[i]), 10), rsp.MsgSig, body, 27)
 		if err == nil {
-			var pv string
-			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
-				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
+			if !isLong {
+				var pv string
+				for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
+					pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
+				}
+				return c.sendGroupMessage(groupCode, true, genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts))
 			}
-			return c.SendGroupMessage(groupCode, genForwardCard(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts))
+			bri := func() string {
+				var r string
+				for _, n := range m.Nodes {
+					r += message.ToReadableString(n.Message)
+					if len(r) >= 27 {
+						break
+					}
+				}
+				return r
+			}()
+			return c.sendGroupMessage(groupCode, false, genLongTemplate(rsp.MsgResid, bri, ts))
 		}
 	}
 	return nil

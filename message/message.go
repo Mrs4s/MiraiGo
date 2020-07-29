@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"math"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -148,6 +150,47 @@ func (msg *SendingMessage) Append(e IMessageElement) *SendingMessage {
 	return msg
 }
 
+func (msg *SendingMessage) Any(filter func(e IMessageElement) bool) bool {
+	for _, e := range msg.Elements {
+		if filter(e) {
+			return true
+		}
+	}
+	return false
+}
+
+func (msg *SendingMessage) Count(filter func(e IMessageElement) bool) (c int) {
+	for _, e := range msg.Elements {
+		if filter(e) {
+			c++
+		}
+	}
+	return
+}
+
+func EstimateLength(elems []IMessageElement, limit int) int {
+	sum := 0
+	for _, elem := range elems {
+		if sum >= limit {
+			break
+		}
+		left := int(math.Max(float64(limit-sum), 0))
+		switch e := elem.(type) {
+		case *TextElement:
+			sum += utils.ChineseLength(e.Content, left)
+		case *AtElement:
+			sum += utils.ChineseLength(e.Display, left)
+		case *ReplyElement:
+			sum += 444 + EstimateLength(e.Elements, left)
+		case *ImageElement, *GroupImageElement, *FriendImageElement:
+			sum += 260
+		default:
+			sum += utils.ChineseLength(ToReadableString([]IMessageElement{elem}), left)
+		}
+	}
+	return sum
+}
+
 func (s *Sender) DisplayName() string {
 	if s.CardName == "" {
 		return s.Nickname
@@ -260,15 +303,27 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 		}
 	}
 	if generalFlags {
+	L:
 		for _, elem := range elems {
-			switch elem.(type) {
+			switch e := elem.(type) {
 			case *ServiceElement:
+				if e.SubType == "Long" {
+					r = append(r, &msg.Elem{
+						GeneralFlags: &msg.GeneralFlags{
+							LongTextFlag:  1,
+							LongTextResid: e.ResId,
+							PbReserve:     []byte{0x78, 0x00, 0xF8, 0x01, 0x00, 0xC8, 0x02, 0x00},
+						},
+					})
+					break L
+				}
 				d, _ := hex.DecodeString("08097800C80100F00100F80100900200C80200980300A00320B00300C00300D00300E803008A04020803900480808010B80400C00400")
 				r = append(r, &msg.Elem{
 					GeneralFlags: &msg.GeneralFlags{
 						PbReserve: d,
 					},
 				})
+				break L
 			}
 		}
 	}
@@ -289,6 +344,19 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				res = append(res, r)
 			}
 			continue
+		}
+		if elem.LightApp != nil && len(elem.LightApp.Data) > 1 {
+			var content string
+			if elem.LightApp.Data[0] == 0 {
+				content = string(elem.LightApp.Data[1:])
+			}
+			if elem.LightApp.Data[0] == 1 {
+				content = string(binary.ZlibUncompress(elem.LightApp.Data[1:]))
+			}
+			if content != "" {
+				// TODO: 解析具体的APP
+				return append(res, NewText(content))
+			}
 		}
 		if elem.Text != nil {
 			if len(elem.Text.Attr6Buf) == 0 {
