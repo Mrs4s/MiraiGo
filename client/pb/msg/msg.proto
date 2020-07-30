@@ -171,7 +171,7 @@ message Elem {
   Face face = 2;
   OnlineImage onlineImage = 3;
   NotOnlineImage notOnlineImage = 4;
-  //TransElem transElemInfo = 5;
+  TransElem transElemInfo = 5;
   //MarketFace marketFace = 6;
   //ElemFlags elemFlags = 7;
   CustomFace customFace = 8;
@@ -343,6 +343,11 @@ message NotOnlineFile {
   int32 clientType = 54;
   int32 expireTime = 55;
   bytes pbReserve = 56;
+}
+
+message TransElem {
+  int32 elemType = 1;
+  bytes elemValue = 2;
 }
 
 message ExtraInfo {

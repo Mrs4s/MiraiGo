@@ -80,6 +80,7 @@ const (
 	Reply
 	Service
 	Forward
+	File
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -344,6 +345,27 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				res = append(res, r)
 			}
 			continue
+		}
+		if elem.TransElemInfo != nil {
+			if elem.TransElemInfo.ElemType == 24 { // QFile
+				i3 := len(elem.TransElemInfo.ElemValue)
+				r := binary.NewReader(elem.TransElemInfo.ElemValue)
+				if i3 > 3 {
+					if r.ReadByte() == 1 {
+						pb := r.ReadBytes(int(r.ReadUInt16()))
+						objMsg := msg.ObjMsg{}
+						if err := proto.Unmarshal(pb, &objMsg); err == nil && len(objMsg.MsgContentInfo) > 0 {
+							info := objMsg.MsgContentInfo[0]
+							res = append(res, &GroupFileElement{
+								Name:  info.MsgFile.FileName,
+								Size:  info.MsgFile.FileSize,
+								Path:  string(info.MsgFile.FilePath),
+								Busid: info.MsgFile.BusId,
+							})
+						}
+					}
+				}
+			}
 		}
 		if elem.LightApp != nil && len(elem.LightApp.Data) > 1 {
 			var content string

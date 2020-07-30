@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option go_package = ".;msg";
+
+message MsgPic {
+  bytes smallPicUrl = 1;
+  bytes originalPicUrl = 2;
+  int32 localPicId = 3;
+}
+message ObjMsg {
+  int32 msgType = 1;
+  bytes title = 2;
+  bytes bytesAbstact = 3;
+  bytes titleExt = 5;
+  repeated MsgPic msgPic = 6;
+  repeated MsgContentInfo msgContentInfo = 7;
+  int32 reportIdShow = 8;
+}
+message MsgContentInfo {
+  bytes contentInfoId = 1;
+  MsgFile msgFile = 2;
+}
+message MsgFile {
+  int32 busId = 1;
+  bytes filePath = 2;
+  int64 fileSize = 3;
+  string fileName = 4;
+  int64 int64DeadTime = 5;
+  bytes fileSha1 = 6;
+  bytes ext = 7;
+}
+   

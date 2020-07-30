@@ -39,6 +39,13 @@ type AtElement struct {
 	Display string
 }
 
+type GroupFileElement struct {
+	Name  string
+	Size  int64
+	Path  string
+	Busid int32
+}
+
 type ReplyElement struct {
 	ReplySeq int32
 	Sender   int64
@@ -150,6 +157,10 @@ func (e *ReplyElement) Type() ElementType {
 
 func (e *ForwardElement) Type() ElementType {
 	return Forward
+}
+
+func (e *GroupFileElement) Type() ElementType {
+	return File
 }
 
 var faceMap = map[int]string{
