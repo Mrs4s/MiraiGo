@@ -301,6 +301,18 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					},
 				})
 			}
+			if e.Id == 33 {
+				r = append(r, &msg.Elem{
+					Text: &msg.Text{Str: e.ResId},
+				})
+				r = append(r, &msg.Elem{
+					RichMsg: &msg.RichMsg{
+						Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+						ServiceId: e.Id,
+						MsgResId:  []byte{},
+					},
+				})
+			}
 		}
 	}
 	if generalFlags {
@@ -403,6 +415,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					reg := regexp.MustCompile(`m_resid="(\w+?.*?)"`)
 					res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})
 					continue
+				}
+				if elem.RichMsg.ServiceId == 33 {
+					continue // 前面一个 elem 已经解析到链接
 				}
 				res = append(res, NewText(content))
 			}
