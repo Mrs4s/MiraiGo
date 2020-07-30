@@ -58,6 +58,7 @@ type QQClient struct {
 
 	lastMessageSeq         int32
 	lastMessageSeqTmp      sync.Map
+	lastLostMsg            string
 	groupMsgBuilders       sync.Map
 	onlinePushCache        []int16 // reset on reconnect
 	requestPacketRequestId int32
@@ -152,6 +153,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.lastLostMsg = ""
 		c.registerClient()
 		go c.heartbeat()
 		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
@@ -693,8 +695,6 @@ func (c *QQClient) loop() {
 		if err == io.EOF || err == io.ErrClosedPipe {
 			err = c.connect()
 			if err != nil {
-				c.Online = false
-				c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "Connection lost."})
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
@@ -705,7 +705,6 @@ func (c *QQClient) loop() {
 			time.Sleep(time.Second * 3)
 			if retry > 10 {
 				c.Online = false
-				c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "Connection lost."})
 			}
 			continue
 		}
@@ -749,6 +748,10 @@ func (c *QQClient) loop() {
 		}()
 	}
 	_ = c.Conn.Close()
+	if c.lastLostMsg == "" {
+		c.lastLostMsg = "Connection lost."
+	}
+	c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: c.lastLostMsg})
 }
 
 func (c *QQClient) heartbeat() {
