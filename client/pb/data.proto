@@ -185,3 +185,23 @@ message RecalledMessageMeta {
 message SubD4 {
     int64 uin = 1;
 }
+
+message Sub8A {
+    repeated Sub8AMsgInfo msg_info = 1;
+    int32 appId = 2;
+    int32 instId = 3;
+    int32 longMessageFlag = 4;
+    bytes reserved = 5;
+}
+
+message Sub8AMsgInfo {
+    int64 fromUin = 1;
+    int64 toUin = 2;
+    int32 msgSeq= 3;
+    int64 msgUid = 4;
+    int64 msgTime = 5;
+    int32 msgRandom = 6;
+    int32 pkgNum = 7;
+    int32 pkgIndex = 8;
+    int32 devSeq = 9;
+}

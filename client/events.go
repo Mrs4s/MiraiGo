@@ -11,6 +11,7 @@ type eventHandlers struct {
 	groupMessageHandlers        []func(*QQClient, *message.GroupMessage)
 	groupMuteEventHandlers      []func(*QQClient, *GroupMuteEvent)
 	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
+	friendRecalledHandlers      []func(*QQClient, *FriendMessageRecalledEvent)
 	joinGroupHandlers           []func(*QQClient, *GroupInfo)
 	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
 	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
@@ -69,6 +70,10 @@ func (c *QQClient) OnGroupMemberPermissionChanged(f func(*QQClient, *MemberPermi
 
 func (c *QQClient) OnGroupMessageRecalled(f func(*QQClient, *GroupMessageRecalledEvent)) {
 	c.eventHandlers.groupRecalledHandlers = append(c.eventHandlers.groupRecalledHandlers, f)
+}
+
+func (c *QQClient) OnFriendMessageRecalled(f func(*QQClient, *FriendMessageRecalledEvent)) {
+	c.eventHandlers.friendRecalledHandlers = append(c.eventHandlers.friendRecalledHandlers, f)
 }
 
 func (c *QQClient) OnGroupInvited(f func(*QQClient, *GroupInvitedRequest)) {
@@ -150,6 +155,17 @@ func (c *QQClient) dispatchGroupMessageRecalledEvent(e *GroupMessageRecalledEven
 		return
 	}
 	for _, f := range c.eventHandlers.groupRecalledHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchFriendMessageRecalledEvent(e *FriendMessageRecalledEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.friendRecalledHandlers {
 		cover(func() {
 			f(c, e)
 		})

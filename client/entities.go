@@ -84,6 +84,12 @@ type (
 		Time        int32
 	}
 
+	FriendMessageRecalledEvent struct {
+		FriendUin int64
+		MessageId int32
+		Time      int64
+	}
+
 	GroupLeaveEvent struct {
 		Group    *GroupInfo
 		Operator *GroupMemberInfo

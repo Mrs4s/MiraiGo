@@ -499,6 +499,20 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 			subType := vr.ReadInt64(0)
 			probuf := vr.ReadAny(10).([]byte)
 			switch subType {
+			case 0x8A, 0x8B:
+				s8a := pb.Sub8A{}
+				if err := proto.Unmarshal(probuf, &s8a); err != nil {
+					return nil, err
+				}
+				for _, m := range s8a.MsgInfo {
+					if m.ToUin == c.Uin {
+						c.dispatchFriendMessageRecalledEvent(&FriendMessageRecalledEvent{
+							FriendUin: m.FromUin,
+							MessageId: m.MsgSeq,
+							Time:      m.MsgTime,
+						})
+					}
+				}
 			case 0xD4:
 				d4 := pb.SubD4{}
 				if err := proto.Unmarshal(probuf, &d4); err != nil {

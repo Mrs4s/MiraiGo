@@ -1758,6 +1758,196 @@ func (x *SubD4) GetUin() int64 {
 	return 0
 }
 
+type Sub8A struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	MsgInfo         []*Sub8AMsgInfo `protobuf:"bytes,1,rep,name=msg_info,json=msgInfo,proto3" json:"msg_info,omitempty"`
+	AppId           int32           `protobuf:"varint,2,opt,name=appId,proto3" json:"appId,omitempty"`
+	InstId          int32           `protobuf:"varint,3,opt,name=instId,proto3" json:"instId,omitempty"`
+	LongMessageFlag int32           `protobuf:"varint,4,opt,name=longMessageFlag,proto3" json:"longMessageFlag,omitempty"`
+	Reserved        []byte          `protobuf:"bytes,5,opt,name=reserved,proto3" json:"reserved,omitempty"`
+}
+
+func (x *Sub8A) Reset() {
+	*x = Sub8A{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_data_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Sub8A) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sub8A) ProtoMessage() {}
+
+func (x *Sub8A) ProtoReflect() protoreflect.Message {
+	mi := &file_data_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sub8A.ProtoReflect.Descriptor instead.
+func (*Sub8A) Descriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *Sub8A) GetMsgInfo() []*Sub8AMsgInfo {
+	if x != nil {
+		return x.MsgInfo
+	}
+	return nil
+}
+
+func (x *Sub8A) GetAppId() int32 {
+	if x != nil {
+		return x.AppId
+	}
+	return 0
+}
+
+func (x *Sub8A) GetInstId() int32 {
+	if x != nil {
+		return x.InstId
+	}
+	return 0
+}
+
+func (x *Sub8A) GetLongMessageFlag() int32 {
+	if x != nil {
+		return x.LongMessageFlag
+	}
+	return 0
+}
+
+func (x *Sub8A) GetReserved() []byte {
+	if x != nil {
+		return x.Reserved
+	}
+	return nil
+}
+
+type Sub8AMsgInfo struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FromUin   int64 `protobuf:"varint,1,opt,name=fromUin,proto3" json:"fromUin,omitempty"`
+	ToUin     int64 `protobuf:"varint,2,opt,name=toUin,proto3" json:"toUin,omitempty"`
+	MsgSeq    int32 `protobuf:"varint,3,opt,name=msgSeq,proto3" json:"msgSeq,omitempty"`
+	MsgUid    int64 `protobuf:"varint,4,opt,name=msgUid,proto3" json:"msgUid,omitempty"`
+	MsgTime   int64 `protobuf:"varint,5,opt,name=msgTime,proto3" json:"msgTime,omitempty"`
+	MsgRandom int32 `protobuf:"varint,6,opt,name=msgRandom,proto3" json:"msgRandom,omitempty"`
+	PkgNum    int32 `protobuf:"varint,7,opt,name=pkgNum,proto3" json:"pkgNum,omitempty"`
+	PkgIndex  int32 `protobuf:"varint,8,opt,name=pkgIndex,proto3" json:"pkgIndex,omitempty"`
+	DevSeq    int32 `protobuf:"varint,9,opt,name=devSeq,proto3" json:"devSeq,omitempty"`
+}
+
+func (x *Sub8AMsgInfo) Reset() {
+	*x = Sub8AMsgInfo{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_data_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Sub8AMsgInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Sub8AMsgInfo) ProtoMessage() {}
+
+func (x *Sub8AMsgInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_data_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Sub8AMsgInfo.ProtoReflect.Descriptor instead.
+func (*Sub8AMsgInfo) Descriptor() ([]byte, []int) {
+	return file_data_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *Sub8AMsgInfo) GetFromUin() int64 {
+	if x != nil {
+		return x.FromUin
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetToUin() int64 {
+	if x != nil {
+		return x.ToUin
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetMsgSeq() int32 {
+	if x != nil {
+		return x.MsgSeq
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetMsgUid() int64 {
+	if x != nil {
+		return x.MsgUid
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetMsgTime() int64 {
+	if x != nil {
+		return x.MsgTime
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetMsgRandom() int32 {
+	if x != nil {
+		return x.MsgRandom
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetPkgNum() int32 {
+	if x != nil {
+		return x.PkgNum
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetPkgIndex() int32 {
+	if x != nil {
+		return x.PkgIndex
+	}
+	return 0
+}
+
+func (x *Sub8AMsgInfo) GetDevSeq() int32 {
+	if x != nil {
+		return x.DevSeq
+	}
+	return 0
+}
+
 var File_data_proto protoreflect.FileDescriptor
 
 var file_data_proto_rawDesc = []byte{
@@ -2019,8 +2209,34 @@ var file_data_proto_rawDesc = []byte{
 	0x73, 0x67, 0x46, 0x6c, 0x61, 0x67, 0x12, 0x1c, 0x0a, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f, 0x72,
 	0x55, 0x69, 0x6e, 0x18, 0x06, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x61, 0x75, 0x74, 0x68, 0x6f,
 	0x72, 0x55, 0x69, 0x6e, 0x22, 0x19, 0x0a, 0x05, 0x53, 0x75, 0x62, 0x44, 0x34, 0x12, 0x10, 0x0a,
-	0x03, 0x75, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x75, 0x69, 0x6e, 0x42,
-	0x06, 0x5a, 0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x03, 0x75, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x03, 0x75, 0x69, 0x6e, 0x22,
+	0xa5, 0x01, 0x0a, 0x05, 0x53, 0x75, 0x62, 0x38, 0x41, 0x12, 0x28, 0x0a, 0x08, 0x6d, 0x73, 0x67,
+	0x5f, 0x69, 0x6e, 0x66, 0x6f, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x53, 0x75,
+	0x62, 0x38, 0x41, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x52, 0x07, 0x6d, 0x73, 0x67, 0x49,
+	0x6e, 0x66, 0x6f, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x70, 0x70, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x05, 0x52, 0x05, 0x61, 0x70, 0x70, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x69, 0x6e, 0x73,
+	0x74, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x69, 0x6e, 0x73, 0x74, 0x49,
+	0x64, 0x12, 0x28, 0x0a, 0x0f, 0x6c, 0x6f, 0x6e, 0x67, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x46, 0x6c, 0x61, 0x67, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0f, 0x6c, 0x6f, 0x6e, 0x67,
+	0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x46, 0x6c, 0x61, 0x67, 0x12, 0x1a, 0x0a, 0x08, 0x72,
+	0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x08, 0x72,
+	0x65, 0x73, 0x65, 0x72, 0x76, 0x65, 0x64, 0x22, 0xf2, 0x01, 0x0a, 0x0c, 0x53, 0x75, 0x62, 0x38,
+	0x41, 0x4d, 0x73, 0x67, 0x49, 0x6e, 0x66, 0x6f, 0x12, 0x18, 0x0a, 0x07, 0x66, 0x72, 0x6f, 0x6d,
+	0x55, 0x69, 0x6e, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x66, 0x72, 0x6f, 0x6d, 0x55,
+	0x69, 0x6e, 0x12, 0x14, 0x0a, 0x05, 0x74, 0x6f, 0x55, 0x69, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x03, 0x52, 0x05, 0x74, 0x6f, 0x55, 0x69, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x6d, 0x73, 0x67, 0x53,
+	0x65, 0x71, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x6d, 0x73, 0x67, 0x53, 0x65, 0x71,
+	0x12, 0x16, 0x0a, 0x06, 0x6d, 0x73, 0x67, 0x55, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03,
+	0x52, 0x06, 0x6d, 0x73, 0x67, 0x55, 0x69, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x6d, 0x73, 0x67, 0x54,
+	0x69, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x6d, 0x73, 0x67, 0x54, 0x69,
+	0x6d, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x6d, 0x73, 0x67, 0x52, 0x61, 0x6e, 0x64, 0x6f, 0x6d, 0x18,
+	0x06, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x6d, 0x73, 0x67, 0x52, 0x61, 0x6e, 0x64, 0x6f, 0x6d,
+	0x12, 0x16, 0x0a, 0x06, 0x70, 0x6b, 0x67, 0x4e, 0x75, 0x6d, 0x18, 0x07, 0x20, 0x01, 0x28, 0x05,
+	0x52, 0x06, 0x70, 0x6b, 0x67, 0x4e, 0x75, 0x6d, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x6b, 0x67, 0x49,
+	0x6e, 0x64, 0x65, 0x78, 0x18, 0x08, 0x20, 0x01, 0x28, 0x05, 0x52, 0x08, 0x70, 0x6b, 0x67, 0x49,
+	0x6e, 0x64, 0x65, 0x78, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x65, 0x76, 0x53, 0x65, 0x71, 0x18, 0x09,
+	0x20, 0x01, 0x28, 0x05, 0x52, 0x06, 0x64, 0x65, 0x76, 0x53, 0x65, 0x71, 0x42, 0x06, 0x5a, 0x04,
+	0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -2035,7 +2251,7 @@ func file_data_proto_rawDescGZIP() []byte {
 	return file_data_proto_rawDescData
 }
 
-var file_data_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_data_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_data_proto_goTypes = []interface{}{
 	(*DeviceInfo)(nil),            // 0: DeviceInfo
 	(*RequestBody)(nil),           // 1: RequestBody
@@ -2056,6 +2272,8 @@ var file_data_proto_goTypes = []interface{}{
 	(*MessageRecallReminder)(nil), // 16: MessageRecallReminder
 	(*RecalledMessageMeta)(nil),   // 17: RecalledMessageMeta
 	(*SubD4)(nil),                 // 18: SubD4
+	(*Sub8A)(nil),                 // 19: Sub8A
+	(*Sub8AMsgInfo)(nil),          // 20: Sub8AMsgInfo
 }
 var file_data_proto_depIdxs = []int32{
 	2,  // 0: RequestBody.rpt_config_list:type_name -> ConfigSeq
@@ -2069,11 +2287,12 @@ var file_data_proto_depIdxs = []int32{
 	14, // 8: DeleteMessageRequest.items:type_name -> MessageItem
 	16, // 9: NotifyMsgBody.optMsgRecall:type_name -> MessageRecallReminder
 	17, // 10: MessageRecallReminder.recalledMsgList:type_name -> RecalledMessageMeta
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	20, // 11: Sub8A.msg_info:type_name -> Sub8AMsgInfo
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_data_proto_init() }
@@ -2310,6 +2529,30 @@ func file_data_proto_init() {
 				return nil
 			}
 		}
+		file_data_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Sub8A); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_data_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Sub8AMsgInfo); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -2317,7 +2560,7 @@ func file_data_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_data_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
