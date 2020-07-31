@@ -869,3 +869,27 @@ func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+// ProfileService.GroupMngReq
+func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	jw := jce.NewJceWriter()
+	jw.WriteInt32(2, 0)
+	jw.WriteInt64(c.Uin, 1)
+	jw.WriteBytes(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteUInt32(uint32(c.Uin))
+		w.WriteUInt32(uint32(groupCode))
+	}), 2)
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"GroupMngReq": packRequestDataV3(jw.Bytes())}}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		IRequestId:   c.nextPacketSeq(),
+		SServantName: "KQQ.ProfileService.ProfileServantObj",
+		SFuncName:    "GroupMngReq",
+		SBuffer:      buf.ToBytes(),
+		Context:      map[string]string{},
+		Status:       map[string]string{},
+	}
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.GroupMngReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
