@@ -769,12 +769,12 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 	body := &oidb.D89AReqBody{
 		GroupCode: groupCode,
 		StGroupInfo: &oidb.D89AGroupinfo{
-			ShutupTime: func() int32 {
+			ShutupTime: &oidb.D89AGroupinfo_Val{Val: func() int32 {
 				if mute {
 					return 1
 				}
 				return 0
-			}(),
+			}()},
 		},
 	}
 	return c.buildGroupOperationPacket(body)
