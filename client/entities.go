@@ -191,6 +191,7 @@ func (g *GroupInfo) MuteAll(mute bool) {
 func (g *GroupInfo) Quit() {
 	if g.SelfPermission() != Owner {
 		g.client.quitGroup(g.Code)
+		g.client.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 	}
 }
 
