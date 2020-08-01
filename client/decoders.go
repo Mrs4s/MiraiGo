@@ -13,6 +13,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"math"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -229,7 +230,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					continue
 				}
 				if c.lastMessageSeq >= message.Head.MsgSeq {
-					if c.lastMessageSeq-message.Head.MsgSeq < 1000 {
+					if math.Abs(float64(c.lastMessageSeq-message.Head.MsgSeq)) < 1000 {
 						continue
 					}
 				}
