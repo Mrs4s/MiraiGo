@@ -13,7 +13,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
-	"math"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -229,12 +228,17 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
 					continue
 				}
-				if c.lastMessageSeq >= message.Head.MsgSeq {
-					if math.Abs(float64(c.lastMessageSeq-message.Head.MsgSeq)) < 1000 {
-						continue
-					}
+				friend := c.FindFriend(message.Head.FromUin)
+				if friend == nil {
+					return nil, nil
 				}
-				c.lastMessageSeq = message.Head.MsgSeq
+				if friend.msgSeqList == nil {
+					friend.msgSeqList = utils.NewTTList(60)
+				}
+				if friend.msgSeqList.Any(func(i interface{}) bool { return i.(int32) == message.Head.MsgSeq }) {
+					continue
+				}
+				friend.msgSeqList.Add(message.Head.MsgSeq)
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()

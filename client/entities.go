@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"strings"
 	"sync"
 )
@@ -35,6 +36,8 @@ type (
 		Nickname string
 		Remark   string
 		FaceId   int16
+
+		msgSeqList *utils.TTList
 	}
 
 	FriendListResponse struct {
