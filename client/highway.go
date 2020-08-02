@@ -10,8 +10,13 @@ import (
 	"time"
 )
 
-func (c *QQClient) highwayUploadImage(ser string, updKey, img []byte, cmdId int32) error {
-	conn, err := net.DialTimeout("tcp", ser, time.Second*5)
+func (c *QQClient) highwayUploadImage(ip uint32, port int, updKey, img []byte, cmdId int32) error {
+	addr := net.TCPAddr{
+		IP:   make([]byte, 4),
+		Port: port,
+	}
+	conn, err := net.DialTCP("tcp", nil, &addr)
+	println("connected")
 	if err != nil {
 		return err
 	}

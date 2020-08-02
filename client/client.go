@@ -17,7 +17,6 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -339,8 +338,7 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 		},
 	})
 	for i, ip := range rsp.Uint32UpIp {
-		updServer := binary.UInt32ToIPV4Address(uint32(ip))
-		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.Uint32UpPort[i]), 10), rsp.MsgSig, body, 27)
+		err := c.highwayUploadImage(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
 		if err == nil {
 			if !isLong {
 				var pv string
@@ -382,17 +380,18 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 		return nil, errors.New(rsp.Message)
 	}
 	if rsp.IsExists {
-		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
+		goto ok
 	}
 	for i, ip := range rsp.UploadIp {
-		updServer := binary.UInt32ToIPV4Address(uint32(ip))
-		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), rsp.UploadKey, img, 2)
+		err := c.highwayUploadImage(uint32(ip), int(rsp.UploadPort[i]), rsp.UploadKey, img, 2)
 		if err != nil {
 			continue
 		}
-		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
+		goto ok
 	}
 	return nil, errors.New("upload failed")
+ok:
+	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
