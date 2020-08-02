@@ -41,6 +41,7 @@ type QQClient struct {
 
 	decoders map[string]func(*QQClient, uint16, []byte) (interface{}, error)
 	handlers sync.Map
+	server   *net.TCPAddr
 
 	syncCookie       []byte
 	pubAccountCookie []byte
@@ -617,7 +618,10 @@ var servers = []*net.TCPAddr{
 }
 
 func (c *QQClient) connect() error {
-	conn, err := net.DialTCP("tcp", nil, servers[rand.Intn(len(servers))])
+	if c.server == nil {
+		c.server = servers[rand.Intn(len(servers))]
+	}
+	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
 		return err
 	}
