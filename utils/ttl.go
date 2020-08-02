@@ -40,7 +40,7 @@ func NewTTList(ttl int64) *TTList {
 
 func (l *TTList) Add(i interface{}) {
 	l.lock.Lock()
-	l.lock.Unlock()
+	defer l.lock.Unlock()
 	l.list = append(l.list, &item{
 		i:          i,
 		lastAccess: time.Now().Unix(),
@@ -49,7 +49,7 @@ func (l *TTList) Add(i interface{}) {
 
 func (l *TTList) Any(filter func(i interface{}) bool) bool {
 	l.lock.Lock()
-	l.lock.Unlock()
+	defer l.lock.Unlock()
 	for _, it := range l.list {
 		if filter(it.i) {
 			it.lastAccess = time.Now().Unix()
