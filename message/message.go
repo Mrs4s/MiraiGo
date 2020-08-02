@@ -208,7 +208,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					SenderUin: reply.Sender,
 					Time:      reply.Time,
 					Flag:      1,
-					Elems:     ToProtoElems(reply.Elements, false),
+					Elems:     ToSrcProtoElems(reply.Elements),
 					RichMsg:   []byte{},
 					PbReserve: []byte{},
 					SrcMsg:    []byte{},
@@ -338,6 +338,22 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 				})
 				break L
 			}
+		}
+	}
+	return
+}
+
+func ToSrcProtoElems(elems []IMessageElement) (r []*msg.Elem) {
+	for _, elem := range elems {
+		switch e := elem.(type) {
+		case *ImageElement, *GroupImageElement, *FriendImageElement:
+			r = append(r, &msg.Elem{
+				Text: &msg.Text{
+					Str: "[图片]",
+				},
+			})
+		default:
+			r = append(r, ToProtoElems([]IMessageElement{e}, false)...)
 		}
 	}
 	return
