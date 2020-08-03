@@ -7,7 +7,7 @@ import (
 
 type TTList struct {
 	list []*item
-	lock *sync.Mutex
+	lock sync.Mutex
 }
 
 type item struct {
@@ -16,9 +16,7 @@ type item struct {
 }
 
 func NewTTList(ttl int64) *TTList {
-	l := &TTList{
-		lock: new(sync.Mutex),
-	}
+	l := &TTList{}
 	go func() {
 		for now := range time.Tick(time.Second * 5) {
 			l.lock.Lock()
