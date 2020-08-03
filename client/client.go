@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -122,6 +123,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
 			"MultiMsg.ApplyUp":                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                       decodeMultiApplyDownResponse,
+			"OidbSvc.0x6d6_2":                          decodeOIDB6d6Response,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
@@ -205,6 +207,16 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		}
 	}
 	return r, nil
+}
+
+func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) string {
+	i, err := c.sendAndWait(c.buildGroupFileDownloadReqPacket(groupCode, fileId, busId))
+	if err != nil {
+		return ""
+	}
+	url := i.(string)
+	url += "?fname=" + hex.EncodeToString([]byte(fileId))
+	return url
 }
 
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {

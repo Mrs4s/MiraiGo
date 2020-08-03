@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -10,6 +11,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
@@ -749,4 +751,18 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 		return nil, err
 	}
 	return &mt, nil
+}
+
+func decodeOIDB6d6Response(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D6D6RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	ip := rsp.DownloadFileRsp.DownloadIp
+	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
+	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
