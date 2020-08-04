@@ -225,6 +225,11 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
+	for _, f := range c.eventHandlers.sendGroupMessageHandlers {
+		cover(func() {
+			f(c, groupCode, m)
+		})
+	}
 	if msgLen > 702 || imgCount > 2 {
 		return c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
 			{
@@ -277,6 +282,11 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
 	_, pkt := c.buildFriendSendingPacket(target, seq, mr, t, m)
+	for _, f := range c.eventHandlers.sendPrivateMessageHandlers {
+		cover(func() {
+			f(c, target, m)
+		})
+	}
 	_ = c.send(pkt)
 	return &message.PrivateMessage{
 		Id:         seq,

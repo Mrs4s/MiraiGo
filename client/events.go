@@ -21,6 +21,8 @@ type eventHandlers struct {
 	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
 	friendRequestHandlers       []func(*QQClient, *NewFriendRequest)
 	disconnectHandlers          []func(*QQClient, *ClientDisconnectedEvent)
+	sendGroupMessageHandlers    []func(*QQClient, int64, *message.SendingMessage)
+	sendPrivateMessageHandlers  []func(*QQClient, int64, *message.SendingMessage)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -90,6 +92,14 @@ func (c *QQClient) OnNewFriendRequest(f func(*QQClient, *NewFriendRequest)) {
 
 func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
 	c.eventHandlers.disconnectHandlers = append(c.eventHandlers.disconnectHandlers, f)
+}
+
+func (c *QQClient) OnSendGroupMessage(f func(*QQClient, int64, *message.SendingMessage)) {
+	c.eventHandlers.sendGroupMessageHandlers = append(c.eventHandlers.sendGroupMessageHandlers, f)
+}
+
+func (c *QQClient) OnSendPrivateMessage(f func(*QQClient, int64, *message.SendingMessage)) {
+	c.eventHandlers.sendPrivateMessageHandlers = append(c.eventHandlers.sendPrivateMessageHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
