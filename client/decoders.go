@@ -15,6 +15,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -235,12 +236,13 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					return nil, nil
 				}
 				if friend.msgSeqList == nil {
-					friend.msgSeqList = utils.NewTTList(60)
+					friend.msgSeqList = utils.NewCache(time.Second * 5)
 				}
-				if friend.msgSeqList.Any(func(i interface{}) bool { return i.(int32) == message.Head.MsgSeq }) {
+				strSeq := strconv.FormatInt(int64(message.Head.MsgSeq), 10)
+				if _, ok := friend.msgSeqList.Get(strSeq); ok {
 					continue
 				}
-				friend.msgSeqList.Add(message.Head.MsgSeq)
+				friend.msgSeqList.Add(strSeq, 0, time.Second*15)
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
