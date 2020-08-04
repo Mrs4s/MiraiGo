@@ -384,7 +384,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	if err != nil {
 		return nil, err
 	}
-	rsp := pkt.MsgTryupImgRsp[0]
+	rsp := pkt.MsgTryUpImgRsp[0]
 	if rsp.Result != 0 {
 		return imageUploadResponse{
 			ResultCode: rsp.Result,
@@ -398,6 +398,30 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.Uint32UpIp,
 		UploadPort: rsp.Uint32UpPort,
+	}, nil
+}
+
+func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkt := pb.D388RespBody{}
+	err := proto.Unmarshal(payload, &pkt)
+	if err != nil {
+		return nil, err
+	}
+	rsp := pkt.MsgTryUpPttRsp[0]
+	if rsp.Result != 0 {
+		return pttUploadResponse{
+			ResultCode: rsp.Result,
+			Message:    rsp.FailMsg,
+		}, nil
+	}
+	if rsp.BoolFileExit {
+		return imageUploadResponse{IsExists: true}, nil
+	}
+	return pttUploadResponse{
+		UploadKey:  rsp.UpUkey,
+		UploadIp:   rsp.Uint32UpIp,
+		UploadPort: rsp.Uint32UpPort,
+		FileKey:    rsp.FileKey,
 	}, nil
 }
 

@@ -116,6 +116,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"friendlist.GetTroopListReqV2":             decodeGroupListResponse,
 			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
 			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
+			"PttStore.GroupPttUp":                      decodeGroupPttStoreResponse,
 			"LongConn.OffPicUp":                        decodeOffPicUpResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
@@ -145,7 +146,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		return nil, err
 	}
 	c.Online = true
-	go c.loop()
+	go c.netLoop()
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
 	if err != nil {
@@ -198,8 +199,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		list := rsp.(FriendListResponse)
 		r.TotalCount = list.TotalCount
 		r.List = append(r.List, list.List...)
-		curFriendCount += len(list.List)
-		if int32(curFriendCount) >= r.TotalCount {
+		if int32(len(r.List)) >= r.TotalCount {
 			break
 		}
 	}
@@ -415,6 +415,40 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 		return c.uploadPrivateImage(target, img, count)
 	}
 	return e, nil
+}
+
+func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte, voiceLength int32) (*message.GroupPtt, error) {
+	h := md5.Sum(voice)
+	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), voiceLength)
+	r, err := c.sendAndWait(seq, pkt)
+	if err != nil {
+		return nil, err
+	}
+	rsp := r.(pttUploadResponse)
+	if rsp.ResultCode != 0 {
+		return nil, errors.New(rsp.Message)
+	}
+	if rsp.IsExists {
+		goto ok
+	}
+	for i, ip := range rsp.UploadIp {
+		err := c.uploadGroupPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:], 2)
+		if err != nil {
+			continue
+		}
+		goto ok
+	}
+	return nil, errors.New("upload failed")
+ok:
+	return &message.GroupPtt{
+		Ptt: msg.Ptt{
+			FileType:  4,
+			FileMd5:   h[:],
+			FileName:  "01234567890123456789012345678901.amr",
+			FileSize:  int32(len(voice)),
+			BoolValid: true,
+			PbReserve: []byte{0},
+		}}, nil
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
@@ -705,7 +739,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 	}
 }
 
-func (c *QQClient) loop() {
+func (c *QQClient) netLoop() {
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
 	for c.Online {

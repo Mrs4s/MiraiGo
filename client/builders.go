@@ -385,12 +385,17 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 // MessageSvc.PbSendMsg
 func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, forward bool, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
+	if m.Ptt != nil {
+		m.Elements = []message.IMessageElement{}
+	}
+
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
 		ContentHead: &msg.ContentHead{PkgNum: 1},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m.Elements, true),
+				Ptt:   m.Ptt,
 			},
 		},
 		MsgSeq:     c.nextGroupSeq(),
@@ -476,7 +481,7 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 	req := &pb.D388ReqBody{
 		NetType: 3,
 		Subcmd:  1,
-		MsgTryupImgReq: []*pb.TryUpImgReq{
+		MsgTryUpImgReq: []*pb.TryUpImgReq{
 			{
 				GroupCode:    groupCode,
 				SrcUin:       c.Uin,
@@ -544,6 +549,37 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 		r = append(r, w.Bytes())
 	})
 	return
+}
+
+// ImgStore.GroupPicUp
+func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, voiceLength int32) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &pb.D388ReqBody{
+		NetType: 3,
+		Subcmd:  3,
+		MsgTryUpPttReq: []*pb.TryUpPttReq{
+			{
+				GroupCode:     groupCode,
+				SrcUin:        c.Uin,
+				FileMd5:       md5,
+				FileSize:      int64(size),
+				FileName:      md5,
+				SrcTerm:       5,
+				PlatformType:  9,
+				BuType:        4,
+				InnerIp:       0,
+				BuildVer:      "6.5.5.663",
+				VoiceLength:   voiceLength,
+				Codec:         0,
+				VoiceType:     1,
+				BoolNewUpChan: true,
+			},
+		},
+		Extension: EmptyBytes,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "PttStore.GroupPttUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Group
