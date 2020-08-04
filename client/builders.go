@@ -551,7 +551,7 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 	return
 }
 
-// ImgStore.GroupPicUp
+// PttStore.GroupPttUp
 func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, voiceLength int32) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &pb.D388ReqBody{

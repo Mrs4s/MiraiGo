@@ -456,7 +456,7 @@ ok:
 		Ptt: msg.Ptt{
 			FileType:  4,
 			FileMd5:   h[:],
-			FileName:  "01234567890123456789012345678901.amr",
+			FileName:  "01234567890123456789012345678901.amr", // 应为MD5.amr(?
 			FileSize:  int32(len(voice)),
 			BoolValid: true,
 			PbReserve: []byte{0},
