@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -10,9 +11,11 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -233,12 +236,13 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					return nil, nil
 				}
 				if friend.msgSeqList == nil {
-					friend.msgSeqList = utils.NewTTList(60)
+					friend.msgSeqList = utils.NewCache(time.Second * 5)
 				}
-				if friend.msgSeqList.Any(func(i interface{}) bool { return i.(int32) == message.Head.MsgSeq }) {
+				strSeq := strconv.FormatInt(int64(message.Head.MsgSeq), 10)
+				if _, ok := friend.msgSeqList.Get(strSeq); ok {
 					continue
 				}
-				friend.msgSeqList.Add(message.Head.MsgSeq)
+				friend.msgSeqList.Add(strSeq, 0, time.Second*15)
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
@@ -773,4 +777,18 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 		return nil, err
 	}
 	return &mt, nil
+}
+
+func decodeOIDB6d6Response(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D6D6RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	ip := rsp.DownloadFileRsp.DownloadIp
+	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
+	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }

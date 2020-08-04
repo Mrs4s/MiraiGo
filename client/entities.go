@@ -37,7 +37,7 @@ type (
 		Remark   string
 		FaceId   int16
 
-		msgSeqList *utils.TTList
+		msgSeqList *utils.Cache
 	}
 
 	FriendListResponse struct {
