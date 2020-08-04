@@ -454,12 +454,14 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte, voiceLength int
 ok:
 	return &message.GroupPtt{
 		Ptt: msg.Ptt{
-			FileType:  4,
-			FileMd5:   h[:],
-			FileName:  "01234567890123456789012345678901.amr", // 应为MD5.amr(?
-			FileSize:  int32(len(voice)),
-			BoolValid: true,
-			PbReserve: []byte{0},
+			FileType:     4,
+			SrcUin:       c.Uin,
+			FileMd5:      h[:],
+			FileName:     hex.EncodeToString(h[:]) + ".amr",
+			FileSize:     int32(len(voice)),
+			GroupFileKey: rsp.FileKey,
+			BoolValid:    true,
+			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
 }
 
