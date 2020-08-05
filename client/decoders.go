@@ -15,6 +15,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -235,12 +236,13 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					return nil, nil
 				}
 				if friend.msgSeqList == nil {
-					friend.msgSeqList = utils.NewTTList(60)
+					friend.msgSeqList = utils.NewCache(time.Second * 5)
 				}
-				if friend.msgSeqList.Any(func(i interface{}) bool { return i.(int32) == message.Head.MsgSeq }) {
+				strSeq := strconv.FormatInt(int64(message.Head.MsgSeq), 10)
+				if _, ok := friend.msgSeqList.Get(strSeq); ok {
 					continue
 				}
-				friend.msgSeqList.Add(message.Head.MsgSeq)
+				friend.msgSeqList.Add(strSeq, 0, time.Second*15)
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
@@ -386,7 +388,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	if err != nil {
 		return nil, err
 	}
-	rsp := pkt.MsgTryupImgRsp[0]
+	rsp := pkt.MsgTryUpImgRsp[0]
 	if rsp.Result != 0 {
 		return imageUploadResponse{
 			ResultCode: rsp.Result,
@@ -400,6 +402,30 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.Uint32UpIp,
 		UploadPort: rsp.Uint32UpPort,
+	}, nil
+}
+
+func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkt := pb.D388RespBody{}
+	err := proto.Unmarshal(payload, &pkt)
+	if err != nil {
+		return nil, err
+	}
+	rsp := pkt.MsgTryUpPttRsp[0]
+	if rsp.Result != 0 {
+		return pttUploadResponse{
+			ResultCode: rsp.Result,
+			Message:    rsp.FailMsg,
+		}, nil
+	}
+	if rsp.BoolFileExit {
+		return imageUploadResponse{IsExists: true}, nil
+	}
+	return pttUploadResponse{
+		UploadKey:  rsp.UpUkey,
+		UploadIp:   rsp.Uint32UpIp,
+		UploadPort: rsp.Uint32UpPort,
+		FileKey:    rsp.FileKey,
 	}, nil
 }
 

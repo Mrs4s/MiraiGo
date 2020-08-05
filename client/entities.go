@@ -37,7 +37,7 @@ type (
 		Remark   string
 		FaceId   int16
 
-		msgSeqList *utils.TTList
+		msgSeqList *utils.Cache
 	}
 
 	FriendListResponse struct {
@@ -165,6 +165,19 @@ type (
 		UploadKey  []byte
 		UploadIp   []int32
 		UploadPort []int32
+	}
+
+	pttUploadResponse struct {
+		ResultCode int32
+		Message    string
+
+		IsExists bool
+
+		ResourceId string
+		UploadKey  []byte
+		UploadIp   []int32
+		UploadPort []int32
+		FileKey    []byte
 	}
 
 	groupMessageReceiptEvent struct {

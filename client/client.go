@@ -18,7 +18,6 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -118,6 +117,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"friendlist.GetTroopListReqV2":             decodeGroupListResponse,
 			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
 			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
+			"PttStore.GroupPttUp":                      decodeGroupPttStoreResponse,
 			"LongConn.OffPicUp":                        decodeOffPicUpResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
@@ -148,7 +148,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		return nil, err
 	}
 	c.Online = true
-	go c.loop()
+	go c.netLoop()
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
 	if err != nil {
@@ -201,8 +201,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		list := rsp.(FriendListResponse)
 		r.TotalCount = list.TotalCount
 		r.List = append(r.List, list.List...)
-		curFriendCount += len(list.List)
-		if int32(curFriendCount) >= r.TotalCount {
+		if int32(len(r.List)) >= r.TotalCount {
 			break
 		}
 	}
@@ -362,8 +361,7 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 		},
 	})
 	for i, ip := range rsp.Uint32UpIp {
-		updServer := binary.UInt32ToIPV4Address(uint32(ip))
-		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.Uint32UpPort[i]), 10), rsp.MsgSig, body, 27)
+		err := c.highwayUploadImage(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
 		if err == nil {
 			if !isLong {
 				var pv string
@@ -405,17 +403,18 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 		return nil, errors.New(rsp.Message)
 	}
 	if rsp.IsExists {
-		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
+		goto ok
 	}
 	for i, ip := range rsp.UploadIp {
-		updServer := binary.UInt32ToIPV4Address(uint32(ip))
-		err := c.highwayUploadImage(updServer+":"+strconv.FormatInt(int64(rsp.UploadPort[i]), 10), rsp.UploadKey, img, 2)
+		err := c.highwayUploadImage(uint32(ip), int(rsp.UploadPort[i]), rsp.UploadKey, img, 2)
 		if err != nil {
 			continue
 		}
-		return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
+		goto ok
 	}
 	return nil, errors.New("upload failed")
+ok:
+	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:]), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
@@ -438,6 +437,42 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 		return c.uploadPrivateImage(target, img, count)
 	}
 	return e, nil
+}
+
+func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte, voiceLength int32) (*message.GroupPtt, error) {
+	h := md5.Sum(voice)
+	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), voiceLength)
+	r, err := c.sendAndWait(seq, pkt)
+	if err != nil {
+		return nil, err
+	}
+	rsp := r.(pttUploadResponse)
+	if rsp.ResultCode != 0 {
+		return nil, errors.New(rsp.Message)
+	}
+	if rsp.IsExists {
+		goto ok
+	}
+	for i, ip := range rsp.UploadIp {
+		err := c.uploadGroupPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:], 2)
+		if err != nil {
+			continue
+		}
+		goto ok
+	}
+	return nil, errors.New("upload failed")
+ok:
+	return &message.GroupPtt{
+		Ptt: msg.Ptt{
+			FileType:     4,
+			SrcUin:       c.Uin,
+			FileMd5:      h[:],
+			FileName:     hex.EncodeToString(h[:]) + ".amr",
+			FileSize:     int32(len(voice)),
+			GroupFileKey: rsp.FileKey,
+			BoolValid:    true,
+			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
+		}}, nil
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
@@ -728,7 +763,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 	}
 }
 
-func (c *QQClient) loop() {
+func (c *QQClient) netLoop() {
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
 	for c.Online {

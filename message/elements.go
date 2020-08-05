@@ -2,6 +2,7 @@ package message
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"strconv"
 	"strings"
 )
@@ -65,6 +66,10 @@ type ServiceElement struct {
 
 type ForwardElement struct {
 	ResId string
+}
+
+type GroupPtt struct {
+	Ptt msg.Ptt
 }
 
 func NewText(s string) *TextElement {
