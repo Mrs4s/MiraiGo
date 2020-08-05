@@ -265,7 +265,7 @@ message Ptt {
   int64 srcUin = 2;
   bytes fileUuid = 3;
   bytes fileMd5 = 4;
-  bytes fileName = 5;
+  string fileName = 5;
   int32 fileSize = 6;
   bytes reserve = 7;
   int32 fileId = 8;

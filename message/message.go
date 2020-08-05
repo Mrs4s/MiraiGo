@@ -2,7 +2,6 @@ package message
 
 import (
 	"crypto/md5"
-	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -45,6 +44,7 @@ type (
 
 	SendingMessage struct {
 		Elements []IMessageElement
+		Ptt      *msg.Ptt
 	}
 
 	ForwardMessage struct {
@@ -80,7 +80,8 @@ const (
 	Reply
 	Service
 	Forward
-	File
+	File // Voice?
+	Voice
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -200,6 +201,9 @@ func (s *Sender) DisplayName() string {
 }
 
 func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
+	if len(elems) == 0 {
+		return nil
+	}
 	for _, elem := range elems {
 		if reply, ok := elem.(*ReplyElement); ok {
 			r = append(r, &msg.Elem{
@@ -330,10 +334,15 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					})
 					break L
 				}
-				d, _ := hex.DecodeString("08097800C80100F00100F80100900200C80200980300A00320B00300C00300D00300E803008A04020803900480808010B80400C00400")
+				//d, _ := hex.DecodeString("08097800C80100F00100F80100900200C80200980300A00320B00300C00300D00300E803008A04020803900480808010B80400C00400")
 				r = append(r, &msg.Elem{
 					GeneralFlags: &msg.GeneralFlags{
-						PbReserve: d,
+						PbReserve: []byte{
+							0x08, 0x09, 0x78, 0x00, 0xC8, 0x01, 0x00, 0xF0, 0x01, 0x00, 0xF8, 0x01, 0x00, 0x90, 0x02, 0x00,
+							0xC8, 0x02, 0x00, 0x98, 0x03, 0x00, 0xA0, 0x03, 0x20, 0xB0, 0x03, 0x00, 0xC0, 0x03, 0x00, 0xD0,
+							0x03, 0x00, 0xE8, 0x03, 0x00, 0x8A, 0x04, 0x02, 0x08, 0x03, 0x90, 0x04, 0x80, 0x80, 0x80, 0x10,
+							0xB8, 0x04, 0x00, 0xC0, 0x04, 0x00,
+						},
 					},
 				})
 				break L

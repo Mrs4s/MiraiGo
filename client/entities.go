@@ -167,6 +167,19 @@ type (
 		UploadPort []int32
 	}
 
+	pttUploadResponse struct {
+		ResultCode int32
+		Message    string
+
+		IsExists bool
+
+		ResourceId string
+		UploadKey  []byte
+		UploadIp   []int32
+		UploadPort []int32
+		FileKey    []byte
+	}
+
 	groupMessageReceiptEvent struct {
 		Rand int32
 		Seq  int32

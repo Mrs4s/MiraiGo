@@ -41,7 +41,8 @@ message D50ReqBody {
 message D388ReqBody {
     int32 netType = 1;
     int32 subcmd = 2;
-    repeated TryUpImgReq msgTryupImgReq = 3;
+    repeated TryUpImgReq msgTryUpImgReq = 3;
+    repeated TryUpPttReq msgTryUpPttReq = 5;
     int32 commandId = 7;
     bytes extension = 1001;
 }
@@ -49,7 +50,8 @@ message D388ReqBody {
 message D388RespBody {
     int32 clientIp = 1;
     int32 subCmd = 2;
-    repeated TryUpImgResp msgTryupImgRsp = 3;
+    repeated TryUpImgResp msgTryUpImgRsp = 3;
+    repeated TryUpPttResp msgTryUpPttRsp = 5;
 }
 
 message ReqDataHighwayHead {
@@ -133,7 +135,45 @@ message TryUpImgResp {
     repeated int32 uint32UpIp = 6;
     repeated int32 uint32UpPort = 7;
     bytes upUkey = 8;
-    int64 fid = 9;   
+    int64 fid = 9;
+}
+
+message TryUpPttReq {
+    int64 groupCode = 1;
+    int64 srcUin = 2;
+    int64 fileId = 3;
+    bytes fileMd5 = 4;
+    int64 fileSize = 5;
+    bytes fileName = 6;
+    int32 srcTerm = 7;
+    int32 platformType = 8;
+    int32 buType = 9;
+    string buildVer = 10;
+    int32 innerIp = 11;
+    int32 voiceLength = 12;
+    bool boolNewUpChan = 13;
+    int32 codec = 14;
+    int32 voiceType = 15;
+    int32 buId = 16;
+
+}
+
+message TryUpPttResp {
+    int64 fileId = 1;
+    int32 result = 2;
+    string failMsg = 3;
+    bool boolFileExit = 4;
+    repeated int32 uint32UpIp = 5;
+    repeated int32 uint32UpPort = 6;
+    bytes upUkey = 7;
+    //    int64 fileid = 8; //
+    int64 upOffset = 9;
+    int64 blockSize = 10;
+    bytes fileKey = 11;
+    int32 channelType = 12;
+    //    List<IPv6Info>? msgUpIp6 = 26;
+    //    bytes clientIp6 = 27;
+
 }
 
 message ImgInfo {
