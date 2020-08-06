@@ -50,6 +50,10 @@ type Version struct {
 
 type DeviceInfoFile struct {
 	Display     string `json:"display"`
+	Product     string `json:"product"`
+	Device      string `json:"device"`
+	Board       string `json:"board"`
+	Model       string `json:"model"`
 	FingerPrint string `json:"finger_print"`
 	BootId      string `json:"boot_id"`
 	ProcVersion string `json:"proc_version"`
@@ -123,6 +127,10 @@ func GenRandomDevice() {
 func (info *DeviceInfo) ToJson() []byte {
 	f := &DeviceInfoFile{
 		Display:     string(info.Display),
+		Product:     string(info.Product),
+		Device:      string(info.Device),
+		Board:       string(info.Board),
+		Model:       string(info.Model),
 		FingerPrint: string(info.FingerPrint),
 		BootId:      string(info.BootId),
 		ProcVersion: string(info.ProcVersion),
@@ -138,6 +146,10 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 		return err
 	}
 	info.Display = []byte(f.Display)
+	info.Product = []byte(f.Product)
+	info.Device = []byte(f.Device)
+	info.Board = []byte(f.Board)
+	info.Model = []byte(f.Model)
 	info.FingerPrint = []byte(f.FingerPrint)
 	info.BootId = []byte(f.BootId)
 	info.ProcVersion = []byte(f.ProcVersion)
