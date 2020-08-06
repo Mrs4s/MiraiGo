@@ -247,7 +247,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					Attr6Buf: binary.NewWriterF(func(w *binary.Writer) {
 						w.WriteUInt16(1)
 						w.WriteUInt16(0)
-						w.WriteUInt16(uint16(len(e.Display)))
+						w.WriteUInt16(uint16(len([]rune(e.Display))))
 						w.WriteByte(func() byte {
 							if e.Target == 0 {
 								return 1
