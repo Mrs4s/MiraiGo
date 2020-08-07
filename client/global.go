@@ -146,10 +146,12 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 		return err
 	}
 	info.Display = []byte(f.Display)
-	info.Product = []byte(f.Product)
-	info.Device = []byte(f.Device)
-	info.Board = []byte(f.Board)
-	info.Model = []byte(f.Model)
+	if f.Product != "" {
+		info.Product = []byte(f.Product)
+		info.Device = []byte(f.Device)
+		info.Board = []byte(f.Board)
+		info.Model = []byte(f.Model)
+	}
 	info.FingerPrint = []byte(f.FingerPrint)
 	info.BootId = []byte(f.BootId)
 	info.ProcVersion = []byte(f.ProcVersion)

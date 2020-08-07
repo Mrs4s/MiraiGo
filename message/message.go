@@ -419,7 +419,13 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.Text != nil {
 			if len(elem.Text.Attr6Buf) == 0 {
-				res = append(res, NewText(elem.Text.Str))
+				res = append(res, NewText(func() string {
+					// 这么处理应该没问题
+					if strings.Contains(elem.Text.Str, "\r") && !strings.Contains(elem.Text.Str, "\r\n") {
+						return strings.ReplaceAll(elem.Text.Str, "\r", "\r\n")
+					}
+					return elem.Text.Str
+				}()))
 			} else {
 				att6 := binary.NewReader(elem.Text.Attr6Buf)
 				att6.ReadBytes(7)
