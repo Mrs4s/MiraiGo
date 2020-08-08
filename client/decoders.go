@@ -419,7 +419,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interfa
 		}, nil
 	}
 	if rsp.BoolFileExit {
-		return imageUploadResponse{IsExists: true}, nil
+		return pttUploadResponse{IsExists: true}, nil
 	}
 	return pttUploadResponse{
 		UploadKey:  rsp.UpUkey,
