@@ -25,6 +25,10 @@ type GroupImageElement struct {
 	Url     string
 }
 
+type GroupVoiceElement struct {
+	Ptt *msg.Ptt
+}
+
 type FriendImageElement struct {
 	ImageId string
 	Md5     []byte
@@ -66,10 +70,6 @@ type ServiceElement struct {
 
 type ForwardElement struct {
 	ResId string
-}
-
-type GroupPtt struct {
-	Ptt msg.Ptt
 }
 
 func NewText(s string) *TextElement {
@@ -179,6 +179,10 @@ func (e *ForwardElement) Type() ElementType {
 
 func (e *GroupFileElement) Type() ElementType {
 	return File
+}
+
+func (e *GroupVoiceElement) Type() ElementType {
+	return Voice
 }
 
 var faceMap = map[int]string{

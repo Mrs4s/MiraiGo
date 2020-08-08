@@ -44,7 +44,6 @@ type (
 
 	SendingMessage struct {
 		Elements []IMessageElement
-		Ptt      *msg.Ptt
 	}
 
 	ForwardMessage struct {
@@ -159,6 +158,15 @@ func (msg *SendingMessage) Any(filter func(e IMessageElement) bool) bool {
 		}
 	}
 	return false
+}
+
+func (msg *SendingMessage) FirstOrNil(filter func(e IMessageElement) bool) IMessageElement {
+	for _, e := range msg.Elements {
+		if filter(e) {
+			return e
+		}
+	}
+	return nil
 }
 
 func (msg *SendingMessage) Count(filter func(e IMessageElement) bool) (c int) {
