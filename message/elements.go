@@ -26,7 +26,8 @@ type GroupImageElement struct {
 }
 
 type GroupVoiceElement struct {
-	Ptt *msg.Ptt
+	Data []byte
+	Ptt  *msg.Ptt
 }
 
 type FriendImageElement struct {
