@@ -386,7 +386,10 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, forward bool, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	var ptt *message.GroupVoiceElement
-	if i := m.FirstOrNil(func(e message.IMessageElement) bool { return e.Type() == message.Voice }); i != nil {
+	if i := m.FirstOrNil(func(e message.IMessageElement) bool {
+		_, ok := e.(*message.GroupVoiceElement)
+		return ok
+	}); i != nil {
 		ptt = i.(*message.GroupVoiceElement)
 		m.Elements = []message.IMessageElement{}
 	}

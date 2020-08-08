@@ -25,6 +25,16 @@ type GroupImageElement struct {
 	Url     string
 }
 
+type VoiceElement struct {
+	Name         string
+	Md5          []byte
+	Size         int32
+	DownloadPara string
+
+	// --- sending ---
+	Data []byte
+}
+
 type GroupVoiceElement struct {
 	Data []byte
 	Ptt  *msg.Ptt
@@ -183,6 +193,10 @@ func (e *GroupFileElement) Type() ElementType {
 }
 
 func (e *GroupVoiceElement) Type() ElementType {
+	return Voice
+}
+
+func (e *VoiceElement) Type() ElementType {
 	return Voice
 }
 

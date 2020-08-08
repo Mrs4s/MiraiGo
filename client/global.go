@@ -269,6 +269,16 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
 		//OriginalElements: m.Body.RichText.Elems,
 	}
+	if m.Body.RichText.Ptt != nil {
+		g.Elements = []message.IMessageElement{
+			&message.VoiceElement{
+				Name:         m.Body.RichText.Ptt.FileName,
+				Md5:          m.Body.RichText.Ptt.FileMd5,
+				Size:         m.Body.RichText.Ptt.FileSize,
+				DownloadPara: string(m.Body.RichText.Ptt.DownPara),
+			},
+		}
+	}
 	if m.Body.RichText.Attr != nil {
 		g.InternalId = m.Body.RichText.Attr.Random
 	}
