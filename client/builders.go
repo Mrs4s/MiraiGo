@@ -454,6 +454,40 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r int32, time 
 	return seq, packet
 }
 
+// MessageSvc.PbSendMsg
+func (c *QQClient) buildTempSendingPacket(groupUin, target int64, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &msg.SendMessageRequest{
+		RoutingHead: &msg.RoutingHead{GrpTmp: &msg.GrpTmp{
+			GroupUin: groupUin,
+			ToUin:    target,
+		}},
+		ContentHead: &msg.ContentHead{PkgNum: 1},
+		MsgBody: &msg.MessageBody{
+			RichText: &msg.RichText{
+				Elems: message.ToProtoElems(m.Elements, false),
+			},
+		},
+		MsgSeq:  msgSeq,
+		MsgRand: r,
+		SyncCookie: func() []byte {
+			cookie := &msg.SyncCookie{
+				Time:   time,
+				Ran1:   rand.Int63(),
+				Ran2:   rand.Int63(),
+				Const1: syncConst1,
+				Const2: syncConst2,
+				Const3: 0x1d,
+			}
+			b, _ := proto.Marshal(cookie)
+			return b
+		}(),
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // LongConn.OffPicUp
 func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (uint16, []byte) {
 	seq := c.nextSeq()

@@ -291,6 +291,39 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	}
 }
 
+func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMessage) *message.TempMessage {
+	group := c.FindGroup(groupCode)
+	if group == nil {
+		return nil
+	}
+	if c.FindFriend(target) != nil {
+		pm := c.SendPrivateMessage(target, m)
+		return &message.TempMessage{
+			Id:        pm.Id,
+			GroupCode: group.Code,
+			GroupName: group.Name,
+			Sender:    pm.Sender,
+			Elements:  m.Elements,
+		}
+	}
+	mr := int32(rand.Uint32())
+	seq := c.nextFriendSeq()
+	t := time.Now().Unix()
+	_, pkt := c.buildTempSendingPacket(group.Uin, target, seq, mr, t, m)
+	_ = c.send(pkt)
+	return &message.TempMessage{
+		Id:        seq,
+		GroupCode: group.Code,
+		GroupName: group.Name,
+		Sender: &message.Sender{
+			Uin:      c.Uin,
+			Nickname: c.Nickname,
+			IsFriend: true,
+		},
+		Elements: m.Elements,
+	}
+}
+
 func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	i, err := c.sendAndWait(c.buildMultiApplyDownPacket(resId))
 	if err != nil {
