@@ -429,8 +429,9 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 	return e, nil
 }
 
-func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte, voiceLength int32) (*message.GroupVoiceElement, error) {
+func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {
 	h := md5.Sum(voice)
+	voiceLength := utils.GetAmrDuration(voice)
 	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), voiceLength)
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
