@@ -150,6 +150,10 @@ type (
 		client *QQClient
 	}
 
+	NewFriendEvent struct {
+		Friend *FriendInfo
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []*GroupMemberInfo

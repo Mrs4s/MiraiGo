@@ -245,3 +245,13 @@ message Sub8AMsgInfo {
     int32 pkgIndex = 8;
     int32 devSeq = 9;
 }
+
+message SubB3 {
+    int32 type = 1;
+    SubB3AddFrdNotify msgAddFrdNotify = 2;
+}
+
+message SubB3AddFrdNotify {
+    int64 uin = 1;
+    string nick = 5;
+}

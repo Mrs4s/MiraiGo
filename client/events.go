@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/message"
 	"sync"
 )
@@ -20,6 +21,7 @@ type eventHandlers struct {
 	groupInvitedHandlers        []func(*QQClient, *GroupInvitedRequest)
 	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
 	friendRequestHandlers       []func(*QQClient, *NewFriendRequest)
+	newFriendHandlers           []func(*QQClient, *NewFriendEvent)
 	disconnectHandlers          []func(*QQClient, *ClientDisconnectedEvent)
 	groupMessageReceiptHandlers sync.Map
 }
@@ -86,6 +88,10 @@ func (c *QQClient) OnUserWantJoinGroup(f func(*QQClient, *UserJoinGroupRequest))
 
 func (c *QQClient) OnNewFriendRequest(f func(*QQClient, *NewFriendRequest)) {
 	c.eventHandlers.friendRequestHandlers = append(c.eventHandlers.friendRequestHandlers, f)
+}
+
+func (c *QQClient) OnNewFriendAdded(f func(*QQClient, *NewFriendEvent)) {
+	c.eventHandlers.newFriendHandlers = append(c.eventHandlers.newFriendHandlers, f)
 }
 
 func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
@@ -267,6 +273,17 @@ func (c *QQClient) dispatchNewFriendRequest(r *NewFriendRequest) {
 	}
 }
 
+func (c *QQClient) dispatchNewFriendEvent(e *NewFriendEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.newFriendHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
 func (c *QQClient) dispatchDisconnectEvent(e *ClientDisconnectedEvent) {
 	if e == nil {
 		return
@@ -281,7 +298,7 @@ func (c *QQClient) dispatchDisconnectEvent(e *ClientDisconnectedEvent) {
 func cover(f func()) {
 	defer func() {
 		if pan := recover(); pan != nil {
-
+			fmt.Println("event error:", pan)
 		}
 	}()
 	f()

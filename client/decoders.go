@@ -546,6 +546,17 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 						})
 					}
 				}
+			case 0xB3:
+				b3 := pb.SubB3{}
+				if err := proto.Unmarshal(probuf, &b3); err != nil {
+					return nil, err
+				}
+				frd := &FriendInfo{
+					Uin:      b3.MsgAddFrdNotify.Uin,
+					Nickname: b3.MsgAddFrdNotify.Nick,
+				}
+				c.FriendList = append(c.FriendList, frd)
+				c.dispatchNewFriendEvent(&NewFriendEvent{Friend: frd})
 			case 0xD4:
 				d4 := pb.SubD4{}
 				if err := proto.Unmarshal(probuf, &d4); err != nil {
