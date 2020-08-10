@@ -118,6 +118,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
 			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
 			"PttStore.GroupPttUp":                      decodeGroupPttStoreResponse,
+			"PttStore.GroupPttDown":                    decodeGroupPttDownResponse,
 			"LongConn.OffPicUp":                        decodeOffPicUpResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
@@ -826,7 +827,7 @@ func (c *QQClient) netLoop() {
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
-					//
+					fmt.Println("panic on decoder:", pan)
 				}
 			}()
 			decoder, ok := c.decoders[pkt.CommandName]

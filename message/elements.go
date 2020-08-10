@@ -26,10 +26,10 @@ type GroupImageElement struct {
 }
 
 type VoiceElement struct {
-	Name         string
-	Md5          []byte
-	Size         int32
-	DownloadPara string
+	Name string
+	Md5  []byte
+	Size int32
+	Url  string
 
 	// --- sending ---
 	Data []byte

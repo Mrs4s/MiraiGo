@@ -43,6 +43,7 @@ message D388ReqBody {
     int32 subcmd = 2;
     repeated TryUpImgReq msgTryUpImgReq = 3;
     repeated TryUpPttReq msgTryUpPttReq = 5;
+    repeated GetPttUrlReq msgGetPttReq = 6;
     int32 commandId = 7;
     bytes extension = 1001;
 }
@@ -52,6 +53,43 @@ message D388RespBody {
     int32 subCmd = 2;
     repeated TryUpImgResp msgTryUpImgRsp = 3;
     repeated TryUpPttResp msgTryUpPttRsp = 5;
+    repeated GetPttUrlRsp msgGetPttUrlRsp = 6;
+}
+
+message GetPttUrlReq {
+    int64 groupCode = 1;
+    int64 dstUin = 2;
+    int64 fileId = 3;
+    bytes fileMd5 = 4;
+    int32 reqTerm = 5;
+    int32 reqPlatformType = 6;
+    int32 innerIp = 7;
+    int32 buType = 8;
+    bytes buildVer = 9;
+    //int64 fileId = 10;
+    bytes fileKey = 11;
+    int32 codec = 12;
+    int32 buId = 13;
+    int32 reqTransferType = 14;
+    int32 isAuto = 15;
+}
+
+message GetPttUrlRsp {
+    int64 fileId = 1;
+    bytes fileMd5 = 2;
+    int32 result = 3;
+    bytes failMsg = 4;
+    bytes bytesDownUrl = 5;
+    repeated int32 uint32DownIp = 6;
+    repeated int32 uint32DownPort = 7;
+    bytes downDomain = 8;
+    bytes downPara = 9;
+    //int64 fileId = 10;
+    int32 transferType = 11;
+    int32 allowRetry = 12;
+    //repeated IPv6Info msgDownIp6 = 26;
+    bytes clientIp6 = 27;
+    string strDomain = 28;
 }
 
 message ReqDataHighwayHead {
@@ -210,7 +248,7 @@ message MessageRecallReminder {
     bytes userdef = 5;
     int32 groupType = 6;
     int32 opType = 7;
-   
+
 }
 
 message RecalledMessageMeta {
@@ -219,7 +257,7 @@ message RecalledMessageMeta {
     int32 msgRandom = 3;
     int32 msgType = 4;
     int32 msgFlag = 5;
-    int64 authorUin = 6;   
+    int64 authorUin = 6;
 }
 
 message SubD4 {

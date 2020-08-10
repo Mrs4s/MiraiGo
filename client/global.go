@@ -272,10 +272,10 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if m.Body.RichText.Ptt != nil {
 		g.Elements = []message.IMessageElement{
 			&message.VoiceElement{
-				Name:         m.Body.RichText.Ptt.FileName,
-				Md5:          m.Body.RichText.Ptt.FileMd5,
-				Size:         m.Body.RichText.Ptt.FileSize,
-				DownloadPara: string(m.Body.RichText.Ptt.DownPara),
+				Name: m.Body.RichText.Ptt.FileName,
+				Md5:  m.Body.RichText.Ptt.FileMd5,
+				Size: m.Body.RichText.Ptt.FileSize,
+				Url:  "http://grouptalk.c2c.qq.com" + string(m.Body.RichText.Ptt.DownPara),
 			},
 		}
 	}
