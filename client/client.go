@@ -118,7 +118,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"friendlist.GetTroopMemberListReq":         decodeGroupMemberListResponse,
 			"ImgStore.GroupPicUp":                      decodeGroupImageStoreResponse,
 			"PttStore.GroupPttUp":                      decodeGroupPttStoreResponse,
-			"PttStore.GroupPttDown":                    decodeGroupPttDownResponse,
 			"LongConn.OffPicUp":                        decodeOffPicUpResponse,
 			"ProfileService.Pb.ReqSystemMsgNew.Group":  decodeSystemMsgGroupPacket,
 			"ProfileService.Pb.ReqSystemMsgNew.Friend": decodeSystemMsgFriendPacket,
