@@ -4,6 +4,12 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -15,10 +21,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
-	"strconv"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 var (
@@ -667,10 +669,10 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 	}
 	st := rsp.Groupmsgs[0]
 	if st.Msg != nil {
-		// 其他SubType不关心
 		if st.Msg.SubType == 1 {
-			switch st.Msg.C2CInviteJoinGroupFlag {
-			case 0: //成员申请
+			// 处理被邀请入群 或 处理成员入群申请
+			switch st.Msg.GroupMsgType {
+			case 1: // 成员申请
 				c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
 					RequestId:     st.MsgSeq,
 					Message:       st.Msg.MsgAdditional,
@@ -680,7 +682,7 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					GroupName:     st.Msg.GroupName,
 					client:        c,
 				})
-			case 1: // 被邀请
+			case 2: // 被邀请
 				c.dispatchGroupInvitedEvent(&GroupInvitedRequest{
 					RequestId:   st.MsgSeq,
 					InvitorUin:  st.Msg.ActionUin,
@@ -689,7 +691,17 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					GroupName:   st.Msg.GroupName,
 					client:      c,
 				})
+			default:
+				log.Println("unknown group msg:", st)
 			}
+		} else if st.Msg.SubType == 2 {
+			// 被邀请入群, 自动同意, 不需处理
+		} else if st.Msg.SubType == 3 {
+			// 已被其他管理员处理
+		} else if st.Msg.SubType == 5 {
+			// 成员退群消息
+		} else {
+			log.Println("unknown group msg:", st)
 		}
 	}
 	return nil, nil
