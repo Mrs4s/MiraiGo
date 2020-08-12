@@ -184,6 +184,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 							}(),
 							JoinTime:   time.Now().Unix(),
 							Permission: Member,
+							Group:      group,
 						}
 						group.Members = append(group.Members, mem)
 						c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
