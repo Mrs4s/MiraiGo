@@ -143,6 +143,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if c.Online {
 		return nil, ErrAlreadyOnline
 	}
+	c.server = nil
 	err := c.connect()
 	if err != nil {
 		return nil, err
@@ -700,7 +701,16 @@ var servers = []*net.TCPAddr{
 
 func (c *QQClient) connect() error {
 	if c.server == nil {
-		c.server = servers[rand.Intn(len(servers))]
+		addrs, err := net.LookupHost("msfwifi.3g.qq.com")
+		if err == nil && len(addrs) > 0 {
+			addr := addrs[rand.Intn(len(addrs))]
+			c.server = &net.TCPAddr{
+				IP:   net.ParseIP(addr),
+				Port: 8080,
+			}
+		} else {
+			c.server = servers[rand.Intn(len(servers))]
+		}
 	}
 	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
