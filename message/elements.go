@@ -72,6 +72,12 @@ type ReplyElement struct {
 	//original []*msg.Elem
 }
 
+type ShortVideoElement struct {
+	Uuid []byte
+	Size int32
+	Md5  []byte
+}
+
 type ServiceElement struct {
 	Id      int32
 	Content string
@@ -198,6 +204,10 @@ func (e *GroupVoiceElement) Type() ElementType {
 
 func (e *VoiceElement) Type() ElementType {
 	return Voice
+}
+
+func (e *ShortVideoElement) Type() ElementType {
+	return Video
 }
 
 var faceMap = map[int]string{

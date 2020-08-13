@@ -10,6 +10,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
+	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
@@ -992,5 +993,29 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &pttcenter.ShortVideoReqBody{
+		Cmd: 400,
+		Seq: int32(seq),
+		PttShortVideoDownloadReq: &pttcenter.ShortVideoDownloadReq{
+			FromUin:      c.Uin,
+			ToUin:        c.Uin,
+			ChatType:     1,
+			ClientType:   7,
+			FileId:       string(uuid),
+			GroupCode:    1,
+			FileMd5:      md5,
+			BusinessType: 1,
+			FileType:     2,
+			DownType:     2,
+			SceneType:    2,
+		},
+	}
+	payload, _ := proto.Marshal(body)
+	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.ShortVideoDownReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }

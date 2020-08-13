@@ -124,6 +124,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MultiMsg.ApplyUp":                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                       decodeMultiApplyDownResponse,
 			"OidbSvc.0x6d6_2":                          decodeOIDB6d6Response,
+			"PttCenterSvr.ShortVideoDownReq":           decodePttShortVideoDownResponse,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
@@ -207,6 +208,14 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		}
 	}
 	return r, nil
+}
+
+func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
+	i, err := c.sendAndWait(c.buildPttShortVideoDownReqPacket(uuid, md5))
+	if err != nil {
+		return ""
+	}
+	return i.(string)
 }
 
 func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) string {
