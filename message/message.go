@@ -427,13 +427,12 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 		}
 		if elem.VideoFile != nil {
-			res = append(res, &ShortVideoElement{
+			return append(res, &ShortVideoElement{
 				Name: string(elem.VideoFile.FileName),
 				Uuid: elem.VideoFile.FileUuid,
 				Size: elem.VideoFile.FileSize,
 				Md5:  elem.VideoFile.FileMd5,
 			})
-			continue
 		}
 		if elem.Text != nil {
 			if len(elem.Text.Attr6Buf) == 0 {
