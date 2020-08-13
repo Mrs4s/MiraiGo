@@ -77,6 +77,7 @@ type ShortVideoElement struct {
 	Uuid []byte
 	Size int32
 	Md5  []byte
+	Url  string
 }
 
 type ServiceElement struct {
