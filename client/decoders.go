@@ -245,7 +245,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if _, ok := friend.msgSeqList.Get(strSeq); ok {
 					continue
 				}
-				friend.msgSeqList.Add(strSeq, 0, time.Second*15)
+				friend.msgSeqList.Add(strSeq, 0, time.Minute*15)
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
