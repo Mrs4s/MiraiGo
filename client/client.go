@@ -710,11 +710,10 @@ var servers = []*net.TCPAddr{
 
 func (c *QQClient) connect() error {
 	if c.server == nil {
-		addrs, err := net.LookupHost("msfwifi.3g.qq.com")
+		addrs, err := net.LookupIP("msfwifi.3g.qq.com")
 		if err == nil && len(addrs) > 0 {
-			addr := addrs[rand.Intn(len(addrs))]
 			c.server = &net.TCPAddr{
-				IP:   net.ParseIP(addr),
+				IP:   addrs[rand.Intn(len(addrs))],
 				Port: 8080,
 			}
 		} else {
