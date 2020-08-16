@@ -254,10 +254,11 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			}
 		}
 	}
-	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
+	_, delPkt := c.buildDeleteMessageRequestPacket(delItems)
+	_ = c.send(delPkt)
 	if rsp.SyncFlag != msg.SyncFlag_STOP {
-		seq, pkt := c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix())
-		_, _ = c.sendAndWait(seq, pkt)
+		_, nextPkt := c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix())
+		_ = c.send(nextPkt)
 	}
 	return nil, err
 }

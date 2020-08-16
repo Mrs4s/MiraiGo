@@ -203,7 +203,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 	})
 	req := &jce.FriendListRequest{
 		Reqtype: 3,
-		IfReflush: func() byte { // fuck golang
+		IfReflush: func() byte {
 			if friendStartIndex <= 0 {
 				return 0
 			}
@@ -996,6 +996,7 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 	return seq, packet
 }
 
+// PttCenterSvr.ShortVideoDownReq
 func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &pttcenter.ShortVideoReqBody{

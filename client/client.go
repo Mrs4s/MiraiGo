@@ -542,10 +542,20 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 	}, nil
 }
 
-func (c *QQClient) ReloadGroupList() error {
+func (c *QQClient) ReloadGroupList(async ...bool) error {
+	f := false
+	if len(async) > 0 {
+		f = async[0]
+	}
 	c.groupListLock.Lock()
 	defer c.groupListLock.Unlock()
-	list, err := c.GetGroupList()
+	list, err := func() ([]*GroupInfo, error) {
+		if f {
+			return c.GetGroupListAsync()
+		} else {
+			return c.GetGroupList()
+		}
+	}()
 	if err != nil {
 		return err
 	}
@@ -565,6 +575,25 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 			continue
 		}
 		group.Members = m
+	}
+	return r, nil
+}
+
+func (c *QQClient) GetGroupListAsync() ([]*GroupInfo, error) {
+	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
+	if err != nil {
+		return nil, err
+	}
+	r := rsp.([]*GroupInfo)
+	for _, group := range r {
+		g := group
+		go func() {
+			m, err := c.GetGroupMembers(g)
+			if err != nil {
+				return
+			}
+			g.Members = m
+		}()
 	}
 	return r, nil
 }
@@ -795,14 +824,23 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 			Error:    err,
 		}
 	})
-	select {
-	case rsp := <-ch:
-		return rsp.Response, rsp.Error
-	case <-time.After(time.Second * 15):
-		c.handlers.Delete(seq)
-		println("Packet Timed out")
-		return nil, errors.New("time out")
+	retry := 0
+	for true {
+		select {
+		case rsp := <-ch:
+			return rsp.Response, rsp.Error
+		case <-time.After(time.Second * 15):
+			retry++
+			if retry < 2 {
+				_ = c.send(pkt)
+				continue
+			}
+			c.handlers.Delete(seq)
+			println("Packet Timed out")
+			return nil, errors.New("time out")
+		}
 	}
+	return nil, nil
 }
 
 func (c *QQClient) netLoop() {
@@ -840,7 +878,7 @@ func (c *QQClient) netLoop() {
 			}
 		}
 		retry = 0
-		//fmt.Println(pkt.CommandName)
+		//fmt.Println(pkt.CommandName, pkt.SequenceId)
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
