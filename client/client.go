@@ -285,8 +285,32 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	mr := int32(rand.Uint32())
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
-	_, pkt := c.buildFriendSendingPacket(target, seq, mr, t, m)
-	_ = c.send(pkt)
+	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
+	msgLen := message.EstimateLength(m.Elements, 703)
+	if msgLen > 5000 || imgCount > 50 {
+		return nil
+	}
+	if msgLen > 300 || imgCount > 2 {
+		div := int32(rand.Uint32())
+		var fragmented [][]message.IMessageElement
+		for _, elem := range m.Elements {
+			switch o := elem.(type) {
+			case *message.TextElement:
+				for _, text := range utils.ChunkString(o.Content, 300) {
+					fragmented = append(fragmented, []message.IMessageElement{message.NewText(text)})
+				}
+			default:
+				fragmented = append(fragmented, []message.IMessageElement{o})
+			}
+		}
+		for i, elems := range fragmented {
+			_, pkt := c.buildFriendSendingPacket(target, c.nextFriendSeq(), mr, int32(len(fragmented)), int32(i), div, t, elems)
+			_ = c.send(pkt)
+		}
+	} else {
+		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
+		_ = c.send(pkt)
+	}
 	return &message.PrivateMessage{
 		Id:         seq,
 		InternalId: mr,

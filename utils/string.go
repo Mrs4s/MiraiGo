@@ -22,6 +22,24 @@ func RandomStringRange(len int, str string) string {
 	return res
 }
 
+func ChunkString(s string, chunkSize int) []string {
+	var chunks []string
+	runes := []rune(s)
+
+	if len(runes) == 0 {
+		return []string{s}
+	}
+
+	for i := 0; i < len(runes); i += chunkSize {
+		nn := i + chunkSize
+		if nn > len(runes) {
+			nn = len(runes)
+		}
+		chunks = append(chunks, string(runes[i:nn]))
+	}
+	return chunks
+}
+
 func ChineseLength(str string, limit int) int {
 	sum := 0
 	for _, r := range []rune(str) {
