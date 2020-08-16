@@ -5,14 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
-	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/protocol/packets"
-	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
 	"io"
 	"log"
 	"math"
@@ -21,6 +13,15 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/golang/protobuf/proto"
 )
 
 type QQClient struct {
@@ -84,6 +85,9 @@ type loginSigInfo struct {
 	d2Key              []byte
 	wtSessionTicketKey []byte
 	deviceToken        []byte
+
+	psKeyMap    map[string][]byte
+	pt4TokenMap map[string][]byte
 }
 
 func init() {
@@ -654,6 +658,28 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 		}
 	}
 	return nil
+}
+
+func (c *QQClient) GetCookies() string {
+	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.sigInfo.sKey)
+}
+
+func (c *QQClient) GetCookiesWithDomain(domain string) string {
+	cookie := c.GetCookies()
+
+	if psKey, ok := c.sigInfo.psKeyMap[domain]; ok {
+		return fmt.Sprintf("%s p_uin=o%d; p_skey=%s", cookie, c.Uin, psKey)
+	} else {
+		return cookie
+	}
+}
+
+func (c *QQClient) GetCSRFToken() int {
+	accu := 5381
+	for _, b := range c.sigInfo.sKey {
+		accu = accu + (accu << 5) + int(b)
+	}
+	return accu
 }
 
 func (c *QQClient) editMemberCard(groupCode, memberUin int64, card string) {

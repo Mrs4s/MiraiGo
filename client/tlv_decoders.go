@@ -2,8 +2,9 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/binary"
 )
 
 // --- tlv decoders for qq client ---
@@ -52,6 +53,8 @@ func (c *QQClient) decodeT119(data []byte) {
 		//noPicSig []byte
 		//ctime           = time.Now().Unix()
 		//etime           = ctime + 2160000
+		psKeyMap    map[string][]byte
+		pt4TokenMap map[string][]byte
 	)
 
 	if _, ok := m[0x125]; ok {
@@ -69,9 +72,9 @@ func (c *QQClient) decodeT119(data []byte) {
 	if _, ok := m[0x200]; ok {
 		//pf, pfkey = readT200(t200)
 	}
-	if _, ok := m[0x512]; ok {
-
-	} // 暂不处理, Http api cookie
+	if t512, ok := m[0x512]; ok {
+		psKeyMap, pt4TokenMap = readT512(t512)
+	}
 	if _, ok := m[0x531]; ok {
 		//a1, noPicSig = readT531(t531)
 	}
@@ -87,6 +90,9 @@ func (c *QQClient) decodeT119(data []byte) {
 		d2Key:              m[0x305],
 		wtSessionTicketKey: m[0x134],
 		deviceToken:        m[0x322],
+
+		psKeyMap:    psKeyMap,
+		pt4TokenMap: pt4TokenMap,
 	}
 	c.Nickname = nick
 	c.Age = age
@@ -139,6 +145,30 @@ func readT200(data []byte) (pf, pfKey []byte) {
 	reader := binary.NewReader(data)
 	pf = reader.ReadBytesShort()
 	pfKey = reader.ReadBytesShort()
+	return
+}
+
+func readT512(data []byte) (psKeyMap map[string][]byte, pt4TokenMap map[string][]byte) {
+	reader := binary.NewReader(data)
+	length := int(reader.ReadUInt16())
+
+	psKeyMap = make(map[string][]byte, length)
+	pt4TokenMap = make(map[string][]byte, length)
+
+	for i := 0; i < length; i++ {
+		domain := reader.ReadStringShort()
+		psKey := reader.ReadBytesShort()
+		pt4Token := reader.ReadBytesShort()
+
+		if len(psKey) > 0 {
+			psKeyMap[domain] = psKey
+		}
+
+		if len(pt4Token) > 0 {
+			pt4TokenMap[domain] = pt4Token
+		}
+	}
+
 	return
 }
 
