@@ -59,11 +59,12 @@ type QQClient struct {
 	sigInfo          *loginSigInfo
 	pwdFlag          bool
 
-	lastMessageSeq         int32
-	lastMessageSeqTmp      sync.Map
+	lastMessageSeq int32
+	//lastMessageSeqTmp      sync.Map
 	lastLostMsg            string
 	groupMsgBuilders       sync.Map
 	onlinePushCache        []int16 // reset on reconnect
+	msgSvcCache            *utils.Cache
 	requestPacketRequestId int32
 	groupSeq               int32
 	friendSeq              int32
@@ -139,6 +140,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
 		eventHandlers:          &eventHandlers{},
 		groupListLock:          new(sync.Mutex),
+		msgSvcCache:            utils.NewCache(time.Second * 5),
 	}
 	rand.Read(cli.RandomKey)
 	return cli

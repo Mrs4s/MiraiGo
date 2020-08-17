@@ -165,6 +165,13 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			if message.Head.ToUin != c.Uin {
 				continue
 			}
+			if message.Head.MsgType != 166 {
+				strSeq := strconv.FormatInt(int64(message.Head.MsgSeq), 10)
+				if _, ok := c.msgSvcCache.Get(strSeq); ok {
+					continue
+				}
+				c.msgSvcCache.Add(strSeq, 0, time.Minute*15)
+			}
 			switch message.Head.MsgType {
 			case 33: // 加群同步
 				groupJoinLock.Lock()
@@ -210,15 +217,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if mem == nil || message.Head.FromUin == c.Uin {
 					continue
 				}
-				lastSeq, ok := c.lastMessageSeqTmp.Load(mem.Uin)
-				if !ok {
-					c.lastMessageSeqTmp.Store(mem.Uin, int32(-1))
-					lastSeq = int32(-1)
-				}
-				if message.Head.MsgSeq > lastSeq.(int32) {
-					c.lastMessageSeqTmp.Store(mem.Uin, message.Head.MsgSeq)
-					c.dispatchTempMessage(c.parseTempMessage(message))
-				}
+				c.dispatchTempMessage(c.parseTempMessage(message))
 			case 166: // 好友消息
 				if message.Head.FromUin == c.Uin {
 					for {
