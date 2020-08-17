@@ -596,7 +596,7 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 }
 
 // PttStore.GroupPttUp
-func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, voiceLength int32) (uint16, []byte) {
+func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, codec, voiceLength int32) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &pb.D388ReqBody{
 		NetType: 3,
@@ -614,7 +614,7 @@ func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, v
 				InnerIp:       0,
 				BuildVer:      "6.5.5.663",
 				VoiceLength:   voiceLength,
-				Codec:         0,
+				Codec:         codec,
 				VoiceType:     1,
 				BoolNewUpChan: true,
 			},
