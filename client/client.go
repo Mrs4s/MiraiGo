@@ -300,7 +300,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		for _, elem := range m.Elements {
 			switch o := elem.(type) {
 			case *message.TextElement:
-				for _, text := range utils.ChunkString(o.Content, 250) {
+				for _, text := range utils.ChunkString(o.Content, 220) {
 					fragmented = append(fragmented, []message.IMessageElement{message.NewText(text)})
 				}
 			default:
