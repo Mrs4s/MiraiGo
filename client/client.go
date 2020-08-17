@@ -64,7 +64,6 @@ type QQClient struct {
 	lastLostMsg            string
 	groupMsgBuilders       sync.Map
 	onlinePushCache        []int16 // reset on reconnect
-	msgSvcCache            *utils.Cache
 	requestPacketRequestId int32
 	groupSeq               int32
 	friendSeq              int32
@@ -73,6 +72,7 @@ type QQClient struct {
 	eventHandlers          *eventHandlers
 
 	groupListLock *sync.Mutex
+	msgSvcLock    sync.Mutex
 }
 
 type loginSigInfo struct {
