@@ -961,6 +961,7 @@ func (c *QQClient) netLoop() {
 			}
 		}()
 	}
+	c.Online = false
 	_ = c.Conn.Close()
 	if c.lastLostMsg == "" {
 		c.lastLostMsg = "Connection lost."
