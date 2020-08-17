@@ -135,8 +135,6 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 }
 
 func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	c.msgSvcLock.Lock()
-	defer c.msgSvcLock.Unlock()
 	rsp := msg.GetMessageResponse{}
 	err := proto.Unmarshal(payload, &rsp)
 	if err != nil {
@@ -297,8 +295,10 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 }
 
 func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
-	_, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
-	return nil, c.send(pkt)
+	c.msgSvcLock.Lock()
+	defer c.msgSvcLock.Unlock()
+	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
+	return nil, err
 }
 
 func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
