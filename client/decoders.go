@@ -777,7 +777,7 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 	}
 	rsp := body.MultimsgApplydownRsp[0]
 	i := binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0]))
-	b, err := utils.HttpGetBytes(fmt.Sprintf("http://%s:%d%s", i, body.MultimsgApplydownRsp[0].Uint32DownPort[0], string(rsp.ThumbDownPara)))
+	b, err := utils.HttpGetBytes(fmt.Sprintf("http://%s:%d%s", i, body.MultimsgApplydownRsp[0].Uint32DownPort[0], string(rsp.ThumbDownPara)), "")
 	if err != nil {
 		return nil, err
 	}

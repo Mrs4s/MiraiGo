@@ -191,9 +191,9 @@ type (
 
 const (
 	NeedCaptcha       LoginError = 1
-	OtherLoginError              = 3
-	UnsafeDeviceError            = 4
-	UnknownLoginError            = -1
+	OtherLoginError   LoginError = 3
+	UnsafeDeviceError LoginError = 4
+	UnknownLoginError LoginError = -1
 
 	Owner MemberPermission = iota
 	Administrator

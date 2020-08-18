@@ -8,13 +8,16 @@ import (
 	"strings"
 )
 
-func HttpGetBytes(url string) ([]byte, error) {
+func HttpGetBytes(url, cookie string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header["User-Agent"] = []string{"QQ/8.2.0.1296 CFNetwork/1126"}
 	req.Header["Net-Type"] = []string{"Wifi"}
+	if cookie != "" {
+		req.Header["Cookie"] = []string{cookie}
+	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err

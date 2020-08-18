@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"math"
 	"math/rand"
 	"net"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -171,6 +173,21 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	}
 	return &l, nil
+}
+
+func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
+	b, err := utils.HttpGetBytes(fmt.Sprintf("https://qun.qq.com/interactive/honorlist?gc=%d&type=%d", groupCode, honorType), c.getCookiesWithDomain("qun.qq.com"))
+	if err != nil {
+		return nil, err
+	}
+	rsp := string(b)
+	data := strings.Split(strings.Split(rsp, `window.__INITIAL_STATE__=`)[1], "</script>")[0]
+	ret := GroupHonorInfo{}
+	err = json.Unmarshal([]byte(data), &ret)
+	if err != nil {
+		return nil, err
+	}
+	return &ret, nil
 }
 
 // SubmitCaptcha send captcha to server
