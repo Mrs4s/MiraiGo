@@ -64,6 +64,7 @@ type QQClient struct {
 	lastMessageSeq int32
 	//lastMessageSeqTmp      sync.Map
 	msgSvcCache            *utils.Cache
+	transCache             *utils.Cache
 	lastLostMsg            string
 	groupMsgBuilders       sync.Map
 	onlinePushCache        []int16 // reset on reconnect
@@ -143,7 +144,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
 		eventHandlers:          &eventHandlers{},
 		groupListLock:          new(sync.Mutex),
-		msgSvcCache:            utils.NewCache(time.Second * 5),
+		msgSvcCache:            utils.NewCache(time.Second * 15),
+		transCache:             utils.NewCache(time.Second * 15),
 	}
 	rand.Read(cli.RandomKey)
 	return cli
@@ -905,7 +907,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 		select {
 		case rsp := <-ch:
 			return rsp.Response, rsp.Error
-		case <-time.After(time.Second * 15):
+		case <-time.After(time.Second * 30):
 			retry++
 			if retry < 2 {
 				_ = c.send(pkt)
