@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"log"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -167,6 +168,11 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			if (int64(pairMsg.LastReadTime) & 4294967295) > int64(message.Head.MsgTime) {
 				continue
 			}
+			strKey := strconv.FormatInt(message.Head.MsgUid, 10)
+			if _, ok := c.msgSvcCache.Get(strKey); ok {
+				continue
+			}
+			c.msgSvcCache.Add(strKey, "", time.Second*15)
 			switch message.Head.MsgType {
 			case 33: // 加群同步
 				groupJoinLock.Lock()
