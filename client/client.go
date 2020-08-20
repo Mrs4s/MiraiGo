@@ -707,13 +707,18 @@ func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	return nil
 }
 
-func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept bool) {
+func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reason string) {
+	if accept {
+		block = false
+		reason = ""
+	}
+
 	switch req := i.(type) {
 	case *UserJoinGroupRequest:
-		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, false, accept, false)
+		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, false, accept, block, reason)
 		_ = c.send(pkt)
 	case *GroupInvitedRequest:
-		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, true, accept, false)
+		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, true, accept, block, reason)
 		_ = c.send(pkt)
 	}
 }
