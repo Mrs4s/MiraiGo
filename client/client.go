@@ -182,10 +182,10 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 	if err != nil {
 		return nil, err
 	}
-	rsp := string(b)
-	data := strings.Split(strings.Split(rsp, `window.__INITIAL_STATE__=`)[1], "</script>")[0]
+	b = b[bytes.Index(b, []byte(`window.__INITIAL_STATE__=`))+25:]
+	b = b[:bytes.Index(b, []byte("</script>"))]
 	ret := GroupHonorInfo{}
-	err = json.Unmarshal([]byte(data), &ret)
+	err = json.Unmarshal(b, &ret)
 	if err != nil {
 		return nil, err
 	}
