@@ -38,7 +38,7 @@ type QQClient struct {
 	GroupList  []*GroupInfo
 	Online     bool
 
-	SequenceId              uint16
+	SequenceId              int32
 	OutGoingPacketSessionId []byte
 	RandomKey               []byte
 	Conn                    net.Conn
@@ -77,8 +77,6 @@ type QQClient struct {
 
 	groupListLock sync.Mutex
 	msgSvcLock    sync.Mutex
-
-	seqLock sync.Mutex
 }
 
 type loginSigInfo struct {
@@ -825,45 +823,27 @@ func (c *QQClient) registerClient() {
 }
 
 func (c *QQClient) nextSeq() uint16 {
-	c.seqLock.Lock()
-	defer c.seqLock.Unlock()
-
-	c.SequenceId++
-	c.SequenceId &= 0x7FFF
-	if c.SequenceId == 0 {
-		c.SequenceId++
-	}
-	return c.SequenceId
+	return uint16(atomic.AddInt32(&c.SequenceId, 1) & 0x7FFF)
 }
 
 func (c *QQClient) nextPacketSeq() int32 {
-	s := atomic.LoadInt32(&c.requestPacketRequestId)
-	atomic.AddInt32(&c.requestPacketRequestId, 2)
-	return s
+	return atomic.AddInt32(&c.requestPacketRequestId, 2)
 }
 
 func (c *QQClient) nextGroupSeq() int32 {
-	s := atomic.LoadInt32(&c.groupSeq)
-	atomic.AddInt32(&c.groupSeq, 2)
-	return s
+	return atomic.AddInt32(&c.groupSeq, 2)
 }
 
 func (c *QQClient) nextFriendSeq() int32 {
-	s := atomic.LoadInt32(&c.friendSeq)
-	atomic.AddInt32(&c.friendSeq, 1)
-	return s
+	return atomic.AddInt32(&c.friendSeq, 1)
 }
 
 func (c *QQClient) nextGroupDataTransSeq() int32 {
-	s := atomic.LoadInt32(&c.groupDataTransSeq)
-	atomic.AddInt32(&c.groupDataTransSeq, 2)
-	return s
+	return atomic.AddInt32(&c.groupDataTransSeq, 2)
 }
 
 func (c *QQClient) nextHighwayApplySeq() int32 {
-	s := atomic.LoadInt32(&c.highwayApplyUpSeq)
-	atomic.AddInt32(&c.highwayApplyUpSeq, 2)
-	return s
+	return atomic.AddInt32(&c.highwayApplyUpSeq, 2)
 }
 
 func (c *QQClient) send(pkt []byte) error {
