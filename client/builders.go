@@ -552,7 +552,7 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 
 func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, fmd5 [16]byte) (r [][]byte) {
 	offset := 0
-	binary.ToChunkedBytesF(data, 8192*1024, func(chunked []byte) {
+	binary.ToChunkedBytesF(data, 8192*8, func(chunked []byte) {
 		w := binary.NewWriter()
 		cmd5 := md5.Sum(chunked)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
