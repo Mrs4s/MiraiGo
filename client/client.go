@@ -12,7 +12,6 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -172,7 +171,6 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		c.lastLostMsg = ""
 		c.registerClient()
 		c.startHeartbeat()
-		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	}
 	return &l, nil
 }
