@@ -8,6 +8,7 @@ import (
 )
 
 var ErrUnknownFlag = errors.New("unknown flag")
+var ErrInvalidPayload = errors.New("invalid payload")
 var ErrDecryptFailed = errors.New("decrypt failed")
 
 type ISendingPacket interface {
@@ -83,6 +84,9 @@ func BuildSsoPacket(seq uint16, commandName, imei string, extData, outPacketSess
 }
 
 func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
+	if len(payload) < 6 {
+		return nil, ErrInvalidPayload
+	}
 	reader := binary.NewReader(payload)
 	flag1 := reader.ReadInt32()
 	flag2 := reader.ReadByte()

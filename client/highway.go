@@ -44,7 +44,6 @@ func (c *QQClient) highwayUploadImage(ip uint32, port int, updKey, img []byte, c
 	hl, _ := r.ReadInt32()
 	_, _ = r.ReadBytes(4)
 	payload, _ := r.ReadBytes(int(hl))
-	_ = conn.Close()
 	rsp := new(pb.RspDataHighwayHead)
 	if err = proto.Unmarshal(payload, rsp); err != nil {
 		return err
