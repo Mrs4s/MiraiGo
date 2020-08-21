@@ -75,8 +75,10 @@ type QQClient struct {
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
 
-	groupListLock *sync.Mutex
+	groupListLock sync.Mutex
 	msgSvcLock    sync.Mutex
+
+	seqLock sync.Mutex
 }
 
 type loginSigInfo struct {
@@ -143,7 +145,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		highwayApplyUpSeq:      77918,
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
 		eventHandlers:          &eventHandlers{},
-		groupListLock:          new(sync.Mutex),
 		msgSvcCache:            utils.NewCache(time.Second * 15),
 		transCache:             utils.NewCache(time.Second * 15),
 	}
@@ -598,20 +599,10 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 	}, nil
 }
 
-func (c *QQClient) ReloadGroupList(async ...bool) error {
-	f := false
-	if len(async) > 0 {
-		f = async[0]
-	}
+func (c *QQClient) ReloadGroupList() error {
 	c.groupListLock.Lock()
 	defer c.groupListLock.Unlock()
-	list, err := func() ([]*GroupInfo, error) {
-		if f {
-			return c.GetGroupListAsync()
-		} else {
-			return c.GetGroupList()
-		}
-	}()
+	list, err := c.GetGroupList()
 	if err != nil {
 		return err
 	}
@@ -625,32 +616,19 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 		return nil, err
 	}
 	r := rsp.([]*GroupInfo)
+	wg := sync.WaitGroup{}
+	wg.Add(len(r))
 	for _, group := range r {
-		m, err := c.GetGroupMembers(group)
-		if err != nil {
-			continue
-		}
-		group.Members = m
-	}
-	return r, nil
-}
-
-func (c *QQClient) GetGroupListAsync() ([]*GroupInfo, error) {
-	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
-	if err != nil {
-		return nil, err
-	}
-	r := rsp.([]*GroupInfo)
-	for _, group := range r {
-		g := group
-		go func() {
+		go func(g *GroupInfo, wg *sync.WaitGroup) {
+			defer wg.Done()
 			m, err := c.GetGroupMembers(g)
 			if err != nil {
 				return
 			}
 			g.Members = m
-		}()
+		}(group, &wg)
 	}
+	wg.Wait()
 	return r, nil
 }
 
@@ -847,6 +825,9 @@ func (c *QQClient) registerClient() {
 }
 
 func (c *QQClient) nextSeq() uint16 {
+	c.seqLock.Lock()
+	defer c.seqLock.Unlock()
+
 	c.SequenceId++
 	c.SequenceId &= 0x7FFF
 	if c.SequenceId == 0 {
