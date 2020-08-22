@@ -638,6 +638,23 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 						})
 					}
 				}
+			case 0x82:
+				if m := g.FindMember(target); m != nil {
+					g.removeMember(target)
+					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+						Group:  g,
+						Member: m,
+					})
+				}
+			case 0x83:
+				if m := g.FindMember(target); m != nil {
+					g.removeMember(target)
+					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+						Group:    g,
+						Member:   m,
+						Operator: g.FindMember(operator),
+					})
+				}
 			}
 		}
 	}
