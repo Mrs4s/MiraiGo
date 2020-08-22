@@ -330,6 +330,12 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					},
 				})
 			}
+			r = append(r, &msg.Elem{
+				RichMsg: &msg.RichMsg{
+					Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+					ServiceId: e.Id,
+				},
+			})
 		}
 	}
 	if generalFlags {
