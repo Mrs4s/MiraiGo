@@ -21,6 +21,7 @@ type ImageElement struct {
 
 type GroupImageElement struct {
 	ImageId string
+	FileId  int64
 	Md5     []byte
 	Url     string
 }
@@ -101,9 +102,10 @@ func NewImage(data []byte) *ImageElement {
 	}
 }
 
-func NewGroupImage(id string, md5 []byte) *GroupImageElement {
+func NewGroupImage(id string, md5 []byte, fid int64) *GroupImageElement {
 	return &GroupImageElement{
 		ImageId: id,
+		FileId:  fid,
 		Md5:     md5,
 		Url:     "http://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(id[1:36], "-", "") + "/0?term=2",
 	}

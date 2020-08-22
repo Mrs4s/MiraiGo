@@ -219,7 +219,13 @@ message Elem {
   //GroupPostElem? groupPostElem = 50;
   LightAppElem lightApp = 51;
   //EIMInfo? eimInfo = 52;
-  //CommonElem? commonElem = 53;
+  CommonElem commonElem = 53;
+}
+
+message CommonElem {
+  int32 serviceType = 1;
+  bytes pbElem = 2;
+  int32 businessType = 3;
 }
 
 message RichMsg {

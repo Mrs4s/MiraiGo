@@ -163,6 +163,7 @@ type (
 		Message    string
 
 		IsExists bool
+		FileId   int64
 
 		ResourceId string
 		UploadKey  []byte
