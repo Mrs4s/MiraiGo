@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"strconv"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -20,7 +22,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
 )
 
 var (
@@ -841,6 +842,16 @@ func (c *QQClient) buildGroupNameUpdatePacket(groupCode int64, newName string) (
 		GroupCode: groupCode,
 		StGroupInfo: &oidb.D89AGroupinfo{
 			IngGroupName: []byte(newName),
+		},
+	}
+	return c.buildGroupOperationPacket(body)
+}
+
+func (c *QQClient) buildGroupMemoUpdatePacket(groupCode int64, newMemo string) (uint16, []byte) {
+	body := &oidb.D89AReqBody{
+		GroupCode: groupCode,
+		StGroupInfo: &oidb.D89AGroupinfo{
+			IngGroupMemo: []byte(newMemo),
 		},
 	}
 	return c.buildGroupOperationPacket(body)
