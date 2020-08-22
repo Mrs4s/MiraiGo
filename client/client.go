@@ -137,7 +137,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
-		groupSeq:               22911,
+		groupSeq:               int32(rand.Intn(20000)),
 		friendSeq:              22911,
 		highwayApplyUpSeq:      77918,
 		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
