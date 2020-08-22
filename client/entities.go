@@ -208,6 +208,13 @@ func (g *GroupInfo) UpdateName(newName string) {
 	}
 }
 
+func (g *GroupInfo) UpdateMemo(newMemo string) {
+	if g.AdministratorOrOwner() {
+		g.client.updateGroupMemo(g.Code, newMemo)
+		g.Memo = newMemo
+	}
+}
+
 func (g *GroupInfo) MuteAll(mute bool) {
 	if g.AdministratorOrOwner() {
 		g.client.groupMuteAll(g.Code, mute)

@@ -16,6 +16,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -23,7 +25,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
 )
 
 type QQClient struct {
@@ -752,6 +753,10 @@ func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title stri
 
 func (c *QQClient) updateGroupName(groupCode int64, newName string) {
 	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
+}
+
+func (c *QQClient) updateGroupMemo(groupCode int64, newMemo string) {
+	_, _ = c.sendAndWait(c.buildGroupMemoUpdatePacket(groupCode, newMemo))
 }
 
 func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {
