@@ -83,10 +83,16 @@ func BuildSsoPacket(seq uint16, commandName, imei string, extData, outPacketSess
 	return p.Bytes()
 }
 
-func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
+func ParseIncomingPacket(payload, d2key []byte) (_ *IncomingPacket, err error) {
 	if len(payload) < 6 {
 		return nil, ErrInvalidPayload
 	}
+	defer func() {
+		if pan := recover(); pan != nil {
+			err = ErrInvalidPayload
+		}
+	}()
+
 	reader := binary.NewReader(payload)
 	flag1 := reader.ReadInt32()
 	flag2 := reader.ReadByte()
@@ -166,7 +172,13 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	}, nil
 }
 
-func (pkt *IncomingPacket) DecryptPayload(random []byte) ([]byte, error) {
+func (pkt *IncomingPacket) DecryptPayload(random []byte) (_ []byte, err error) {
+	defer func() {
+		if pan := recover(); pan != nil {
+			err = ErrInvalidPayload
+		}
+	}()
+
 	reader := binary.NewReader(pkt.Payload)
 	if reader.ReadByte() != 2 {
 		return nil, ErrUnknownFlag
@@ -178,7 +190,9 @@ func (pkt *IncomingPacket) DecryptPayload(random []byte) ([]byte, error) {
 	reader.ReadInt32()
 	encryptType := reader.ReadUInt16()
 	reader.ReadByte()
-	if encryptType == 0 {
+
+	switch encryptType {
+	case 0:
 		data := func() (decrypted []byte) {
 			d := reader.ReadBytes(reader.Len() - 1)
 			defer func() {
@@ -192,8 +206,7 @@ func (pkt *IncomingPacket) DecryptPayload(random []byte) ([]byte, error) {
 			return
 		}()
 		return data, nil
-	}
-	if encryptType == 4 {
+	case 4:
 		panic("todo")
 	}
 	return nil, ErrUnknownFlag
