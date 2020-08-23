@@ -228,6 +228,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		list := rsp.(FriendListResponse)
 		r.TotalCount = list.TotalCount
 		r.List = append(r.List, list.List...)
+		curFriendCount += len(list.List)
 		if int32(len(r.List)) >= r.TotalCount {
 			break
 		}
