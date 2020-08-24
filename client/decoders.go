@@ -214,8 +214,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if group == nil {
 					continue
 				}
-				mem := group.FindMember(message.Head.FromUin)
-				if mem == nil || message.Head.FromUin == c.Uin {
+				if message.Head.FromUin == c.Uin {
 					continue
 				}
 				c.dispatchTempMessage(c.parseTempMessage(message))

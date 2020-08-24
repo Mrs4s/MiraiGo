@@ -217,16 +217,21 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GroupUin)
 	mem := group.FindMember(msg.Head.FromUin)
+	sender := &message.Sender{
+		Uin:      msg.Head.FromUin,
+		Nickname: "Unknown",
+		IsFriend: false,
+	}
+	if mem != nil {
+		sender.Nickname = mem.Nickname
+		sender.CardName = mem.CardName
+	}
 	return &message.TempMessage{
 		Id:        msg.Head.MsgSeq,
 		GroupCode: group.Code,
 		GroupName: group.Name,
-		Sender: &message.Sender{
-			Uin:      mem.Uin,
-			Nickname: mem.Nickname,
-			CardName: mem.CardName,
-		},
-		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
+		Sender:    sender,
+		Elements:  message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
 }
 
