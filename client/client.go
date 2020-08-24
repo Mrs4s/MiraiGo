@@ -275,6 +275,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 			},
 		}})
 		if ret != nil && ret.Id == -1 {
+			c.Error("long message send error. trying fragmented sending...")
 			return c.SendGroupMessage(groupCode, m, true)
 		}
 		return ret
