@@ -344,20 +344,20 @@ func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
 func (c *QQClient) Info(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "INFO",
-		Message: fmt.Sprintf(msg, args),
+		Message: fmt.Sprintf(msg, args...),
 	})
 }
 
 func (c *QQClient) Error(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "ERROR",
-		Message: fmt.Sprintf(msg, args),
+		Message: fmt.Sprintf(msg, args...),
 	})
 }
 
 func (c *QQClient) Debug(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "DEBUG",
-		Message: fmt.Sprintf(msg, args),
+		Message: fmt.Sprintf(msg, args...),
 	})
 }
