@@ -241,14 +241,14 @@ func (m *GroupMemberInfo) DisplayName() string {
 }
 
 func (m *GroupMemberInfo) EditCard(card string) {
-	if m.Manageable() && strings.Count(card, "") <= 20 {
+	if m.Manageable() && len(card) <= 60 {
 		m.Group.client.editMemberCard(m.Group.Code, m.Uin, card)
 		m.CardName = card
 	}
 }
 
 func (m *GroupMemberInfo) EditSpecialTitle(title string) {
-	if m.Group.SelfPermission() == Owner && strings.Count(title, "") <= 6 {
+	if m.Group.SelfPermission() == Owner && len(title) <= 18 {
 		m.Group.client.editMemberSpecialTitle(m.Group.Code, m.Uin, title)
 		m.SpecialTitle = title
 	}
