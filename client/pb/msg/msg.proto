@@ -32,7 +32,11 @@ message SendMessageRequest {
   MsgCtrl msgCtrl = 12;
   //ImReceipt.ReceiptReq? receiptReq = 13;
   int32 multiSendSeq = 14;
+}
 
+message SendMessageResponse {
+  int32 result = 1;
+  string errMsg = 2;
 }
 
 message MsgWithDrawReq {

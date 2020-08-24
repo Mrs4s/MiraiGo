@@ -298,6 +298,17 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	return nil, nil
 }
 
+func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := msg.SendMessageResponse{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.Result != 0 {
+		c.Error("send msg error: %v %v", rsp.Result, rsp.ErrMsg)
+	}
+	return nil, nil
+}
+
 func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
 	c.msgSvcLock.Lock()
 	defer c.msgSvcLock.Unlock()

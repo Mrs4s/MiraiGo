@@ -122,6 +122,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"OnlinePush.PbPushTransMsg":                decodeOnlinePushTransPacket,
 			"ConfigPushSvc.PushReq":                    decodePushReqPacket,
 			"MessageSvc.PbGetMsg":                      decodeMessageSvcPacket,
+			"MessageSvc.PbSendMsg":                     decodeMsgSendResponse,
 			"MessageSvc.PushForceOffline":              decodeForceOfflinePacket,
 			"friendlist.getFriendGroupList":            decodeFriendGroupListResponse,
 			"friendlist.GetTroopListReqV2":             decodeGroupListResponse,
@@ -812,6 +813,7 @@ func (c *QQClient) connect() error {
 			c.server = servers[rand.Intn(len(servers))]
 		}
 	}
+	c.Info("connect to server: %v", c.server.String())
 	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
 		return err
@@ -884,8 +886,9 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 				continue
 			}
 			c.handlers.Delete(seq)
-			println("Packet Timed out")
-			return nil, errors.New("time out")
+			c.Error("packet timed out, seq: %v", seq)
+			//println("Packet Timed out")
+			return nil, errors.New("timeout")
 		}
 	}
 	return nil, nil
@@ -915,7 +918,8 @@ func (c *QQClient) netLoop() {
 		data, err := reader.ReadBytes(int(l) - 4)
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
-			log.Println("parse incoming packet error: " + err.Error())
+			c.Error("parse incoming packer error: %v", err)
+			//log.Println("parse incoming packet error: " + err.Error())
 			continue
 		}
 		payload := pkt.Payload
@@ -926,11 +930,12 @@ func (c *QQClient) netLoop() {
 			}
 		}
 		retry = 0
-		//fmt.Println(pkt.CommandName, pkt.SequenceId)
+		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
-					fmt.Println("panic on decoder:", pan)
+					c.Error("panic on decoder: %v", pan)
+					//fmt.Println("panic on decoder:", pan)
 				}
 			}()
 			decoder, ok := c.decoders[pkt.CommandName]

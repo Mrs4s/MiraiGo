@@ -149,6 +149,11 @@ type (
 		client *QQClient
 	}
 
+	LogEvent struct {
+		Type    string
+		Message string
+	}
+
 	NewFriendEvent struct {
 		Friend *FriendInfo
 	}
