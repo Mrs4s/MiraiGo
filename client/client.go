@@ -630,18 +630,25 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 	}
 	r := rsp.([]*GroupInfo)
 	wg := sync.WaitGroup{}
-	wg.Add(len(r))
-	for _, group := range r {
-		go func(g *GroupInfo, wg *sync.WaitGroup) {
-			defer wg.Done()
-			m, err := c.GetGroupMembers(g)
-			if err != nil {
-				return
-			}
-			g.Members = m
-		}(group, &wg)
+	batch := 50
+	for i := 0; i < len(r); i += batch {
+		k := i + batch
+		if k > len(r) {
+			k = len(r)
+		}
+		wg.Add(k - i)
+		for j := i; j < k; j++ {
+			go func(g *GroupInfo, wg *sync.WaitGroup) {
+				defer wg.Done()
+				m, err := c.GetGroupMembers(g)
+				if err != nil {
+					return
+				}
+				g.Members = m
+			}(r[j], &wg)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
 	return r, nil
 }
 
