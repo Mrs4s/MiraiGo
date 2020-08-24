@@ -261,7 +261,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if msgLen > 702 || imgCount > 2 {
+	if msgLen > 300 || imgCount > 2 {
 		return c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
 			{
 				SenderId:   c.Uin,
