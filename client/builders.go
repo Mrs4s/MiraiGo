@@ -959,15 +959,19 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 }
 
 // OidbSvc.0x8a0_0
-func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string) (uint16, []byte) {
+func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string, block bool) (uint16, []byte) {
 	seq := c.nextSeq()
+	flagBlock := 0
+	if block {
+		flagBlock = 1
+	}
 	body := &oidb.D8A0ReqBody{
 		OptUint64GroupCode: groupCode,
 		MsgKickList: []*oidb.D8A0KickMemberInfo{
 			{
 				OptUint32Operate:   5,
 				OptUint64MemberUin: memberUin,
-				OptUint32Flag:      1,
+				OptUint32Flag:      int32(flagBlock),
 			},
 		},
 		KickMsg: []byte(kickMsg),

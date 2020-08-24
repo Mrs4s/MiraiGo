@@ -940,8 +940,8 @@ func (c *QQClient) quitGroup(groupCode int64) {
 	_, _ = c.sendAndWait(c.buildQuitGroupPacket(groupCode))
 }
 
-func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string) {
-	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg))
+func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string, block bool) {
+	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg, block))
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
