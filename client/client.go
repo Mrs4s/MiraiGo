@@ -255,14 +255,18 @@ func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) 
 	return url
 }
 
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {
+func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
+	useFram := false
+	if len(f) > 0 {
+		useFram = f[0]
+	}
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
 	msgLen := message.EstimateLength(m.Elements, 703)
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if msgLen > 300 || imgCount > 2 {
-		return c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
+	if (msgLen > 300 || imgCount > 2) && !useFram {
+		ret := c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
 			{
 				SenderId:   c.Uin,
 				SenderName: c.Nickname,
@@ -270,6 +274,10 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) 
 				Message:    m.Elements,
 			},
 		}})
+		if ret != nil && ret.Id == -1 {
+			return c.SendGroupMessage(groupCode, m, true)
+		}
+		return ret
 	}
 	return c.sendGroupMessage(groupCode, false, m)
 }
@@ -284,8 +292,23 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	_, pkt := c.buildGroupSendingPacket(groupCode, mr, forward, m)
-	_ = c.send(pkt)
+	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
+	msgLen := message.EstimateLength(m.Elements, 703)
+	if (msgLen > 300 || imgCount > 2) && !forward && !m.Any(func(e message.IMessageElement) bool {
+		_, ok := e.(*message.GroupVoiceElement)
+		_, ok2 := e.(*message.ServiceElement)
+		return ok || ok2
+	}) {
+		div := int32(rand.Uint32())
+		fragmented := m.ToFragmented()
+		for i, elems := range fragmented {
+			_, pkt := c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
+			_ = c.send(pkt)
+		}
+	} else {
+		_, pkt := c.buildGroupSendingPacket(groupCode, mr, 1, 0, 0, forward, m.Elements)
+		_ = c.send(pkt)
+	}
 	var mid int32
 	ret := &message.GroupMessage{
 		Id:         -1,
@@ -319,17 +342,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	}
 	if msgLen > 300 || imgCount > 2 {
 		div := int32(rand.Uint32())
-		var fragmented [][]message.IMessageElement
-		for _, elem := range m.Elements {
-			switch o := elem.(type) {
-			case *message.TextElement:
-				for _, text := range utils.ChunkString(o.Content, 220) {
-					fragmented = append(fragmented, []message.IMessageElement{message.NewText(text)})
-				}
-			default:
-				fragmented = append(fragmented, []message.IMessageElement{o})
-			}
-		}
+		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
 			_, pkt := c.buildFriendSendingPacket(target, c.nextFriendSeq(), mr, int32(len(fragmented)), int32(i), div, t, elems)
 			_ = c.send(pkt)

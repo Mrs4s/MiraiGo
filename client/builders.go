@@ -386,22 +386,21 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildGroupSendingPacket(groupCode int64, r int32, forward bool, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex, pkgDiv int32, forward bool, m []message.IMessageElement) (uint16, []byte) {
 	seq := c.nextSeq()
 	var ptt *message.GroupVoiceElement
-	if i := m.FirstOrNil(func(e message.IMessageElement) bool {
-		_, ok := e.(*message.GroupVoiceElement)
-		return ok
-	}); i != nil {
-		ptt = i.(*message.GroupVoiceElement)
-		m.Elements = []message.IMessageElement{}
+	if len(m) > 0 {
+		if p, ok := m[0].(*message.GroupVoiceElement); ok {
+			ptt = p
+			m = []message.IMessageElement{}
+		}
 	}
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
-		ContentHead: &msg.ContentHead{PkgNum: 1},
+		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m.Elements, true),
+				Elems: message.ToProtoElems(m, true),
 				Ptt: func() *msg.Ptt {
 					if ptt != nil {
 						return ptt.Ptt

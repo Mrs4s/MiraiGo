@@ -179,6 +179,21 @@ func (msg *SendingMessage) Count(filter func(e IMessageElement) bool) (c int) {
 	return
 }
 
+func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
+	var fragmented [][]IMessageElement
+	for _, elem := range msg.Elements {
+		switch o := elem.(type) {
+		case *TextElement:
+			for _, text := range utils.ChunkString(o.Content, 220) {
+				fragmented = append(fragmented, []IMessageElement{NewText(text)})
+			}
+		default:
+			fragmented = append(fragmented, []IMessageElement{o})
+		}
+	}
+	return fragmented
+}
+
 func EstimateLength(elems []IMessageElement, limit int) int {
 	sum := 0
 	for _, elem := range elems {
