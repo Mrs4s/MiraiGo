@@ -293,3 +293,41 @@ message SubB3AddFrdNotify {
     int64 uin = 1;
     string nick = 5;
 }
+
+message Sub44 {
+    Sub44FriendSyncMsg friendSyncMsg = 1;
+    Sub44GroupSyncMsg groupSyncMsg = 2;
+}
+
+message Sub44FriendSyncMsg {
+    int64 uin = 1;
+    int64 fUin = 2;
+    int32 processType = 3;
+    int32 time = 4;
+    int32 processFlag = 5;
+    int32 sourceId = 6;
+    int32 sourceSubId = 7;
+    repeated string strWording = 8;
+}
+
+message Sub44GroupSyncMsg {
+    int32 msgType = 1;
+    int64 msgSeq = 2;
+    int64 grpCode = 3;
+    int64 gaCode = 4;
+    int64 optUin1 = 5;
+    int64 optUin2 = 6;
+    bytes msgBuf = 7;
+    bytes authKey = 8;
+    int32 msgStatus = 9;
+    int64 actionUin = 10;
+    int64 actionTime = 11;
+    int32 curMaxMemCount = 12;
+    int32 nextMaxMemCount = 13;
+    int32 curMemCount = 14;
+    int32 reqSrcId = 15;
+    int32 reqSrcSubId = 16;
+    int32 inviterRole = 17;
+    int32 extAdminNum = 18;
+    int32 processFlag = 19;
+}

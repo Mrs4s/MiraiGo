@@ -567,7 +567,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					return nil, err
 				}
 				groupLeaveLock.Lock()
-				if g := c.FindGroupByUin(d4.Uin); g != nil {
+				if g := c.FindGroup(d4.Uin); g != nil {
 					if err := c.ReloadGroupList(); err != nil {
 						groupLeaveLock.Unlock()
 						return nil, err
@@ -575,6 +575,34 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 				}
 				groupLeaveLock.Unlock()
+			case 0x44:
+				s44 := pb.Sub44{}
+				if err := proto.Unmarshal(probuf, &s44); err != nil {
+					return nil, err
+				}
+				if s44.GroupSyncMsg != nil {
+					func() {
+						groupJoinLock.Lock()
+						defer groupJoinLock.Unlock()
+						c.Debug("syncing groups.")
+						old := c.GroupList
+						any := func(code int64) bool {
+							for _, g := range old {
+								if g.Code == code {
+									return true
+								}
+							}
+							return false
+						}
+						if err := c.ReloadGroupList(); err == nil {
+							for _, g := range c.GroupList {
+								if !any(g.Code) {
+									c.dispatchJoinGroupEvent(g)
+								}
+							}
+						}
+					}()
+				}
 			}
 		}
 	}
