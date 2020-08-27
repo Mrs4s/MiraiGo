@@ -195,17 +195,24 @@ func (info *DeviceInfo) GenDeviceInfoData() []byte {
 
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
 	friend := c.FindFriend(msg.Head.FromUin)
+	var sender *message.Sender
 	if friend == nil {
-		return nil
-	}
-	ret := &message.PrivateMessage{
-		Id:     msg.Head.MsgSeq,
-		Target: c.Uin,
-		Time:   msg.Head.MsgTime,
-		Sender: &message.Sender{
+		sender = &message.Sender{
+			Uin:      msg.Head.FromUin,
+			Nickname: msg.Head.FromNick,
+			IsFriend: false,
+		}
+	} else {
+		sender = &message.Sender{
 			Uin:      friend.Uin,
 			Nickname: friend.Nickname,
-		},
+		}
+	}
+	ret := &message.PrivateMessage{
+		Id:       msg.Head.MsgSeq,
+		Target:   c.Uin,
+		Time:     msg.Head.MsgTime,
+		Sender:   sender,
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
 	if msg.Body.RichText.Attr != nil {

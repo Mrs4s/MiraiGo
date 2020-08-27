@@ -234,20 +234,6 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
 					continue
 				}
-				//friend := c.FindFriend(message.Head.FromUin)
-				/*
-					if friend == nil {
-						return nil, nil
-					}
-					if friend.msgSeqList == nil {
-						friend.msgSeqList = utils.NewCache(time.Second * 5)
-					}
-					strSeq := strconv.FormatInt(int64(message.Head.MsgSeq), 10)
-					if _, ok := friend.msgSeqList.Get(strSeq); ok {
-						continue
-					}
-					friend.msgSeqList.Add(strSeq, 0, time.Minute*15)
-				*/
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
