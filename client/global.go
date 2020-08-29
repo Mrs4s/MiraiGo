@@ -272,14 +272,31 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 			IsFriend: c.FindFriend(mem.Uin) != nil,
 		}
 	}
-	g := &message.GroupMessage{
-		Id:        m.Head.MsgSeq,
-		GroupCode: group.Code,
-		GroupName: string(m.Head.GroupInfo.GroupName),
-		Sender:    sender,
-		Time:      m.Head.MsgTime,
-		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
-		//OriginalElements: m.Body.RichText.Elems,
+	var g *message.GroupMessage
+	// pre parse
+	for _, elem := range m.Body.RichText.Elems {
+		// is rich long msg
+		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid != "" {
+			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid); f != nil && len(f.Nodes) == 1 {
+				g = &message.GroupMessage{
+					Id:        m.Head.MsgSeq,
+					GroupCode: group.Code,
+					GroupName: string(m.Head.GroupInfo.GroupName),
+					Sender:    sender,
+					Time:      m.Head.MsgTime,
+					Elements:  f.Nodes[0].Message,
+				}
+			}
+		}
+	}
+	if g == nil {
+		g = &message.GroupMessage{
+			Id:        m.Head.MsgSeq,
+			GroupCode: group.Code,
+			GroupName: string(m.Head.GroupInfo.GroupName),
+			Sender:    sender,
+			Time:      m.Head.MsgTime,
+		}
 	}
 	if m.Body.RichText.Ptt != nil {
 		g.Elements = []message.IMessageElement{
