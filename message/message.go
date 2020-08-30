@@ -348,9 +348,9 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 				continue
 			}
 			if e.SubType == "json" {
-				r = append(r,&msg.Elem{
-					LightApp:&msg.LightAppElem{
-						Data:append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+				r = append(r, &msg.Elem{
+					LightApp: &msg.LightAppElem{
+						Data:     append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
 						MsgResid: []byte{1},
 					},
 				})
