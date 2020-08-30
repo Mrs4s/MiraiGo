@@ -347,6 +347,15 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 				})
 				continue
 			}
+			if e.SubType == "json" {
+				r = append(r,&msg.Elem{
+					LightApp:&msg.LightAppElem{
+						Data:append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+						MsgResid: []byte{1},
+					},
+				})
+				continue
+			}
 			r = append(r, &msg.Elem{
 				RichMsg: &msg.RichMsg{
 					Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
@@ -539,7 +548,7 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 				FromUin: node.SenderId,
 				MsgSeq:  seq,
 				MsgTime: node.Time,
-				MsgUid:  0x01000000000000000 | (int64(random) & 0xFFFF_FFFF),
+				MsgUid:  0x01000000000000000 | (int64(random) & 0xFFFFFFFF),
 				MutiltransHead: &msg.MutilTransHead{
 					MsgId: 1,
 				},
