@@ -273,6 +273,14 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		}
 	}
 	var g *message.GroupMessage
+	g = &message.GroupMessage{
+			Id:        m.Head.MsgSeq,
+			GroupCode: group.Code,
+			GroupName: string(m.Head.GroupInfo.GroupName),
+			Sender:    sender,
+			Time:      m.Head.MsgTime,
+			Elements:  message.ParseMessageElems(m.Body.RichText.Elems),	
+		}
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
 		// is rich long msg
@@ -287,15 +295,6 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 					Elements:  f.Nodes[0].Message,
 				}
 			}
-		}
-	}
-	if g == nil {
-		g = &message.GroupMessage{
-			Id:        m.Head.MsgSeq,
-			GroupCode: group.Code,
-			GroupName: string(m.Head.GroupInfo.GroupName),
-			Sender:    sender,
-			Time:      m.Head.MsgTime,
 		}
 	}
 	if m.Body.RichText.Ptt != nil {
