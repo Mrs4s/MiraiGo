@@ -161,6 +161,24 @@ func NewUrlShare(url, title, content, image string) *ServiceElement {
 		SubType: "UrlShare",
 	}
 }
+func NewXmlMsg(template string, ResId int64) *ServiceElement {
+	if ResId == 0 {
+		ResId = 60 //默认值60
+	}
+	return &ServiceElement{
+		Id:      int32(ResId),
+		Content: template,
+		SubType: "xml",
+	}
+}
+
+func NewJsonMsg(template string) *ServiceElement {
+	return &ServiceElement{
+		Id:      1,
+		Content: template,
+		SubType: "json",
+	}
+}
 
 func (e *TextElement) Type() ElementType {
 	return Text
