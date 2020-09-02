@@ -92,6 +92,10 @@ type ForwardElement struct {
 	ResId string
 }
 
+type LightAppElement struct {
+	Content string
+}
+
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
 }
@@ -161,7 +165,7 @@ func NewUrlShare(url, title, content, image string) *ServiceElement {
 		SubType: "UrlShare",
 	}
 }
-func NewXmlMsg(template string, ResId int64) *ServiceElement {
+func NewRichXml(template string, ResId int64) *ServiceElement {
 	if ResId == 0 {
 		ResId = 60 //默认值60
 	}
@@ -172,12 +176,16 @@ func NewXmlMsg(template string, ResId int64) *ServiceElement {
 	}
 }
 
-func NewJsonMsg(template string) *ServiceElement {
+func NewRichJson(template string) *ServiceElement {
 	return &ServiceElement{
 		Id:      1,
 		Content: template,
 		SubType: "json",
 	}
+}
+
+func NewLightApp(content string) *LightAppElement {
+	return &LightAppElement{Content: content}
 }
 
 func (e *TextElement) Type() ElementType {
@@ -230,6 +238,10 @@ func (e *VoiceElement) Type() ElementType {
 
 func (e *ShortVideoElement) Type() ElementType {
 	return Video
+}
+
+func (e *LightAppElement) Type() ElementType {
+	return LightApp
 }
 
 var faceMap = map[int]string{

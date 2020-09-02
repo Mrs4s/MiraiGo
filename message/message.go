@@ -82,6 +82,7 @@ const (
 	File
 	Voice
 	Video
+	LightApp
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -347,19 +348,17 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 				})
 				continue
 			}
-			if e.SubType == "json" {
-				r = append(r, &msg.Elem{
-					LightApp: &msg.LightAppElem{
-						Data:     append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-						MsgResid: []byte{1},
-					},
-				})
-				continue
-			}
 			r = append(r, &msg.Elem{
 				RichMsg: &msg.RichMsg{
 					Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
 					ServiceId: e.Id,
+				},
+			})
+		case *LightAppElement:
+			r = append(r, &msg.Elem{
+				LightApp: &msg.LightAppElem{
+					Data:     append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+					MsgResid: []byte{1},
 				},
 			})
 		}
@@ -459,7 +458,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 			if content != "" {
 				// TODO: 解析具体的APP
-				return append(res, NewText(content))
+				return append(res, &LightAppElement{Content: content})
 			}
 		}
 		if elem.VideoFile != nil {
