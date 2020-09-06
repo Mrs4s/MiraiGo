@@ -6,6 +6,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"github.com/tidwall/gjson"
 	"math"
 	"reflect"
 	"regexp"
@@ -504,10 +505,14 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				}
 				if isOk := strings.Contains(content, "<?xml"); isOk {
 					res = append(res, NewRichXml(content, int64(elem.RichMsg.ServiceId)))
+					continue
 				} else {
-					res = append(res, NewRichJson(content))
+					if gjson.Valid(content) {
+						res = append(res, NewRichJson(content))
+						continue
+					}
 				}
-				//res = append(res, NewText(content))
+				res = append(res, NewText(content))
 			}
 		}
 		if elem.CustomFace != nil {
