@@ -12,9 +12,11 @@ import (
 	"math"
 	"math/rand"
 	"net"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
+	"strings"
 
 	"github.com/golang/protobuf/proto"
 
@@ -175,6 +177,39 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		c.startHeartbeat()
 	}
 	return &l, nil
+}
+
+func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
+	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita",target),c.getCookiesWithDomain("h5.vip.qq.com"))
+	if err != nil {
+		return nil, err
+	}
+	ret := VipInfo{Uin: target};
+	b = b[bytes.Index(b, []byte(`<span class="ui-nowrap">`))+24:]
+	t := b[:bytes.Index(b,[]byte(`</span>`))]
+	ret.Name = string(t)
+	b = b[bytes.Index(b, []byte(`<small>LV</small>`))+17:]
+	t = b[:bytes.Index(b, []byte(`</p>`))]
+	ret.Level, _ = strconv.Atoi(string(t))
+	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
+	b = b[bytes.Index(b, []byte(`<p>`))+3:]
+	t = b[:bytes.Index(b, []byte(`<small>倍`))]
+	ret.LevelSpeed, _ = strconv.ParseFloat(string(t),64)
+	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
+	b = b[bytes.Index(b, []byte(`<p>`))+3:]
+	st := string(b[:bytes.Index(b, []byte(`</p>`))])
+	st = strings.Replace(st, "<small>", "", 1)
+	st = strings.Replace(st, "</small>", "", 1)
+	ret.VipLevel = st
+	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
+	b = b[bytes.Index(b, []byte(`<p>`))+3:]
+	t = b[:bytes.Index(b, []byte(`</p>`))]
+	ret.VipGrowthSpeed, _ = strconv.Atoi(string(t))
+	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
+	b = b[bytes.Index(b, []byte(`<p>`))+3:]
+	t = b[:bytes.Index(b, []byte(`</p>`))]
+	ret.VipGrowthTotal, _ = strconv.Atoi(string(t))
+	return &ret,nil
 }
 
 func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
