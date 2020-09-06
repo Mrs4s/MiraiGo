@@ -502,7 +502,12 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				if elem.RichMsg.ServiceId == 33 {
 					continue // 前面一个 elem 已经解析到链接
 				}
-				res = append(res, NewText(content))
+				if isOk := strings.Contains(content, "<?xml"); isOk {
+					res = append(res, NewRichXml(content, int64(elem.RichMsg.ServiceId)))
+				} else {
+					res = append(res, NewRichJson(content))
+				}
+				//res = append(res, NewText(content))
 			}
 		}
 		if elem.CustomFace != nil {
