@@ -803,6 +803,10 @@ func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title stri
 	_, _ = c.sendAndWait(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
 }
 
+func (c *QQClient) setGroupAdmin(groupCode, memberUin int64, flag bool) {
+	_, _ = c.sendAndWait(c.buildGroupAdminSetPacket(groupCode, memberUin, flag))
+}
+
 func (c *QQClient) updateGroupName(groupCode int64, newName string) {
 	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
 }

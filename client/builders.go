@@ -915,6 +915,28 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 	return seq, packet
 }
 
+// OidbSvc.0x55c_1
+func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &oidb.OIDBSSOPkg{
+		Command:     1372,
+		ServiceType: 1,
+		Bodybuffer: binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt32(uint32(groupCode))
+			w.WriteUInt32(uint32(member))
+			w.WriteByte(func() byte {
+				if flag {
+					return 1
+				}
+				return 0
+			}())
+		}),
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // MultiMsg.ApplyUp
 func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
 	seq := c.nextSeq()

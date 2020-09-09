@@ -246,6 +246,12 @@ func (m *GroupMemberInfo) EditCard(card string) {
 	}
 }
 
+func (m *GroupMemberInfo) SetAdmin(flag bool) {
+	if m.Group.OwnerUin == m.Group.client.Uin {
+		m.Group.client.setGroupAdmin(m.Group.Code, m.Uin, flag)
+	}
+}
+
 func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 	if m.Group.SelfPermission() == Owner && len(title) <= 18 {
 		m.Group.client.editMemberSpecialTitle(m.Group.Code, m.Uin, title)
