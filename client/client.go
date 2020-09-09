@@ -13,10 +13,10 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-	"strings"
 
 	"github.com/golang/protobuf/proto"
 
@@ -180,13 +180,13 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita",target),c.getCookiesWithDomain("h5.vip.qq.com"))
+	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), c.getCookiesWithDomain("h5.vip.qq.com"))
 	if err != nil {
 		return nil, err
 	}
-	ret := VipInfo{Uin: target};
+	ret := VipInfo{Uin: target}
 	b = b[bytes.Index(b, []byte(`<span class="ui-nowrap">`))+24:]
-	t := b[:bytes.Index(b,[]byte(`</span>`))]
+	t := b[:bytes.Index(b, []byte(`</span>`))]
 	ret.Name = string(t)
 	b = b[bytes.Index(b, []byte(`<small>LV</small>`))+17:]
 	t = b[:bytes.Index(b, []byte(`</p>`))]
@@ -194,7 +194,7 @@ func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
 	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
 	b = b[bytes.Index(b, []byte(`<p>`))+3:]
 	t = b[:bytes.Index(b, []byte(`<small>倍`))]
-	ret.LevelSpeed, _ = strconv.ParseFloat(string(t),64)
+	ret.LevelSpeed, _ = strconv.ParseFloat(string(t), 64)
 	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
 	b = b[bytes.Index(b, []byte(`<p>`))+3:]
 	st := string(b[:bytes.Index(b, []byte(`</p>`))])
@@ -209,7 +209,7 @@ func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
 	b = b[bytes.Index(b, []byte(`<p>`))+3:]
 	t = b[:bytes.Index(b, []byte(`</p>`))]
 	ret.VipGrowthTotal, _ = strconv.Atoi(string(t))
-	return &ret,nil
+	return &ret, nil
 }
 
 func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
@@ -445,7 +445,7 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
 			SenderId: m.Head.FromUin,
 			SenderName: func() string {
-				if m.Head.MsgType == 82 {
+				if m.Head.MsgType == 82 && m.Head.GroupInfo != nil {
 					return m.Head.GroupInfo.GroupCard
 				}
 				return m.Head.FromNick
