@@ -653,7 +653,7 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
-	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
+	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(EmptyBytes))
 	if err != nil {
 		return nil, err
 	}

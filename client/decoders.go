@@ -333,7 +333,9 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	data := &jce.RequestDataVersion3{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["GetTroopListRespV2"][1:])
+	vecCookie := []byte{}
 	groups := []jce.TroopNumber{}
+	r.ReadSlice(&vecCookie, 4)
 	r.ReadSlice(&groups, 5)
 	var l []*GroupInfo
 	for _, g := range groups {
@@ -347,6 +349,13 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
 			client:         c,
 		})
+	}
+	if len(vecCookie) > 0 {
+		rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(vecCookie))
+		if err != nil {
+			return nil, err
+		}
+		l = append(l, rsp.([]*GroupInfo)...)
 	}
 	return l, nil
 }
