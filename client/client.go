@@ -30,8 +30,9 @@ import (
 )
 
 type QQClient struct {
-	Uin         int64
-	PasswordMd5 [16]byte
+	Uin          int64
+	PasswordMd5  [16]byte
+	CustomServer *net.TCPAddr
 
 	Nickname   string
 	Age        uint16
@@ -44,6 +45,7 @@ type QQClient struct {
 	OutGoingPacketSessionId []byte
 	RandomKey               []byte
 	Conn                    net.Conn
+	ConnectTime             time.Time
 
 	decoders map[string]func(*QQClient, uint16, []byte) (interface{}, error)
 	handlers sync.Map
@@ -862,21 +864,27 @@ var servers = []*net.TCPAddr{
 
 func (c *QQClient) connect() error {
 	if c.server == nil {
-		addrs, err := net.LookupIP("msfwifi.3g.qq.com")
-		if err == nil && len(addrs) > 0 {
-			c.server = &net.TCPAddr{
-				IP:   addrs[rand.Intn(len(addrs))],
-				Port: 8080,
-			}
+		if c.CustomServer != nil {
+			c.server = c.CustomServer
 		} else {
-			c.server = servers[rand.Intn(len(servers))]
+			addrs, err := net.LookupIP("msfwifi.3g.qq.com")
+			if err == nil && len(addrs) > 0 {
+				c.server = &net.TCPAddr{
+					IP:   addrs[rand.Intn(len(addrs))],
+					Port: 8080,
+				}
+			} else {
+				c.server = servers[rand.Intn(len(servers))]
+			}
 		}
 	}
 	c.Info("connect to server: %v", c.server.String())
 	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
+		c.CustomServer = nil
 		return err
 	}
+	c.ConnectTime = time.Now()
 	c.Conn = conn
 	c.onlinePushCache = []int16{}
 	return nil
@@ -961,6 +969,11 @@ func (c *QQClient) netLoop() {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			c.Error("connection dropped by server: %v", err)
+			if c.ConnectTime.Sub(time.Now()) < time.Minute && c.CustomServer != nil {
+				c.Error("custom server error.")
+				c.CustomServer = nil
+				c.server = nil
+			}
 			err = c.connect()
 			if err != nil {
 				break
