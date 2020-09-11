@@ -936,6 +936,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 		case <-time.After(time.Second * 30):
 			retry++
 			if retry < 2 {
+				c.Error("packet %v timed out. retry.", seq)
 				_ = c.send(pkt)
 				continue
 			}
@@ -954,6 +955,7 @@ func (c *QQClient) netLoop() {
 	for c.Online {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
+			c.Error("connection dropped by server: %v", err)
 			err = c.connect()
 			if err != nil {
 				break

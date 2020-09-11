@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"log"
+	"net"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -130,6 +131,24 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	jceBuf := []byte{}
 	t := r.ReadInt32(1)
 	r.ReadSlice(&jceBuf, 2)
+	if t == 1 && len(jceBuf) > 0 {
+		ssoPkt := jce.NewJceReader(jceBuf)
+		servers := []jce.SsoServerInfo{}
+		ssoPkt.ReadSlice(&servers, 1)
+		if len(servers) > 0 {
+			c.server = &net.TCPAddr{
+				IP:   net.ParseIP(servers[0].Server),
+				Port: int(servers[0].Port),
+			}
+			c.Debug("got new server addr: %v location: %v", c.server.String(), servers[0].Location)
+			for _, e := range c.eventHandlers.serverUpdatedHandlers {
+				cover(func() {
+					e(c, &ServerUpdatedEvent{Servers: servers})
+				})
+			}
+			return nil, nil
+		}
+	}
 	seq := r.ReadInt64(3)
 	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
 	return nil, c.send(pkt)

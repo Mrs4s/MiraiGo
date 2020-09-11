@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"strings"
 	"sync"
 )
@@ -152,6 +153,10 @@ type (
 	LogEvent struct {
 		Type    string
 		Message string
+	}
+
+	ServerUpdatedEvent struct {
+		Servers []jce.SsoServerInfo
 	}
 
 	NewFriendEvent struct {
