@@ -296,6 +296,11 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 		useFram = f[0]
 	}
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
+	if useFram {
+		if m.Any(func(e message.IMessageElement) bool { return e.Type() == message.Reply }) {
+			useFram = false
+		}
+	}
 	msgLen := message.EstimateLength(m.Elements, 703)
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
@@ -653,7 +658,7 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
-	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
+	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(EmptyBytes))
 	if err != nil {
 		return nil, err
 	}

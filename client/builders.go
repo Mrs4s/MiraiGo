@@ -252,12 +252,12 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 }
 
 // friendlist.GetTroopListReqV2
-func (c *QQClient) buildGroupListRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &jce.TroopListRequest{
 		Uin:              c.Uin,
 		GetMSFMsgFlag:    1,
-		Cookies:          []byte{},
+		Cookies:          vecCookie,
 		GroupInfo:        []int64{},
 		GroupFlagExt:     1,
 		Version:          7,
