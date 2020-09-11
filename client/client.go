@@ -1045,7 +1045,7 @@ func (c *QQClient) startHeartbeat() {
 func (c *QQClient) doHeartbeat() {
 	if c.Online {
 		seq := c.nextSeq()
-		sso := packets.BuildSsoPacket(seq, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
+		sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, _ = c.sendAndWait(seq, packet)
 		time.AfterFunc(30*time.Second, c.doHeartbeat)
