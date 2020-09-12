@@ -885,7 +885,10 @@ func (c *QQClient) connect() error {
 	c.Info("connect to server: %v", c.server.String())
 	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
-		c.CustomServer = nil
+		if c.CustomServer != nil {
+			c.CustomServer = nil
+			return c.connect()
+		}
 		return err
 	}
 	c.ConnectTime = time.Now()
