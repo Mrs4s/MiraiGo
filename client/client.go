@@ -526,6 +526,10 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 	return nil
 }
 
+func (c *QQClient) sendGroupPoke(groupCode, target int64) {
+	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
+}
+
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
 	_, pkt := c.buildGroupRecallPacket(groupCode, msgId, msgInternalId)
 	_ = c.send(pkt)

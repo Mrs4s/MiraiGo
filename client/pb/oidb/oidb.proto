@@ -146,3 +146,11 @@ message D8FCClientInfo {
   int32 implat = 1;
   string ingClientver = 2;
 }
+
+message DED3ReqBody {
+  int64 toUin = 1;
+  int64 groupCode = 2;
+  int32 msgSeq = 3;
+  int32 msgRand = 4;
+  int64 aioUin = 5;
+}

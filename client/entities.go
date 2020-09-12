@@ -263,6 +263,10 @@ func (m *GroupMemberInfo) EditCard(card string) {
 	}
 }
 
+func (m *GroupMemberInfo) Poke() {
+	m.Group.client.sendGroupPoke(m.Group.Code, m.Uin)
+}
+
 func (m *GroupMemberInfo) SetAdmin(flag bool) {
 	if m.Group.OwnerUin == m.Group.client.Uin {
 		m.Group.client.setGroupAdmin(m.Group.Code, m.Uin, flag)
