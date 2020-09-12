@@ -105,6 +105,12 @@ type (
 		Member *GroupMemberInfo
 	}
 
+	IGroupNotifyEvent interface {
+		From() int64
+		Name() string
+		Content() string
+	}
+
 	MemberLeaveGroupEvent struct {
 		Group    *GroupInfo
 		Member   *GroupMemberInfo

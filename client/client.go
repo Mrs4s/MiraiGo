@@ -1048,6 +1048,8 @@ func (c *QQClient) doHeartbeat() {
 		sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, _ = c.sendAndWait(seq, packet)
+		_, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
+		c.send(pkt)
 		time.AfterFunc(30*time.Second, c.doHeartbeat)
 	}
 }

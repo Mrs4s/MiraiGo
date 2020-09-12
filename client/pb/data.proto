@@ -235,31 +235,6 @@ message MessageItem {
     bytes sig = 7;
 }
 
-message NotifyMsgBody {
-    MessageRecallReminder optMsgRecall = 11;
-    int32 serviceType = 13;
-}
-
-message MessageRecallReminder {
-    int64 uin = 1;
-    bytes nickname = 2;
-    repeated RecalledMessageMeta recalledMsgList = 3;
-    bytes reminderContent = 4;
-    bytes userdef = 5;
-    int32 groupType = 6;
-    int32 opType = 7;
-
-}
-
-message RecalledMessageMeta {
-    int32 seq = 1;
-    int32 time = 2;
-    int32 msgRandom = 3;
-    int32 msgType = 4;
-    int32 msgFlag = 5;
-    int64 authorUin = 6;
-}
-
 message SubD4 {
     int64 uin = 1;
 }
