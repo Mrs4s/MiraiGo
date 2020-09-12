@@ -305,6 +305,10 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
+		// 为什么小程序会同时通过RichText和long text发送
+		if elem.LightApp != nil {
+			break
+		}
 		// is rich long msg
 		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid != "" {
 			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid); f != nil && len(f.Nodes) == 1 {
