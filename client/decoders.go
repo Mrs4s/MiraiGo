@@ -560,9 +560,9 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				}
 				if b.OptGeneralGrayTip != nil {
 					switch b.OptGeneralGrayTip.TemplId {
-					case 10043: // 戳一戳
+					case 10043, 1136: // 戳一戳
 						var sender int64 = 0
-						var receiver int64 = 0
+						receiver := c.Uin
 						for _, templ := range b.OptGeneralGrayTip.MsgTemplParam {
 							if templ.Name == "uin_str1" {
 								sender, _ = strconv.ParseInt(templ.Value, 10, 64)
