@@ -263,6 +263,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	}
 	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
 	if rsp.SyncFlag != msg.SyncFlag_STOP {
+		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
 		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix()))
 	}
 	return nil, err
@@ -574,6 +575,15 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 							GroupCode: groupId,
 							Sender:    sender,
 							Receiver:  receiver,
+						})
+					}
+				}
+				if b.OptMsgRedTips != nil {
+					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
+						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
+							GroupCode: groupId,
+							Sender:    int64(b.OptMsgRedTips.SenderUin),
+							LuckyKing: int64(b.OptMsgRedTips.ReceiverUin),
 						})
 					}
 				}

@@ -4,6 +4,7 @@ option go_package = ".;notify";
 
 message NotifyMsgBody {
   AIOGrayTipsInfo optMsgGrayTips = 5;
+  RedGrayTipsInfo optMsgRedTips = 9;
   MessageRecallReminder optMsgRecall = 11;
   GeneralGrayTipInfo optGeneralGrayTip = 26;
   int32 serviceType = 13;
@@ -51,4 +52,16 @@ message RecalledMessageMeta {
   int32 msgType = 4;
   int32 msgFlag = 5;
   int64 authorUin = 6;
+}
+
+message RedGrayTipsInfo {
+  uint32 showLatest = 1;
+  uint64 senderUin = 2;
+  uint64 receiverUin = 3;
+  string senderRichContent = 4;
+  string receiverRichContent = 5;
+  bytes authKey = 6;
+  sint32 msgType = 7;
+  uint32 luckyFlag = 8;
+  uint32 hideFlag = 9;
 }

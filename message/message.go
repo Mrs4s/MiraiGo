@@ -84,6 +84,7 @@ const (
 	Voice
 	Video
 	LightApp
+	RedBag
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -139,6 +140,8 @@ func (msg *GroupMessage) ToString() (res string) {
 			res += "[Image: " + e.ImageId + "]"
 		case *AtElement:
 			res += e.Display
+		case *RedBagElement:
+			res += "[RedBag:" + e.Title + "]"
 		case *ReplyElement:
 			res += "[Reply:" + strconv.FormatInt(int64(e.ReplySeq), 10) + "]"
 		}
@@ -541,6 +544,17 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				Url:      img,
 				Md5:      elem.NotOnlineImage.PicMd5,
 			})
+		}
+		if elem.QQWalletMsg != nil && elem.QQWalletMsg.AioBody != nil {
+			msgType := elem.QQWalletMsg.AioBody.MsgType
+			if msgType == 2 || msgType == 3 || msgType == 6 {
+				return []IMessageElement{
+					&RedBagElement{
+						MsgType: RedBagMessageType(msgType),
+						Title:   elem.QQWalletMsg.AioBody.Receiver.Title,
+					},
+				}
+			}
 		}
 		if elem.Face != nil {
 			res = append(res, NewFace(elem.Face.Index))
