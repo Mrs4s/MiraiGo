@@ -188,7 +188,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			if (int64(pairMsg.LastReadTime) & 4294967295) > int64(message.Head.MsgTime) {
 				continue
 			}
-			strKey := strconv.FormatInt(message.Head.MsgUid, 10)
+			strKey := fmt.Sprintf("%d%d%d%d", message.Head.FromUin, message.Head.ToUin, message.Head.MsgSeq, message.Head.MsgUid)
 			if _, ok := c.msgSvcCache.Get(strKey); ok {
 				continue
 			}
