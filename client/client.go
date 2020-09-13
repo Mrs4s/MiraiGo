@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"math/rand"
 	"net"
@@ -1029,7 +1028,8 @@ func (c *QQClient) netLoop() {
 			}
 			rsp, err := decoder(c, pkt.SequenceId, payload)
 			if err != nil {
-				log.Println("decode", pkt.CommandName, "error:", err)
+				c.Error("decode pkt %v error: %v", pkt.CommandName, err)
+				//log.Println("decode", pkt.CommandName, "error:", err)
 			}
 			if f, ok := c.handlers.Load(pkt.SequenceId); ok {
 				c.handlers.Delete(pkt.SequenceId)

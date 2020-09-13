@@ -875,10 +875,18 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 		return nil, errors.New("not found")
 	}
 	rsp := body.MultimsgApplydownRsp[0]
-	i := binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0]))
-	b, err := utils.HttpGetBytes(fmt.Sprintf("http://%s:%d%s", i, body.MultimsgApplydownRsp[0].Uint32DownPort[0], string(rsp.ThumbDownPara)), "")
+	prefix := func() string {
+		if rsp.MsgExternInfo.ChannelType == 2 {
+			return "https://ssl.htdata.qq.com"
+		}
+		return fmt.Sprintf("http://%s:%d", binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0])), body.MultimsgApplydownRsp[0].Uint32DownPort[0])
+	}()
+	b, err := utils.HttpGetBytes(fmt.Sprintf("%s%s", prefix, string(rsp.ThumbDownPara)), "")
 	if err != nil {
 		return nil, err
+	}
+	if b[0] != 40 {
+		return nil, errors.New("unexpected body data")
 	}
 	tea := binary.NewTeaCipher(body.MultimsgApplydownRsp[0].MsgKey)
 	r := binary.NewReader(b[1:])
