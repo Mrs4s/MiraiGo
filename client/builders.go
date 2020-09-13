@@ -37,9 +37,9 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
-		w.Write(tlv.T106(uint32(c.Uin), 0, c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey))
+		w.Write(tlv.T106(uint32(c.Uin), 0, uint32(SystemDeviceInfo.Protocol), c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey))
 		w.Write(tlv.T116(184024956, 0x10400))
-		w.Write(tlv.T100())
+		w.Write(tlv.T100(uint32(SystemDeviceInfo.Protocol)))
 		w.Write(tlv.T107(0))
 		w.Write(tlv.T142("com.tencent.mobileqq"))
 		w.Write(tlv.T144(
@@ -86,7 +86,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T521())
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 	})
-	sso := packets.BuildSsoPacket(seq, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
@@ -103,7 +103,7 @@ func (c *QQClient) buildDeviceLockLoginPacket(t402 []byte) (uint16, []byte) {
 		h := md5.Sum(append(append(SystemDeviceInfo.Guid, []byte("stMNokHgxZUGhsYp")...), t402...))
 		w.Write(tlv.T401(h[:]))
 	})
-	sso := packets.BuildSsoPacket(seq, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
@@ -118,7 +118,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 		w.Write(tlv.T104(c.t104))
 		w.Write(tlv.T116(150470524, 66560))
 	})
-	sso := packets.BuildSsoPacket(seq, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
@@ -166,7 +166,7 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	sso := packets.BuildSsoPacket(seq, "StatSvc.register", SystemDeviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, pkt.ToBytes(), c.ksid)
+	sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "StatSvc.register", SystemDeviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, pkt.ToBytes(), c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 1, c.sigInfo.d2Key, sso, c.sigInfo.d2)
 	return seq, packet
 }
@@ -252,12 +252,12 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 }
 
 // friendlist.GetTroopListReqV2
-func (c *QQClient) buildGroupListRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &jce.TroopListRequest{
 		Uin:              c.Uin,
 		GetMSFMsgFlag:    1,
-		Cookies:          []byte{},
+		Cookies:          vecCookie,
 		GroupInfo:        []int64{},
 		GroupFlagExt:     1,
 		Version:          7,
@@ -569,7 +569,7 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 					}
 					return c.nextGroupDataTransSeq()
 				}(),
-				Appid:     537062409,
+				Appid:     int32(SystemDeviceInfo.Protocol),
 				Dataflag:  4096,
 				CommandId: commandId,
 				LocaleId:  2052,
@@ -912,6 +912,46 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0xed3
+func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DED3ReqBody{
+		ToUin:     target,
+		GroupCode: groupCode,
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     3795,
+		ServiceType: 1,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0x55c_1
+func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &oidb.OIDBSSOPkg{
+		Command:     1372,
+		ServiceType: 1,
+		Bodybuffer: binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt32(uint32(groupCode))
+			w.WriteUInt32(uint32(member))
+			w.WriteByte(func() byte {
+				if flag {
+					return 1
+				}
+				return 0
+			}())
+		}),
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 

@@ -13,10 +13,10 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
-	"strings"
 
 	"github.com/golang/protobuf/proto"
 
@@ -30,8 +30,9 @@ import (
 )
 
 type QQClient struct {
-	Uin         int64
-	PasswordMd5 [16]byte
+	Uin          int64
+	PasswordMd5  [16]byte
+	CustomServer *net.TCPAddr
 
 	Nickname   string
 	Age        uint16
@@ -44,6 +45,7 @@ type QQClient struct {
 	OutGoingPacketSessionId []byte
 	RandomKey               []byte
 	Conn                    net.Conn
+	ConnectTime             time.Time
 
 	decoders map[string]func(*QQClient, uint16, []byte) (interface{}, error)
 	handlers sync.Map
@@ -180,13 +182,13 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita",target),c.getCookiesWithDomain("h5.vip.qq.com"))
+	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), c.getCookiesWithDomain("h5.vip.qq.com"))
 	if err != nil {
 		return nil, err
 	}
-	ret := VipInfo{Uin: target};
+	ret := VipInfo{Uin: target}
 	b = b[bytes.Index(b, []byte(`<span class="ui-nowrap">`))+24:]
-	t := b[:bytes.Index(b,[]byte(`</span>`))]
+	t := b[:bytes.Index(b, []byte(`</span>`))]
 	ret.Name = string(t)
 	b = b[bytes.Index(b, []byte(`<small>LV</small>`))+17:]
 	t = b[:bytes.Index(b, []byte(`</p>`))]
@@ -194,7 +196,7 @@ func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
 	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
 	b = b[bytes.Index(b, []byte(`<p>`))+3:]
 	t = b[:bytes.Index(b, []byte(`<small>倍`))]
-	ret.LevelSpeed, _ = strconv.ParseFloat(string(t),64)
+	ret.LevelSpeed, _ = strconv.ParseFloat(string(t), 64)
 	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
 	b = b[bytes.Index(b, []byte(`<p>`))+3:]
 	st := string(b[:bytes.Index(b, []byte(`</p>`))])
@@ -209,7 +211,7 @@ func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
 	b = b[bytes.Index(b, []byte(`<p>`))+3:]
 	t = b[:bytes.Index(b, []byte(`</p>`))]
 	ret.VipGrowthTotal, _ = strconv.Atoi(string(t))
-	return &ret,nil
+	return &ret, nil
 }
 
 func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
@@ -296,6 +298,11 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 		useFram = f[0]
 	}
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
+	if useFram {
+		if m.Any(func(e message.IMessageElement) bool { return e.Type() == message.Reply }) {
+			useFram = false
+		}
+	}
 	msgLen := message.EstimateLength(m.Elements, 703)
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
@@ -445,7 +452,7 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
 			SenderId: m.Head.FromUin,
 			SenderName: func() string {
-				if m.Head.MsgType == 82 {
+				if m.Head.MsgType == 82 && m.Head.GroupInfo != nil {
 					return m.Head.GroupInfo.GroupCard
 				}
 				return m.Head.FromNick
@@ -517,6 +524,10 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 		}
 	}
 	return nil
+}
+
+func (c *QQClient) sendGroupPoke(groupCode, target int64) {
+	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
 }
 
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
@@ -653,7 +664,7 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
-	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket())
+	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(EmptyBytes))
 	if err != nil {
 		return nil, err
 	}
@@ -803,6 +814,10 @@ func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title stri
 	_, _ = c.sendAndWait(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
 }
 
+func (c *QQClient) setGroupAdmin(groupCode, memberUin int64, flag bool) {
+	_, _ = c.sendAndWait(c.buildGroupAdminSetPacket(groupCode, memberUin, flag))
+}
+
 func (c *QQClient) updateGroupName(groupCode int64, newName string) {
 	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
 }
@@ -853,21 +868,30 @@ var servers = []*net.TCPAddr{
 
 func (c *QQClient) connect() error {
 	if c.server == nil {
-		addrs, err := net.LookupIP("msfwifi.3g.qq.com")
-		if err == nil && len(addrs) > 0 {
-			c.server = &net.TCPAddr{
-				IP:   addrs[rand.Intn(len(addrs))],
-				Port: 8080,
-			}
+		if c.CustomServer != nil {
+			c.server = c.CustomServer
 		} else {
-			c.server = servers[rand.Intn(len(servers))]
+			addrs, err := net.LookupIP("msfwifi.3g.qq.com")
+			if err == nil && len(addrs) > 0 {
+				c.server = &net.TCPAddr{
+					IP:   addrs[rand.Intn(len(addrs))],
+					Port: 8080,
+				}
+			} else {
+				c.server = servers[rand.Intn(len(servers))]
+			}
 		}
 	}
 	c.Info("connect to server: %v", c.server.String())
 	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
+		if c.CustomServer != nil {
+			c.CustomServer = nil
+			return c.connect()
+		}
 		return err
 	}
+	c.ConnectTime = time.Now()
 	c.Conn = conn
 	c.onlinePushCache = []int16{}
 	return nil
@@ -932,6 +956,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 		case <-time.After(time.Second * 30):
 			retry++
 			if retry < 2 {
+				c.Error("packet %v timed out. retry.", seq)
 				_ = c.send(pkt)
 				continue
 			}
@@ -950,6 +975,12 @@ func (c *QQClient) netLoop() {
 	for c.Online {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
+			c.Error("connection dropped by server: %v", err)
+			if c.ConnectTime.Sub(time.Now()) < time.Minute && c.CustomServer != nil {
+				c.Error("custom server error.")
+				c.CustomServer = nil
+				c.server = nil
+			}
 			err = c.connect()
 			if err != nil {
 				break
@@ -1021,9 +1052,11 @@ func (c *QQClient) startHeartbeat() {
 func (c *QQClient) doHeartbeat() {
 	if c.Online {
 		seq := c.nextSeq()
-		sso := packets.BuildSsoPacket(seq, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
+		sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, _ = c.sendAndWait(seq, packet)
+		_, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
+		c.send(pkt)
 		time.AfterFunc(30*time.Second, c.doHeartbeat)
 	}
 }

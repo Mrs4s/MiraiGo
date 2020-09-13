@@ -194,7 +194,7 @@ message Elem {
   AnonymousGroupMessage anonGroupMsg = 21;
   //QQLiveOld? qqLiveOld = 22;
   //LifeOnlineAccount? lifeOnline = 23;
-  //QQWalletMsg? qqwalletMsg = 24;
+  QQWalletMsg QQWalletMsg = 24;
   //CrmElem? crmElem = 25;
   //ConferenceTipsInfo? conferenceTipsInfo = 26;
   //RedBagInfo? redbagInfo = 27;
@@ -230,6 +230,58 @@ message CommonElem {
   int32 serviceType = 1;
   bytes pbElem = 2;
   int32 businessType = 3;
+}
+
+message QQWalletMsg {
+  QQWalletAioBody aioBody = 1;
+}
+
+message QQWalletAioBody {
+  uint64 sendUin = 1;
+  QQWalletAioElem sender = 2;
+  QQWalletAioElem receiver = 3;
+  sint32 ChannelId = 4;
+  sint32 templateId = 5;
+  uint32 resend = 6;
+  uint32 msgPriority = 7;
+  sint32 redType = 8;
+  bytes billNo = 9;
+  bytes authKey = 10;
+  sint32 sessionType = 11;
+  sint32 msgType = 12;
+  sint32 envelOpeId = 13;
+  bytes name = 14;
+  sint32 confType = 15;
+  sint32 msgFrom = 16;
+  bytes pcBody = 17;
+  bytes index = 18;
+  uint32 redChannel = 19;
+  repeated uint64 grapUin = 20;
+  bytes pbReserve = 21;
+}
+
+message QQWalletAioElem{
+  uint32 background = 1;
+  uint32 icon = 2;
+  string title = 3;
+  string subtitle = 4;
+  string content = 5;
+  bytes linkUrl = 6;
+  bytes blackStripe = 7;
+  bytes notice = 8;
+  uint32 titleColor = 9;
+  uint32 subtitleColor = 10;
+  bytes actionsPriority = 11;
+  bytes jumpUrl = 12;
+  bytes nativeIos = 13;
+  bytes nativeAndroid = 14;
+  bytes iconUrl = 15;
+  uint32 contentColor = 16;
+  uint32 contentBgColor = 17;
+  bytes aioImageLeft = 18;
+  bytes aioImageRight = 19;
+  bytes cftImage = 20;
+  bytes pbReserve = 21;
 }
 
 message RichMsg {

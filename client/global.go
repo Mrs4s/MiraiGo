@@ -38,6 +38,7 @@ type DeviceInfo struct {
 	APN         []byte
 	Guid        []byte
 	TgtgtKey    []byte
+	Protocol    ClientProtocol
 	Version     *Version
 }
 
@@ -57,6 +58,7 @@ type DeviceInfoFile struct {
 	FingerPrint string `json:"finger_print"`
 	BootId      string `json:"boot_id"`
 	ProcVersion string `json:"proc_version"`
+	Protocol    int    `json:"protocol"` // 0: Pad 1: Phone 2: Watch
 	IMEI        string `json:"imei"`
 }
 
@@ -88,6 +90,7 @@ var SystemDeviceInfo = &DeviceInfo{
 	IMEI:        "468356291846738",
 	AndroidId:   []byte("MIRAI.123456.001"),
 	APN:         []byte("wifi"),
+	Protocol:    AndroidPad,
 	Version: &Version{
 		Incremental: []byte("5891938"),
 		Release:     []byte("10"),
@@ -135,6 +138,17 @@ func (info *DeviceInfo) ToJson() []byte {
 		BootId:      string(info.BootId),
 		ProcVersion: string(info.ProcVersion),
 		IMEI:        info.IMEI,
+		Protocol: func() int {
+			switch info.Protocol {
+			case AndroidPad:
+				return 0
+			case AndroidPhone:
+				return 1
+			case AndroidWatch:
+				return 2
+			}
+			return 0
+		}(),
 	}
 	d, _ := json.Marshal(f)
 	return d
@@ -157,6 +171,14 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	info.ProcVersion = []byte(f.ProcVersion)
 	info.IMEI = f.IMEI
 	info.AndroidId = SystemDeviceInfo.Display
+	switch f.Protocol {
+	case 1:
+		info.Protocol = AndroidPhone
+	case 2:
+		info.Protocol = AndroidWatch
+	default:
+		info.Protocol = AndroidPad
+	}
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
 	return nil
@@ -274,15 +296,19 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	var g *message.GroupMessage
 	g = &message.GroupMessage{
-			Id:        m.Head.MsgSeq,
-			GroupCode: group.Code,
-			GroupName: string(m.Head.GroupInfo.GroupName),
-			Sender:    sender,
-			Time:      m.Head.MsgTime,
-			Elements:  message.ParseMessageElems(m.Body.RichText.Elems),	
-		}
+		Id:        m.Head.MsgSeq,
+		GroupCode: group.Code,
+		GroupName: string(m.Head.GroupInfo.GroupName),
+		Sender:    sender,
+		Time:      m.Head.MsgTime,
+		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
+	}
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
+		// 为什么小程序会同时通过RichText和long text发送
+		if elem.LightApp != nil {
+			break
+		}
 		// is rich long msg
 		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid != "" {
 			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid); f != nil && len(f.Nodes) == 1 {

@@ -96,6 +96,19 @@ type LightAppElement struct {
 	Content string
 }
 
+type RedBagElement struct {
+	MsgType RedBagMessageType
+	Title   string
+}
+
+type RedBagMessageType int
+
+const (
+	Simple RedBagMessageType = 2
+	Lucky  RedBagMessageType = 3
+	World  RedBagMessageType = 6
+)
+
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
 }
@@ -242,6 +255,10 @@ func (e *ShortVideoElement) Type() ElementType {
 
 func (e *LightAppElement) Type() ElementType {
 	return LightApp
+}
+
+func (e *RedBagElement) Type() ElementType {
+	return RedBag
 }
 
 var faceMap = map[int]string{

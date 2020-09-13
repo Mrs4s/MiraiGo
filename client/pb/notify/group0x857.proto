@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option go_package = ".;notify";
+
+message NotifyMsgBody {
+  AIOGrayTipsInfo optMsgGrayTips = 5;
+  RedGrayTipsInfo optMsgRedTips = 9;
+  MessageRecallReminder optMsgRecall = 11;
+  GeneralGrayTipInfo optGeneralGrayTip = 26;
+  int32 serviceType = 13;
+}
+
+message AIOGrayTipsInfo{
+  uint32 showLatest = 1;
+  bytes content = 2;
+  uint32 remind = 3;
+  bytes brief = 4;
+  uint64 receiverUin = 5;
+  uint32 reliaoAdminOpt = 6;
+}
+
+message GeneralGrayTipInfo {
+  uint64 busiType = 1;
+  uint64 busiId = 2;
+  uint32 ctrlFlag = 3;
+  uint32 c2cType = 4;
+  uint32 serviceType = 5;
+  uint64 templId = 6;
+  repeated TemplParam msgTemplParam = 7;
+  string content = 8;
+}
+
+message TemplParam {
+  string name = 1;
+  string value = 2;
+}
+
+message MessageRecallReminder {
+  int64 uin = 1;
+  bytes nickname = 2;
+  repeated RecalledMessageMeta recalledMsgList = 3;
+  bytes reminderContent = 4;
+  bytes userdef = 5;
+  int32 groupType = 6;
+  int32 opType = 7;
+}
+
+message RecalledMessageMeta {
+  int32 seq = 1;
+  int32 time = 2;
+  int32 msgRandom = 3;
+  int32 msgType = 4;
+  int32 msgFlag = 5;
+  int64 authorUin = 6;
+}
+
+message RedGrayTipsInfo {
+  uint32 showLatest = 1;
+  uint64 senderUin = 2;
+  uint64 receiverUin = 3;
+  string senderRichContent = 4;
+  string receiverRichContent = 5;
+  bytes authKey = 6;
+  sint32 msgType = 7;
+  uint32 luckyFlag = 8;
+  uint32 hideFlag = 9;
+}

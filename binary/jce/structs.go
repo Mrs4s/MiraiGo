@@ -27,6 +27,12 @@ type (
 		Map map[string]map[string][]byte `jceId:"0"`
 	}
 
+	SsoServerInfo struct {
+		Server   string `jceId:"1"`
+		Port     int32  `jceId:"2"`
+		Location string `jceId:"8"`
+	}
+
 	SvcReqRegister struct {
 		IJceStruct
 		Uin                int64  `jceId:"0"`
@@ -356,6 +362,12 @@ func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
 			pkt.Map[k.(string)][k2.(string)] = v.([]byte)
 		}
 	})
+}
+
+func (pkt *SsoServerInfo) ReadFrom(r *JceReader) {
+	pkt.Server = r.ReadString(1)
+	pkt.Port = r.ReadInt32(2)
+	pkt.Location = r.ReadString(8)
 }
 
 func (pkt *SvcReqRegister) ToBytes() []byte {

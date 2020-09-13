@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"strings"
 	"sync"
 )
@@ -14,6 +15,8 @@ type (
 	LoginError int
 
 	MemberPermission int
+
+	ClientProtocol int
 
 	LoginResponse struct {
 		Success bool
@@ -102,6 +105,12 @@ type (
 		Member *GroupMemberInfo
 	}
 
+	IGroupNotifyEvent interface {
+		From() int64
+		Name() string
+		Content() string
+	}
+
 	MemberLeaveGroupEvent struct {
 		Group    *GroupInfo
 		Member   *GroupMemberInfo
@@ -154,6 +163,10 @@ type (
 		Message string
 	}
 
+	ServerUpdatedEvent struct {
+		Servers []jce.SsoServerInfo
+	}
+
 	NewFriendEvent struct {
 		Friend *FriendInfo
 	}
@@ -204,6 +217,10 @@ const (
 	Owner MemberPermission = iota
 	Administrator
 	Member
+
+	AndroidPhone ClientProtocol = 537062845
+	AndroidPad   ClientProtocol = 537062409
+	AndroidWatch ClientProtocol = 537061176
 )
 
 func (g *GroupInfo) UpdateName(newName string) {
@@ -243,6 +260,16 @@ func (m *GroupMemberInfo) EditCard(card string) {
 	if m.Manageable() && len(card) <= 60 {
 		m.Group.client.editMemberCard(m.Group.Code, m.Uin, card)
 		m.CardName = card
+	}
+}
+
+func (m *GroupMemberInfo) Poke() {
+	m.Group.client.sendGroupPoke(m.Group.Code, m.Uin)
+}
+
+func (m *GroupMemberInfo) SetAdmin(flag bool) {
+	if m.Group.OwnerUin == m.Group.client.Uin {
+		m.Group.client.setGroupAdmin(m.Group.Code, m.Uin, flag)
 	}
 }
 

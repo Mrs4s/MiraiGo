@@ -4,8 +4,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"log"
+	"net"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -130,6 +132,24 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	jceBuf := []byte{}
 	t := r.ReadInt32(1)
 	r.ReadSlice(&jceBuf, 2)
+	if t == 1 && len(jceBuf) > 0 {
+		ssoPkt := jce.NewJceReader(jceBuf)
+		servers := []jce.SsoServerInfo{}
+		ssoPkt.ReadSlice(&servers, 1)
+		if len(servers) > 0 {
+			c.server = &net.TCPAddr{
+				IP:   net.ParseIP(servers[0].Server),
+				Port: int(servers[0].Port),
+			}
+			c.Debug("got new server addr: %v location: %v", c.server.String(), servers[0].Location)
+			for _, e := range c.eventHandlers.serverUpdatedHandlers {
+				cover(func() {
+					e(c, &ServerUpdatedEvent{Servers: servers})
+				})
+			}
+			return nil, nil
+		}
+	}
 	seq := r.ReadInt64(3)
 	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
 	return nil, c.send(pkt)
@@ -243,6 +263,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	}
 	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
 	if rsp.SyncFlag != msg.SyncFlag_STOP {
+		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
 		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix()))
 	}
 	return nil, err
@@ -333,7 +354,9 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	data := &jce.RequestDataVersion3{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["GetTroopListRespV2"][1:])
+	vecCookie := []byte{}
 	groups := []jce.TroopNumber{}
+	r.ReadSlice(&vecCookie, 4)
 	r.ReadSlice(&groups, 5)
 	var l []*GroupInfo
 	for _, g := range groups {
@@ -347,6 +370,13 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
 			client:         c,
 		})
+	}
+	if len(vecCookie) > 0 {
+		rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(vecCookie))
+		if err != nil {
+			return nil, err
+		}
+		l = append(l, rsp.([]*GroupInfo)...)
 	}
 	return l, nil
 }
@@ -513,21 +543,49 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					TargetUin:   target,
 					Time:        t,
 				})
-			case 0x11: // 撤回消息
+			case 0x10, 0x11, 0x14: // group notify msg
 				r.ReadByte()
-				b := pb.NotifyMsgBody{}
+				b := notify.NotifyMsgBody{}
 				_ = proto.Unmarshal(r.ReadAvailable(), &b)
-				if b.OptMsgRecall == nil {
-					continue
+				if b.OptMsgRecall != nil {
+					for _, rm := range b.OptMsgRecall.RecalledMsgList {
+						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
+							GroupCode:   groupId,
+							OperatorUin: b.OptMsgRecall.Uin,
+							AuthorUin:   rm.AuthorUin,
+							MessageId:   rm.Seq,
+							Time:        rm.Time,
+						})
+					}
 				}
-				for _, rm := range b.OptMsgRecall.RecalledMsgList {
-					c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
-						GroupCode:   groupId,
-						OperatorUin: b.OptMsgRecall.Uin,
-						AuthorUin:   rm.AuthorUin,
-						MessageId:   rm.Seq,
-						Time:        rm.Time,
-					})
+				if b.OptGeneralGrayTip != nil {
+					switch b.OptGeneralGrayTip.TemplId {
+					case 10043, 1136: // 戳一戳
+						var sender int64 = 0
+						receiver := c.Uin
+						for _, templ := range b.OptGeneralGrayTip.MsgTemplParam {
+							if templ.Name == "uin_str1" {
+								sender, _ = strconv.ParseInt(templ.Value, 10, 64)
+							}
+							if templ.Name == "uin_str2" {
+								receiver, _ = strconv.ParseInt(templ.Value, 10, 64)
+							}
+						}
+						c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
+							GroupCode: groupId,
+							Sender:    sender,
+							Receiver:  receiver,
+						})
+					}
+				}
+				if b.OptMsgRedTips != nil {
+					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
+						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
+							GroupCode: groupId,
+							Sender:    int64(b.OptMsgRedTips.SenderUin),
+							LuckyKing: int64(b.OptMsgRedTips.ReceiverUin),
+						})
+					}
 				}
 			}
 		}

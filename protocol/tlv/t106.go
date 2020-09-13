@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func T106(uin, salt uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtgtKey []byte) []byte {
+func T106(uin, salt, protocol uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtgtKey []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x106)
 		body := binary.NewWriterF(func(w *binary.Writer) {
@@ -36,8 +36,8 @@ func T106(uin, salt uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtg
 			} else {
 				w.Write(guid)
 			}
-			w.WriteUInt32(537062409) // sub app id (android pad)
-			w.WriteUInt32(1)         // password login
+			w.WriteUInt32(protocol)
+			w.WriteUInt32(1) // password login
 			b := make([]byte, 8)
 			binary2.BigEndian.PutUint64(b, uint64(uin))
 			w.WriteTlv(b)
