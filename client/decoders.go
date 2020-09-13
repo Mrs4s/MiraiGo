@@ -559,24 +559,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					}
 				}
 				if b.OptGeneralGrayTip != nil {
-					switch b.OptGeneralGrayTip.TemplId {
-					case 10043, 1136: // 戳一戳
-						var sender int64 = 0
-						receiver := c.Uin
-						for _, templ := range b.OptGeneralGrayTip.MsgTemplParam {
-							if templ.Name == "uin_str1" {
-								sender, _ = strconv.ParseInt(templ.Value, 10, 64)
-							}
-							if templ.Name == "uin_str2" {
-								receiver, _ = strconv.ParseInt(templ.Value, 10, 64)
-							}
-						}
-						c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
-							GroupCode: groupId,
-							Sender:    sender,
-							Receiver:  receiver,
-						})
-					}
+					c.grayTipProcessor(groupId, b.OptGeneralGrayTip)
 				}
 				if b.OptMsgRedTips != nil {
 					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
