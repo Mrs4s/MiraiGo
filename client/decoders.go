@@ -876,7 +876,7 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 	}
 	rsp := body.MultimsgApplydownRsp[0]
 	prefix := func() string {
-		if rsp.MsgExternInfo.ChannelType == 2 {
+		if rsp.MsgExternInfo != nil && rsp.MsgExternInfo.ChannelType == 2 {
 			return "https://ssl.htdata.qq.com"
 		}
 		return fmt.Sprintf("http://%s:%d", binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0])), body.MultimsgApplydownRsp[0].Uint32DownPort[0])
