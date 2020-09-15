@@ -107,7 +107,6 @@ type (
 
 	IGroupNotifyEvent interface {
 		From() int64
-		Name() string
 		Content() string
 	}
 

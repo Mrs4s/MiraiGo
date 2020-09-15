@@ -188,7 +188,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			if (int64(pairMsg.LastReadTime) & 4294967295) > int64(message.Head.MsgTime) {
 				continue
 			}
-			strKey := strconv.FormatInt(message.Head.MsgUid, 10)
+			strKey := fmt.Sprintf("%d%d%d%d", message.Head.FromUin, message.Head.ToUin, message.Head.MsgSeq, message.Head.MsgUid)
 			if _, ok := c.msgSvcCache.Get(strKey); ok {
 				continue
 			}
@@ -559,24 +559,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					}
 				}
 				if b.OptGeneralGrayTip != nil {
-					switch b.OptGeneralGrayTip.TemplId {
-					case 10043, 1136: // 戳一戳
-						var sender int64 = 0
-						receiver := c.Uin
-						for _, templ := range b.OptGeneralGrayTip.MsgTemplParam {
-							if templ.Name == "uin_str1" {
-								sender, _ = strconv.ParseInt(templ.Value, 10, 64)
-							}
-							if templ.Name == "uin_str2" {
-								receiver, _ = strconv.ParseInt(templ.Value, 10, 64)
-							}
-						}
-						c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
-							GroupCode: groupId,
-							Sender:    sender,
-							Receiver:  receiver,
-						})
-					}
+					c.grayTipProcessor(groupId, b.OptGeneralGrayTip)
 				}
 				if b.OptMsgRedTips != nil {
 					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
@@ -892,10 +875,18 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 		return nil, errors.New("not found")
 	}
 	rsp := body.MultimsgApplydownRsp[0]
-	i := binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0]))
-	b, err := utils.HttpGetBytes(fmt.Sprintf("http://%s:%d%s", i, body.MultimsgApplydownRsp[0].Uint32DownPort[0], string(rsp.ThumbDownPara)), "")
+	prefix := func() string {
+		if rsp.MsgExternInfo != nil && rsp.MsgExternInfo.ChannelType == 2 {
+			return "https://ssl.htdata.qq.com"
+		}
+		return fmt.Sprintf("http://%s:%d", binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0])), body.MultimsgApplydownRsp[0].Uint32DownPort[0])
+	}()
+	b, err := utils.HttpGetBytes(fmt.Sprintf("%s%s", prefix, string(rsp.ThumbDownPara)), "")
 	if err != nil {
 		return nil, err
+	}
+	if b[0] != 40 {
+		return nil, errors.New("unexpected body data")
 	}
 	tea := binary.NewTeaCipher(body.MultimsgApplydownRsp[0].MsgKey)
 	r := binary.NewReader(b[1:])
