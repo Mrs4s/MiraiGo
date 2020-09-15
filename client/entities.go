@@ -301,7 +301,7 @@ func (m *GroupMemberInfo) Manageable() bool {
 	if self == Member || m.Permission == Owner {
 		return false
 	}
-	return m.Permission != Administrator
+	return m.Permission != Administrator || self == Owner
 }
 
 func (r *UserJoinGroupRequest) Accept() {
