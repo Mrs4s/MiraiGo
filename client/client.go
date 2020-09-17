@@ -29,9 +29,8 @@ import (
 )
 
 type QQClient struct {
-	Uin          int64
-	PasswordMd5  [16]byte
-	CustomServer *net.TCPAddr
+	Uin         int64
+	PasswordMd5 [16]byte
 
 	Nickname   string
 	Age        uint16
@@ -48,8 +47,9 @@ type QQClient struct {
 
 	decoders        map[string]func(*QQClient, uint16, []byte) (interface{}, error)
 	handlers        sync.Map
-	server          *net.TCPAddr
-	currServerIndex int32
+	servers         []*net.TCPAddr
+	currServerIndex int
+	retryTimes      int
 
 	syncCookie       []byte
 	pubAccountCookie []byte
@@ -150,6 +150,23 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		eventHandlers:          &eventHandlers{},
 		msgSvcCache:            utils.NewCache(time.Second * 15),
 		transCache:             utils.NewCache(time.Second * 15),
+		servers: []*net.TCPAddr{ // default servers
+			{IP: net.IP{42, 81, 169, 46}, Port: 8080},
+			{IP: net.IP{42, 81, 172, 81}, Port: 80},
+			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
+			{IP: net.IP{42, 81, 172, 147}, Port: 443},
+			{IP: net.IP{125, 94, 60, 146}, Port: 80},
+			{IP: net.IP{114, 221, 144, 215}, Port: 80},
+			{IP: net.IP{42, 81, 172, 22}, Port: 80},
+		},
+	}
+	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
+	if err == nil && len(adds) > 0 {
+		addr := &net.TCPAddr{
+			IP:   adds[0],
+			Port: 8080,
+		}
+		cli.servers = append([]*net.TCPAddr{addr}, cli.servers...)
 	}
 	rand.Read(cli.RandomKey)
 	return cli
@@ -160,7 +177,6 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if c.Online {
 		return nil, ErrAlreadyOnline
 	}
-	c.server = nil
 	err := c.connect()
 	if err != nil {
 		return nil, err
@@ -856,45 +872,32 @@ func (g *GroupInfo) removeMember(uin int64) {
 	}
 }
 
-var servers = []*net.TCPAddr{
-	{IP: net.IP{42, 81, 169, 46}, Port: 8080},
-	{IP: net.IP{42, 81, 172, 81}, Port: 80},
-	{IP: net.IP{114, 221, 148, 59}, Port: 14000},
-	{IP: net.IP{42, 81, 172, 147}, Port: 443},
-	{IP: net.IP{125, 94, 60, 146}, Port: 80},
-	{IP: net.IP{114, 221, 144, 215}, Port: 80},
-	{IP: net.IP{42, 81, 172, 22}, Port: 80},
-}
-
 func (c *QQClient) connect() error {
-	if c.server == nil {
-		if c.CustomServer != nil {
-			c.server = c.CustomServer
-		} else {
-			addrs, err := net.LookupIP("msfwifi.3g.qq.com")
-			if err == nil && len(addrs) > 0 {
-				c.server = &net.TCPAddr{
-					IP:   addrs[rand.Intn(len(addrs))],
-					Port: 8080,
-				}
-			} else {
-				c.server = servers[rand.Intn(len(servers))]
-			}
-		}
+	c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
+	conn, err := net.DialTCP("tcp", nil, c.servers[c.currServerIndex])
+	c.currServerIndex++
+	if c.currServerIndex == len(c.servers) {
+		c.currServerIndex = 0
 	}
-	c.Info("connect to server: %v", c.server.String())
-	conn, err := net.DialTCP("tcp", nil, c.server)
 	if err != nil {
-		if c.CustomServer != nil {
-			c.CustomServer = nil
-			return c.connect()
+		c.retryTimes++
+		if c.retryTimes > len(c.servers) {
+			return errors.New("network error")
 		}
-		return err
+		c.Error("connect server error: %v", err)
+		if err = c.connect(); err != nil {
+			return err
+		}
 	}
+	c.retryTimes = 0
 	c.ConnectTime = time.Now()
 	c.Conn = conn
 	c.onlinePushCache = []int16{}
 	return nil
+}
+
+func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
+	c.servers = append(servers, c.servers...)
 }
 
 func (c *QQClient) registerClient() {
@@ -976,11 +979,6 @@ func (c *QQClient) netLoop() {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			c.Error("connection dropped by server: %v", err)
-			if c.ConnectTime.Sub(time.Now()) < time.Minute && c.CustomServer != nil {
-				c.Error("custom server error.")
-				c.CustomServer = nil
-				c.server = nil
-			}
 			err = c.connect()
 			if err != nil {
 				break

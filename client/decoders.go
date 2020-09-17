@@ -137,11 +137,15 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		servers := []jce.SsoServerInfo{}
 		ssoPkt.ReadSlice(&servers, 1)
 		if len(servers) > 0 {
-			c.server = &net.TCPAddr{
-				IP:   net.ParseIP(servers[0].Server),
-				Port: int(servers[0].Port),
+			var adds []*net.TCPAddr
+			for _, s := range servers {
+				c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
+				adds = append(adds, &net.TCPAddr{
+					IP:   net.ParseIP(s.Server),
+					Port: int(s.Port),
+				})
 			}
-			c.Debug("got new server addr: %v location: %v", c.server.String(), servers[0].Location)
+			c.SetCustomServer(adds)
 			for _, e := range c.eventHandlers.serverUpdatedHandlers {
 				cover(func() {
 					e(c, &ServerUpdatedEvent{Servers: servers})
