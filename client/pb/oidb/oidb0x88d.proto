@@ -1,0 +1,161 @@
+syntax = "proto2"; // 似乎查询服务端是通过 exists flag 来返回 group info 的 这地方只能用 proto2
+
+option go_package = ".;oidb";
+
+message D88DGroupHeadPortraitInfo
+{
+  optional uint32 picId = 1;
+}
+
+message D88DGroupHeadPortrait
+{
+  optional uint32 picCount = 1;
+  repeated D88DGroupHeadPortraitInfo msgInfo = 2;
+  optional uint32 defaultId = 3;
+  optional uint32 verifyingPicCnt = 4;
+  repeated D88DGroupHeadPortraitInfo msgVerifyingPicInfo = 5;
+}
+
+message D88DGroupExInfoOnly
+{
+  optional uint32 tribeId = 1;
+  optional uint32 moneyForAddGroup = 2;
+};
+
+message D88DGroupInfo
+{
+  optional uint64 groupOwner = 1;
+  optional uint32 groupCreateTime = 2;
+  optional uint32 groupFlag = 3;
+  optional uint32 groupFlagExt = 4;
+  optional uint32 groupMemberMaxNum = 5;
+  optional uint32 groupMemberNum = 6;
+  optional uint32 groupOption = 7;
+  optional uint32 groupClassExt = 8;
+  optional uint32 groupSpecialClass = 9;
+  optional uint32 groupLevel = 10;
+  optional uint32 groupFace = 11;
+  optional uint32 groupDefaultPage = 12;
+  optional uint32 groupInfoSeq = 13;
+  optional uint32 groupRoamingTime = 14;
+  optional bytes  groupName = 15;
+  optional bytes  groupMemo = 16;
+  optional bytes  groupFingerMemo = 17;
+  optional bytes  groupClassText = 18;
+  repeated uint32 groupAllianceCode = 19;
+  optional uint32 groupExtraAadmNum = 20;
+  optional uint64 groupUin = 21;
+  optional uint32 groupCurMsgSeq = 22;
+  optional uint32 groupLastMsgTime = 23;
+  optional bytes  groupQuestion = 24;
+  optional bytes  groupAnswer = 25;
+  optional uint32 groupVisitorMaxNum = 26;
+  optional uint32 groupVisitorCurNum = 27;
+  optional uint32 levelNameSeq = 28;
+  optional uint32 groupAdminMaxNum = 29;
+  optional uint32 groupAioSkinTimestamp = 30;
+  optional uint32 groupBoardSkinTimestamp = 31;
+  optional bytes  groupAioSkinUrl = 32;
+  optional bytes  groupBoardSkinUrl = 33;
+  optional uint32 groupCoverSkinTimestamp = 34;
+  optional bytes  groupCoverSkinUrl = 35;
+  optional uint32 groupGrade = 36;
+  optional uint32 activeMemberNum = 37;
+  optional uint32 certificationType = 38;
+  optional bytes  certificationText = 39;
+  optional bytes  groupRichFingerMemo = 40;
+  repeated D88DTagRecord tagRecord = 41;
+  optional D88DGroupGeoInfo groupGeoInfo = 42;
+  optional uint32 headPortraitSeq = 43;
+  optional D88DGroupHeadPortrait msgHeadPortrait = 44;
+  optional uint32 shutupTimestamp = 45 ;
+  optional uint32 shutupTimestampMe = 46 ;
+  optional uint32 createSourceFlag = 47 ;
+  optional uint32 cmduinMsgSeq = 48;
+  optional uint32 cmduinJoinTime = 49;
+  optional uint32 cmduinUinFlag = 50;
+  optional uint32 cmduinFlagEx = 51;
+  optional uint32 cmduinNewMobileFlag = 52;
+  optional uint32 cmduinReadMsgSeq = 53;
+  optional uint32 cmduinLastMsgTime = 54;
+  optional uint32 groupTypeFlag = 55;
+  optional uint32 appPrivilegeFlag = 56;
+  optional D88DGroupExInfoOnly stGroupExInfo = 57;
+  optional uint32 groupSecLevel = 58;
+  optional uint32 groupSecLevelInfo = 59;
+  optional uint32 cmduinPrivilege = 60;
+  optional bytes  poidInfo = 61;
+  optional uint32 cmduinFlagEx2 = 62;
+  optional uint64 confUin = 63;
+  optional uint32 confMaxMsgSeq = 64;
+  optional uint32 confToGroupTime = 65;
+  optional uint32 passwordRedbagTime = 66;
+  optional uint64 subscriptionUin = 67;
+  optional uint32 memberListChangeSeq = 68;
+  optional uint32 membercardSeq = 69;
+  optional uint64 rootId = 70;
+  optional uint64 parentId = 71;
+  optional uint32 teamSeq = 72;
+  optional uint64 historyMsgBeginTime = 73;
+  optional uint64 inviteNoAuthNumLimit = 74;
+  optional uint32 cmduinHistoryMsgSeq = 75;
+  optional uint32 cmduinJoinMsgSeq = 76;
+  optional uint32 groupFlagext3 = 77;
+  optional uint32 groupOpenAppid = 78;
+  optional uint32 isConfGroup = 79;
+  optional uint32 isModifyConfGroupFace = 80;
+  optional uint32 isModifyConfGroupName = 81;
+  optional uint32 noFingerOpenFlag = 82;
+  optional uint32 noCodeFingerOpenFlag = 83;
+};
+
+message ReqGroupInfo
+{
+  optional uint64 groupCode = 1;
+  optional D88DGroupInfo stgroupinfo = 2;
+  optional uint32 lastGetGroupNameTime = 3;
+};
+
+message D88DReqBody
+{
+  optional uint32 appId = 1;
+  repeated ReqGroupInfo reqGroupInfo = 2;
+  optional uint32 pcClientVersion = 3;
+};
+
+message RspGroupInfo
+{
+  optional uint64 groupCode = 1;
+  optional uint32 result = 2;
+  optional D88DGroupInfo groupInfo = 3;
+};
+
+message D88DRspBody
+{
+  repeated RspGroupInfo rspGroupInfo = 1;
+  optional bytes  strErrorInfo = 2;
+};
+
+message D88DTagRecord
+{
+  optional uint64 fromUin = 1;
+  optional uint64 groupCode = 2;
+  optional bytes  tagId = 3;
+  optional uint64 setTime = 4;
+  optional uint32 goodNum = 5;
+  optional uint32 badNum = 6;
+  optional uint32 tagLen = 7;
+  optional bytes  tagValue = 8;
+};
+
+message D88DGroupGeoInfo
+{
+  optional uint64 owneruin = 1;
+  optional uint32 settime = 2;
+  optional uint32 cityid = 3;
+  optional int64 longitude = 4;
+  optional int64 latitude = 5;
+  optional bytes  geocontent = 6;
+  optional uint64 poiId = 7;
+};
+

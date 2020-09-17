@@ -58,7 +58,7 @@ type (
 		Members        []*GroupMemberInfo
 
 		client  *QQClient
-		memLock *sync.Mutex
+		memLock sync.Mutex
 	}
 
 	GroupMemberInfo struct {

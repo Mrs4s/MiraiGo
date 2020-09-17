@@ -955,6 +955,53 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	return seq, packet
 }
 
+// OidbSvc.0x88d_7
+func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.D88DReqBody{
+		AppId: proto.Uint32(uint32(SystemDeviceInfo.Protocol)),
+		ReqGroupInfo: []*oidb.ReqGroupInfo{
+			{
+				GroupCode: proto.Uint64(uint64(groupCode)),
+				Stgroupinfo: &oidb.D88DGroupInfo{
+					GroupOwner:           proto.Uint64(0),
+					GroupCreateTime:      proto.Uint32(0),
+					GroupFlag:            proto.Uint32(0),
+					GroupMemberMaxNum:    proto.Uint32(0),
+					GroupMemberNum:       proto.Uint32(0),
+					GroupOption:          proto.Uint32(0),
+					GroupLevel:           proto.Uint32(0),
+					GroupFace:            proto.Uint32(0),
+					GroupName:            EmptyBytes,
+					GroupMemo:            EmptyBytes,
+					GroupFingerMemo:      EmptyBytes,
+					GroupLastMsgTime:     proto.Uint32(0),
+					GroupQuestion:        EmptyBytes,
+					GroupAnswer:          EmptyBytes,
+					GroupGrade:           proto.Uint32(0),
+					ActiveMemberNum:      proto.Uint32(0),
+					HeadPortraitSeq:      proto.Uint32(0),
+					MsgHeadPortrait:      &oidb.D88DGroupHeadPortrait{},
+					StGroupExInfo:        &oidb.D88DGroupExInfoOnly{},
+					GroupSecLevel:        proto.Uint32(0),
+					CmduinPrivilege:      proto.Uint32(0),
+					NoFingerOpenFlag:     proto.Uint32(0),
+					NoCodeFingerOpenFlag: proto.Uint32(0),
+				},
+			},
+		},
+		PcClientVersion: proto.Uint32(0),
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:    2189,
+		Bodybuffer: b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x88d_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // MultiMsg.ApplyUp
 func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
 	seq := c.nextSeq()

@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -137,11 +138,18 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		servers := []jce.SsoServerInfo{}
 		ssoPkt.ReadSlice(&servers, 1)
 		if len(servers) > 0 {
-			c.server = &net.TCPAddr{
-				IP:   net.ParseIP(servers[0].Server),
-				Port: int(servers[0].Port),
+			var adds []*net.TCPAddr
+			for _, s := range servers {
+				if strings.Contains(s.Server, "com") {
+					continue
+				}
+				c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
+				adds = append(adds, &net.TCPAddr{
+					IP:   net.ParseIP(s.Server),
+					Port: int(s.Port),
+				})
 			}
-			c.Debug("got new server addr: %v location: %v", c.server.String(), servers[0].Location)
+			c.SetCustomServer(adds)
 			for _, e := range c.eventHandlers.serverUpdatedHandlers {
 				cover(func() {
 					e(c, &ServerUpdatedEvent{Servers: servers})
@@ -379,6 +387,31 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		l = append(l, rsp.([]*GroupInfo)...)
 	}
 	return l, nil
+}
+
+func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D88DRspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	if len(rsp.RspGroupInfo) == 0 {
+		return nil, errors.New(string(rsp.StrErrorInfo))
+	}
+	info := rsp.RspGroupInfo[0]
+	return &GroupInfo{
+		Uin:            utils.ToGroupUin(int64(*info.GroupCode)),
+		Code:           int64(*info.GroupCode),
+		Name:           string(info.GroupInfo.GroupName),
+		Memo:           string(info.GroupInfo.GroupMemo),
+		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
+		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
+		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
+		client:         c,
+	}, nil
 }
 
 func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
