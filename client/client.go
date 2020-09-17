@@ -139,6 +139,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MultiMsg.ApplyUp":                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                       decodeMultiApplyDownResponse,
 			"OidbSvc.0x6d6_2":                          decodeOIDB6d6Response,
+			"OidbSvc.0x88d_0":                          decodeGroupInfoResponse,
 			"PttCenterSvr.ShortVideoDownReq":           decodePttShortVideoDownResponse,
 		},
 		sigInfo:                &loginSigInfo{},
@@ -306,6 +307,14 @@ func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) 
 	url := i.(string)
 	url += "?fname=" + hex.EncodeToString([]byte(fileId))
 	return url
+}
+
+func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
+	i, err := c.sendAndWait(c.buildGroupInfoRequestPacket(groupCode))
+	if err != nil {
+		return nil, err
+	}
+	return i.(*GroupInfo), nil
 }
 
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
@@ -859,9 +868,6 @@ func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string) {
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
-	if g.memLock == nil {
-		g.memLock = new(sync.Mutex)
-	}
 	g.memLock.Lock()
 	defer g.memLock.Unlock()
 	for i, m := range g.Members {
