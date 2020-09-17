@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -139,6 +140,9 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		if len(servers) > 0 {
 			var adds []*net.TCPAddr
 			for _, s := range servers {
+				if strings.Contains(s.Server, "com") {
+					continue
+				}
 				c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
 				adds = append(adds, &net.TCPAddr{
 					IP:   net.ParseIP(s.Server),
