@@ -291,7 +291,7 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		return nil, nil
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.PkgNum > 1 {
-		var builder *groupMessageBuilder
+		var builder *groupMessageBuilder // TODO: 支持多SEQ
 		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
 		if !ok {
 			builder = &groupMessageBuilder{
@@ -403,7 +403,7 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	}
 	info := rsp.RspGroupInfo[0]
 	return &GroupInfo{
-		Uin:            utils.ToGroupUin(int64(*info.GroupCode)),
+		Uin:            int64(*info.GroupInfo.GroupUin),
 		Code:           int64(*info.GroupCode),
 		Name:           string(info.GroupInfo.GroupName),
 		Memo:           string(info.GroupInfo.GroupMemo),
