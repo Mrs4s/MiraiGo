@@ -1,15 +1,18 @@
 package client
 
 import (
+	"bytes"
 	"crypto/md5"
 	binary2 "encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
 	"net"
+	"net/http"
 	"strconv"
 )
 
@@ -76,5 +79,20 @@ func (c *QQClient) uploadGroupPtt(ip, port int32, updKey, fileKey, data, md5 []b
 	hex.Encode(url[p:], md5)
 	url = append(url, "&mType=pttDu&voice_encodec=1"...)
 	_, err := utils.HttpPostBytes(string(url), data)
+	return err
+}
+
+func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
+	url := fmt.Sprintf(
+		"http://htdata3.qq.com/cgi-bin/httpconn?htcmd=0x6ff0072&ver=5520&ukey=%v&range=0&uin=%v&seq=23&groupuin=%v&filetype=3&imagetype=5&userdata=0&subcmd=1&subver=101&clip=0_0_0_0&filesize=%v",
+		string(c.sigInfo.sKey),
+		c.Uin,
+		groupCode,
+		len(img),
+	)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(img))
+	req.Header["User-Agent"] = []string{"Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)"}
+	req.Header["Content-Type"] = []string{"multipart/form-data;boundary=****"}
+	_, err = http.DefaultClient.Do(req)
 	return err
 }
