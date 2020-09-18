@@ -965,6 +965,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 				GroupCode: proto.Uint64(uint64(groupCode)),
 				Stgroupinfo: &oidb.D88DGroupInfo{
 					GroupOwner:           proto.Uint64(0),
+					GroupUin:             proto.Uint64(0),
 					GroupCreateTime:      proto.Uint32(0),
 					GroupFlag:            proto.Uint32(0),
 					GroupMemberMaxNum:    proto.Uint32(0),

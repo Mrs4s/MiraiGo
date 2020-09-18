@@ -403,7 +403,7 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	}
 	info := rsp.RspGroupInfo[0]
 	return &GroupInfo{
-		Uin:            utils.ToGroupUin(int64(*info.GroupCode)),
+		Uin:            int64(*info.GroupInfo.GroupUin),
 		Code:           int64(*info.GroupCode),
 		Name:           string(info.GroupInfo.GroupName),
 		Memo:           string(info.GroupInfo.GroupMemo),
