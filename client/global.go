@@ -267,7 +267,22 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
 	if group == nil {
-		return nil
+		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
+		info, err := c.GetGroupInfo(m.Head.GroupInfo.GroupCode)
+		if err != nil {
+			c.Error("error to sync group %v : %v", m.Head.GroupInfo.GroupCode, err)
+			return nil
+		}
+		group = info
+		c.GroupList = append(c.GroupList, info)
+	}
+	if len(group.Members) == 0 {
+		mem, err := c.GetGroupMembers(group)
+		if err != nil {
+			c.Error("error to sync group %v member : %v", m.Head.GroupInfo.GroupCode, err)
+			return nil
+		}
+		group.Members = mem
 	}
 	var anonInfo *msg.AnonymousGroupMessage
 	for _, e := range m.Body.RichText.Elems {
