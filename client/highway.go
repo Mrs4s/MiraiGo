@@ -93,6 +93,10 @@ func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
 	req, err := http.NewRequest("POST", url, bytes.NewReader(img))
 	req.Header["User-Agent"] = []string{"Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)"}
 	req.Header["Content-Type"] = []string{"multipart/form-data;boundary=****"}
-	_, err = http.DefaultClient.Do(req)
-	return err
+	rsp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	rsp.Body.Close()
+	return nil
 }
