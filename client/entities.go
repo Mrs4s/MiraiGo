@@ -236,6 +236,12 @@ func (g *GroupInfo) UpdateMemo(newMemo string) {
 	}
 }
 
+func (g GroupInfo) UpdateGroupHeadPortrait(img []byte) {
+	if g.AdministratorOrOwner() {
+		_ = g.client.uploadGroupHeadPortrait(g.Uin, img)
+	}
+}
+
 func (g *GroupInfo) MuteAll(mute bool) {
 	if g.AdministratorOrOwner() {
 		g.client.groupMuteAll(g.Code, mute)
