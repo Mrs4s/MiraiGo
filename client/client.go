@@ -894,7 +894,7 @@ func (c *QQClient) connect() error {
 	if c.currServerIndex == len(c.servers) {
 		c.currServerIndex = 0
 	}
-	if err != nil {
+	if err != nil || conn == nil {
 		c.retryTimes++
 		if c.retryTimes > len(c.servers) {
 			return errors.New("network error")
