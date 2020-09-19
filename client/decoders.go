@@ -331,6 +331,25 @@ func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
 	return nil, err
 }
 
+func decodeSummaryCardResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	rsp := jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard.RespSummaryCard"][1:])
+	return &SummaryCardInfo{
+		Sex:       rsp.ReadByte(1),
+		Age:       rsp.ReadByte(2),
+		Nickname:  rsp.ReadString(3),
+		Level:     rsp.ReadInt32(5),
+		City:      rsp.ReadString(7),
+		Sign:      rsp.ReadString(8),
+		Mobile:    rsp.ReadString(11),
+		Uin:       rsp.ReadInt64(23),
+		LoginDays: rsp.ReadInt64(36),
+	}, nil
+}
+
 func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))

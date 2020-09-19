@@ -251,6 +251,38 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 	return seq, packet
 }
 
+// SummaryCard.ReqSummaryCard
+func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &jce.SummaryCardReq{
+		Uin:              target,
+		ComeFrom:         31,
+		GetControl:       69181,
+		AddFriendSource:  3001,
+		SecureSig:        []byte{0x00},
+		ReqMedalWallInfo: 0,
+		Req0x5ebFieldId:  []int64{27225, 27224, 42122, 42121, 27236, 27238, 42167, 42172, 40324, 42284, 42326, 42325, 42356, 42363, 42361, 42367, 42377, 42425},
+		ReqNearbyGodInfo: 1,
+		ReqExtendCard:    1,
+	}
+	head := jce.NewJceWriter()
+	head.WriteInt32(2, 0)
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
+		"ReqHead":        packRequestDataV3(head.Bytes()),
+		"ReqSummaryCard": packRequestDataV3(req.ToBytes()),
+	}}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		SServantName: "SummaryCardServantObj",
+		SFuncName:    "ReqSummaryCard",
+		SBuffer:      buf.ToBytes(),
+		Context:      make(map[string]string),
+		Status:       make(map[string]string),
+	}
+	packet := packets.BuildUniPacket(c.Uin, seq, "SummaryCard.ReqSummaryCard", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
+
 // friendlist.GetTroopListReqV2
 func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -955,7 +987,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	return seq, packet
 }
 
-// OidbSvc.0x88d_7
+// OidbSvc.0x88d_0
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D88DReqBody{

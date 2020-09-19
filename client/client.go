@@ -140,6 +140,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MultiMsg.ApplyDown":                       decodeMultiApplyDownResponse,
 			"OidbSvc.0x6d6_2":                          decodeOIDB6d6Response,
 			"OidbSvc.0x88d_0":                          decodeGroupInfoResponse,
+			"SummaryCard.ReqSummaryCard":               decodeSummaryCardResponse,
 			"PttCenterSvr.ShortVideoDownReq":           decodePttShortVideoDownResponse,
 		},
 		sigInfo:                &loginSigInfo{},
@@ -244,6 +245,14 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 		return nil, err
 	}
 	return &ret, nil
+}
+
+func (c *QQClient) GetSummaryInfo(target int64) (*SummaryCardInfo, error) {
+	rsp, err := c.sendAndWait(c.buildSummaryCardRequestPacket(target))
+	if err != nil {
+		return nil, err
+	}
+	return rsp.(*SummaryCardInfo), nil
 }
 
 // SubmitCaptcha send captcha to server

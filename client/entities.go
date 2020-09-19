@@ -42,6 +42,18 @@ type (
 		//msgSeqList *utils.Cache
 	}
 
+	SummaryCardInfo struct {
+		Uin       int64
+		Sex       byte
+		Age       uint8
+		Nickname  string
+		Level     int32
+		City      string
+		Sign      string
+		Mobile    string
+		LoginDays int64
+	}
+
 	FriendListResponse struct {
 		TotalCount int32
 		List       []*FriendInfo

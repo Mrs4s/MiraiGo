@@ -317,6 +317,27 @@ type (
 		Email  string `jceId:"5"`
 		Remark string `jceId:"6"`
 	}
+
+	SummaryCardReq struct {
+		IJceStruct
+		Uin                int64 `jceId:"0"`
+		ComeFrom           int32 `jceId:"1"`
+		QzoneFeedTimestamp int64 `jceId:"2"`
+		IsFriend           byte  `jceId:"3"`
+		GroupCode          int64 `jceId:"4"`
+		GroupUin           int64 `jceId:"5"`
+		//Seed               []byte`jceId:"6"`
+		//SearchName         string`jceId:"7"`
+		GetControl       int64   `jceId:"8"`
+		AddFriendSource  int32   `jceId:"9"`
+		SecureSig        []byte  `jceId:"10"`
+		TinyId           int64   `jceId:"15"`
+		LikeSource       int64   `jceId:"16"`
+		ReqMedalWallInfo byte    `jceId:"18"`
+		Req0x5ebFieldId  []int64 `jceId:"19"`
+		ReqNearbyGodInfo byte    `jceId:"20"`
+		ReqExtendCard    byte    `jceId:"22"`
+	}
 )
 
 func (pkt *RequestPacket) ToBytes() []byte {
@@ -377,6 +398,12 @@ func (pkt *SvcReqRegister) ToBytes() []byte {
 }
 
 func (pkt *FriendListRequest) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SummaryCardReq) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()
