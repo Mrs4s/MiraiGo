@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"log"
 	"net"
 	"strconv"
@@ -983,4 +984,19 @@ func decodePttShortVideoDownResponse(c *QQClient, _ uint16, payload []byte) (int
 		return nil, errors.New("resp error")
 	}
 	return rsp.PttShortVideoDownloadRsp.DownloadAddr.Host[0] + rsp.PttShortVideoDownloadRsp.DownloadAddr.UrlArgs, nil
+}
+
+func decodeAppInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := qweb.QWebRsp{}
+	rsp := qweb.GetAppInfoByIdRsp{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if pkg.RetCode != 0 {
+		return nil, errors.New(pkg.ErrMsg)
+	}
+	if err := proto.Unmarshal(pkg.BusiBuff, &rsp); err != nil {
+		return nil, err
+	}
+	return rsp.AppInfo, nil
 }
