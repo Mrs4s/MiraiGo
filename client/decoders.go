@@ -468,6 +468,37 @@ func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	}, nil
 }
 
+func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := pb.GroupMemberRspBody{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.MemInfo.Nick == nil && rsp.MemInfo.Age == 0 {
+		return nil, ErrMemberNotFound
+	}
+	group := c.FindGroup(rsp.GroupCode)
+	return &GroupMemberInfo{
+		Group:                  group,
+		Uin:                    rsp.MemInfo.Uin,
+		Nickname:               string(rsp.MemInfo.Nick),
+		CardName:               string(rsp.MemInfo.Card),
+		Level:                  uint16(rsp.MemInfo.Level),
+		JoinTime:               rsp.MemInfo.Join,
+		LastSpeakTime:          rsp.MemInfo.LastSpeak,
+		SpecialTitle:           string(rsp.MemInfo.SpecialTitle),
+		SpecialTitleExpireTime: int64(rsp.MemInfo.SpecialTitleExpireTime),
+		Permission: func() MemberPermission {
+			if rsp.MemInfo.Uin == group.OwnerUin {
+				return Owner
+			}
+			if rsp.MemInfo.Role == 1 {
+				return Administrator
+			}
+			return Member
+		}(),
+	}, nil
+}
+
 func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)

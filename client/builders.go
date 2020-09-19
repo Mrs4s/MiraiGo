@@ -347,6 +347,21 @@ func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUi
 	return seq, packet
 }
 
+// group_member_card.get_group_member_card_info
+func (c *QQClient) buildGroupMemberInfoRequestPacket(groupCode, uin int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &pb.GroupMemberReqBody{
+		GroupCode:       groupCode,
+		Uin:             uin,
+		NewClient:       true,
+		ClientType:      1,
+		RichCardNameVer: 1,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "group_member_card.get_group_member_card_info", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // MessageSvc.PbGetMsg
 func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64) (uint16, []byte) {
 	seq := c.nextSeq()

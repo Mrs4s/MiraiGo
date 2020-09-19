@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrAlreadyOnline = errors.New("already online")
+	ErrAlreadyOnline  = errors.New("already online")
+	ErrMemberNotFound = errors.New("member not found")
 )
 
 type (
