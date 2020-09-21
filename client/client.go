@@ -993,7 +993,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 				continue
 			}
 			c.handlers.Delete(seq)
-			c.Error("packet timed out, seq: %v", seq)
+			//c.Error("packet timed out, seq: %v", seq)
 			//println("Packet Timed out")
 			return nil, errors.New("timeout")
 		}
