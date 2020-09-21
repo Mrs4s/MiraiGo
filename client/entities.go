@@ -194,6 +194,8 @@ type (
 
 		IsExists bool
 		FileId   int64
+		Width    int32
+		Height   int32
 
 		ResourceId string
 		UploadKey  []byte
