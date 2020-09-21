@@ -75,6 +75,7 @@ type QQClient struct {
 	requestPacketRequestId int32
 	groupSeq               int32
 	friendSeq              int32
+	heartbeatEnabled       bool
 	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
@@ -196,7 +197,9 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if l.Success {
 		c.lastLostMsg = ""
 		c.registerClient()
-		c.startHeartbeat()
+		if !c.heartbeatEnabled {
+			c.startHeartbeat()
+		}
 	}
 	return &l, nil
 }
@@ -267,7 +270,9 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	l := rsp.(LoginResponse)
 	if l.Success {
 		c.registerClient()
-		c.startHeartbeat()
+		if !c.heartbeatEnabled {
+			c.startHeartbeat()
+		}
 	}
 	return &l, nil
 }
@@ -1069,6 +1074,7 @@ func (c *QQClient) netLoop() {
 }
 
 func (c *QQClient) startHeartbeat() {
+	c.heartbeatEnabled = true
 	time.AfterFunc(30*time.Second, c.doHeartbeat)
 }
 
@@ -1080,4 +1086,5 @@ func (c *QQClient) doHeartbeat() {
 		_, _ = c.sendAndWait(seq, packet)
 		time.AfterFunc(30*time.Second, c.doHeartbeat)
 	}
+	c.heartbeatEnabled = false
 }
