@@ -184,7 +184,7 @@ type (
 	}
 
 	OcrResponse struct {
-		Texts    []*TextDetection `json:"'texts'"`
+		Texts    []*TextDetection `json:"texts"`
 		Language string           `json:"language"`
 	}
 
