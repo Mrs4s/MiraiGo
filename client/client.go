@@ -142,6 +142,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MultiMsg.ApplyDown":                           decodeMultiApplyDownResponse,    // 长消息/合并转发请求下载包
 			"OidbSvc.0x6d6_2":                              decodeOIDB6d6Response,           // 群文件操作包
 			"OidbSvc.0x88d_0":                              decodeGroupInfoResponse,         // 获取群资料包
+			"OidbSvc.0xe07_0":                              decodeImageOcrResponse,          // 图片OCR请求包
 			"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,       // 获取用户卡片资料包
 			"PttCenterSvr.ShortVideoDownReq":               decodePttShortVideoDownResponse, // 短视频下载请求包
 			"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,           // 获取小程序资料包
@@ -622,6 +623,24 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 		return c.uploadPrivateImage(target, img, count)
 	}
 	return e, nil
+}
+
+func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
+	switch e := img.(type) {
+	case *message.GroupImageElement:
+		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(e.Url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
+		if err != nil {
+			return nil, err
+		}
+		return rsp.(*OcrResponse), nil
+	case *message.ImageElement:
+		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(e.Url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
+		if err != nil {
+			return nil, err
+		}
+		return rsp.(*OcrResponse), nil
+	}
+	return nil, errors.New("image error")
 }
 
 func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {

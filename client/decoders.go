@@ -1009,6 +1009,39 @@ func decodeOIDB6d6Response(c *QQClient, _ uint16, payload []byte) (interface{}, 
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
+func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.DE07RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.Wording != "" {
+		return nil, errors.New(rsp.Wording)
+	}
+	var texts []*TextDetection
+	for _, text := range rsp.OcrRspBody.TextDetections {
+		var points []*Coordinate
+		for _, c := range text.Polygon.Coordinates {
+			points = append(points, &Coordinate{
+				X: c.X,
+				Y: c.Y,
+			})
+		}
+		texts = append(texts, &TextDetection{
+			Text:        text.DetectedText,
+			Confidence:  text.Confidence,
+			Coordinates: points,
+		})
+	}
+	return &OcrResponse{
+		Texts:    texts,
+		Language: rsp.OcrRspBody.Language,
+	}, nil
+}
+
 func decodePttShortVideoDownResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := pttcenter.ShortVideoRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {

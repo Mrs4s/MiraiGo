@@ -1146,6 +1146,32 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 	return seq, packet
 }
 
+// OidbSvc.0xe07_0
+func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, height int32) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DE07ReqBody{
+		Version:  1,
+		Entrance: 3,
+		OcrReqBody: &oidb.OCRReqBody{
+			ImageUrl:              url,
+			OriginMd5:             md5,
+			AfterCompressMd5:      md5,
+			AfterCompressFileSize: size,
+			AfterCompressWeight:   weight,
+			AfterCompressHeight:   height,
+			IsCut:                 false,
+		},
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:    3591,
+		Bodybuffer: b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // PttCenterSvr.ShortVideoDownReq
 func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
