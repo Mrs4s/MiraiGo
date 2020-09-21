@@ -937,6 +937,7 @@ func (c *QQClient) connect() error {
 		if err = c.connect(); err != nil {
 			return err
 		}
+		return nil
 	}
 	c.retryTimes = 0
 	c.ConnectTime = time.Now()
