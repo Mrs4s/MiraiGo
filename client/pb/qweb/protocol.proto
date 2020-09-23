@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = ".;qweb";
+
+message QWebReq {
+  int64 seq = 1;
+  string qua = 2;
+  string deviceInfo = 3;
+  bytes busiBuff = 4;
+  string traceId = 5;
+}
+
+message QWebRsp {
+  int64 seq = 1;
+  int64 retCode = 2;
+  string errMsg = 3;
+  bytes busiBuff = 4;
+}

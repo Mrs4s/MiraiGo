@@ -4,305 +4,366 @@ option go_package = ".;pb";
 
 
 message DeviceInfo {
-    string bootloader = 1;
-    string procVersion = 2;
-    string codename = 3;
-    string incremental = 4;
-    string fingerprint = 5;
-    string bootId = 6;
-    string androidId = 7;
-    string baseBand = 8;
-    string innerVersion = 9;
+  string bootloader = 1;
+  string procVersion = 2;
+  string codename = 3;
+  string incremental = 4;
+  string fingerprint = 5;
+  string bootId = 6;
+  string androidId = 7;
+  string baseBand = 8;
+  string innerVersion = 9;
 }
 
 message RequestBody {
-    repeated ConfigSeq rpt_config_list = 1;
+  repeated ConfigSeq rpt_config_list = 1;
 }
 
 message ConfigSeq {
-    int32 type = 1;
-    int32 version = 2;
+  int32 type = 1;
+  int32 version = 2;
 }
 
 message D50ReqBody {
-    int64 appid = 1;
-    int32 maxPkgSize = 2;
-    int32 startTime = 3;
-    int32 startIndex = 4;
-    int32 reqNum = 5;
-    repeated int64 uinList = 6;
-    int32 reqMusicSwitch = 91001;
-    int32 reqMutualmarkAlienation = 101001;
-    int32 reqMutualmarkScore = 141001;
-    int32 reqKsingSwitch = 151001;
-    int32 reqMutualmarkLbsshare = 181001;
+  int64 appid = 1;
+  int32 maxPkgSize = 2;
+  int32 startTime = 3;
+  int32 startIndex = 4;
+  int32 reqNum = 5;
+  repeated int64 uinList = 6;
+  int32 reqMusicSwitch = 91001;
+  int32 reqMutualmarkAlienation = 101001;
+  int32 reqMutualmarkScore = 141001;
+  int32 reqKsingSwitch = 151001;
+  int32 reqMutualmarkLbsshare = 181001;
 }
 
 message D388ReqBody {
-    int32 netType = 1;
-    int32 subcmd = 2;
-    repeated TryUpImgReq msgTryUpImgReq = 3;
-    repeated TryUpPttReq msgTryUpPttReq = 5;
-    repeated GetPttUrlReq msgGetPttReq = 6;
-    int32 commandId = 7;
-    bytes extension = 1001;
+  int32 netType = 1;
+  int32 subcmd = 2;
+  repeated TryUpImgReq msgTryUpImgReq = 3;
+  repeated TryUpPttReq msgTryUpPttReq = 5;
+  repeated GetPttUrlReq msgGetPttReq = 6;
+  int32 commandId = 7;
+  bytes extension = 1001;
 }
 
 message D388RespBody {
-    int32 clientIp = 1;
-    int32 subCmd = 2;
-    repeated TryUpImgResp msgTryUpImgRsp = 3;
-    repeated TryUpPttResp msgTryUpPttRsp = 5;
-    repeated GetPttUrlRsp msgGetPttUrlRsp = 6;
+  int32 clientIp = 1;
+  int32 subCmd = 2;
+  repeated TryUpImgResp msgTryUpImgRsp = 3;
+  repeated TryUpPttResp msgTryUpPttRsp = 5;
+  repeated GetPttUrlRsp msgGetPttUrlRsp = 6;
 }
 
 message GetPttUrlReq {
-    int64 groupCode = 1;
-    int64 dstUin = 2;
-    int64 fileId = 3;
-    bytes fileMd5 = 4;
-    int32 reqTerm = 5;
-    int32 reqPlatformType = 6;
-    int32 innerIp = 7;
-    int32 buType = 8;
-    bytes buildVer = 9;
-    //int64 fileId = 10;
-    bytes fileKey = 11;
-    int32 codec = 12;
-    int32 buId = 13;
-    int32 reqTransferType = 14;
-    int32 isAuto = 15;
+  int64 groupCode = 1;
+  int64 dstUin = 2;
+  int64 fileId = 3;
+  bytes fileMd5 = 4;
+  int32 reqTerm = 5;
+  int32 reqPlatformType = 6;
+  int32 innerIp = 7;
+  int32 buType = 8;
+  bytes buildVer = 9;
+  //int64 fileId = 10;
+  bytes fileKey = 11;
+  int32 codec = 12;
+  int32 buId = 13;
+  int32 reqTransferType = 14;
+  int32 isAuto = 15;
 }
 
 message GetPttUrlRsp {
-    int64 fileId = 1;
-    bytes fileMd5 = 2;
-    int32 result = 3;
-    bytes failMsg = 4;
-    bytes bytesDownUrl = 5;
-    repeated int32 uint32DownIp = 6;
-    repeated int32 uint32DownPort = 7;
-    bytes downDomain = 8;
-    bytes downPara = 9;
-    //int64 fileId = 10;
-    int32 transferType = 11;
-    int32 allowRetry = 12;
-    //repeated IPv6Info msgDownIp6 = 26;
-    bytes clientIp6 = 27;
-    string strDomain = 28;
+  int64 fileId = 1;
+  bytes fileMd5 = 2;
+  int32 result = 3;
+  bytes failMsg = 4;
+  bytes bytesDownUrl = 5;
+  repeated int32 uint32DownIp = 6;
+  repeated int32 uint32DownPort = 7;
+  bytes downDomain = 8;
+  bytes downPara = 9;
+  //int64 fileId = 10;
+  int32 transferType = 11;
+  int32 allowRetry = 12;
+  //repeated IPv6Info msgDownIp6 = 26;
+  bytes clientIp6 = 27;
+  string strDomain = 28;
 }
 
 message ReqDataHighwayHead {
-    DataHighwayHead msgBasehead = 1;
-    SegHead msgSeghead = 2;
-    bytes reqExtendinfo = 3;
-    int64 timestamp = 4;
-    //LoginSigHead? msgLoginSigHead = 5;
+  DataHighwayHead msgBasehead = 1;
+  SegHead msgSeghead = 2;
+  bytes reqExtendinfo = 3;
+  int64 timestamp = 4;
+  //LoginSigHead? msgLoginSigHead = 5;
 }
 
 message RspDataHighwayHead {
-    DataHighwayHead msgBasehead = 1;
-    SegHead msgSeghead = 2;
-    int32 errorCode = 3;
-    int32 allowRetry = 4;
-    int32 cachecost = 5;
-    int32 htcost = 6;
-    bytes rspExtendinfo = 7;
-    int64 timestamp = 8;
-    int64 range = 9;
-    int32 isReset = 10;
+  DataHighwayHead msgBasehead = 1;
+  SegHead msgSeghead = 2;
+  int32 errorCode = 3;
+  int32 allowRetry = 4;
+  int32 cachecost = 5;
+  int32 htcost = 6;
+  bytes rspExtendinfo = 7;
+  int64 timestamp = 8;
+  int64 range = 9;
+  int32 isReset = 10;
 }
 
 message DataHighwayHead {
-    int32 version = 1;
-    string uin = 2;
-    string command = 3;
-    int32 seq = 4;
-    int32 retryTimes = 5;
-    int32 appid = 6;
-    int32 dataflag = 7;
-    int32 commandId = 8;
-    string buildVer = 9;
-    int32 localeId = 10;
+  int32 version = 1;
+  string uin = 2;
+  string command = 3;
+  int32 seq = 4;
+  int32 retryTimes = 5;
+  int32 appid = 6;
+  int32 dataflag = 7;
+  int32 commandId = 8;
+  string buildVer = 9;
+  int32 localeId = 10;
 }
 
 message SegHead {
-    int32 serviceid = 1;
-    int64 filesize = 2;
-    int64 dataoffset = 3;
-    int32 datalength = 4;
-    int32 rtcode = 5;
-    bytes serviceticket = 6;
-    int32 flag = 7;
-    bytes md5 = 8;
-    bytes fileMd5 = 9;
-    int32 cacheAddr = 10;
-    int32 queryTimes = 11;
-    int32 updateCacheip = 12;
+  int32 serviceid = 1;
+  int64 filesize = 2;
+  int64 dataoffset = 3;
+  int32 datalength = 4;
+  int32 rtcode = 5;
+  bytes serviceticket = 6;
+  int32 flag = 7;
+  bytes md5 = 8;
+  bytes fileMd5 = 9;
+  int32 cacheAddr = 10;
+  int32 queryTimes = 11;
+  int32 updateCacheip = 12;
 }
 
 message TryUpImgReq {
-    int64 groupCode = 1;
-    int64 srcUin = 2;
-    int64 fileId = 3;
-    bytes fileMd5 = 4;
-    int64 fileSize = 5;
-    string fileName = 6;
-    int32 srcTerm = 7;
-    int32 platformType = 8;
-    int32 buType = 9;
-    int32 picWidth = 10;
-    int32 picHeight = 11;
-    int32 picType = 12;
-    string buildVer = 13;
-    int32 innerIp = 14;
-    int32 appPicType = 15;
-    int32 originalPic = 16;
-    bytes fileIndex = 17;
-    int64 dstUin = 18;
-    int32 srvUpload = 19;
-    bytes transferUrl = 20;
+  int64 groupCode = 1;
+  int64 srcUin = 2;
+  int64 fileId = 3;
+  bytes fileMd5 = 4;
+  int64 fileSize = 5;
+  string fileName = 6;
+  int32 srcTerm = 7;
+  int32 platformType = 8;
+  int32 buType = 9;
+  int32 picWidth = 10;
+  int32 picHeight = 11;
+  int32 picType = 12;
+  string buildVer = 13;
+  int32 innerIp = 14;
+  int32 appPicType = 15;
+  int32 originalPic = 16;
+  bytes fileIndex = 17;
+  int64 dstUin = 18;
+  int32 srvUpload = 19;
+  bytes transferUrl = 20;
 }
 
 message TryUpImgResp {
-    int64 fileId = 1;
-    int32 result = 2;
-    string failMsg = 3;
-    bool boolFileExit = 4;
-    ImgInfo msgImgInfo = 5;
-    repeated int32 uint32UpIp = 6;
-    repeated int32 uint32UpPort = 7;
-    bytes upUkey = 8;
-    int64 fid = 9;
+  int64 fileId = 1;
+  int32 result = 2;
+  string failMsg = 3;
+  bool boolFileExit = 4;
+  ImgInfo msgImgInfo = 5;
+  repeated int32 uint32UpIp = 6;
+  repeated int32 uint32UpPort = 7;
+  bytes upUkey = 8;
+  int64 fid = 9;
 }
 
 message TryUpPttReq {
-    int64 groupCode = 1;
-    int64 srcUin = 2;
-    int64 fileId = 3;
-    bytes fileMd5 = 4;
-    int64 fileSize = 5;
-    bytes fileName = 6;
-    int32 srcTerm = 7;
-    int32 platformType = 8;
-    int32 buType = 9;
-    string buildVer = 10;
-    int32 innerIp = 11;
-    int32 voiceLength = 12;
-    bool boolNewUpChan = 13;
-    int32 codec = 14;
-    int32 voiceType = 15;
-    int32 buId = 16;
+  int64 groupCode = 1;
+  int64 srcUin = 2;
+  int64 fileId = 3;
+  bytes fileMd5 = 4;
+  int64 fileSize = 5;
+  bytes fileName = 6;
+  int32 srcTerm = 7;
+  int32 platformType = 8;
+  int32 buType = 9;
+  string buildVer = 10;
+  int32 innerIp = 11;
+  int32 voiceLength = 12;
+  bool boolNewUpChan = 13;
+  int32 codec = 14;
+  int32 voiceType = 15;
+  int32 buId = 16;
 
 }
 
 message TryUpPttResp {
-    int64 fileId = 1;
-    int32 result = 2;
-    string failMsg = 3;
-    bool boolFileExit = 4;
-    repeated int32 uint32UpIp = 5;
-    repeated int32 uint32UpPort = 6;
-    bytes upUkey = 7;
-    //    int64 fileid = 8; //
-    int64 upOffset = 9;
-    int64 blockSize = 10;
-    bytes fileKey = 11;
-    int32 channelType = 12;
-    //    List<IPv6Info>? msgUpIp6 = 26;
-    //    bytes clientIp6 = 27;
+  int64 fileId = 1;
+  int32 result = 2;
+  string failMsg = 3;
+  bool boolFileExit = 4;
+  repeated int32 uint32UpIp = 5;
+  repeated int32 uint32UpPort = 6;
+  bytes upUkey = 7;
+  //    int64 fileid = 8; //
+  int64 upOffset = 9;
+  int64 blockSize = 10;
+  bytes fileKey = 11;
+  int32 channelType = 12;
+  //    List<IPv6Info>? msgUpIp6 = 26;
+  //    bytes clientIp6 = 27;
 
 }
 
 message ImgInfo {
-    bytes fileMd5 = 1;
-    int32 fileType = 2;
-    int64 fileSize = 3;
-    int32 fileWidth = 4;
-    int32 fileHeight = 5;
+  bytes fileMd5 = 1;
+  int32 fileType = 2;
+  int64 fileSize = 3;
+  int32 fileWidth = 4;
+  int32 fileHeight = 5;
 }
 
 message DeleteMessageRequest {
-    repeated MessageItem items = 1;
+  repeated MessageItem items = 1;
 }
 
 message MessageItem {
-    int64 fromUin = 1;
-    int64 toUin = 2;
-    int32 msgType = 3;
-    int32 msgSeq = 4;
-    int64 msgUid = 5;
-    bytes sig = 7;
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 msgType = 3;
+  int32 msgSeq = 4;
+  int64 msgUid = 5;
+  bytes sig = 7;
 }
 
 message SubD4 {
-    int64 uin = 1;
+  int64 uin = 1;
 }
 
 message Sub8A {
-    repeated Sub8AMsgInfo msg_info = 1;
-    int32 appId = 2;
-    int32 instId = 3;
-    int32 longMessageFlag = 4;
-    bytes reserved = 5;
+  repeated Sub8AMsgInfo msg_info = 1;
+  int32 appId = 2;
+  int32 instId = 3;
+  int32 longMessageFlag = 4;
+  bytes reserved = 5;
 }
 
 message Sub8AMsgInfo {
-    int64 fromUin = 1;
-    int64 toUin = 2;
-    int32 msgSeq= 3;
-    int64 msgUid = 4;
-    int64 msgTime = 5;
-    int32 msgRandom = 6;
-    int32 pkgNum = 7;
-    int32 pkgIndex = 8;
-    int32 devSeq = 9;
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 msgSeq = 3;
+  int64 msgUid = 4;
+  int64 msgTime = 5;
+  int32 msgRandom = 6;
+  int32 pkgNum = 7;
+  int32 pkgIndex = 8;
+  int32 devSeq = 9;
 }
 
 message SubB3 {
-    int32 type = 1;
-    SubB3AddFrdNotify msgAddFrdNotify = 2;
+  int32 type = 1;
+  SubB3AddFrdNotify msgAddFrdNotify = 2;
 }
 
 message SubB3AddFrdNotify {
-    int64 uin = 1;
-    string nick = 5;
+  int64 uin = 1;
+  string nick = 5;
 }
 
 message Sub44 {
-    Sub44FriendSyncMsg friendSyncMsg = 1;
-    Sub44GroupSyncMsg groupSyncMsg = 2;
+  Sub44FriendSyncMsg friendSyncMsg = 1;
+  Sub44GroupSyncMsg groupSyncMsg = 2;
 }
 
 message Sub44FriendSyncMsg {
-    int64 uin = 1;
-    int64 fUin = 2;
-    int32 processType = 3;
-    int32 time = 4;
-    int32 processFlag = 5;
-    int32 sourceId = 6;
-    int32 sourceSubId = 7;
-    repeated string strWording = 8;
+  int64 uin = 1;
+  int64 fUin = 2;
+  int32 processType = 3;
+  int32 time = 4;
+  int32 processFlag = 5;
+  int32 sourceId = 6;
+  int32 sourceSubId = 7;
+  repeated string strWording = 8;
 }
 
 message Sub44GroupSyncMsg {
-    int32 msgType = 1;
-    int64 msgSeq = 2;
-    int64 grpCode = 3;
-    int64 gaCode = 4;
-    int64 optUin1 = 5;
-    int64 optUin2 = 6;
-    bytes msgBuf = 7;
-    bytes authKey = 8;
-    int32 msgStatus = 9;
-    int64 actionUin = 10;
-    int64 actionTime = 11;
-    int32 curMaxMemCount = 12;
-    int32 nextMaxMemCount = 13;
-    int32 curMemCount = 14;
-    int32 reqSrcId = 15;
-    int32 reqSrcSubId = 16;
-    int32 inviterRole = 17;
-    int32 extAdminNum = 18;
-    int32 processFlag = 19;
+  int32 msgType = 1;
+  int64 msgSeq = 2;
+  int64 grpCode = 3;
+  int64 gaCode = 4;
+  int64 optUin1 = 5;
+  int64 optUin2 = 6;
+  bytes msgBuf = 7;
+  bytes authKey = 8;
+  int32 msgStatus = 9;
+  int64 actionUin = 10;
+  int64 actionTime = 11;
+  int32 curMaxMemCount = 12;
+  int32 nextMaxMemCount = 13;
+  int32 curMemCount = 14;
+  int32 reqSrcId = 15;
+  int32 reqSrcSubId = 16;
+  int32 inviterRole = 17;
+  int32 extAdminNum = 18;
+  int32 processFlag = 19;
 }
+
+message GroupMemberReqBody {
+  int64 groupCode = 1;
+  int64 uin = 2;
+  bool newClient = 3;
+  int32 clientType = 4;
+  int32 richCardNameVer = 5;
+}
+
+message GroupMemberRspBody {
+  int64 groupCode = 1;
+  int32 selfRole = 2;
+  GroupMemberInfo memInfo = 3;
+  bool boolSelfLocationShared = 4;
+  int32 groupType = 5;
+}
+
+message GroupMemberInfo {
+  int64 uin = 1;
+  int32 result = 2;
+  bytes errmsg = 3;
+  bool IsFriend = 4;
+  bytes remark = 5;
+  bool IsConcerned = 6;
+  int32 credit = 7;
+  bytes card = 8;
+  int32 sex = 9;
+  bytes location = 10;
+  bytes nick = 11;
+  int32 age = 12;
+  bytes lev = 13;
+  int64 join = 14;
+  int64 lastSpeak = 15;
+  //repeated CustomEntry customEnties = 16;
+  //repeated GBarInfo gbarConcerned = 17;
+  bytes gbarTitle = 18;
+  bytes gbarUrl = 19;
+  int32 gbarCnt = 20;
+  bool isAllowModCard = 21;
+  bool isVip = 22;
+  bool isYearVip = 23;
+  bool isSuperVip = 24;
+  bool isSuperQq = 25;
+  int32 vipLev = 26;
+  int32 role = 27;
+  bool locationShared = 28;
+  int64 int64Distance = 29;
+  int32 concernType = 30;
+  bytes specialTitle = 31;
+  int32 specialTitleExpireTime = 32;
+  //FlowersEntry flowerEntry = 33;
+  //TeamEntry teamEntry = 34;
+  bytes phoneNum = 35;
+  bytes job = 36;
+  int32 medalId = 37;
+
+  int32 level = 39;
+
+  string honor = 41;
+}
+

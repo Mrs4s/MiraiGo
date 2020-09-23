@@ -3,8 +3,11 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 
@@ -251,6 +254,38 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 	return seq, packet
 }
 
+// SummaryCard.ReqSummaryCard
+func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &jce.SummaryCardReq{
+		Uin:              target,
+		ComeFrom:         31,
+		GetControl:       69181,
+		AddFriendSource:  3001,
+		SecureSig:        []byte{0x00},
+		ReqMedalWallInfo: 0,
+		Req0x5ebFieldId:  []int64{27225, 27224, 42122, 42121, 27236, 27238, 42167, 42172, 40324, 42284, 42326, 42325, 42356, 42363, 42361, 42367, 42377, 42425},
+		ReqNearbyGodInfo: 1,
+		ReqExtendCard:    1,
+	}
+	head := jce.NewJceWriter()
+	head.WriteInt32(2, 0)
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
+		"ReqHead":        packRequestDataV3(head.Bytes()),
+		"ReqSummaryCard": packRequestDataV3(req.ToBytes()),
+	}}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		SServantName: "SummaryCardServantObj",
+		SFuncName:    "ReqSummaryCard",
+		SBuffer:      buf.ToBytes(),
+		Context:      make(map[string]string),
+		Status:       make(map[string]string),
+	}
+	packet := packets.BuildUniPacket(c.Uin, seq, "SummaryCard.ReqSummaryCard", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
+
 // friendlist.GetTroopListReqV2
 func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -309,6 +344,21 @@ func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUi
 		Status:       make(map[string]string),
 	}
 	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopMemberListReq", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
+
+// group_member_card.get_group_member_card_info
+func (c *QQClient) buildGroupMemberInfoRequestPacket(groupCode, uin int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &pb.GroupMemberReqBody{
+		GroupCode:       groupCode,
+		Uin:             uin,
+		NewClient:       true,
+		ClientType:      1,
+		RichCardNameVer: 1,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "group_member_card.get_group_member_card_info", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -955,7 +1005,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	return seq, packet
 }
 
-// OidbSvc.0x88d_7
+// OidbSvc.0x88d_0
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D88DReqBody{
@@ -1096,6 +1146,32 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 	return seq, packet
 }
 
+// OidbSvc.0xe07_0
+func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, height int32) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DE07ReqBody{
+		Version:  1,
+		Entrance: 3,
+		OcrReqBody: &oidb.OCRReqBody{
+			ImageUrl:              url,
+			OriginMd5:             md5,
+			AfterCompressMd5:      md5,
+			AfterCompressFileSize: size,
+			AfterCompressWeight:   weight,
+			AfterCompressHeight:   height,
+			IsCut:                 false,
+		},
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:    3591,
+		Bodybuffer: b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // PttCenterSvr.ShortVideoDownReq
 func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -1118,5 +1194,25 @@ func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []
 	}
 	payload, _ := proto.Marshal(body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.ShortVideoDownReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// LightAppSvc.mini_app_info.GetAppInfoById
+func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &qweb.GetAppInfoByIdReq{
+		AppId:           id,
+		NeedVersionInfo: 1,
+	}
+	b, _ := proto.Marshal(req)
+	body := &qweb.QWebReq{
+		Seq:        1,
+		Qua:        "V1_AND_SQ_8.4.8_1492_YYB_D",
+		DeviceInfo: fmt.Sprintf("i=865166025905020&imsi=460002478794049&mac=02:00:00:00:00:00&m=%v&o=7.1.2&a=25&sc=1&sd=0&p=900*1600&f=nubia&mm=3479&cf=2407&cc=4&aid=086bbf84a7d5fbb3&qimei=865166023450458&sharpP=1&n=wifi", string(SystemDeviceInfo.Model)),
+		BusiBuff:   b,
+		TraceId:    fmt.Sprintf("%v_%v_%v", c.Uin, time.Now().Format("0102150405"), rand.Int63()),
+	}
+	payload, _ := proto.Marshal(body)
+	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }

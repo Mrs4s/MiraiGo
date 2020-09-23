@@ -8,7 +8,8 @@ import (
 )
 
 var (
-	ErrAlreadyOnline = errors.New("already online")
+	ErrAlreadyOnline  = errors.New("already online")
+	ErrMemberNotFound = errors.New("member not found")
 )
 
 type (
@@ -40,6 +41,18 @@ type (
 		FaceId   int16
 
 		//msgSeqList *utils.Cache
+	}
+
+	SummaryCardInfo struct {
+		Uin       int64
+		Sex       byte
+		Age       uint8
+		Nickname  string
+		Level     int32
+		City      string
+		Sign      string
+		Mobile    string
+		LoginDays int64
 	}
 
 	FriendListResponse struct {
@@ -170,6 +183,22 @@ type (
 		Friend *FriendInfo
 	}
 
+	OcrResponse struct {
+		Texts    []*TextDetection `json:"texts"`
+		Language string           `json:"language"`
+	}
+
+	TextDetection struct {
+		Text        string        `json:"text"`
+		Confidence  int32         `json:"confidence"`
+		Coordinates []*Coordinate `json:"coordinates"`
+	}
+
+	Coordinate struct {
+		X int32 `json:"x"`
+		Y int32 `json:"y"`
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []*GroupMemberInfo
@@ -181,6 +210,8 @@ type (
 
 		IsExists bool
 		FileId   int64
+		Width    int32
+		Height   int32
 
 		ResourceId string
 		UploadKey  []byte

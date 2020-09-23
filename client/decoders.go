@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"log"
 	"net"
 	"strconv"
@@ -331,6 +332,25 @@ func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
 	return nil, err
 }
 
+func decodeSummaryCardResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	rsp := jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard.RespSummaryCard"][1:])
+	return &SummaryCardInfo{
+		Sex:       rsp.ReadByte(1),
+		Age:       rsp.ReadByte(2),
+		Nickname:  rsp.ReadString(3),
+		Level:     rsp.ReadInt32(5),
+		City:      rsp.ReadString(7),
+		Sign:      rsp.ReadString(8),
+		Mobile:    rsp.ReadString(11),
+		Uin:       rsp.ReadInt64(23),
+		LoginDays: rsp.ReadInt64(36),
+	}, nil
+}
+
 func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -448,6 +468,37 @@ func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	}, nil
 }
 
+func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := pb.GroupMemberRspBody{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.MemInfo.Nick == nil && rsp.MemInfo.Age == 0 {
+		return nil, ErrMemberNotFound
+	}
+	group := c.FindGroup(rsp.GroupCode)
+	return &GroupMemberInfo{
+		Group:                  group,
+		Uin:                    rsp.MemInfo.Uin,
+		Nickname:               string(rsp.MemInfo.Nick),
+		CardName:               string(rsp.MemInfo.Card),
+		Level:                  uint16(rsp.MemInfo.Level),
+		JoinTime:               rsp.MemInfo.Join,
+		LastSpeakTime:          rsp.MemInfo.LastSpeak,
+		SpecialTitle:           string(rsp.MemInfo.SpecialTitle),
+		SpecialTitleExpireTime: int64(rsp.MemInfo.SpecialTitleExpireTime),
+		Permission: func() MemberPermission {
+			if rsp.MemInfo.Uin == group.OwnerUin {
+				return Owner
+			}
+			if rsp.MemInfo.Role == 1 {
+				return Administrator
+			}
+			return Member
+		}(),
+	}, nil
+}
+
 func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)
@@ -462,6 +513,9 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 		}, nil
 	}
 	if rsp.BoolFileExit {
+		if rsp.MsgImgInfo != nil {
+			return imageUploadResponse{IsExists: true, FileId: rsp.FileId, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
+		}
 		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
 	}
 	return imageUploadResponse{
@@ -955,6 +1009,39 @@ func decodeOIDB6d6Response(c *QQClient, _ uint16, payload []byte) (interface{}, 
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
+func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.DE07RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.Wording != "" {
+		return nil, errors.New(rsp.Wording)
+	}
+	var texts []*TextDetection
+	for _, text := range rsp.OcrRspBody.TextDetections {
+		var points []*Coordinate
+		for _, c := range text.Polygon.Coordinates {
+			points = append(points, &Coordinate{
+				X: c.X,
+				Y: c.Y,
+			})
+		}
+		texts = append(texts, &TextDetection{
+			Text:        text.DetectedText,
+			Confidence:  text.Confidence,
+			Coordinates: points,
+		})
+	}
+	return &OcrResponse{
+		Texts:    texts,
+		Language: rsp.OcrRspBody.Language,
+	}, nil
+}
+
 func decodePttShortVideoDownResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := pttcenter.ShortVideoRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
@@ -964,4 +1051,19 @@ func decodePttShortVideoDownResponse(c *QQClient, _ uint16, payload []byte) (int
 		return nil, errors.New("resp error")
 	}
 	return rsp.PttShortVideoDownloadRsp.DownloadAddr.Host[0] + rsp.PttShortVideoDownloadRsp.DownloadAddr.UrlArgs, nil
+}
+
+func decodeAppInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := qweb.QWebRsp{}
+	rsp := qweb.GetAppInfoByIdRsp{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if pkg.RetCode != 0 {
+		return nil, errors.New(pkg.ErrMsg)
+	}
+	if err := proto.Unmarshal(pkg.BusiBuff, &rsp); err != nil {
+		return nil, err
+	}
+	return rsp.AppInfo, nil
 }

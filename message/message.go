@@ -294,6 +294,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 				CustomFace: &msg.CustomFace{
 					FilePath: e.Filename,
 					Md5:      e.Md5,
+					Size:     e.Size,
 					Flag:     make([]byte, 4),
 					OldData:  imgOld,
 				},
@@ -306,6 +307,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					Origin:   1,
 					FileId:   int32(e.FileId),
 					FilePath: e.ImageId,
+					Size:     e.Size,
 					Md5:      e.Md5[:],
 					Flag:     make([]byte, 4),
 					//OldData:  imgOld,
@@ -522,6 +524,8 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			res = append(res, &ImageElement{
 				Filename: elem.CustomFace.FilePath,
 				Size:     elem.CustomFace.Size,
+				Width:    elem.CustomFace.Width,
+				Height:   elem.CustomFace.Height,
 				Url: func() string {
 					if elem.CustomFace.OrigUrl == "" {
 						return "http://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
