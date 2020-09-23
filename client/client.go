@@ -89,6 +89,8 @@ type loginSigInfo struct {
 	tgt         []byte
 	tgtKey      []byte
 
+	srmToken           []byte // study room manager | 0x16a
+	t133               []byte
 	userStKey          []byte
 	userStWebSig       []byte
 	sKey               []byte
@@ -121,6 +123,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"wtlogin.login":                                decodeLoginResponse,             // 登录操作包
 			"StatSvc.register":                             decodeClientRegisterResponse,    // 客户端注册包
 			"StatSvc.ReqMSFOffline":                        decodeMSFOfflinePacket,          // 强制离线
+			"StatSvc.GetDevLoginInfo":                      decodeDevListResponse,           // 设备列表请求包
 			"MessageSvc.PushNotify":                        decodeSvcNotify,                 // 好友消息通知包
 			"OnlinePush.PbPushGroupMsg":                    decodeGroupMessagePacket,        // 群消息通知包
 			"OnlinePush.ReqPush":                           decodeOnlinePushReqPacket,       // 群组相关事件包

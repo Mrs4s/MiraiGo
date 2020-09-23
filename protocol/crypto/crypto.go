@@ -12,6 +12,10 @@ type EncryptECDH struct {
 	PublicKey       []byte
 }
 
+type EncryptSession struct {
+	T133 []byte
+}
+
 var ECDH = &EncryptECDH{}
 
 var tenKeyX = new(big.Int).SetBytes([]byte{ // pubkey[1:24]
@@ -55,4 +59,23 @@ func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 
 func (e *EncryptECDH) Id() byte {
 	return 7
+}
+
+func NewEncryptSession(t133 []byte) *EncryptSession {
+	return &EncryptSession{T133: t133}
+}
+
+func (e *EncryptSession) DoEncrypt(d, k []byte) []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteByte(0x01)
+		w.WriteByte(0x03)
+		w.Write(k)
+		w.WriteUInt16(258)
+		w.WriteUInt16(0)
+		w.EncryptAndWrite(k, d)
+	})
+}
+
+func (e *EncryptSession) Id() byte {
+	return 69
 }

@@ -101,6 +101,30 @@ type (
 		ServiceType int32        `jceId:"4"`
 	}
 
+	SvcReqGetDevLoginInfo struct {
+		IJceStruct
+		Guid           []byte `jceId:"0"`
+		AppName        string `jceId:"1"`
+		LoginType      int64  `jceId:"2"`
+		Timestamp      int64  `jceId:"3"`
+		NextItemIndex  int64  `jceId:"4"`
+		RequireMax     int64  `jceId:"5"`
+		GetDevListType int64  `jceId:"6"` // 1: getLoginDevList 2: getRecentLoginDevList 4: getAuthLoginDevList
+	}
+
+	SvcDevLoginInfo struct {
+		AppId          int64
+		Guid           []byte
+		LoginTime      int64
+		LoginPlatform  int64
+		LoginLocation  string
+		DeviceName     string
+		DeviceTypeInfo string
+		TerType        int64
+		ProductType    int64
+		CanBeKicked    int64
+	}
+
 	DelMsgInfo struct {
 		IJceStruct
 		FromUin    int64  `jceId:"0"`
@@ -473,6 +497,20 @@ func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
 	pkt.FromName = r.ReadString(17)
 }
 
+func (pkt *SvcDevLoginInfo) ReadFrom(r *JceReader) {
+	pkt.AppId = r.ReadInt64(0)
+	pkt.Guid = []byte{}
+	r.ReadSlice(&pkt.Guid, 1)
+	pkt.LoginTime = r.ReadInt64(2)
+	pkt.LoginPlatform = r.ReadInt64(3)
+	pkt.LoginLocation = r.ReadString(4)
+	pkt.DeviceName = r.ReadString(5)
+	pkt.DeviceTypeInfo = r.ReadString(6)
+	pkt.TerType = r.ReadInt64(8)
+	pkt.ProductType = r.ReadInt64(9)
+	pkt.CanBeKicked = r.ReadInt64(10)
+}
+
 func (pkt *SvcRespPushMsg) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
@@ -480,6 +518,12 @@ func (pkt *SvcRespPushMsg) ToBytes() []byte {
 }
 
 func (pkt *ModifyGroupCardRequest) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SvcReqGetDevLoginInfo) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()
