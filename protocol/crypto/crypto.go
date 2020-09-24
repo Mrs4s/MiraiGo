@@ -67,12 +67,10 @@ func NewEncryptSession(t133 []byte) *EncryptSession {
 
 func (e *EncryptSession) DoEncrypt(d, k []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteByte(0x01)
-		w.WriteByte(0x03)
+		encrypt := binary.NewTeaCipher(k).Encrypt(d)
+		w.WriteUInt16(uint16(len(k)))
 		w.Write(k)
-		w.WriteUInt16(258)
-		w.WriteUInt16(0)
-		w.EncryptAndWrite(k, d)
+		w.Write(encrypt)
 	})
 }
 
