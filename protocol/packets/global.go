@@ -166,7 +166,7 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	}, nil
 }
 
-func (pkt *IncomingPacket) DecryptPayload(random []byte) ([]byte, error) {
+func (pkt *IncomingPacket) DecryptPayload(random, sessionKey []byte) ([]byte, error) {
 	reader := binary.NewReader(pkt.Payload)
 	if reader.ReadByte() != 2 {
 		return nil, ErrUnknownFlag
@@ -192,6 +192,12 @@ func (pkt *IncomingPacket) DecryptPayload(random []byte) ([]byte, error) {
 			return
 		}()
 		return data, nil
+	}
+	if encryptType == 3 {
+		return func() []byte {
+			d := reader.ReadBytes(reader.Len() - 1)
+			return binary.NewTeaCipher(sessionKey).Decrypt(d)
+		}(), nil
 	}
 	if encryptType == 4 {
 		panic("todo")

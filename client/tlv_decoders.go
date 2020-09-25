@@ -81,6 +81,8 @@ func (c *QQClient) decodeT119(data []byte) {
 
 	c.sigInfo = &loginSigInfo{
 		loginBitmap:        0,
+		srmToken:           m[0x16a],
+		t133:               m[0x133],
 		tgt:                m[0x10a],
 		tgtKey:             m[0x10d],
 		userStKey:          m[0x10e],

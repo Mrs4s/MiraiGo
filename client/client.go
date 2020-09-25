@@ -89,6 +89,8 @@ type loginSigInfo struct {
 	tgt         []byte
 	tgtKey      []byte
 
+	srmToken           []byte // study room manager | 0x16a
+	t133               []byte
 	userStKey          []byte
 	userStWebSig       []byte
 	sKey               []byte
@@ -118,34 +120,35 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		decoders: map[string]func(*QQClient, uint16, []byte) (interface{}, error){
-			"wtlogin.login":                                decodeLoginResponse,             // 登录操作包
-			"StatSvc.register":                             decodeClientRegisterResponse,    // 客户端注册包
-			"StatSvc.ReqMSFOffline":                        decodeMSFOfflinePacket,          // 强制离线
-			"MessageSvc.PushNotify":                        decodeSvcNotify,                 // 好友消息通知包
-			"OnlinePush.PbPushGroupMsg":                    decodeGroupMessagePacket,        // 群消息通知包
-			"OnlinePush.ReqPush":                           decodeOnlinePushReqPacket,       // 群组相关事件包
-			"OnlinePush.PbPushTransMsg":                    decodeOnlinePushTransPacket,     // QQ相关事件包
-			"ConfigPushSvc.PushReq":                        decodePushReqPacket,             // 配置文件推送包
-			"MessageSvc.PbGetMsg":                          decodeMessageSvcPacket,          // 除群组以外消息拉取包
-			"MessageSvc.PbSendMsg":                         decodeMsgSendResponse,           // 消息发送包
-			"MessageSvc.PushForceOffline":                  decodeForceOfflinePacket,        // 强制离线
-			"friendlist.getFriendGroupList":                decodeFriendGroupListResponse,   // 获取好友列表包
-			"friendlist.GetTroopListReqV2":                 decodeGroupListResponse,         // 获取群组列表包
-			"friendlist.GetTroopMemberListReq":             decodeGroupMemberListResponse,   // 获取群成员列表包
-			"group_member_card.get_group_member_card_info": decodeGroupMemberInfoResponse,   // 获取群成员资料包
-			"ImgStore.GroupPicUp":                          decodeGroupImageStoreResponse,   // 请求群组图片上传包
-			"PttStore.GroupPttUp":                          decodeGroupPttStoreResponse,     // 请求群组语音上传包
-			"LongConn.OffPicUp":                            decodeOffPicUpResponse,          // 查询好友图片包
-			"ProfileService.Pb.ReqSystemMsgNew.Group":      decodeSystemMsgGroupPacket,      // 获取群组成员变动事件包
-			"ProfileService.Pb.ReqSystemMsgNew.Friend":     decodeSystemMsgFriendPacket,     // 获取好友变动事件包
-			"MultiMsg.ApplyUp":                             decodeMultiApplyUpResponse,      // 长消息/合并转发请求上传包
-			"MultiMsg.ApplyDown":                           decodeMultiApplyDownResponse,    // 长消息/合并转发请求下载包
-			"OidbSvc.0x6d6_2":                              decodeOIDB6d6Response,           // 群文件操作包
-			"OidbSvc.0x88d_0":                              decodeGroupInfoResponse,         // 获取群资料包
-			"OidbSvc.0xe07_0":                              decodeImageOcrResponse,          // 图片OCR请求包
-			"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,       // 获取用户卡片资料包
-			"PttCenterSvr.ShortVideoDownReq":               decodePttShortVideoDownResponse, // 短视频下载请求包
-			"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,           // 获取小程序资料包
+			"wtlogin.login":                                decodeLoginResponse,
+			"StatSvc.register":                             decodeClientRegisterResponse,
+			"StatSvc.ReqMSFOffline":                        decodeMSFOfflinePacket,
+			"StatSvc.GetDevLoginInfo":                      decodeDevListResponse,
+			"MessageSvc.PushNotify":                        decodeSvcNotify,
+			"OnlinePush.PbPushGroupMsg":                    decodeGroupMessagePacket,
+			"OnlinePush.ReqPush":                           decodeOnlinePushReqPacket,
+			"OnlinePush.PbPushTransMsg":                    decodeOnlinePushTransPacket,
+			"ConfigPushSvc.PushReq":                        decodePushReqPacket,
+			"MessageSvc.PbGetMsg":                          decodeMessageSvcPacket,
+			"MessageSvc.PbSendMsg":                         decodeMsgSendResponse,
+			"MessageSvc.PushForceOffline":                  decodeForceOfflinePacket,
+			"friendlist.getFriendGroupList":                decodeFriendGroupListResponse,
+			"friendlist.GetTroopListReqV2":                 decodeGroupListResponse,
+			"friendlist.GetTroopMemberListReq":             decodeGroupMemberListResponse,
+			"group_member_card.get_group_member_card_info": decodeGroupMemberInfoResponse,
+			"ImgStore.GroupPicUp":                          decodeGroupImageStoreResponse,
+			"PttStore.GroupPttUp":                          decodeGroupPttStoreResponse,
+			"LongConn.OffPicUp":                            decodeOffPicUpResponse,
+			"ProfileService.Pb.ReqSystemMsgNew.Group":      decodeSystemMsgGroupPacket,
+			"ProfileService.Pb.ReqSystemMsgNew.Friend":     decodeSystemMsgFriendPacket,
+			"MultiMsg.ApplyUp":                             decodeMultiApplyUpResponse,
+			"MultiMsg.ApplyDown":                           decodeMultiApplyDownResponse,
+			"OidbSvc.0x6d6_2":                              decodeOIDB6d6Response,
+			"OidbSvc.0x88d_0":                              decodeGroupInfoResponse,
+			"OidbSvc.0xe07_0":                              decodeImageOcrResponse,
+			"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
+			"PttCenterSvr.ShortVideoDownReq":               decodePttShortVideoDownResponse,
+			"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
@@ -1052,8 +1055,9 @@ func (c *QQClient) netLoop() {
 		}
 		payload := pkt.Payload
 		if pkt.Flag2 == 2 {
-			payload, err = pkt.DecryptPayload(c.RandomKey)
+			payload, err = pkt.DecryptPayload(c.RandomKey, c.sigInfo.wtSessionTicketKey)
 			if err != nil {
+				c.Error("decrypt payload error: %v", err)
 				continue
 			}
 		}
