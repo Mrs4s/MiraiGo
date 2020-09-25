@@ -40,5 +40,7 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 		}
 		ttsReader.ReadBytes(2)
 	}
-	return ttsWriter.Bytes(), nil
+	ret := ttsWriter.Bytes()
+	ret[0] = '\x02'
+	return ret, nil
 }
