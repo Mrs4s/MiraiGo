@@ -358,7 +358,12 @@ func decodeSummaryCardResponse(c *QQClient, _ uint16, payload []byte) (interface
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	rsp := jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard.RespSummaryCard"][1:])
+	rsp := func() *jce.JceReader {
+		if r, ok := data.Map["RespSummaryCard"]["SummaryCard.RespSummaryCard"]; ok {
+			return jce.NewJceReader(r[1:])
+		}
+		return jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard_Old.RespSummaryCard"][1:])
+	}()
 	return &SummaryCardInfo{
 		Sex:       rsp.ReadByte(1),
 		Age:       rsp.ReadByte(2),
