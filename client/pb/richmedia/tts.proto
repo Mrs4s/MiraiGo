@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = ".;richmedia";
+
+message TtsRspBody {
+  uint32 ret_code = 1;
+  string session_id = 2;
+  uint32 out_seq = 3;
+  repeated TtsVoiceItem voice_data = 4;
+  bool islast = 5;
+  uint32 pcm_sample_rate = 6;
+  uint32 opus_sample_rate = 7;
+  uint32 opus_channels = 8;
+  uint32 opus_bit_rate = 9;
+  uint32 opus_frame_size = 10;
+}
+
+message TtsVoiceItem {
+  bytes voice = 1;
+  uint32 seq = 2;
+}
