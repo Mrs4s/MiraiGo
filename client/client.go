@@ -1066,7 +1066,7 @@ func (c *QQClient) netLoop() {
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
-					c.Error("panic on decoder: %v", pan)
+					c.Error("panic on decoder %v : %v", pkt.CommandName, pan)
 					//fmt.Println("panic on decoder:", pan)
 				}
 			}()
