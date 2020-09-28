@@ -461,6 +461,7 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
 		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
 		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
+		Members:        []*GroupMemberInfo{},
 		client:         c,
 	}, nil
 }
