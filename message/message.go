@@ -302,14 +302,14 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 		case *GroupImageElement:
 			r = append(r, &msg.Elem{
 				CustomFace: &msg.CustomFace{
-					FileType: 66,
+					//FileType: 66,
 					Useful:   1,
 					Origin:   1,
 					FileId:   int32(e.FileId),
 					FilePath: e.ImageId,
-					//Size:     e.Size,
-					Md5:  e.Md5[:],
-					Flag: make([]byte, 4),
+					Size:     e.Size,
+					Md5:      e.Md5[:],
+					Flag:     make([]byte, 4),
 					//OldData:  imgOld,
 				},
 			})
