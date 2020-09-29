@@ -304,8 +304,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 			if info == nil {
 				return nil
 			}
-			group.Members = append(group.Members, mem)
 			mem = info
+			group.Members = append(group.Members, mem)
 			go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
 				Group:  group,
 				Member: info,

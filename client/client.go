@@ -779,6 +779,9 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 		if err != nil {
 			return nil, err
 		}
+		if data == nil {
+			return nil, errors.New("rsp is nil")
+		}
 		rsp := data.(groupMemberListResponse)
 		nextUin = rsp.NextUin
 		for _, m := range rsp.list {
@@ -843,24 +846,6 @@ func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reas
 func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_, pkt := c.buildSystemMsgFriendActionPacket(req.RequestId, req.RequesterUin, accept)
 	_ = c.send(pkt)
-}
-
-func (g *GroupInfo) SelfPermission() MemberPermission {
-	return g.FindMember(g.client.Uin).Permission
-}
-
-func (g *GroupInfo) AdministratorOrOwner() bool {
-	return g.SelfPermission() == Administrator || g.SelfPermission() == Owner
-}
-
-func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
-	for _, m := range g.Members {
-		f := m
-		if f.Uin == uin {
-			return f
-		}
-	}
-	return nil
 }
 
 func (c *QQClient) getCookies() string {
@@ -930,14 +915,14 @@ func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string) {
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
-	g.memLock.Lock()
-	defer g.memLock.Unlock()
-	for i, m := range g.Members {
-		if m.Uin == uin {
-			g.Members = append(g.Members[:i], g.Members[i+1:]...)
-			break
+	g.Update(func(info *GroupInfo) {
+		for i, m := range info.Members {
+			if m.Uin == uin {
+				info.Members = append(info.Members[:i], info.Members[i+1:]...)
+				break
+			}
 		}
-	}
+	})
 }
 
 func (c *QQClient) connect() error {
@@ -1082,7 +1067,7 @@ func (c *QQClient) netLoop() {
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
-					c.Error("panic on decoder: %v", pan)
+					c.Error("panic on decoder %v : %v", pkt.CommandName, pan)
 					//fmt.Println("panic on decoder:", pan)
 				}
 			}()

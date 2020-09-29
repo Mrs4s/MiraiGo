@@ -70,8 +70,8 @@ type (
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
 
-		client  *QQClient
-		memLock sync.Mutex
+		client *QQClient
+		lock   sync.RWMutex
 	}
 
 	GroupMemberInfo struct {
@@ -283,6 +283,42 @@ func (g *GroupInfo) Quit() {
 	if g.SelfPermission() != Owner {
 		g.client.quitGroup(g.Code)
 	}
+}
+
+func (g *GroupInfo) SelfPermission() MemberPermission {
+	return g.FindMember(g.client.Uin).Permission
+}
+
+func (g *GroupInfo) AdministratorOrOwner() bool {
+	return g.SelfPermission() == Administrator || g.SelfPermission() == Owner
+}
+
+func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
+	r := g.Read(func(info *GroupInfo) interface{} {
+		for _, m := range info.Members {
+			f := m
+			if f.Uin == uin {
+				return f
+			}
+		}
+		return nil
+	})
+	if r == nil {
+		return nil
+	}
+	return r.(*GroupMemberInfo)
+}
+
+func (g *GroupInfo) Update(f func(*GroupInfo)) {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+	f(g)
+}
+
+func (g *GroupInfo) Read(f func(*GroupInfo) interface{}) interface{} {
+	g.lock.RLock()
+	defer g.lock.RUnlock()
+	return f(g)
 }
 
 func (m *GroupMemberInfo) DisplayName() string {
