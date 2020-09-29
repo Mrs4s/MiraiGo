@@ -1258,3 +1258,28 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+// OidbSvc.0xdad_1
+func (c *QQClient) sendGroupGiftPacket(groupCode, uin, productId uint64) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DADReqBody{
+		Client:    1,
+		ProductId: productId,
+		ToUin:     uin,
+		Gc:        groupCode,
+		Version:   "V 8.4.5.4745",
+		Sig: &oidb.DADLoginSig{
+			Type: 1,
+			Sig:  c.sigInfo.sKey,
+		},
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     3501,
+		ServiceType: 1,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
