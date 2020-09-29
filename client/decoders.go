@@ -29,8 +29,8 @@ import (
 )
 
 var (
-	groupJoinLock  = new(sync.Mutex)
-	groupLeaveLock = new(sync.Mutex)
+	groupJoinLock  sync.Mutex
+	groupLeaveLock sync.Mutex
 )
 
 // wtlogin.login
@@ -228,7 +228,9 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 							Permission: Member,
 							Group:      group,
 						}
-						group.Members = append(group.Members, mem)
+						group.Update(func(info *GroupInfo) {
+							info.Members = append(info.Members, mem)
+						})
 						c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
 							Group:  group,
 							Member: mem,
@@ -459,6 +461,7 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
 		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
 		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
+		Members:        []*GroupMemberInfo{},
 		client:         c,
 	}, nil
 }
