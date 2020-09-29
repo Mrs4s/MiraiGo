@@ -763,6 +763,9 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 		if err != nil {
 			return nil, err
 		}
+		if data == nil {
+			return nil, errors.New("rsp is nil")
+		}
 		rsp := data.(groupMemberListResponse)
 		nextUin = rsp.NextUin
 		for _, m := range rsp.list {
