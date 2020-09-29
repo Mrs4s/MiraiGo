@@ -1037,6 +1037,22 @@ func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interf
 	return &mt, nil
 }
 
+// OidbSvc.0xd79
+func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := &oidb.D79RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+		return nil, err
+	}
+	if rsp.Content != nil {
+		return rsp.Content.SliceContent, nil
+	}
+	return nil, errors.New("no word receive")
+}
+
 // OidbSvc.0x6d6_2
 func decodeOIDB6d6Response(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}

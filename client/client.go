@@ -146,6 +146,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"OidbSvc.0x6d6_2":                              decodeOIDB6d6Response,
 			"OidbSvc.0x88d_0":                              decodeGroupInfoResponse,
 			"OidbSvc.0xe07_0":                              decodeImageOcrResponse,
+			"OidbSvc.0xd79":                                decodeWordSegmentation,
 			"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
 			"PttCenterSvr.ShortVideoDownReq":               decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,
@@ -254,6 +255,21 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 		return nil, err
 	}
 	return &ret, nil
+}
+
+func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
+	rsp, err := c.sendAndWait(c.buildWordSegmentationPacket([]byte(text)))
+	if err != nil {
+		return nil, err
+	}
+	if data, ok := rsp.([][]byte); ok {
+		var ret []string
+		for _, val := range data {
+			ret = append(ret, string(val))
+		}
+		return ret, nil
+	}
+	return nil, errors.New("decode error")
 }
 
 func (c *QQClient) GetSummaryInfo(target int64) (*SummaryCardInfo, error) {
