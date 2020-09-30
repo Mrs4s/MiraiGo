@@ -19,6 +19,8 @@ type (
 
 	ClientProtocol int
 
+	GroupGift int
+
 	LoginResponse struct {
 		Success bool
 		Error   LoginError
@@ -251,6 +253,16 @@ const (
 	AndroidPhone ClientProtocol = 537062845
 	AndroidPad   ClientProtocol = 537062409
 	AndroidWatch ClientProtocol = 537061176
+
+	SweetWink      GroupGift = 285
+	HappyCola      GroupGift = 289
+	LuckyBracelet  GroupGift = 290
+	Cappuccino     GroupGift = 299
+	CatWatch       GroupGift = 302
+	FleeceGloves   GroupGift = 302
+	RainbowCandy   GroupGift = 308
+	Stronger       GroupGift = 313
+	LoveMicrophone GroupGift = 367
 )
 
 func (g *GroupInfo) UpdateName(newName string) {
