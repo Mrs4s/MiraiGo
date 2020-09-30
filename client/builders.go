@@ -1260,7 +1260,7 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 }
 
 // OidbSvc.0xdad_1
-func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId GroupGift) (uint16, []byte) {
+func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.GroupGift) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.DADReqBody{
 		Client:    1,

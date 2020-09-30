@@ -954,7 +954,7 @@ func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 	c.servers = append(servers, c.servers...)
 }
 
-func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift GroupGift) {
+func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift message.GroupGift) {
 	_, packet := c.sendGroupGiftPacket(groupCode, uin, gift)
 	_ = c.send(packet)
 }
