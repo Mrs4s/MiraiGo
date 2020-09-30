@@ -93,7 +93,7 @@ const (
 	LuckyBracelet  GroupGift = 290
 	Cappuccino     GroupGift = 299
 	CatWatch       GroupGift = 302
-	FleeceGloves   GroupGift = 302
+	FleeceGloves   GroupGift = 307
 	RainbowCandy   GroupGift = 308
 	Stronger       GroupGift = 313
 	LoveMicrophone GroupGift = 367
