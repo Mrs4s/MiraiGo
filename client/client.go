@@ -94,6 +94,7 @@ type loginSigInfo struct {
 	userStKey          []byte
 	userStWebSig       []byte
 	sKey               []byte
+	sKeyExpiredTime    int64
 	d2                 []byte
 	d2Key              []byte
 	wtSessionTicketKey []byte
@@ -121,6 +122,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		decoders: map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 			"wtlogin.login":                                decodeLoginResponse,
+			"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 			"StatSvc.register":                             decodeClientRegisterResponse,
 			"StatSvc.ReqMSFOffline":                        decodeMSFOfflinePacket,
 			"StatSvc.GetDevLoginInfo":                      decodeDevListResponse,
@@ -849,6 +851,10 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 }
 
 func (c *QQClient) getCookies() string {
+	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() {
+		c.Debug("skey expired. refresh...")
+		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
+	}
 	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.sigInfo.sKey)
 }
 

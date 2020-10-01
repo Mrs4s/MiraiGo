@@ -40,9 +40,9 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
-		w.Write(tlv.T106(uint32(c.Uin), 0, uint32(SystemDeviceInfo.Protocol), c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey))
+		w.Write(tlv.T106(uint32(c.Uin), 0, uint32(SystemDeviceInfo.Protocol), c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 0))
 		w.Write(tlv.T116(184024956, 0x10400))
-		w.Write(tlv.T100(uint32(SystemDeviceInfo.Protocol)))
+		w.Write(tlv.T100(uint32(SystemDeviceInfo.Protocol), 34869472))
 		w.Write(tlv.T107(0))
 		w.Write(tlv.T142("com.tencent.mobileqq"))
 		w.Write(tlv.T144(
@@ -124,6 +124,54 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 	})
 	sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	return seq, packet
+}
+
+func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.NewEncryptSession(c.sigInfo.t133), c.sigInfo.wtSessionTicketKey, func(w *binary.Writer) {
+		w.WriteUInt16(15)
+		w.WriteUInt16(21)
+
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
+		w.Write(tlv.T106(uint32(c.Uin), 0, uint32(SystemDeviceInfo.Protocol), c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 1))
+		w.Write(tlv.T116(150470524, 66560))
+		w.Write(tlv.T100(2, 34869472))
+		w.Write(tlv.T107(0))
+		w.Write(tlv.T144(
+			SystemDeviceInfo.AndroidId,
+			SystemDeviceInfo.GenDeviceInfoData(),
+			SystemDeviceInfo.OSType,
+			SystemDeviceInfo.Version.Release,
+			SystemDeviceInfo.SimInfo,
+			SystemDeviceInfo.APN,
+			false, true, false, tlv.GuidFlag(),
+			SystemDeviceInfo.Model,
+			SystemDeviceInfo.Guid,
+			SystemDeviceInfo.Brand,
+			SystemDeviceInfo.TgtgtKey,
+		))
+		w.Write(tlv.T142("com.tencent.mobileqq"))
+		w.Write(tlv.T145(SystemDeviceInfo.Guid))
+		w.Write(tlv.T16A(c.sigInfo.srmToken))
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T141(SystemDeviceInfo.SimInfo, SystemDeviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T511([]string{
+			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
+			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
+			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
+		}))
+		w.Write(tlv.T147(16, []byte("8.2.7"), []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D}))
+		w.Write(tlv.T177())
+		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
+		w.Write(tlv.T188(SystemDeviceInfo.AndroidId))
+		w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
+		w.Write(tlv.T202(SystemDeviceInfo.WifiBSSID, SystemDeviceInfo.WifiSSID))
+		w.Write(tlv.T516())
+	})
+	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
 	return seq, packet
 }
 

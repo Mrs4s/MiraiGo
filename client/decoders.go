@@ -127,6 +127,23 @@ func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interf
 	return nil, nil
 }
 
+// wtlogin.exchange_emp
+func decodeExchangeEmpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	reader := binary.NewReader(payload)
+	cmd := reader.ReadUInt16()
+	t := reader.ReadByte()
+	reader.ReadUInt16()
+	m := reader.ReadTlvMap(2)
+	if t != 0 {
+		c.Error("exchange_emp error: %v", t)
+		return nil, nil
+	}
+	if cmd == 15 { // TODO: 免密登录
+		c.decodeT119(m[0x119])
+	}
+	return nil, nil
+}
+
 // ConfigPushSvc.PushReq
 func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
