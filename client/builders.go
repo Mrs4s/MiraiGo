@@ -1240,3 +1240,46 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
+func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.D79ReqBody{
+		Uin:     uint64(c.Uin),
+		Content: data,
+		Qua:     []byte("and_537065262_8.4.5"),
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     3449,
+		ServiceType: 1,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0xdad_1
+func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.GroupGift) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DADReqBody{
+		Client:    1,
+		ProductId: uint64(productId),
+		ToUin:     uin,
+		Gc:        groupCode,
+		Version:   "V 8.4.5.4745",
+		Sig: &oidb.DADLoginSig{
+			Type: 1,
+			Sig:  c.sigInfo.sKey,
+		},
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     3501,
+		ServiceType: 1,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = ".;oidb";
+
+message D79ReqBody {
+  uint64 seq = 1;
+  uint64 uin = 2;
+  uint32 compress_flag = 3;
+  bytes content = 4;
+  uint64 sender_uin = 5;
+  bytes qua = 6;
+  bytes word_ext = 7;
+}
+
+message D79RspBody {
+  uint32 ret = 1;
+  uint64 seq = 2;
+  uint64 uin = 3;
+  uint32 compress_flag = 4;
+  D79Content content = 5;
+}
+
+message D79Content {
+  repeated bytes slice_content = 1;
+}

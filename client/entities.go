@@ -251,6 +251,7 @@ const (
 	AndroidPhone ClientProtocol = 537062845
 	AndroidPad   ClientProtocol = 537062409
 	AndroidWatch ClientProtocol = 537061176
+
 )
 
 func (g *GroupInfo) UpdateName(newName string) {

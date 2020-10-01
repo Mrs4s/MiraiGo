@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = ".;oidb";
+
+message DADReqBody {
+  int64  client = 1;
+  uint64 product_id = 2;
+  int64  amount = 3;
+  uint64 to_uin = 4;
+  uint64 gc = 5;
+  string ip = 6;
+  string version = 7;
+  DADLoginSig sig = 8;
+}
+
+message DADLoginSig {
+  uint32 type = 1;
+  bytes  sig = 2;
+  uint32 appid = 3;
+}
