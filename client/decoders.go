@@ -316,25 +316,25 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		return nil, nil
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.PkgNum > 1 {
-		var builder *groupMessageBuilder // TODO: 支持多SEQ
+		var builder *groupMessageBuilder
 		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
 		if !ok {
 			builder = &groupMessageBuilder{
-				MessageSeq:   pkt.Message.Content.DivSeq,
-				MessageCount: pkt.Message.Content.PkgNum,
+				SliceSeq:   pkt.Message.Content.DivSeq,
+				SliceCount: pkt.Message.Content.PkgNum,
 			}
 			c.groupMsgBuilders.Store(pkt.Message.Content.DivSeq, builder)
 		} else {
 			builder = i.(*groupMessageBuilder)
 		}
 		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
-		if int32(len(builder.MessageSlices)) >= builder.MessageCount {
+		if int32(len(builder.MessageSlices)) >= builder.SliceCount {
 			c.groupMsgBuilders.Delete(pkt.Message.Content.DivSeq)
-			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
+			c.dispatchGroupMessage(c.parseGroupMessage(builder.build(), builder.seqs()))
 		}
 		return nil, nil
 	}
-	c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message))
+	c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message, nil))
 	return nil, nil
 }
 

@@ -33,7 +33,7 @@ type (
 	}
 
 	GroupMessage struct {
-		Id         int32
+		Sources    []int32
 		InternalId int32
 		GroupCode  int64
 		GroupName  string
