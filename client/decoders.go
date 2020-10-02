@@ -566,7 +566,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	}
 	if rsp.BoolFileExit {
 		if rsp.MsgImgInfo != nil {
-			return imageUploadResponse{IsExists: true, FileId: rsp.FileId, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
+			return imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
 		}
 		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
 	}
