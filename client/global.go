@@ -63,9 +63,8 @@ type DeviceInfoFile struct {
 }
 
 type groupMessageBuilder struct {
-	SliceSeq   int32
-	SliceCount int32
-
+	MessageSeq    int32
+	MessageCount  int32
 	MessageSlices []*msg.Message
 }
 
@@ -244,11 +243,11 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 	return ret
 }
 
-func (c *QQClient) parseTempMessage(m *msg.Message) *message.TempMessage {
-	group := c.FindGroupByUin(m.Head.C2CTmpMsgHead.GroupUin)
-	mem := group.FindMember(m.Head.FromUin)
+func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
+	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GroupUin)
+	mem := group.FindMember(msg.Head.FromUin)
 	sender := &message.Sender{
-		Uin:      m.Head.FromUin,
+		Uin:      msg.Head.FromUin,
 		Nickname: "Unknown",
 		IsFriend: false,
 	}
@@ -257,15 +256,15 @@ func (c *QQClient) parseTempMessage(m *msg.Message) *message.TempMessage {
 		sender.CardName = mem.CardName
 	}
 	return &message.TempMessage{
-		Id:        m.Head.MsgSeq,
+		Id:        msg.Head.MsgSeq,
 		GroupCode: group.Code,
 		GroupName: group.Name,
 		Sender:    sender,
-		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
+		Elements:  message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
 }
 
-func (c *QQClient) parseGroupMessage(m *msg.Message, seqs []int32) *message.GroupMessage {
+func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
 	if group == nil {
 		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
@@ -320,14 +319,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message, seqs []int32) *message.Grou
 		}
 	}
 	var g *message.GroupMessage
-	seq := func() []int32 {
-		if len(seqs) == 0 {
-			return []int32{m.Head.MsgSeq}
-		}
-		return seqs
-	}()
 	g = &message.GroupMessage{
-		Sources:   seq,
+		Id:        m.Head.MsgSeq,
 		GroupCode: group.Code,
 		GroupName: string(m.Head.GroupInfo.GroupName),
 		Sender:    sender,
@@ -340,7 +333,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message, seqs []int32) *message.Grou
 		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid != "" {
 			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
-					Sources:   seq,
+					Id:        m.Head.MsgSeq,
 					GroupCode: group.Code,
 					GroupName: string(m.Head.GroupInfo.GroupName),
 					Sender:    sender,
@@ -375,16 +368,6 @@ func (b *groupMessageBuilder) build() *msg.Message {
 		base.Body.RichText.Elems = append(base.Body.RichText.Elems, m.Body.RichText.Elems...)
 	}
 	return base
-}
-
-func (b *groupMessageBuilder) seqs() (r []int32) {
-	sort.Slice(b.MessageSlices, func(i, j int) bool {
-		return b.MessageSlices[i].Content.PkgIndex < b.MessageSlices[i].Content.PkgIndex
-	})
-	for _, m := range b.MessageSlices {
-		r = append(r, m.Head.MsgSeq)
-	}
-	return
 }
 
 func packRequestDataV3(data []byte) (r []byte) {

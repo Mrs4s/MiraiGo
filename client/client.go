@@ -379,7 +379,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				Message:    m.Elements,
 			},
 		}})
-		if ret != nil && ret.Sources[0] == -1 {
+		if ret != nil && ret.Id == -1 {
 			c.Error("long message send error. trying fragmented sending...")
 			return c.SendGroupMessage(groupCode, m, true)
 		}
@@ -417,7 +417,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	}
 	var mid int32
 	ret := &message.GroupMessage{
-		Sources:    []int32{-1},
+		Id:         -1,
 		InternalId: mr,
 		GroupCode:  groupCode,
 		Sender: &message.Sender{
@@ -433,7 +433,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	case <-time.After(time.Second * 5):
 		return ret
 	}
-	ret.Sources = []int32{mid}
+	ret.Id = mid
 	return ret
 }
 

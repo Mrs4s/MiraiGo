@@ -168,7 +168,7 @@ func AtAll() *AtElement {
 
 func NewReply(m *GroupMessage) *ReplyElement {
 	return &ReplyElement{
-		ReplySeq: m.Sources[0],
+		ReplySeq: m.Id,
 		Sender:   m.Sender.Uin,
 		Time:     m.Time,
 		//original: m.OriginalElements,
