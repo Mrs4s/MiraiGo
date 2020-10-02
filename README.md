@@ -6,6 +6,8 @@ qq-android协议的golang实现 移植于mirai
 
 建议基于 [go-cqhttp](https://github.com/Mrs4s/go-cqhttp) 使用框架开发。
 
+同时提供不基于 CQHTTP 的原生框架 [MiraiGo-Template](https://github.com/Logiase/MiraiGo-Template) 进行开发。
+
 # 已完成功能/开发计划
 #### 登录
 - [x] 账号密码登录
