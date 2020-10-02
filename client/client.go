@@ -564,7 +564,7 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 		},
 	})
 	for i, ip := range rsp.Uint32UpIp {
-		err := c.highwayUploadImage(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
+		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
 		if err == nil {
 			if !isLong {
 				var pv string
@@ -613,7 +613,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 		goto ok
 	}
 	for i, ip := range rsp.UploadIp {
-		err := c.highwayUploadImage(uint32(ip), int(rsp.UploadPort[i]), rsp.UploadKey, img, 2)
+		err := c.highwayUpload(uint32(ip), int(rsp.UploadPort[i]), rsp.UploadKey, img, 2)
 		if err != nil {
 			continue
 		}
