@@ -472,6 +472,7 @@ func (pkt *TroopMemberListRequest) ToBytes() []byte {
 func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.MemberUin = r.ReadInt64(0)
 	pkt.FaceId = r.ReadInt16(1)
+	pkt.Gender = r.ReadByte(3)
 	pkt.Nick = r.ReadString(4)
 	pkt.ShowName = r.ReadString(6)
 	pkt.Name = r.ReadString(8)

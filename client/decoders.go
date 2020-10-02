@@ -498,6 +498,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 		l = append(l, &GroupMemberInfo{
 			Uin:                    m.MemberUin,
 			Nickname:               m.Nick,
+			Gender:                 m.Gender,
 			CardName:               m.Name,
 			Level:                  uint16(m.MemberLevel),
 			JoinTime:               m.JoinTime,
@@ -531,6 +532,7 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (inter
 	return &GroupMemberInfo{
 		Group:                  group,
 		Uin:                    rsp.MemInfo.Uin,
+		Gender:                 byte(rsp.MemInfo.Sex),
 		Nickname:               string(rsp.MemInfo.Nick),
 		CardName:               string(rsp.MemInfo.Card),
 		Level:                  uint16(rsp.MemInfo.Level),
