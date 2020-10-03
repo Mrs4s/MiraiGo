@@ -77,6 +77,7 @@ type (
 	GroupMemberInfo struct {
 		Group                  *GroupInfo
 		Uin                    int64
+		Gender                 byte
 		Nickname               string
 		CardName               string
 		Level                  uint16
@@ -251,7 +252,6 @@ const (
 	AndroidPhone ClientProtocol = 537062845
 	AndroidPad   ClientProtocol = 537062409
 	AndroidWatch ClientProtocol = 537061176
-
 )
 
 func (g *GroupInfo) UpdateName(newName string) {

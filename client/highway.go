@@ -16,7 +16,7 @@ import (
 	"strconv"
 )
 
-func (c *QQClient) highwayUploadImage(ip uint32, port int, updKey, img []byte, cmdId int32) error {
+func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {
 	addr := net.TCPAddr{
 		IP:   make([]byte, 4),
 		Port: port,
@@ -27,8 +27,8 @@ func (c *QQClient) highwayUploadImage(ip uint32, port int, updKey, img []byte, c
 		return err
 	}
 	defer conn.Close()
-	h := md5.Sum(img)
-	pkt := c.buildImageUploadPacket(img, updKey, cmdId, h)
+	h := md5.Sum(data)
+	pkt := c.buildImageUploadPacket(data, updKey, cmdId, h)
 	r := binary.NewNetworkReader(conn)
 	for _, p := range pkt {
 		_, err = conn.Write(p)

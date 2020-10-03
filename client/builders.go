@@ -753,8 +753,8 @@ func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, c
 func (c *QQClient) buildSystemMsgNewGroupPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &structmsg.ReqSystemMsgNew{
-		MsgNum:    10,
-		Version:   100,
+		MsgNum:    100,
+		Version:   1000,
 		Checktype: 3,
 		Flag: &structmsg.FlagInfo{
 			GrpMsgKickAdmin:                   1,
