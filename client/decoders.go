@@ -139,7 +139,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ uint16, payload []byte) (interface
 		return nil, nil
 	}
 	if cmd == 15 { // TODO: 免密登录
-		c.decodeT119(m[0x119])
+		c.decodeT119R(m[0x119])
 	}
 	return nil, nil
 }

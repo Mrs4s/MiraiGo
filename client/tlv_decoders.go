@@ -23,18 +23,6 @@ func (c *QQClient) decodeT119(data []byte) {
 	reader := binary.NewReader(tea.Decrypt(data))
 	reader.ReadBytes(2)
 	m := reader.ReadTlvMap(2)
-	if len(c.sigInfo.sKey) > 0 { // refresh
-		if t120, ok := m[0x120]; ok {
-			c.sigInfo.sKey = t120
-			c.sigInfo.sKeyExpiredTime = time.Now().Unix() + 43200 // 86400 / 2
-			c.Debug("skey updated: %v", c.sigInfo.sKey)
-		}
-		if t11a, ok := m[0x11a]; ok {
-			c.Nickname, c.Age, c.Gender = readT11A(t11a)
-			c.Debug("account info updated: " + c.Nickname)
-		}
-		return
-	}
 	if t130, ok := m[0x130]; ok {
 		c.decodeT130(t130)
 	}
@@ -115,6 +103,23 @@ func (c *QQClient) decodeT119(data []byte) {
 	c.Nickname = nick
 	c.Age = age
 	c.Gender = gender
+}
+
+// wtlogin.exchange_emp
+func (c *QQClient) decodeT119R(data []byte) {
+	tea := binary.NewTeaCipher(SystemDeviceInfo.TgtgtKey)
+	reader := binary.NewReader(tea.Decrypt(data))
+	reader.ReadBytes(2)
+	m := reader.ReadTlvMap(2)
+	if t120, ok := m[0x120]; ok {
+		c.sigInfo.sKey = t120
+		c.sigInfo.sKeyExpiredTime = time.Now().Unix() + 43200 // 86400 / 2
+		c.Debug("skey updated: %v", c.sigInfo.sKey)
+	}
+	if t11a, ok := m[0x11a]; ok {
+		c.Nickname, c.Age, c.Gender = readT11A(t11a)
+		c.Debug("account info updated: " + c.Nickname)
+	}
 }
 
 func (c *QQClient) decodeT130(data []byte) {

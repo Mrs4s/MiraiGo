@@ -46,7 +46,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T107(0))
 		w.Write(tlv.T142("com.tencent.mobileqq"))
 		w.Write(tlv.T144(
-			SystemDeviceInfo.AndroidId,
+			[]byte(SystemDeviceInfo.IMEI),
 			SystemDeviceInfo.GenDeviceInfoData(),
 			SystemDeviceInfo.OSType,
 			SystemDeviceInfo.Version.Release,
