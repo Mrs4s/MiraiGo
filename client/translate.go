@@ -7,7 +7,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func (c *QQClient)buildTranslatePacket(src, dst, text string) (uint16, []byte) {
+func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.TranslateReqBody{
 		BatchTranslateReq: &oidb.BatchTranslateReq{
@@ -27,13 +27,13 @@ func (c *QQClient)buildTranslatePacket(src, dst, text string) (uint16, []byte) {
 	return seq, packet
 }
 
-func (c *QQClient)Translate(src, dst, text string) (string, error)  {
+func (c *QQClient) Translate(src, dst, text string) (string, error) {
 	rsp, err := c.sendAndWait(c.buildTranslatePacket(src, dst, text))
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	if data, ok := rsp.(*oidb.BatchTranslateRsp); ok {
-		if data.ErrorCode != 0{
+		if data.ErrorCode != 0 {
 			return "", errors.New(string(data.ErrorMsg))
 		}
 		return data.DstTextList[0], nil

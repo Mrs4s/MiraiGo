@@ -152,7 +152,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
 			"PttCenterSvr.ShortVideoDownReq":               decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,
-			"OidbSvc.0x990":     							decodeTranslateResponse,
+			"OidbSvc.0x990":                                decodeTranslateResponse,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
