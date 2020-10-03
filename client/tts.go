@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/richmedia"
@@ -34,6 +35,9 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 		err := proto.Unmarshal(ttsReader.ReadBytes(length), ttsRsp)
 		if err != nil {
 			return nil, err
+		}
+		if ttsRsp.RetCode != 0 {
+			return nil, errors.New("can't convert text to voice")
 		}
 		for _, voiceItem := range ttsRsp.VoiceData {
 			ttsWriter.Write(voiceItem.Voice)
