@@ -33,19 +33,6 @@ message D8A0ReqBody {
   bytes kickMsg = 5;
 }
 
-
-message D8FCReqBody {
-  int64 groupCode = 1;
-  int32 showFlag = 2;
-  repeated D8FCMemberInfo memLevelInfo = 3;
-  repeated D8FCLevelName levelName = 4;
-  int32 updateTime = 5;
-  int32 officeMode = 6;
-  int32 groupOpenAppid = 7;
-  D8FCClientInfo msgClientInfo = 8;
-  bytes authKey = 9;
-}
-
 message D89AReqBody {
   int64 groupCode = 1;
   D89AGroupinfo stGroupInfo = 2;
@@ -110,41 +97,6 @@ message D89AGroupGeoInfo {
   int64 latitude = 3;
   bytes ingGeoContent = 4;
   int64 poiId = 5;
-}
-
-message D8FCMemberInfo {
-  int64 uin = 1;
-  int32 point = 2;
-  int32 activeDay = 3;
-  int32 level = 4;
-  bytes specialTitle = 5;
-  int32 specialTitleExpireTime = 6;
-  bytes uinName = 7;
-  bytes memberCardName = 8;
-  bytes phone = 9;
-  bytes email = 10;
-  bytes remark = 11;
-  int32 gender = 12;
-  bytes job = 13;
-  int32 tribeLevel = 14;
-  int32 tribePoint = 15;
-  repeated D8FCCardNameElem richCardName = 16;
-  bytes commRichCardName = 17;
-}
-
-message D8FCCardNameElem {
-  int32 enumCardType = 1;
-  bytes value = 2;
-}
-
-message D8FCLevelName {
-  int32 level = 1;
-  string name = 2;
-}
-
-message D8FCClientInfo {
-  int32 implat = 1;
-  string ingClientver = 2;
 }
 
 message DED3ReqBody {

@@ -1,0 +1,50 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+message D8FCReqBody {
+  optional int64 groupCode = 1;
+  optional int32 showFlag = 2;
+  repeated D8FCMemberInfo memLevelInfo = 3;
+  repeated D8FCLevelName levelName = 4;
+  optional int32 updateTime = 5;
+  optional int32 officeMode = 6;
+  optional int32 groupOpenAppid = 7;
+  optional D8FCClientInfo msgClientInfo = 8;
+  optional bytes authKey = 9;
+}
+
+message D8FCMemberInfo {
+  optional int64 uin = 1;
+  optional int32 point = 2;
+  optional int32 activeDay = 3;
+  optional int32 level = 4;
+  optional bytes specialTitle = 5;
+  optional int32 specialTitleExpireTime = 6;
+  optional bytes uinName = 7;
+  optional bytes memberCardName = 8;
+  optional bytes phone = 9;
+  optional bytes email = 10;
+  optional bytes remark = 11;
+  optional int32 gender = 12;
+  optional bytes job = 13;
+  optional int32 tribeLevel = 14;
+  optional int32 tribePoint = 15;
+  repeated D8FCCardNameElem richCardName = 16;
+  optional bytes commRichCardName = 17;
+}
+
+message D8FCCardNameElem {
+  optional int32 enumCardType = 1;
+  optional bytes value = 2;
+}
+
+message D8FCLevelName {
+  optional int32 level = 1;
+  optional string name = 2;
+}
+
+message D8FCClientInfo {
+  optional int32 implat = 1;
+  optional string ingClientver = 2;
+}

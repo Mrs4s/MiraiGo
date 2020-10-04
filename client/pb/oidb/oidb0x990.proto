@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = ".;oidb";
+
+message TranslateReqBody {
+  // TranslateReq translate_req = 1;
+  BatchTranslateReq batch_translate_req = 2;
+}
+
+message TranslateRspBody {
+  // TranslateRsp translate_rsp = 1;
+  BatchTranslateRsp batch_translate_rsp = 2;
+}
+
+message BatchTranslateReq {
+  string src_language = 1;
+  string dst_language = 2;
+  repeated string src_text_list = 3;
+}
+
+message BatchTranslateRsp {
+  int32 error_code = 1;
+  bytes error_msg = 2;
+  string src_language = 3;
+  string dst_language = 4;
+  repeated string src_text_list = 5;
+  repeated string dst_text_list = 6;
+}
