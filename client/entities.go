@@ -119,6 +119,12 @@ type (
 		Member *GroupMemberInfo
 	}
 
+	MemberCardUpdatedEvent struct {
+		Group   *GroupInfo
+		OldCard string
+		Member  *GroupMemberInfo
+	}
+
 	IGroupNotifyEvent interface {
 		From() int64
 		Content() string

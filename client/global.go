@@ -311,6 +311,21 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				Member: info,
 			})
 		}
+		if m.Head.GroupInfo != nil && m.Head.GroupInfo.GroupCard != "" && mem.CardName != m.Head.GroupInfo.GroupCard {
+			old := mem.CardName
+			if mem.Nickname == m.Head.GroupInfo.GroupCard {
+				mem.CardName = ""
+			} else {
+				mem.CardName = m.Head.GroupInfo.GroupCard
+			}
+			if old != mem.CardName {
+				go c.dispatchMemberCardUpdatedEvent(&MemberCardUpdatedEvent{
+					Group:   group,
+					OldCard: old,
+					Member:  mem,
+				})
+			}
+		}
 		sender = &message.Sender{
 			Uin:      mem.Uin,
 			Nickname: mem.Nickname,
