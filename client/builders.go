@@ -923,13 +923,13 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D8FCReqBody{
-		GroupCode: groupCode,
+		GroupCode: &groupCode,
 		MemLevelInfo: []*oidb.D8FCMemberInfo{
 			{
-				Uin:                    memberUin,
+				Uin:                    &memberUin,
 				UinName:                []byte(newTitle),
 				SpecialTitle:           []byte(newTitle),
-				SpecialTitleExpireTime: -1,
+				SpecialTitleExpireTime: proto.Int32(-1),
 			},
 		},
 	}
@@ -1288,7 +1288,6 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
-
 func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D79ReqBody{
