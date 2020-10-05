@@ -252,7 +252,7 @@ const (
 	NeedCaptcha            LoginError = 1
 	OtherLoginError        LoginError = 3
 	UnsafeDeviceError      LoginError = 4
-	SMSNeededError         LoginError = 5
+	SNSNeededError         LoginError = 5
 	TooManySMSRequestError LoginError = 6
 	UnknownLoginError      LoginError = -1
 
