@@ -30,6 +30,9 @@ type (
 		// Unsafe device
 		VerifyUrl string
 
+		// SMS needed
+		SMSPhone string
+
 		// other error
 		ErrorMessage string
 	}
@@ -246,18 +249,20 @@ type (
 )
 
 const (
-	NeedCaptcha       LoginError = 1
-	OtherLoginError   LoginError = 3
-	UnsafeDeviceError LoginError = 4
-	UnknownLoginError LoginError = -1
+	NeedCaptcha            LoginError = 1
+	OtherLoginError        LoginError = 3
+	UnsafeDeviceError      LoginError = 4
+	SMSNeededError         LoginError = 5
+	TooManySMSRequestError LoginError = 6
+	UnknownLoginError      LoginError = -1
 
 	Owner MemberPermission = iota
 	Administrator
 	Member
 
-	AndroidPhone ClientProtocol = 537062845
-	AndroidPad   ClientProtocol = 537062409
-	AndroidWatch ClientProtocol = 537061176
+	AndroidPhone ClientProtocol = 1
+	AndroidPad   ClientProtocol = 2
+	AndroidWatch ClientProtocol = 3
 )
 
 func (g *GroupInfo) UpdateName(newName string) {

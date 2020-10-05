@@ -50,12 +50,15 @@ type QQClient struct {
 	servers         []*net.TCPAddr
 	currServerIndex int
 	retryTimes      int
+	version         *versionInfo
 
 	syncCookie       []byte
 	pubAccountCookie []byte
 	msgCtrlBuf       []byte
 	ksid             []byte
 	t104             []byte
+	t174             []byte
+	t402             []byte // only for sms
 	t150             []byte
 	t149             []byte
 	t528             []byte
@@ -159,10 +162,11 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		groupSeq:               int32(rand.Intn(20000)),
 		friendSeq:              22911,
 		highwayApplyUpSeq:      77918,
-		ksid:                   []byte("|454001228437590|A8.2.7.27f6ea96"),
+		ksid:                   []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
 		eventHandlers:          &eventHandlers{},
 		msgSvcCache:            utils.NewCache(time.Second * 15),
 		transCache:             utils.NewCache(time.Second * 15),
+		version:                genVersionInfo(SystemDeviceInfo.Protocol),
 		servers: []*net.TCPAddr{ // default servers
 			{IP: net.IP{42, 81, 169, 46}, Port: 8080},
 			{IP: net.IP{42, 81, 172, 81}, Port: 80},
@@ -210,6 +214,47 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		}
 	}
 	return &l, nil
+}
+
+// SubmitCaptcha send captcha to server
+func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, error) {
+	seq, packet := c.buildCaptchaPacket(result, sign)
+	rsp, err := c.sendAndWait(seq, packet)
+	if err != nil {
+		return nil, err
+	}
+	l := rsp.(LoginResponse)
+	if l.Success {
+		c.registerClient()
+		if !c.heartbeatEnabled {
+			c.startHeartbeat()
+		}
+	}
+	return &l, nil
+}
+
+func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
+	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
+	if err != nil {
+		return nil, err
+	}
+	l := rsp.(LoginResponse)
+	if l.Success {
+		c.registerClient()
+		if !c.heartbeatEnabled {
+			c.startHeartbeat()
+		}
+	}
+	return &l, nil
+}
+
+func (c *QQClient) RequestSMS() bool {
+	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
+	if err != nil {
+		c.Error("request sms error: %v", err)
+		return false
+	}
+	return rsp.(LoginResponse).Error == SMSNeededError
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
@@ -281,23 +326,6 @@ func (c *QQClient) GetSummaryInfo(target int64) (*SummaryCardInfo, error) {
 		return nil, err
 	}
 	return rsp.(*SummaryCardInfo), nil
-}
-
-// SubmitCaptcha send captcha to server
-func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, error) {
-	seq, packet := c.buildCaptchaPacket(result, sign)
-	rsp, err := c.sendAndWait(seq, packet)
-	if err != nil {
-		return nil, err
-	}
-	l := rsp.(LoginResponse)
-	if l.Success {
-		c.registerClient()
-		if !c.heartbeatEnabled {
-			c.startHeartbeat()
-		}
-	}
-	return &l, nil
 }
 
 // ReloadFriendList refresh QQClient.FriendList field via GetFriendList()
@@ -1118,7 +1146,7 @@ func (c *QQClient) startHeartbeat() {
 func (c *QQClient) doHeartbeat() {
 	if c.Online {
 		seq := c.nextSeq()
-		sso := packets.BuildSsoPacket(seq, uint32(SystemDeviceInfo.Protocol), "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
+		sso := packets.BuildSsoPacket(seq, c.version.AppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
 		if err != nil {

@@ -2,13 +2,11 @@ package tlv
 
 import "github.com/Mrs4s/MiraiGo/binary"
 
-func T177(buildTime uint32, sdkVersion string) []byte {
+func T17A(value int32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteUInt16(0x177)
+		w.WriteUInt16(0x17a)
 		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteByte(0x01)
-			w.WriteUInt32(buildTime)
-			w.WriteTlv([]byte(sdkVersion))
+			w.WriteUInt32(uint32(value))
 		}))
 	})
 }

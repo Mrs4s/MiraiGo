@@ -80,11 +80,41 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	} // need captcha
 
 	if t == 160 {
+
+		if t174, ok := m[0x174]; ok { // 短信验证
+			c.t104 = m[0x104]
+			c.t174 = t174
+			c.t402 = m[0x402]
+			return LoginResponse{
+				Success:      false,
+				Error:        SMSNeededError,
+				SMSPhone:     string(m[0x178][4:]),
+				ErrorMessage: string(m[0x17e]),
+			}, nil
+		}
+
+		if _, ok := m[0x17b]; ok { // 二次验证
+			c.t104 = m[0x104]
+			return LoginResponse{
+				Success: false,
+				Error:   SMSNeededError,
+			}, nil
+		}
+
+		if t204, ok := m[0x204]; ok { // 扫码验证
+			return LoginResponse{
+				Success:      false,
+				Error:        UnsafeDeviceError,
+				VerifyUrl:    string(t204),
+				ErrorMessage: "",
+			}, nil
+		}
+
+	}
+
+	if t == 162 {
 		return LoginResponse{
-			Success:      false,
-			Error:        UnsafeDeviceError,
-			VerifyUrl:    string(m[0x204]),
-			ErrorMessage: "",
+			Error: TooManySMSRequestError,
 		}, nil
 	}
 
