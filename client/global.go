@@ -142,7 +142,7 @@ func GenRandomDevice() {
 
 func genVersionInfo(p ClientProtocol) *versionInfo {
 	switch p {
-	case AndroidPhone: // Dumped from mirai by qq android v8.2.7
+	case AndroidPhone: // Dumped by mirai from qq android v8.2.7
 		return &versionInfo{
 			ApkId:           "com.tencent.mobileqq",
 			AppId:           537062845,
@@ -168,7 +168,7 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
 		}
-	case AndroidPad: // Dumped by qq-hd v5.8.9
+	case AndroidPad: // Dumped from qq-hd v5.8.9
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
 			AppId:           537065549,
