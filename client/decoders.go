@@ -85,19 +85,23 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			c.t104 = m[0x104]
 			c.t174 = t174
 			c.t402 = m[0x402]
+			phone := func() string {
+				r := binary.NewReader(m[0x178])
+				return r.ReadStringLimit(int(r.ReadInt32()))
+			}()
 			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
 				return LoginResponse{
 					Success:      false,
 					Error:        SMSNeededError | UnsafeDeviceError,
 					VerifyUrl:    string(t204),
-					SMSPhone:     string(m[0x178][4:]),
+					SMSPhone:     phone,
 					ErrorMessage: string(m[0x17e]),
 				}, nil
 			}
 			return LoginResponse{
 				Success:      false,
 				Error:        SMSNeededError,
-				SMSPhone:     string(m[0x178][4:]),
+				SMSPhone:     phone,
 				ErrorMessage: string(m[0x17e]),
 			}, nil
 		}
