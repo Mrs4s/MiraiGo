@@ -52,12 +52,12 @@ func BuildOicqRequestPacket(uin int64, commandId uint16, encrypt IEncryptMethod,
 	return p.Bytes()
 }
 
-func BuildSsoPacket(seq uint16, protocol uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
+func BuildSsoPacket(seq uint16, appId uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
 	p := binary.NewWriter()
 	p.WriteIntLvPacket(4, func(writer *binary.Writer) {
 		writer.WriteUInt32(uint32(seq))
-		writer.WriteUInt32(protocol)
-		writer.WriteUInt32(protocol)
+		writer.WriteUInt32(appId)
+		writer.WriteUInt32(appId)
 		writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
 		if len(extData) == 0 || len(extData) == 4 {
 			writer.WriteUInt32(0x04)
@@ -66,8 +66,9 @@ func BuildSsoPacket(seq uint16, protocol uint32, commandName, imei string, extDa
 			writer.Write(extData)
 		}
 		writer.WriteString(commandName)
-		writer.WriteUInt32(0x08)
-		writer.Write(outPacketSessionId)
+		writer.WriteIntLvPacket(4, func(w *binary.Writer) {
+			w.Write(outPacketSessionId)
+		})
 		writer.WriteString(imei)
 		writer.WriteUInt32(0x04)
 		{
