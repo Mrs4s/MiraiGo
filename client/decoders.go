@@ -127,7 +127,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 
 	if t == 162 {
 		return LoginResponse{
-			Error: TooManySMSRequestError,
+			Error: TooManySNSRequestError,
 		}, nil
 	}
 

@@ -253,7 +253,7 @@ const (
 	OtherLoginError        LoginError = 3
 	UnsafeDeviceError      LoginError = 4
 	SNSNeededError         LoginError = 5
-	TooManySMSRequestError LoginError = 6
+	TooManySNSRequestError LoginError = 6
 	SNSOrVerifyNeededError LoginError = 7
 	UnknownLoginError      LoginError = -1
 
