@@ -92,7 +92,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
 				return LoginResponse{
 					Success:      false,
-					Error:        SNSNeededError | UnsafeDeviceError,
+					Error:        SNSOrVerifyNeededError,
 					VerifyUrl:    string(t204),
 					SMSPhone:     phone,
 					ErrorMessage: string(m[0x17e]),

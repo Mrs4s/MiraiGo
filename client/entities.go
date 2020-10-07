@@ -254,6 +254,7 @@ const (
 	UnsafeDeviceError      LoginError = 4
 	SNSNeededError         LoginError = 5
 	TooManySMSRequestError LoginError = 6
+	SNSOrVerifyNeededError LoginError = 7
 	UnknownLoginError      LoginError = -1
 
 	Owner MemberPermission = iota
