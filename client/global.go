@@ -63,8 +63,6 @@ type DeviceInfoFile struct {
 }
 
 type groupMessageBuilder struct {
-	MessageSeq    int32
-	MessageCount  int32
 	MessageSlices []*msg.Message
 }
 
@@ -434,7 +432,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 
 func (b *groupMessageBuilder) build() *msg.Message {
 	sort.Slice(b.MessageSlices, func(i, j int) bool {
-		return b.MessageSlices[i].Content.PkgIndex < b.MessageSlices[i].Content.PkgIndex
+		return b.MessageSlices[i].Content.PkgIndex < b.MessageSlices[j].Content.PkgIndex
 	})
 	base := b.MessageSlices[0]
 	for _, m := range b.MessageSlices[1:] {
