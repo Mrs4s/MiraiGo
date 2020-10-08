@@ -986,6 +986,13 @@ func (c *QQClient) connect() error {
 	return nil
 }
 
+func (c *QQClient) Disconnect() {
+	if c.Online {
+		c.Online = false
+		c.Conn.Close()
+	}
+}
+
 func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 	c.servers = append(servers, c.servers...)
 }
