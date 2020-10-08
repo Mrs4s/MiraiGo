@@ -17,6 +17,7 @@ type eventHandlers struct {
 	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
 	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
 	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
+	memberCardUpdatedHandlers   []func(*QQClient, *MemberCardUpdatedEvent)
 	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
 	groupInvitedHandlers        []func(*QQClient, *GroupInvitedRequest)
 	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
@@ -67,6 +68,10 @@ func (c *QQClient) OnGroupMemberJoined(f func(*QQClient, *MemberJoinGroupEvent))
 
 func (c *QQClient) OnGroupMemberLeaved(f func(*QQClient, *MemberLeaveGroupEvent)) {
 	c.eventHandlers.memberLeavedHandlers = append(c.eventHandlers.memberLeavedHandlers, f)
+}
+
+func (c *QQClient) OnGroupMemberCardUpdated(f func(*QQClient, *MemberCardUpdatedEvent)) {
+	c.eventHandlers.memberCardUpdatedHandlers = append(c.eventHandlers.memberCardUpdatedHandlers, f)
 }
 
 func (c *QQClient) OnGroupMemberPermissionChanged(f func(*QQClient, *MemberPermissionChangedEvent)) {
@@ -231,6 +236,17 @@ func (c *QQClient) dispatchMemberLeaveEvent(e *MemberLeaveGroupEvent) {
 		return
 	}
 	for _, f := range c.eventHandlers.memberLeavedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchMemberCardUpdatedEvent(e *MemberCardUpdatedEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.memberCardUpdatedHandlers {
 		cover(func() {
 			f(c, e)
 		})

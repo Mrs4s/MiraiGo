@@ -66,6 +66,19 @@ type groupMessageBuilder struct {
 	MessageSlices []*msg.Message
 }
 
+type versionInfo struct {
+	ApkId           string
+	AppId           uint32
+	SortVersionName string
+	BuildTime       uint32
+	ApkSign         []byte
+	SdkVersion      string
+	SSOVersion      uint32
+	MiscBitmap      uint32
+	SubSigmap       uint32
+	MainSigMap      uint32
+}
+
 // default
 var SystemDeviceInfo = &DeviceInfo{
 	Display:     []byte("MIRAI.123456.001"),
@@ -123,6 +136,51 @@ func GenRandomDevice() {
 	SystemDeviceInfo.AndroidId = SystemDeviceInfo.Display
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
+}
+
+func genVersionInfo(p ClientProtocol) *versionInfo {
+	switch p {
+	case AndroidPhone: // Dumped by mirai from qq android v8.2.7
+		return &versionInfo{
+			ApkId:           "com.tencent.mobileqq",
+			AppId:           537062845,
+			SortVersionName: "8.2.7",
+			BuildTime:       1571193922,
+			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
+			SdkVersion:      "6.0.0.2413",
+			SSOVersion:      5,
+			MiscBitmap:      184024956,
+			SubSigmap:       0x10400,
+			MainSigMap:      34869472,
+		}
+	case AndroidWatch:
+		return &versionInfo{
+			ApkId:           "com.tencent.mobileqq",
+			AppId:           537061176,
+			SortVersionName: "8.2.7",
+			BuildTime:       1571193922,
+			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
+			SdkVersion:      "6.0.0.2413",
+			SSOVersion:      5,
+			MiscBitmap:      184024956,
+			SubSigmap:       0x10400,
+			MainSigMap:      34869472,
+		}
+	case AndroidPad: // Dumped from qq-hd v5.8.9
+		return &versionInfo{
+			ApkId:           "com.tencent.minihd.qq",
+			AppId:           537065549,
+			SortVersionName: "5.8.9",
+			BuildTime:       1595836208,
+			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
+			SdkVersion:      "6.0.0.2433",
+			SSOVersion:      12,
+			MiscBitmap:      150470524,
+			SubSigmap:       66560,
+			MainSigMap:      1970400,
+		}
+	}
+	return nil
 }
 
 func (info *DeviceInfo) ToJson() []byte {
@@ -308,6 +366,21 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				Group:  group,
 				Member: info,
 			})
+		}
+		if m.Head.GroupInfo != nil && m.Head.GroupInfo.GroupCard != "" && mem.CardName != m.Head.GroupInfo.GroupCard {
+			old := mem.CardName
+			if mem.Nickname == m.Head.GroupInfo.GroupCard {
+				mem.CardName = ""
+			} else {
+				mem.CardName = m.Head.GroupInfo.GroupCard
+			}
+			if old != mem.CardName {
+				go c.dispatchMemberCardUpdatedEvent(&MemberCardUpdatedEvent{
+					Group:   group,
+					OldCard: old,
+					Member:  mem,
+				})
+			}
 		}
 		sender = &message.Sender{
 			Uin:      mem.Uin,

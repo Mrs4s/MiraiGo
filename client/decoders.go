@@ -56,8 +56,9 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		c.t104, _ = m[0x104]
 		if m.Exists(0x192) { // slider, not supported yet
 			return LoginResponse{
-				Success: false,
-				Error:   UnknownLoginError,
+				Success:   false,
+				VerifyUrl: string(m[0x192]),
+				Error:     SliderNeededError,
 			}, nil
 		}
 		if m.Exists(0x165) { // image
@@ -80,11 +81,54 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	} // need captcha
 
 	if t == 160 {
+
+		if t174, ok := m[0x174]; ok { // 短信验证
+			c.t104 = m[0x104]
+			c.t174 = t174
+			c.t402 = m[0x402]
+			phone := func() string {
+				r := binary.NewReader(m[0x178])
+				return r.ReadStringLimit(int(r.ReadInt32()))
+			}()
+			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
+				return LoginResponse{
+					Success:      false,
+					Error:        SNSOrVerifyNeededError,
+					VerifyUrl:    string(t204),
+					SMSPhone:     phone,
+					ErrorMessage: string(m[0x17e]),
+				}, nil
+			}
+			return LoginResponse{
+				Success:      false,
+				Error:        SNSNeededError,
+				SMSPhone:     phone,
+				ErrorMessage: string(m[0x17e]),
+			}, nil
+		}
+
+		if _, ok := m[0x17b]; ok { // 二次验证
+			c.t104 = m[0x104]
+			return LoginResponse{
+				Success: false,
+				Error:   SNSNeededError,
+			}, nil
+		}
+
+		if t204, ok := m[0x204]; ok { // 扫码验证
+			return LoginResponse{
+				Success:      false,
+				Error:        UnsafeDeviceError,
+				VerifyUrl:    string(t204),
+				ErrorMessage: "",
+			}, nil
+		}
+
+	}
+
+	if t == 162 {
 		return LoginResponse{
-			Success:      false,
-			Error:        UnsafeDeviceError,
-			VerifyUrl:    string(m[0x204]),
-			ErrorMessage: "",
+			Error: TooManySNSRequestError,
 		}, nil
 	}
 
@@ -139,7 +183,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ uint16, payload []byte) (interface
 		return nil, nil
 	}
 	if cmd == 15 { // TODO: 免密登录
-		c.decodeT119(m[0x119])
+		c.decodeT119R(m[0x119])
 	}
 	return nil, nil
 }

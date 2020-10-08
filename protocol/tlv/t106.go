@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-func T106(uin, salt, protocol uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtgtKey []byte, wtf uint32) []byte {
+func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtgtKey []byte, wtf uint32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x106)
 		body := binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(4)
 			w.WriteUInt32(rand.Uint32())
-			w.WriteUInt32(5)
+			w.WriteUInt32(ssoVer)
 			w.WriteUInt32(16) // appId
 			w.WriteUInt32(0)  // app client version
 			if uin == 0 {
@@ -36,7 +36,7 @@ func T106(uin, salt, protocol uint32, passwordMd5 [16]byte, guidAvailable bool, 
 			} else {
 				w.Write(guid)
 			}
-			w.WriteUInt32(protocol)
+			w.WriteUInt32(appId)
 			w.WriteUInt32(1) // password login
 			b := make([]byte, 8)
 			binary2.BigEndian.PutUint64(b, uint64(uin))
