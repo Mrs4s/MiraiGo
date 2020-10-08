@@ -56,8 +56,9 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		c.t104, _ = m[0x104]
 		if m.Exists(0x192) { // slider, not supported yet
 			return LoginResponse{
-				Success: false,
-				Error:   UnknownLoginError,
+				Success:   false,
+				VerifyUrl: string(m[0x192]),
+				Error:     SliderNeededError,
 			}, nil
 		}
 		if m.Exists(0x165) { // image

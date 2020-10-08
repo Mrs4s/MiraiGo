@@ -36,7 +36,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
-		w.WriteUInt16(17)
+		w.WriteUInt16(0x17)
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))

@@ -255,6 +255,7 @@ const (
 	SNSNeededError         LoginError = 5
 	TooManySNSRequestError LoginError = 6
 	SNSOrVerifyNeededError LoginError = 7
+	SliderNeededError      LoginError = 8
 	UnknownLoginError      LoginError = -1
 
 	Owner MemberPermission = iota
