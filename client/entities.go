@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/message"
 	"strings"
 	"sync"
 )
@@ -245,6 +246,7 @@ type (
 	groupMessageReceiptEvent struct {
 		Rand int32
 		Seq  int32
+		Msg  *message.GroupMessage
 	}
 )
 

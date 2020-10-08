@@ -356,6 +356,7 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		c.dispatchGroupMessageReceiptEvent(&groupMessageReceiptEvent{
 			Rand: pkt.Message.Body.RichText.Attr.Random,
 			Seq:  pkt.Message.Head.MsgSeq,
+			Msg:  c.parseGroupMessage(pkt.Message),
 		})
 		return nil, nil
 	}

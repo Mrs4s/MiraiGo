@@ -58,6 +58,15 @@ type (
 		Message    []IMessageElement
 	}
 
+	RichMessage struct {
+		Title      string
+		Summary    string
+		Brief      string
+		Url        string
+		PictureUrl string
+		MusicUrl   string
+	}
+
 	Sender struct {
 		Uin      int64
 		Nickname string
