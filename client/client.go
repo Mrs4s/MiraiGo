@@ -31,6 +31,7 @@ import (
 type QQClient struct {
 	Uin         int64
 	PasswordMd5 [16]byte
+	AllowSlider bool
 
 	Nickname   string
 	Age        uint16

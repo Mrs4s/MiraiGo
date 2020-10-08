@@ -36,7 +36,11 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
-		w.WriteUInt16(0x17)
+		if c.AllowSlider {
+			w.WriteUInt16(0x17)
+		} else {
+			w.WriteUInt16(0x16)
+		}
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
@@ -80,7 +84,9 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		if len(SystemDeviceInfo.IMSIMd5) != 0 {
 			w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
 		}
-		w.Write(tlv.T191(0x82))
+		if c.AllowSlider {
+			w.Write(tlv.T191(0x82))
+		}
 		if len(SystemDeviceInfo.WifiBSSID) != 0 && len(SystemDeviceInfo.WifiSSID) != 0 {
 			w.Write(tlv.T202(SystemDeviceInfo.WifiBSSID, SystemDeviceInfo.WifiSSID))
 		}
