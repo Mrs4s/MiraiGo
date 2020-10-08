@@ -234,8 +234,8 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	return &l, nil
 }
 
-func (c *QQClient) SubmitSNS(code string) (*LoginResponse, error) {
-	rsp, err := c.sendAndWait(c.buildSNSCodeSubmitPacket(code))
+func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
+	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
 	if err != nil {
 		return nil, err
 	}
@@ -249,13 +249,13 @@ func (c *QQClient) SubmitSNS(code string) (*LoginResponse, error) {
 	return &l, nil
 }
 
-func (c *QQClient) RequestSNS() bool {
-	rsp, err := c.sendAndWait(c.buildSNSRequestPacket())
+func (c *QQClient) RequestSMS() bool {
+	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
 	if err != nil {
 		c.Error("request sms error: %v", err)
 		return false
 	}
-	return rsp.(LoginResponse).Error == SNSNeededError
+	return rsp.(LoginResponse).Error == SMSNeededError
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {

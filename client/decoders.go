@@ -93,7 +93,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
 				return LoginResponse{
 					Success:      false,
-					Error:        SNSOrVerifyNeededError,
+					Error:        SMSOrVerifyNeededError,
 					VerifyUrl:    string(t204),
 					SMSPhone:     phone,
 					ErrorMessage: string(m[0x17e]),
@@ -101,7 +101,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			}
 			return LoginResponse{
 				Success:      false,
-				Error:        SNSNeededError,
+				Error:        SMSNeededError,
 				SMSPhone:     phone,
 				ErrorMessage: string(m[0x17e]),
 			}, nil
@@ -111,7 +111,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			c.t104 = m[0x104]
 			return LoginResponse{
 				Success: false,
-				Error:   SNSNeededError,
+				Error:   SMSNeededError,
 			}, nil
 		}
 
@@ -128,7 +128,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 
 	if t == 162 {
 		return LoginResponse{
-			Error: TooManySNSRequestError,
+			Error: TooManySMSRequestError,
 		}, nil
 	}
 

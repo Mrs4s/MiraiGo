@@ -133,7 +133,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 	return seq, packet
 }
 
-func (c *QQClient) buildSNSRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(8)
@@ -151,7 +151,7 @@ func (c *QQClient) buildSNSRequestPacket() (uint16, []byte) {
 	return seq, packet
 }
 
-func (c *QQClient) buildSNSCodeSubmitPacket(code string) (uint16, []byte) {
+func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(7)
