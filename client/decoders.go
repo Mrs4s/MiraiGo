@@ -159,7 +159,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		}, nil
 	}
 
-	return nil, nil // ?
+	return nil, errors.New(fmt.Sprintf("unknown login response: %v", t)) // ?
 }
 
 // StatSvc.register
