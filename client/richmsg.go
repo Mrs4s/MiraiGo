@@ -29,7 +29,7 @@ func (c *QQClient) SendGroupRichMessage(target, appId int64, appType, msgStyle u
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, appId, appType, msgStyle, client, msg)) // rsp is empty chunk
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, appId, appType, msgStyle, 1, client, msg)) // rsp is empty chunk
 	select {
 	case ret := <-ch:
 		return ret, nil
@@ -38,8 +38,12 @@ func (c *QQClient) SendGroupRichMessage(target, appId int64, appType, msgStyle u
 	}
 }
 
+func (c *QQClient) SendFriendRichMessage(target, appId int64, appType, msgStyle uint32, client RichClientInfo, msg *message.RichMessage) {
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, appId, appType, msgStyle, 0, client, msg))
+}
+
 // OidbSvc.0xb77_9
-func (c *QQClient) buildRichMsgSendingPacket(target, appId int64, appType, msgStyle uint32, client RichClientInfo, msg *message.RichMessage) (uint16, []byte) {
+func (c *QQClient) buildRichMsgSendingPacket(target, appId int64, appType, msgStyle, sendType uint32, client RichClientInfo, msg *message.RichMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.DB77ReqBody{
 		AppId:    uint64(appId),
@@ -52,7 +56,7 @@ func (c *QQClient) buildRichMsgSendingPacket(target, appId int64, appType, msgSt
 			AndroidSignature:   client.Signature,
 		},
 		ExtInfo:  &oidb.DB77ExtInfo{MsgSeq: rand.Uint64()},
-		SendType: 1,
+		SendType: sendType,
 		RecvUin:  uint64(target),
 		RichMsgBody: &oidb.DB77RichMsgBody{
 			Title:      msg.Title,
