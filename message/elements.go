@@ -107,6 +107,14 @@ type RedBagElement struct {
 	Title   string
 }
 
+type GroupFlashPicElement struct {
+	GroupImageElement
+}
+
+type FriendFlashPicElement struct{
+	FriendImageElement
+}
+
 type RedBagMessageType int
 
 const (
