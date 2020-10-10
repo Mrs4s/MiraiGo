@@ -716,5 +716,4 @@ message ResvAttr {
 message AnimationImageShow {
   int32 effect_id = 1;
   bytes animation_param = 2;
-  int32 unkown = 3;
 }
