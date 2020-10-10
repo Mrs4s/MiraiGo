@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = ".;oidb";
+
+message DB77ReqBody {
+  uint64 appId = 1;
+  uint32 appType = 2;
+  uint32 msgStyle = 3;
+  uint64 senderUin = 4;
+  DB77ClientInfo clientInfo = 5;
+  string textMsg = 6;
+  DB77ExtInfo extInfo = 7;
+  uint32 sendType = 10;
+  uint64 recvUin = 11;
+  DB77RichMsgBody richMsgBody = 12;
+}
+
+message DB77ClientInfo {
+  uint32 platform = 1;
+  string sdkVersion = 2;
+  string androidPackageName = 3;
+  string androidSignature = 4;
+  string iosBundleId = 5;
+  string pcSign = 6;
+}
+
+message DB77ExtInfo {
+  repeated uint32 customFeatureId = 11;
+  string apnsWording = 12;
+  uint32 groupSaveDbFlag = 13;
+  uint32 receiverAppId = 14;
+  uint64 msgSeq = 15;
+}
+
+message DB77RichMsgBody {
+  string title = 10;
+  string summary  = 11;
+  string brief = 12;
+  string url = 13;
+  string pictureUrl = 14;
+  string action = 15;
+  string musicUrl = 16;
+  //ImageInfo imageInfo = 17;
+}

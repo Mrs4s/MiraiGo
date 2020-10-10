@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/message"
 	"strings"
 	"sync"
 )
@@ -245,6 +246,7 @@ type (
 	groupMessageReceiptEvent struct {
 		Rand int32
 		Seq  int32
+		Msg  *message.GroupMessage
 	}
 )
 
@@ -252,9 +254,9 @@ const (
 	NeedCaptcha            LoginError = 1
 	OtherLoginError        LoginError = 3
 	UnsafeDeviceError      LoginError = 4
-	SNSNeededError         LoginError = 5
-	TooManySNSRequestError LoginError = 6
-	SNSOrVerifyNeededError LoginError = 7
+	SMSNeededError         LoginError = 5
+	TooManySMSRequestError LoginError = 6
+	SMSOrVerifyNeededError LoginError = 7
 	SliderNeededError      LoginError = 8
 	UnknownLoginError      LoginError = -1
 

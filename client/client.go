@@ -153,10 +153,10 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"OidbSvc.0x88d_0":                              decodeGroupInfoResponse,
 			"OidbSvc.0xe07_0":                              decodeImageOcrResponse,
 			"OidbSvc.0xd79":                                decodeWordSegmentation,
+			"OidbSvc.0x990":                                decodeTranslateResponse,
 			"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
 			"PttCenterSvr.ShortVideoDownReq":               decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,
-			"OidbSvc.0x990":                                decodeTranslateResponse,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
@@ -234,8 +234,8 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	return &l, nil
 }
 
-func (c *QQClient) SubmitSNS(code string) (*LoginResponse, error) {
-	rsp, err := c.sendAndWait(c.buildSNSCodeSubmitPacket(code))
+func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
+	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
 	if err != nil {
 		return nil, err
 	}
@@ -249,13 +249,13 @@ func (c *QQClient) SubmitSNS(code string) (*LoginResponse, error) {
 	return &l, nil
 }
 
-func (c *QQClient) RequestSNS() bool {
-	rsp, err := c.sendAndWait(c.buildSNSRequestPacket())
+func (c *QQClient) RequestSMS() bool {
+	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
 	if err != nil {
 		c.Error("request sms error: %v", err)
 		return false
 	}
-	return rsp.(LoginResponse).Error == SNSNeededError
+	return rsp.(LoginResponse).Error == SMSNeededError
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
@@ -1076,6 +1076,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 func (c *QQClient) netLoop() {
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
+	errCount := 0
 	for c.Online {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
@@ -1098,7 +1099,11 @@ func (c *QQClient) netLoop() {
 		data, err := reader.ReadBytes(int(l) - 4)
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
-			c.Error("parse incoming packer error: %v", err)
+			c.Error("parse incoming packet error: %v", err)
+			errCount++
+			if errCount > 5 {
+				c.Online = false
+			}
 			//log.Println("parse incoming packet error: " + err.Error())
 			continue
 		}
@@ -1110,6 +1115,7 @@ func (c *QQClient) netLoop() {
 				continue
 			}
 		}
+		errCount = 0
 		retry = 0
 		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
 		go func() {
