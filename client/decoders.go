@@ -80,6 +80,14 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		}
 	} // need captcha
 
+	if t == 40 {
+		return LoginResponse{
+			Success:      false,
+			ErrorMessage: "账号被冻结",
+			Error:        UnknownLoginError,
+		}, nil
+	}
+
 	if t == 160 {
 
 		if t174, ok := m[0x174]; ok { // 短信验证

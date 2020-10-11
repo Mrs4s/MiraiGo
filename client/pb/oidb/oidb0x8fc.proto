@@ -48,3 +48,12 @@ message D8FCClientInfo {
   optional int32 implat = 1;
   optional string ingClientver = 2;
 }
+
+message D8FCCommCardNameBuf {
+  repeated D8FCRichCardNameElem richCardName = 1;
+}
+
+message D8FCRichCardNameElem {
+  optional bytes ctrl = 1;
+  optional bytes text = 2;
+}

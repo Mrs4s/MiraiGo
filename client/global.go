@@ -7,6 +7,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
@@ -367,21 +368,6 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				Member: info,
 			})
 		}
-		if m.Head.GroupInfo != nil && m.Head.GroupInfo.GroupCard != "" && mem.CardName != m.Head.GroupInfo.GroupCard {
-			old := mem.CardName
-			if mem.Nickname == m.Head.GroupInfo.GroupCard {
-				mem.CardName = ""
-			} else {
-				mem.CardName = m.Head.GroupInfo.GroupCard
-			}
-			if old != mem.CardName {
-				go c.dispatchMemberCardUpdatedEvent(&MemberCardUpdatedEvent{
-					Group:   group,
-					OldCard: old,
-					Member:  mem,
-				})
-			}
-		}
 		sender = &message.Sender{
 			Uin:      mem.Uin,
 			Nickname: mem.Nickname,
@@ -398,6 +384,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		Time:      m.Head.MsgTime,
 		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
 	}
+	var extInfo *msg.ExtraInfo
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
 		// is rich long msg
@@ -411,6 +398,37 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 					Time:      m.Head.MsgTime,
 					Elements:  f.Nodes[0].Message,
 				}
+			}
+		}
+		if elem.ExtraInfo != nil {
+			extInfo = elem.ExtraInfo
+		}
+	}
+	if !sender.IsAnonymous() {
+		mem := group.FindMember(m.Head.FromUin)
+		groupCard := m.Head.GroupInfo.GroupCard
+		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
+			buf := oidb.D8FCCommCardNameBuf{}
+			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
+				groupCard = ""
+				for _, e := range buf.RichCardName {
+					groupCard += string(e.Text)
+				}
+			}
+		}
+		if m.Head.GroupInfo != nil && groupCard != "" && mem.CardName != groupCard {
+			old := mem.CardName
+			if mem.Nickname == groupCard {
+				mem.CardName = ""
+			} else {
+				mem.CardName = groupCard
+			}
+			if old != mem.CardName {
+				go c.dispatchMemberCardUpdatedEvent(&MemberCardUpdatedEvent{
+					Group:   group,
+					OldCard: old,
+					Member:  mem,
+				})
 			}
 		}
 	}
