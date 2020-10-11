@@ -111,6 +111,11 @@ type GroupFlashPicElement struct {
 	GroupImageElement
 }
 
+type GroupShowPicElement struct {
+	GroupImageElement
+	EffectId int32
+}
+
 type FriendFlashPicElement struct{
 	FriendImageElement
 }

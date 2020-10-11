@@ -209,3 +209,27 @@ func (e *GroupFlashPicElement) Pack() (r []*msg.Elem) {
 	})
 	return
 }
+
+func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
+	r = []*msg.Elem{}
+	res := &msg.ResvAttr{ImageShow: &msg.AnimationImageShow{
+		EffectId: e.EffectId,
+		AnimationParam: []byte("{}"),
+	}}
+	reserve, _ := proto.Marshal(res)
+	r = append(r, &msg.Elem{
+		CustomFace: &msg.CustomFace{
+			FileType: 0,
+			Useful:   1,
+			ImageType: 1001,
+			FileId:   int32(e.FileId),
+			FilePath: e.ImageId,
+			Size:     e.Size,
+			Md5:      e.Md5[:],
+			Flag:     []byte{0x11,0x00,0x00,0x00},
+			//OldData:  imgOld,
+			PbReserve: reserve,
+		},
+	})
+	return
+}

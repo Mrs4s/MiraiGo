@@ -708,3 +708,12 @@ enum SyncFlag {
   CONTINUME = 1;
   STOP = 2;
 }
+
+message ResvAttr {
+    AnimationImageShow image_show = 7;
+}
+
+message AnimationImageShow {
+  int32 effect_id = 1;
+  bytes animation_param = 2;
+}
