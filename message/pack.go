@@ -69,7 +69,7 @@ func (e *ImageElement) Pack() (r []*msg.Elem) {
 	return
 }
 
-func (e *GroupImageElement) Pack(r []*msg.Elem) {
+func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{
 		CustomFace: &msg.CustomFace{
@@ -157,13 +157,13 @@ func (e *FriendFlashPicElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	flash := &msg.MsgElemInfoServtype3{
 		FlashC2CPic: &msg.NotOnlineImage{
-				FilePath:     e.ImageId,
-				ResId:        e.ImageId,
-				OldPicMd5:    false,
-				PicMd5:       e.Md5,
-				DownloadPath: e.ImageId,
-				Original:     1,
-				PbReserve:    []byte{0x78, 0x02},
+			FilePath:     e.ImageId,
+			ResId:        e.ImageId,
+			OldPicMd5:    false,
+			PicMd5:       e.Md5,
+			DownloadPath: e.ImageId,
+			Original:     1,
+			PbReserve:    []byte{0x78, 0x02},
 		},
 	}
 	data, _ := proto.Marshal(flash)
@@ -213,20 +213,20 @@ func (e *GroupFlashPicElement) Pack() (r []*msg.Elem) {
 func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	res := &msg.ResvAttr{ImageShow: &msg.AnimationImageShow{
-		EffectId: e.EffectId,
+		EffectId:       e.EffectId,
 		AnimationParam: []byte("{}"),
 	}}
 	reserve, _ := proto.Marshal(res)
 	r = append(r, &msg.Elem{
 		CustomFace: &msg.CustomFace{
-			FileType: 0,
-			Useful:   1,
+			FileType:  0,
+			Useful:    1,
 			ImageType: 1001,
-			FileId:   int32(e.FileId),
-			FilePath: e.ImageId,
-			Size:     e.Size,
-			Md5:      e.Md5[:],
-			Flag:     []byte{0x11,0x00,0x00,0x00},
+			FileId:    int32(e.FileId),
+			FilePath:  e.ImageId,
+			Size:      e.Size,
+			Md5:       e.Md5[:],
+			Flag:      []byte{0x11, 0x00, 0x00, 0x00},
 			//OldData:  imgOld,
 			PbReserve: reserve,
 		},
