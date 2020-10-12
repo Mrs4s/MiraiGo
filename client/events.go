@@ -27,6 +27,7 @@ type eventHandlers struct {
 	logHandlers                 []func(*QQClient, *LogEvent)
 	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent)
 	notifyHandlers              []func(*QQClient, IGroupNotifyEvent)
+	offlineFileHandlers         []func(*QQClient, *OfflineFileEvent)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -108,6 +109,10 @@ func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
 
 func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent)) {
 	c.eventHandlers.serverUpdatedHandlers = append(c.eventHandlers.serverUpdatedHandlers, f)
+}
+
+func (c *QQClient) OnReceivedOfflineFile(f func(*QQClient, *OfflineFileEvent)) {
+	c.eventHandlers.offlineFileHandlers = append(c.eventHandlers.offlineFileHandlers, f)
 }
 
 func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
@@ -331,6 +336,17 @@ func (c *QQClient) dispatchDisconnectEvent(e *ClientDisconnectedEvent) {
 		return
 	}
 	for _, f := range c.eventHandlers.disconnectHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchOfflineFileEvent(e *OfflineFileEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.offlineFileHandlers {
 		cover(func() {
 			f(c, e)
 		})

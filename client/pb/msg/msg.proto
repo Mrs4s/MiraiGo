@@ -698,9 +698,16 @@ message PbMultiMsgTransmit {
   repeated PbMultiMsgItem pbItemList = 2;
 }
 
-message MsgElemInfo_servtype3{
+message MsgElemInfo_servtype3 {
   CustomFace flash_troop_pic = 1;
   NotOnlineImage flash_c2c_pic = 2;
+}
+
+message SubMsgType0x4Body {
+  NotOnlineFile notOnlineFile = 1;
+  uint32 msgTime = 2;
+  uint32 onlineFileForPolyToOffline = 3;
+  // fileImageInfo
 }
 
 enum SyncFlag {
@@ -710,7 +717,7 @@ enum SyncFlag {
 }
 
 message ResvAttr {
-    AnimationImageShow image_show = 7;
+  AnimationImageShow image_show = 7;
 }
 
 message AnimationImageShow {

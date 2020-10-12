@@ -342,6 +342,24 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
 				_ = c.send(pkt)
+			case 529:
+				sub4 := msg.SubMsgType0X4Body{}
+				if err := proto.Unmarshal(message.Body.MsgContent, &sub4); err != nil {
+					c.Error("unmarshal sub msg 0x4 error: %v", err)
+					continue
+				}
+				if sub4.NotOnlineFile != nil {
+					rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
+					if err != nil {
+						continue
+					}
+					c.dispatchOfflineFileEvent(&OfflineFileEvent{
+						FileName:    string(sub4.NotOnlineFile.FileName),
+						FileSize:    sub4.NotOnlineFile.FileSize,
+						Sender:      message.Head.FromUin,
+						DownloadUrl: rsp.(string),
+					})
+				}
 			}
 		}
 	}

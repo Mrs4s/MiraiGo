@@ -194,6 +194,13 @@ type (
 		Friend *FriendInfo
 	}
 
+	OfflineFileEvent struct {
+		FileName    string
+		FileSize    int64
+		Sender      int64
+		DownloadUrl string
+	}
+
 	OcrResponse struct {
 		Texts    []*TextDetection `json:"texts"`
 		Language string           `json:"language"`
