@@ -354,7 +354,7 @@ message RenewFileRsp {
   int32 retCode = 1;
   string retMsg = 2;
 }
-message ReqBody {
+message C346ReqBody {
   int32 cmd = 1;
   int32 seq = 2;
   RecvListQueryReq recvListQueryReq = 3;
@@ -383,7 +383,7 @@ message ReqBody {
   ApplyGetTrafficReq applyGetTrafficReq = 90002;
   ExtensionReq extensionReq = 99999;
 }
-message RspBody {
+message C346RspBody {
   int32 cmd = 1;
   int32 seq = 2;
   RecvListQueryRsp recvListQueryRsp = 3;
