@@ -10,7 +10,7 @@ import (
 
 func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := &cmd0x346.ReqBody{
+	req := &cmd0x346.C346ReqBody{
 		Cmd:        1200,
 		Seq:        int32(seq),
 		BusinessId: 3,
@@ -30,7 +30,7 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, [
 }
 
 func decodeOfflineFileDownloadResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := cmd0x346.RspBody{}
+	rsp := cmd0x346.C346RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		c.Error("unmarshal cmd0x346 rsp body error: %v", err)
 		return nil, err
