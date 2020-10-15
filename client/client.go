@@ -706,7 +706,7 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.Group
 		goto ok
 	}
 	for i, ip := range rsp.UploadIp {
-		err := c.uploadGroupPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:], 2)
+		err := c.uploadGroupPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:])
 		if err != nil {
 			continue
 		}
