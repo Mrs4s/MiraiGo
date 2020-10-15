@@ -644,31 +644,6 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	}, nil
 }
 
-// PttStore.GroupPttUp
-func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkt := pb.D388RespBody{}
-	err := proto.Unmarshal(payload, &pkt)
-	if err != nil {
-		return nil, err
-	}
-	rsp := pkt.MsgTryUpPttRsp[0]
-	if rsp.Result != 0 {
-		return pttUploadResponse{
-			ResultCode: rsp.Result,
-			Message:    rsp.FailMsg,
-		}, nil
-	}
-	if rsp.BoolFileExit {
-		return pttUploadResponse{IsExists: true}, nil
-	}
-	return pttUploadResponse{
-		UploadKey:  rsp.UpUkey,
-		UploadIp:   rsp.Uint32UpIp,
-		UploadPort: rsp.Uint32UpPort,
-		FileKey:    rsp.FileKey,
-	}, nil
-}
-
 // LongConn.OffPicUp
 func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := cmd0x352.RspBody{}
