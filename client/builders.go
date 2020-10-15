@@ -16,7 +16,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
@@ -1166,53 +1165,6 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x88d_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// MultiMsg.ApplyUp
-func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &multimsg.MultiReqBody{
-		Subcmd:       1,
-		TermType:     5,
-		PlatformType: 9,
-		NetType:      3,
-		BuildVer:     "8.2.0.1296",
-		MultimsgApplyupReq: []*multimsg.MultiMsgApplyUpReq{
-			{
-				DstUin:  groupUin,
-				MsgSize: int64(len(data)),
-				MsgMd5:  hash,
-				MsgType: 3,
-			},
-		},
-		BuType: buType,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// MultiMsg.ApplyDown
-func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &multimsg.MultiReqBody{
-		Subcmd:       2,
-		TermType:     5,
-		PlatformType: 9,
-		NetType:      3,
-		BuildVer:     "8.2.0.1296",
-		MultimsgApplydownReq: []*multimsg.MultiMsgApplyDownReq{
-			{
-				MsgResid: []byte(resId),
-				MsgType:  3,
-			},
-		},
-		BuType:         2,
-		ReqChannelType: 2,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 

@@ -19,12 +19,9 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
-	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -426,7 +423,7 @@ func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
 }
 
 // StatSvc.GetDevLoginInfo
-func decodeDevListResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeDevListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -439,7 +436,7 @@ func decodeDevListResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 }
 
 // SummaryCard.ReqSummaryCard
-func decodeSummaryCardResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeSummaryCardResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -673,7 +670,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interfa
 }
 
 // LongConn.OffPicUp
-func decodeOffPicUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := cmd0x352.RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err
@@ -1064,68 +1061,6 @@ func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error
 	return nil, nil
 }
 
-// MultiMsg.ApplyUp
-func decodeMultiApplyUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	body := multimsg.MultiRspBody{}
-	if err := proto.Unmarshal(payload, &body); err != nil {
-		return nil, err
-	}
-	if len(body.MultimsgApplyupRsp) == 0 {
-		return nil, errors.New("rsp is empty")
-	}
-	rsp := body.MultimsgApplyupRsp[0]
-	switch rsp.Result {
-	case 0:
-		return rsp, nil
-	case 193:
-		return nil, errors.New("too large")
-	}
-	return nil, errors.New("failed")
-}
-
-// MultiMsg.ApplyDown
-func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	body := multimsg.MultiRspBody{}
-	if err := proto.Unmarshal(payload, &body); err != nil {
-		return nil, err
-	}
-	if len(body.MultimsgApplydownRsp) == 0 {
-		return nil, errors.New("not found")
-	}
-	rsp := body.MultimsgApplydownRsp[0]
-	prefix := func() string {
-		if rsp.MsgExternInfo != nil && rsp.MsgExternInfo.ChannelType == 2 {
-			return "https://ssl.htdata.qq.com"
-		}
-		return fmt.Sprintf("http://%s:%d", binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0])), body.MultimsgApplydownRsp[0].Uint32DownPort[0])
-	}()
-	b, err := utils.HttpGetBytes(fmt.Sprintf("%s%s", prefix, string(rsp.ThumbDownPara)), "")
-	if err != nil {
-		return nil, err
-	}
-	if b[0] != 40 {
-		return nil, errors.New("unexpected body data")
-	}
-	tea := binary.NewTeaCipher(body.MultimsgApplydownRsp[0].MsgKey)
-	r := binary.NewReader(b[1:])
-	i1 := r.ReadInt32()
-	i2 := r.ReadInt32()
-	if i1 > 0 {
-		r.ReadBytes(int(i1)) // im msg head
-	}
-	data := tea.Decrypt(r.ReadBytes(int(i2)))
-	lb := longmsg.LongRspBody{}
-	if err = proto.Unmarshal(data, &lb); err != nil {
-		return nil, err
-	}
-	uc := binary.GZipUncompress(lb.MsgDownRsp[0].MsgContent)
-	mt := msg.PbMultiMsgTransmit{}
-	if err = proto.Unmarshal(uc, &mt); err != nil {
-		return nil, err
-	}
-	return &mt, nil
-}
-
 // OidbSvc.0xd79
 func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
@@ -1143,7 +1078,7 @@ func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d6Response(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -1192,7 +1127,7 @@ func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // PttCenterSvr.ShortVideoDownReq
-func decodePttShortVideoDownResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodePttShortVideoDownResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := pttcenter.ShortVideoRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err
@@ -1204,7 +1139,7 @@ func decodePttShortVideoDownResponse(c *QQClient, _ uint16, payload []byte) (int
 }
 
 // LightAppSvc.mini_app_info.GetAppInfoById
-func decodeAppInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeAppInfoResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := qweb.QWebRsp{}
 	rsp := qweb.GetAppInfoByIdRsp{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
