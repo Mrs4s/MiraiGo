@@ -877,12 +877,16 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_ = c.send(pkt)
 }
 
-func (c *QQClient) getCookies() string {
+func (c *QQClient) getSKey() string {
 	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() {
 		c.Debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
 	}
-	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.sigInfo.sKey)
+	return string(c.sigInfo.sKey)
+}
+
+func (c *QQClient) getCookies() string {
+	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.getSKey())
 }
 
 func (c *QQClient) getCookiesWithDomain(domain string) string {
