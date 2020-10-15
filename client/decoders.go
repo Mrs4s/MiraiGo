@@ -88,8 +88,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		}, nil
 	}
 
-	if t == 160 {
-
+	if t == 160 || t == 239 {
 		if t174, ok := m[0x174]; ok { // 短信验证
 			c.t104 = m[0x104]
 			c.t174 = t174
