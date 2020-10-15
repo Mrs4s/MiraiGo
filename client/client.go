@@ -158,6 +158,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"PttCenterSvr.ShortVideoDownReq":                           decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":                 decodeAppInfoResponse,
 			"OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200": decodeOfflineFileDownloadResponse,
+			"PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500":       decodePrivatePttStoreResponse,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
@@ -689,42 +690,6 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 		return rsp.(*OcrResponse), nil
 	}
 	return nil, errors.New("image error")
-}
-
-func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {
-	h := md5.Sum(voice)
-	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
-	r, err := c.sendAndWait(seq, pkt)
-	if err != nil {
-		return nil, err
-	}
-	rsp := r.(pttUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if rsp.IsExists {
-		goto ok
-	}
-	for i, ip := range rsp.UploadIp {
-		err := c.uploadGroupPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:])
-		if err != nil {
-			continue
-		}
-		goto ok
-	}
-	return nil, errors.New("upload failed")
-ok:
-	return &message.GroupVoiceElement{
-		Ptt: &msg.Ptt{
-			FileType:     4,
-			SrcUin:       c.Uin,
-			FileMd5:      h[:],
-			FileName:     hex.EncodeToString(h[:]) + ".amr",
-			FileSize:     int32(len(voice)),
-			GroupFileKey: rsp.FileKey,
-			BoolValid:    true,
-			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
-		}}, nil
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {

@@ -57,10 +57,10 @@ func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId
 }
 
 // 只是为了写的跟上面一样长(bushi，当然也应该是最快的玩法
-func (c *QQClient) uploadGroupPtt(ip, port int32, updKey, fileKey, data, md5 []byte) error {
+func (c *QQClient) uploadPtt(ip string, port int32, updKey, fileKey, data, md5 []byte) error {
 	url := make([]byte, 512)[:0]
 	url = append(url, "http://"...)
-	url = append(url, binary.UInt32ToIPV4Address(uint32(ip))...)
+	url = append(url, ip...)
 	url = append(url, ':')
 	url = strconv.AppendInt(url, int64(port), 10)
 	url = append(url, "/?ver=4679&ukey="...)

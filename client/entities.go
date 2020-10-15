@@ -245,7 +245,7 @@ type (
 
 		ResourceId string
 		UploadKey  []byte
-		UploadIp   []int32
+		UploadIp   []string
 		UploadPort []int32
 		FileKey    []byte
 	}

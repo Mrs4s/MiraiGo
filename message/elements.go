@@ -47,6 +47,11 @@ type GroupVoiceElement struct {
 	Ptt  *msg.Ptt
 }
 
+type PrivateVoiceElement struct {
+	Data []byte
+	Ptt  *msg.Ptt
+}
+
 type FriendImageElement struct {
 	ImageId string
 	Md5     []byte
@@ -116,7 +121,7 @@ type GroupShowPicElement struct {
 	EffectId int32
 }
 
-type FriendFlashPicElement struct{
+type FriendFlashPicElement struct {
 	FriendImageElement
 }
 
