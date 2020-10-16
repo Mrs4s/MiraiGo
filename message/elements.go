@@ -272,6 +272,10 @@ func (e *GroupVoiceElement) Type() ElementType {
 	return Voice
 }
 
+func (e *PrivateVoiceElement) Type() ElementType {
+	return Voice
+}
+
 func (e *VoiceElement) Type() ElementType {
 	return Voice
 }

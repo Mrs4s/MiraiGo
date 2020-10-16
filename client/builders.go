@@ -593,12 +593,20 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 // MessageSvc.PbSendMsg
 func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
 	seq := c.nextSeq()
+	var ptt *msg.Ptt
+	if len(m) > 0 {
+		if p, ok := m[0].(*message.PrivateVoiceElement); ok {
+			ptt = p.Ptt
+			m = []message.IMessageElement{}
+		}
+	}
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: target}},
 		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m, false),
+				Ptt:   ptt,
 			},
 		},
 		MsgSeq:  msgSeq,
