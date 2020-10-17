@@ -1021,6 +1021,7 @@ func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	r := jce.NewJceReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
 	tips := r.ReadString(2)
 	c.lastLostMsg = tips
+	c.NetLooping = false
 	c.Online = false
 	return nil, nil
 }
@@ -1028,6 +1029,7 @@ func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{
 // StatSvc.ReqMSFOffline
 func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
 	c.lastLostMsg = "服务器端强制下线."
+	c.NetLooping = false
 	c.Online = false
 	return nil, nil
 }
