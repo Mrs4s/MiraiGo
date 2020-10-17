@@ -9,37 +9,37 @@ import (
 )
 
 type TextElement struct {
-	Content string
+	Content string `json:"content"`
 }
 
 type ImageElement struct {
-	Filename string
-	Size     int32
-	Width    int32
-	Height   int32
-	Url      string
-	Md5      []byte
-	Data     []byte
+	Filename string `json:"filename"`
+	Size     int32  `json:"size"`
+	Width    int32  `json:"width"`
+	Height   int32  `json:"height"`
+	Url      string `json:"url"`
+	Md5      []byte `json:"md5"`
+	Data     []byte `json:"data"`
 }
 
 type GroupImageElement struct {
-	ImageId string
-	FileId  int64
-	Size    int32
-	Width   int32
-	Height  int32
-	Md5     []byte
-	Url     string
+	ImageId string `json:"image_id"`
+	FileId  int64  `json:"file_id"`
+	Size    int32  `json:"size"`
+	Width   int32  `json:"width"`
+	Height  int32  `json:"height"`
+	Md5     []byte `json:"md5"`
+	Url     string `json:"url"`
 }
 
 type VoiceElement struct {
-	Name string
-	Md5  []byte
-	Size int32
-	Url  string
+	Name string `json:"name"`
+	Md5  []byte `json:"md5"`
+	Size int32  `json:"size"`
+	Url  string `json:"url"`
 
 	// --- sending ---
-	Data []byte
+	Data []byte `json:"data"`
 }
 
 type GroupVoiceElement struct {
@@ -53,63 +53,63 @@ type PrivateVoiceElement struct {
 }
 
 type FriendImageElement struct {
-	ImageId string
-	Md5     []byte
-	Url     string
+	ImageId string `json:"image_id"`
+	Md5     []byte `json:"md5"`
+	Url     string `json:"url"`
 }
 
 type FaceElement struct {
-	Index int32
-	Name  string
+	Index int32  `json:"index"`
+	Name  string `json:"name"`
 }
 
 type AtElement struct {
-	Target  int64
-	Display string
+	Target  int64  `json:"target"`
+	Display string `json:"display"`
 }
 
 type GroupFileElement struct {
-	Name  string
-	Size  int64
-	Path  string
-	Busid int32
+	Name  string `json:"name"`
+	Size  int64  `json:"size"`
+	Path  string `json:"path"`
+	Busid int32  `json:"busid"`
 }
 
 type ReplyElement struct {
-	ReplySeq int32
-	Sender   int64
-	Time     int32
+	ReplySeq int32 `json:"reply_seq"`
+	Sender   int64 `json:"sender"`
+	Time     int32 `json:"time"`
 	Elements []IMessageElement
 
 	//original []*msg.Elem
 }
 
 type ShortVideoElement struct {
-	Name string
-	Uuid []byte
-	Size int32
-	Md5  []byte
-	Url  string
+	Name string `json:"name"`
+	Uuid []byte `json:"uuid"`
+	Size int32  `json:"size"`
+	Md5  []byte `json:"md5"`
+	Url  string `json:"url"`
 }
 
 type ServiceElement struct {
-	Id      int32
-	Content string
-	ResId   string
-	SubType string
+	Id      int32  `json:"id"`
+	Content string `json:"content"`
+	ResId   string `json:"res_id"`
+	SubType string `json:"sub_type"`
 }
 
 type ForwardElement struct {
-	ResId string
+	ResId string `json:"res_id"`
 }
 
 type LightAppElement struct {
-	Content string
+	Content string `json:"content"`
 }
 
 type RedBagElement struct {
-	MsgType RedBagMessageType
-	Title   string
+	MsgType RedBagMessageType `json:"msg_type"`
+	Title   string            `json:"title"`
 }
 
 type GroupFlashPicElement struct {
@@ -118,7 +118,7 @@ type GroupFlashPicElement struct {
 
 type GroupShowPicElement struct {
 	GroupImageElement
-	EffectId int32
+	EffectId          int32 `json:"effect_id"`
 }
 
 type FriendFlashPicElement struct {

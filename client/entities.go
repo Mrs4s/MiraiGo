@@ -39,24 +39,24 @@ type (
 	}
 
 	FriendInfo struct {
-		Uin      int64
-		Nickname string
-		Remark   string
-		FaceId   int16
+		Uin      int64  `json:"uin"`
+		Nickname string `json:"nickname"`
+		Remark   string `json:"remark"`
+		FaceId   int16  `json:"face_id"`
 
 		//msgSeqList *utils.Cache
 	}
 
 	SummaryCardInfo struct {
-		Uin       int64
-		Sex       byte
-		Age       uint8
-		Nickname  string
-		Level     int32
-		City      string
-		Sign      string
-		Mobile    string
-		LoginDays int64
+		Uin       int64  `json:"uin"`
+		Sex       byte   `json:"sex"`
+		Age       uint8  `json:"age"`
+		Nickname  string `json:"nickname"`
+		Level     int32  `json:"level"`
+		City      string `json:"city"`
+		Sign      string `json:"sign"`
+		Mobile    string `json:"mobile"`
+		LoginDays int64  `json:"login_days"`
 	}
 
 	FriendListResponse struct {
@@ -65,68 +65,68 @@ type (
 	}
 
 	GroupInfo struct {
-		Uin            int64
-		Code           int64
-		Name           string
-		Memo           string
-		OwnerUin       int64
-		MemberCount    uint16
-		MaxMemberCount uint16
-		Members        []*GroupMemberInfo
+		Uin            int64              `json:"uin"`
+		Code           int64              `json:"code"`
+		Name           string             `json:"name"`
+		Memo           string             `json:"memo"`
+		OwnerUin       int64              `json:"owner_uin"`
+		MemberCount    uint16             `json:"member_count"`
+		MaxMemberCount uint16             `json:"max_member_count"`
+		Members        []*GroupMemberInfo `json:"members"`
 
 		client *QQClient
 		lock   sync.RWMutex
 	}
 
 	GroupMemberInfo struct {
-		Group                  *GroupInfo
-		Uin                    int64
-		Gender                 byte
-		Nickname               string
-		CardName               string
-		Level                  uint16
-		JoinTime               int64
-		LastSpeakTime          int64
-		SpecialTitle           string
-		SpecialTitleExpireTime int64
-		Permission             MemberPermission
+		Group                  *GroupInfo       `json:"group"`
+		Uin                    int64            `json:"uin"`
+		Gender                 byte             `json:"gender"`
+		Nickname               string           `json:"nickname"`
+		CardName               string           `json:"card_name"`
+		Level                  uint16           `json:"level"`
+		JoinTime               int64            `json:"join_time"`
+		LastSpeakTime          int64            `json:"last_speak_time"`
+		SpecialTitle           string           `json:"special_title"`
+		SpecialTitleExpireTime int64            `json:"special_title_expire_time"`
+		Permission             MemberPermission `json:"permission"`
 	}
 
 	GroupMuteEvent struct {
-		GroupCode   int64
-		OperatorUin int64
-		TargetUin   int64
-		Time        int32
+		GroupCode   int64 `json:"group_code"`
+		OperatorUin int64 `json:"operator_uin"`
+		TargetUin   int64 `json:"target_uin"`
+		Time        int32 `json:"time"`
 	}
 
 	GroupMessageRecalledEvent struct {
-		GroupCode   int64
-		OperatorUin int64
-		AuthorUin   int64
-		MessageId   int32
-		Time        int32
+		GroupCode   int64 `json:"group_code"`
+		OperatorUin int64 `json:"operator_uin"`
+		AuthorUin   int64 `json:"author_uin"`
+		MessageId   int32 `json:"message_id"`
+		Time        int32 `json:"time"`
 	}
 
 	FriendMessageRecalledEvent struct {
-		FriendUin int64
-		MessageId int32
-		Time      int64
+		FriendUin int64 `json:"friend_uin"`
+		MessageId int32 `json:"message_id"`
+		Time      int64 `json:"time"`
 	}
 
 	GroupLeaveEvent struct {
-		Group    *GroupInfo
-		Operator *GroupMemberInfo
+		Group    *GroupInfo       `json:"group"`
+		Operator *GroupMemberInfo `json:"operator"`
 	}
 
 	MemberJoinGroupEvent struct {
-		Group  *GroupInfo
-		Member *GroupMemberInfo
+		Group  *GroupInfo       `json:"group"`
+		Member *GroupMemberInfo `json:"member"`
 	}
 
 	MemberCardUpdatedEvent struct {
-		Group   *GroupInfo
-		OldCard string
-		Member  *GroupMemberInfo
+		Group   *GroupInfo       `json:"group"`
+		OldCard string           `json:"old_card"`
+		Member  *GroupMemberInfo `json:"member"`
 	}
 
 	IGroupNotifyEvent interface {
@@ -135,55 +135,55 @@ type (
 	}
 
 	MemberLeaveGroupEvent struct {
-		Group    *GroupInfo
-		Member   *GroupMemberInfo
-		Operator *GroupMemberInfo
+		Group    *GroupInfo       `json:"group"`
+		Member   *GroupMemberInfo `json:"member"`
+		Operator *GroupMemberInfo `json:"operator"`
 	}
 
 	MemberPermissionChangedEvent struct {
-		Group         *GroupInfo
-		Member        *GroupMemberInfo
-		OldPermission MemberPermission
-		NewPermission MemberPermission
+		Group         *GroupInfo       `json:"group"`
+		Member        *GroupMemberInfo `json:"member"`
+		OldPermission MemberPermission `json:"old_permission"`
+		NewPermission MemberPermission `json:"new_permission"`
 	}
 
 	ClientDisconnectedEvent struct {
-		Message string
+		Message string `json:"message"`
 	}
 
 	GroupInvitedRequest struct {
-		RequestId   int64
-		InvitorUin  int64
-		InvitorNick string
-		GroupCode   int64
-		GroupName   string
+		RequestId   int64  `json:"request_id"`
+		InvitorUin  int64  `json:"invitor_uin"`
+		InvitorNick string `json:"invitor_nick"`
+		GroupCode   int64  `json:"group_code"`
+		GroupName   string `json:"group_name"`
 
 		client *QQClient
 	}
 
 	UserJoinGroupRequest struct {
-		RequestId     int64
-		Message       string
-		RequesterUin  int64
-		RequesterNick string
-		GroupCode     int64
-		GroupName     string
+		RequestId     int64  `json:"request_id"`
+		Message       string `json:"message"`
+		RequesterUin  int64  `json:"requester_uin"`
+		RequesterNick string `json:"requester_nick"`
+		GroupCode     int64  `json:"group_code"`
+		GroupName     string `json:"group_name"`
 
 		client *QQClient
 	}
 
 	NewFriendRequest struct {
-		RequestId     int64
-		Message       string
-		RequesterUin  int64
-		RequesterNick string
+		RequestId     int64  `json:"request_id"`
+		Message       string `json:"message"`
+		RequesterUin  int64  `json:"requester_uin"`
+		RequesterNick string `json:"requester_nick"`
 
 		client *QQClient
 	}
 
 	LogEvent struct {
-		Type    string
-		Message string
+		Type    string `json:"type"`
+		Message string `json:"message"`
 	}
 
 	ServerUpdatedEvent struct {
@@ -191,14 +191,14 @@ type (
 	}
 
 	NewFriendEvent struct {
-		Friend *FriendInfo
+		Friend *FriendInfo `json:"friend"`
 	}
 
 	OfflineFileEvent struct {
-		FileName    string
-		FileSize    int64
-		Sender      int64
-		DownloadUrl string
+		FileName    string `json:"file_name"`
+		FileSize    int64  `json:"file_size"`
+		Sender      int64  `json:"sender"`
+		DownloadUrl string `json:"download_url"`
 	}
 
 	OcrResponse struct {

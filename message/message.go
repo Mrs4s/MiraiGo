@@ -16,29 +16,29 @@ import (
 
 type (
 	PrivateMessage struct {
-		Id         int32
-		InternalId int32
-		Target     int64
-		Time       int32
-		Sender     *Sender
+		Id         int32   `json:"id"`
+		InternalId int32   `json:"internal_id"`
+		Target     int64   `json:"target"`
+		Time       int32   `json:"time"`
+		Sender     *Sender `json:"sender"`
 		Elements   []IMessageElement
 	}
 
 	TempMessage struct {
-		Id        int32
-		GroupCode int64
-		GroupName string
-		Sender    *Sender
+		Id        int32   `json:"id"`
+		GroupCode int64   `json:"group_code"`
+		GroupName string  `json:"group_name"`
+		Sender    *Sender `json:"sender"`
 		Elements  []IMessageElement
 	}
 
 	GroupMessage struct {
-		Id         int32
-		InternalId int32
-		GroupCode  int64
-		GroupName  string
-		Sender     *Sender
-		Time       int32
+		Id         int32   `json:"id"`
+		InternalId int32   `json:"internal_id"`
+		GroupCode  int64   `json:"group_code"`
+		GroupName  string  `json:"group_name"`
+		Sender     *Sender `json:"sender"`
+		Time       int32   `json:"time"`
 		Elements   []IMessageElement
 		//OriginalElements []*msg.Elem
 	}
@@ -48,30 +48,30 @@ type (
 	}
 
 	ForwardMessage struct {
-		Nodes []*ForwardNode
+		Nodes []*ForwardNode `json:"nodes"`
 	}
 
 	ForwardNode struct {
-		SenderId   int64
-		SenderName string
-		Time       int32
-		Message    []IMessageElement
+		SenderId   int64             `json:"sender_id"`
+		SenderName string            `json:"sender_name"`
+		Time       int32             `json:"time"`
+		Message    []IMessageElement `json:"message"`
 	}
 
 	RichMessage struct {
-		Title      string
-		Summary    string
-		Brief      string
-		Url        string
-		PictureUrl string
-		MusicUrl   string
+		Title      string `json:"title"`
+		Summary    string `json:"summary"`
+		Brief      string `json:"brief"`
+		Url        string `json:"url"`
+		PictureUrl string `json:"picture_url"`
+		MusicUrl   string `json:"music_url"`
 	}
 
 	Sender struct {
-		Uin      int64
-		Nickname string
-		CardName string
-		IsFriend bool
+		Uin      int64  `json:"uin"`
+		Nickname string `json:"nickname"`
+		CardName string `json:"card_name"`
+		IsFriend bool   `json:"is_friend"`
 	}
 
 	IMessageElement interface {
