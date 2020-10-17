@@ -39,6 +39,7 @@ type QQClient struct {
 	FriendList []*FriendInfo
 	GroupList  []*GroupInfo
 	Online     bool
+	NetLooping bool
 
 	SequenceId              int32
 	OutGoingPacketSessionId []byte
@@ -950,9 +951,10 @@ func (c *QQClient) connect() error {
 }
 
 func (c *QQClient) Disconnect() {
-	if c.Online {
-		c.Online = false
-		c.Conn.Close()
+	c.NetLooping = false
+	c.Online = false
+	if c.Conn != nil {
+		_ = c.Conn.Close()
 	}
 }
 
@@ -1037,10 +1039,11 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 }
 
 func (c *QQClient) netLoop() {
+	c.NetLooping = true
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
 	errCount := 0
-	for c.Online {
+	for c.NetLooping {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			c.Error("connection dropped by server: %v", err)
@@ -1055,7 +1058,7 @@ func (c *QQClient) netLoop() {
 			retry++
 			time.Sleep(time.Second * 3)
 			if retry > 10 {
-				c.Online = false
+				break
 			}
 			continue
 		}
@@ -1065,7 +1068,7 @@ func (c *QQClient) netLoop() {
 			c.Error("parse incoming packet error: %v", err)
 			errCount++
 			if errCount > 5 {
-				c.Online = false
+				break
 			}
 			//log.Println("parse incoming packet error: " + err.Error())
 			continue
@@ -1107,6 +1110,7 @@ func (c *QQClient) netLoop() {
 			}
 		}()
 	}
+	c.NetLooping = false
 	c.Online = false
 	_ = c.Conn.Close()
 	if c.lastLostMsg == "" {
