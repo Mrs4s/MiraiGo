@@ -118,7 +118,7 @@ type GroupFlashPicElement struct {
 
 type GroupShowPicElement struct {
 	GroupImageElement
-	EffectId          int32 `json:"effect_id"`
+	EffectId int32 `json:"effect_id"`
 }
 
 type FriendFlashPicElement struct {
