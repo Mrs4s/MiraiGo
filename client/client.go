@@ -201,7 +201,6 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.Online = true
 	go c.netLoop()
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
@@ -210,6 +209,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.Online = true
 		c.lastLostMsg = ""
 		c.registerClient()
 		if !c.heartbeatEnabled {
@@ -228,6 +228,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.Online = true
 		c.registerClient()
 		if !c.heartbeatEnabled {
 			c.startHeartbeat()
@@ -243,6 +244,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.Online = true
 		c.registerClient()
 		if !c.heartbeatEnabled {
 			c.startHeartbeat()
