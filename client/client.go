@@ -621,11 +621,6 @@ func (c *QQClient) sendGroupPoke(groupCode, target int64) {
 	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
 }
 
-func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
-	_, pkt := c.buildGroupRecallPacket(groupCode, msgId, msgInternalId)
-	_ = c.send(pkt)
-}
-
 func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {
 	h := md5.Sum(img)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, h[:], int32(len(img)))

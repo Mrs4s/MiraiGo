@@ -888,30 +888,6 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqId, requester int64, acce
 	return seq, packet
 }
 
-// PbMessageSvc.PbMsgWithDraw
-func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &msg.MsgWithDrawReq{
-		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
-			{
-				SubCmd:    1,
-				GroupCode: groupCode,
-				MsgList: []*msg.GroupMsgInfo{
-					{
-						MsgSeq:    msgSeq,
-						MsgRandom: msgRan,
-						MsgType:   0,
-					},
-				},
-				UserDef: []byte{0x08, 0x00},
-			},
-		},
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgWithDraw", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // friendlist.ModifyGroupCardReq
 func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag string) (uint16, []byte) {
 	seq := c.nextSeq()

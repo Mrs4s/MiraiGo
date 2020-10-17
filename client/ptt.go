@@ -14,6 +14,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// 语音相关处理逻辑
+
+// UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
 func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {
 	h := md5.Sum(voice)
 	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
@@ -50,6 +53,7 @@ ok:
 		}}, nil
 }
 
+// UploadPrivatePtt 将语音数据使用好友语音通道上传到服务器, 返回 message.PrivateVoiceElement 可直接发送
 func (c *QQClient) UploadPrivatePtt(target int64, voice []byte) (*message.PrivateVoiceElement, error) {
 	h := md5.Sum(voice)
 	i, err := c.sendAndWait(c.buildPrivatePttStorePacket(target, h[:], int32(len(voice)), int32(len(voice))))

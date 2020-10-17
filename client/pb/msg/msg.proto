@@ -724,3 +724,9 @@ message AnimationImageShow {
   int32 effect_id = 1;
   bytes animation_param = 2;
 }
+
+message UinTypeUserDef {
+  int32 fromUinType = 1;
+  int64 fromGroupCode = 2;
+  string fileUuid = 3;
+}
