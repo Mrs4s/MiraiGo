@@ -16,7 +16,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
@@ -594,12 +593,20 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 // MessageSvc.PbSendMsg
 func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
 	seq := c.nextSeq()
+	var ptt *msg.Ptt
+	if len(m) > 0 {
+		if p, ok := m[0].(*message.PrivateVoiceElement); ok {
+			ptt = p.Ptt
+			m = []message.IMessageElement{}
+		}
+	}
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: target}},
 		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m, false),
+				Ptt:   ptt,
 			},
 		},
 		MsgSeq:  msgSeq,
@@ -762,37 +769,6 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 	return
 }
 
-// PttStore.GroupPttUp
-func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, codec, voiceLength int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &pb.D388ReqBody{
-		NetType: 3,
-		Subcmd:  3,
-		MsgTryUpPttReq: []*pb.TryUpPttReq{
-			{
-				GroupCode:     groupCode,
-				SrcUin:        c.Uin,
-				FileMd5:       md5,
-				FileSize:      int64(size),
-				FileName:      md5,
-				SrcTerm:       5,
-				PlatformType:  9,
-				BuType:        4,
-				InnerIp:       0,
-				BuildVer:      "6.5.5.663",
-				VoiceLength:   voiceLength,
-				Codec:         codec,
-				VoiceType:     1,
-				BoolNewUpChan: true,
-			},
-		},
-		Extension: EmptyBytes,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PttStore.GroupPttUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // ProfileService.Pb.ReqSystemMsgNew.Group
 func (c *QQClient) buildSystemMsgNewGroupPacket() (uint16, []byte) {
 	seq := c.nextSeq()
@@ -909,30 +885,6 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqId, requester int64, acce
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgAction.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// PbMessageSvc.PbMsgWithDraw
-func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &msg.MsgWithDrawReq{
-		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
-			{
-				SubCmd:    1,
-				GroupCode: groupCode,
-				MsgList: []*msg.GroupMsgInfo{
-					{
-						MsgSeq:    msgSeq,
-						MsgRandom: msgRan,
-						MsgType:   0,
-					},
-				},
-				UserDef: []byte{0x08, 0x00},
-			},
-		},
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgWithDraw", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1169,53 +1121,6 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 	return seq, packet
 }
 
-// MultiMsg.ApplyUp
-func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &multimsg.MultiReqBody{
-		Subcmd:       1,
-		TermType:     5,
-		PlatformType: 9,
-		NetType:      3,
-		BuildVer:     "8.2.0.1296",
-		MultimsgApplyupReq: []*multimsg.MultiMsgApplyUpReq{
-			{
-				DstUin:  groupUin,
-				MsgSize: int64(len(data)),
-				MsgMd5:  hash,
-				MsgType: 3,
-			},
-		},
-		BuType: buType,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// MultiMsg.ApplyDown
-func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &multimsg.MultiReqBody{
-		Subcmd:       2,
-		TermType:     5,
-		PlatformType: 9,
-		NetType:      3,
-		BuildVer:     "8.2.0.1296",
-		MultimsgApplydownReq: []*multimsg.MultiMsgApplyDownReq{
-			{
-				MsgResid: []byte(resId),
-				MsgType:  3,
-			},
-		},
-		BuType:         2,
-		ReqChannelType: 2,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // ProfileService.GroupMngReq
 func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -1332,6 +1237,7 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+
 func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D79ReqBody{

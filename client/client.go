@@ -39,6 +39,7 @@ type QQClient struct {
 	FriendList []*FriendInfo
 	GroupList  []*GroupInfo
 	Online     bool
+	NetLooping bool
 
 	SequenceId              int32
 	OutGoingPacketSessionId []byte
@@ -158,6 +159,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"PttCenterSvr.ShortVideoDownReq":                           decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":                 decodeAppInfoResponse,
 			"OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200": decodeOfflineFileDownloadResponse,
+			"PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500":       decodePrivatePttStoreResponse,
 		},
 		sigInfo:                &loginSigInfo{},
 		requestPacketRequestId: 1921334513,
@@ -200,7 +202,6 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.Online = true
 	go c.netLoop()
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
@@ -209,6 +210,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.Online = true
 		c.lastLostMsg = ""
 		c.registerClient()
 		if !c.heartbeatEnabled {
@@ -227,6 +229,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.Online = true
 		c.registerClient()
 		if !c.heartbeatEnabled {
 			c.startHeartbeat()
@@ -242,6 +245,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
+		c.Online = true
 		c.registerClient()
 		if !c.heartbeatEnabled {
 			c.startHeartbeat()
@@ -620,11 +624,6 @@ func (c *QQClient) sendGroupPoke(groupCode, target int64) {
 	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
 }
 
-func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) {
-	_, pkt := c.buildGroupRecallPacket(groupCode, msgId, msgInternalId)
-	_ = c.send(pkt)
-}
-
 func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {
 	h := md5.Sum(img)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, h[:], int32(len(img)))
@@ -689,42 +688,6 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 		return rsp.(*OcrResponse), nil
 	}
 	return nil, errors.New("image error")
-}
-
-func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {
-	h := md5.Sum(voice)
-	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
-	r, err := c.sendAndWait(seq, pkt)
-	if err != nil {
-		return nil, err
-	}
-	rsp := r.(pttUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if rsp.IsExists {
-		goto ok
-	}
-	for i, ip := range rsp.UploadIp {
-		err := c.uploadGroupPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:], 2)
-		if err != nil {
-			continue
-		}
-		goto ok
-	}
-	return nil, errors.New("upload failed")
-ok:
-	return &message.GroupVoiceElement{
-		Ptt: &msg.Ptt{
-			FileType:     4,
-			SrcUin:       c.Uin,
-			FileMd5:      h[:],
-			FileName:     hex.EncodeToString(h[:]) + ".amr",
-			FileSize:     int32(len(voice)),
-			GroupFileKey: rsp.FileKey,
-			BoolValid:    true,
-			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
-		}}, nil
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
@@ -877,12 +840,16 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_ = c.send(pkt)
 }
 
-func (c *QQClient) getCookies() string {
+func (c *QQClient) getSKey() string {
 	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() {
 		c.Debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
 	}
-	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.sigInfo.sKey)
+	return string(c.sigInfo.sKey)
+}
+
+func (c *QQClient) getCookies() string {
+	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.getSKey())
 }
 
 func (c *QQClient) getCookiesWithDomain(domain string) string {
@@ -984,9 +951,10 @@ func (c *QQClient) connect() error {
 }
 
 func (c *QQClient) Disconnect() {
-	if c.Online {
-		c.Online = false
-		c.Conn.Close()
+	c.NetLooping = false
+	c.Online = false
+	if c.Conn != nil {
+		_ = c.Conn.Close()
 	}
 }
 
@@ -1071,10 +1039,11 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 }
 
 func (c *QQClient) netLoop() {
+	c.NetLooping = true
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
 	errCount := 0
-	for c.Online {
+	for c.NetLooping {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			c.Error("connection dropped by server: %v", err)
@@ -1089,7 +1058,7 @@ func (c *QQClient) netLoop() {
 			retry++
 			time.Sleep(time.Second * 3)
 			if retry > 10 {
-				c.Online = false
+				break
 			}
 			continue
 		}
@@ -1099,7 +1068,7 @@ func (c *QQClient) netLoop() {
 			c.Error("parse incoming packet error: %v", err)
 			errCount++
 			if errCount > 5 {
-				c.Online = false
+				break
 			}
 			//log.Println("parse incoming packet error: " + err.Error())
 			continue
@@ -1141,6 +1110,7 @@ func (c *QQClient) netLoop() {
 			}
 		}()
 	}
+	c.NetLooping = false
 	c.Online = false
 	_ = c.Conn.Close()
 	if c.lastLostMsg == "" {

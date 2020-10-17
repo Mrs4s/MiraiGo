@@ -47,6 +47,11 @@ type GroupVoiceElement struct {
 	Ptt  *msg.Ptt
 }
 
+type PrivateVoiceElement struct {
+	Data []byte
+	Ptt  *msg.Ptt
+}
+
 type FriendImageElement struct {
 	ImageId string
 	Md5     []byte
@@ -264,6 +269,10 @@ func (e *GroupFileElement) Type() ElementType {
 }
 
 func (e *GroupVoiceElement) Type() ElementType {
+	return Voice
+}
+
+func (e *PrivateVoiceElement) Type() ElementType {
 	return Voice
 }
 
