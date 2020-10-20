@@ -1101,7 +1101,7 @@ func (c *QQClient) netLoop() {
 			}
 			rsp, err := decoder(c, pkt.SequenceId, payload)
 			if err != nil {
-				//c.Error("decode pkt %v error: %v", pkt.CommandName, err)
+				c.Debug("decode pkt %v error: %v", pkt.CommandName, err)
 				//log.Println("decode", pkt.CommandName, "error:", err)
 			}
 			if f, ok := c.handlers.Load(pkt.SequenceId); ok {
