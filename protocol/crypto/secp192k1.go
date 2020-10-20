@@ -1,5 +1,24 @@
 package crypto
 
+// Copyright 2010 The Go Authors. All rights reserved.
+// Copyright 2011 ThePiachu. All rights reserved.
+// Copyright 2020 LXY1226. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package bitelliptic implements several Koblitz elliptic curves over prime
+// fields.
+
+// Origin File at:
+// https://github.com/ThePiachu/Split-Vanity-Miner-Golang/blob/03677bc96ff4f5c2771e528562360ccbc513db8d/src/pkg/bitelliptic/bitelliptic.go
+
+// This package operates, internally, on Jacobian coordinates. For a given
+// (x, y) position on the curve, the Jacobian coordinates are (x1, y1, z1)
+// where x = x1/z1² and y = y1/z1³. The greatest speedups come when the whole
+// calculation can be performed within the transform (as in ScalarMult and
+// ScalarBaseMult). But even for Add and Double, it's faster to apply and
+// reverse the transform than to operate in affine coordinates.
+
 import (
 	"io"
 	"math/big"
@@ -37,6 +56,9 @@ var secp192k1 = &BitCurve{
 	BitSize: 192,
 }
 
+//TODO: double check if the function is okay
+// affineFromJacobian reverses the Jacobian transform. See the comment at the
+// top of the file.
 func (BitCurve *BitCurve) affineFromJacobian(x, y, z *big.Int) (xOut, yOut *big.Int) {
 	zinv := new(big.Int).ModInverse(z, BitCurve.P)
 	zinvsq := new(big.Int).Mul(zinv, zinv)
@@ -165,19 +187,19 @@ func (BitCurve *BitCurve) ScalarMult(Bx, By *big.Int, k []byte) (*big.Int, *big.
 	z := Bz
 
 	seenFirstTrue := false
-	for _, byte := range k {
+	for _, b := range k {
 		for bitNum := 0; bitNum < 8; bitNum++ {
 			if seenFirstTrue {
 				x, y, z = BitCurve.doubleJacobian(x, y, z)
 			}
-			if byte&0x80 == 0x80 {
+			if b&0x80 == 0x80 {
 				if !seenFirstTrue {
 					seenFirstTrue = true
 				} else {
 					x, y, z = BitCurve.addJacobian(Bx, By, Bz, x, y, z)
 				}
 			}
-			byte <<= 1
+			b <<= 1
 		}
 	}
 
@@ -204,7 +226,7 @@ func (BitCurve *BitCurve) GenerateKey(rand io.Reader) (priv []byte, x, y *big.In
 	priv = make([]byte, byteLen)
 
 	for x == nil {
-		_, err = io.ReadFull(rand, priv)
+		_, err = rand.Read(priv)
 		if err != nil {
 			return
 		}

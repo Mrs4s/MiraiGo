@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+option go_package = ".;oidb";
+
+message DeleteFileReqBody {
+  int64 groupCode = 1;
+  int32 appId = 2;
+  int32 busId = 3;
+  string parentFolderId = 4;
+  string fileId = 5;
+}
+message DeleteFileRspBody {
+  int32 retCode = 1;
+  string retMsg = 2;
+  string clientWording = 3;
+}
+message DownloadFileReqBody {
+  int64 groupCode = 1;
+  int32 appId = 2;
+  int32 busId = 3;
+  string fileId = 4;
+  bool boolThumbnailReq = 5;
+  int32 urlType = 6;
+  bool boolPreviewReq = 7;
+}
+message DownloadFileRspBody {
+  int32 retCode = 1;
+  string retMsg = 2;
+  string clientWording = 3;
+  string downloadIp = 4;
+  bytes downloadDns = 5;
+  bytes downloadUrl = 6;
+  bytes sha = 7;
+  bytes sha3 = 8;
+  bytes md5 = 9;
+  bytes cookieVal = 10;
+  string saveFileName = 11;
+  int32 previewPort = 12;
+}
+message MoveFileReqBody {
+  int64 groupCode = 1;
+  int32 appId = 2;
+  int32 busId = 3;
+  string fileId = 4;
+  string parentFolderId = 5;
+  string destFolderId = 6;
+}
+message MoveFileRspBody {
+  int32 retCode = 1;
+  string retMsg = 2;
+  string clientWording = 3;
+  string parentFolderId = 4;
+}
+message RenameFileReqBody {
+  int64 groupCode = 1;
+  int32 appId = 2;
+  int32 busId = 3;
+  string fileId = 4;
+  string parentFolderId = 5;
+  string newFileName = 6;
+}
+message RenameFileRspBody {
+  int32 retCode = 1;
+  string retMsg = 2;
+  string clientWording = 3;
+}
+message D6D6ReqBody {
+  UploadFileReqBody uploadFileReq = 1;
+  ResendReqBody resendFileReq = 2;
+  DownloadFileReqBody downloadFileReq = 3;
+  DeleteFileReqBody deleteFileReq = 4;
+  RenameFileReqBody renameFileReq = 5;
+  MoveFileReqBody moveFileReq = 6;
+}
+message ResendReqBody {
+  int64 groupCode = 1;
+  int32 appId = 2;
+  int32 busId = 3;
+  string fileId = 4;
+  bytes sha = 5;
+}
+message ResendRspBody {
+  int32 retCode = 1;
+  string retMsg = 2;
+  string clientWording = 3;
+  string uploadIp = 4;
+  bytes fileKey = 5;
+  bytes checkKey = 6;
+}
+message D6D6RspBody {
+  UploadFileRspBody uploadFileRsp = 1;
+  ResendRspBody resendFileRsp = 2;
+  DownloadFileRspBody downloadFileRsp = 3;
+  DeleteFileRspBody deleteFileRsp = 4;
+  RenameFileRspBody renameFileRsp = 5;
+  MoveFileRspBody moveFileRsp = 6;
+}
+message UploadFileReqBody {
+  int64 groupCode = 1;
+  int32 appId = 2;
+  int32 busId = 3;
+  int32 entrance = 4;
+  string parentFolderId = 5;
+  string fileName = 6;
+  string localPath = 7;
+  int64 int64FileSize = 8;
+  bytes sha = 9;
+  bytes sha3 = 10;
+  bytes md5 = 11;
+}
+message UploadFileRspBody {
+  int32 retCode = 1;
+  string retMsg = 2;
+  string clientWording = 3;
+  string uploadIp = 4;
+  string serverDns = 5;
+  int32 busId = 6;
+  string fileId = 7;
+  bytes fileKey = 8;
+  bytes checkKey = 9;
+  bool boolFileExist = 10;
+}

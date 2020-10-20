@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"net"
 	"strings"
 )
 
@@ -51,25 +52,30 @@ func CalculateImageResourceId(md5 []byte) string {
 	))
 }
 
-func GenUUID(h []byte) string {
-	return strings.ToUpper(fmt.Sprintf(
-		"%s-%s-%s-%s-%s",
-		hex.EncodeToString(h[0:4]), hex.EncodeToString(h[4:6]), hex.EncodeToString(h[6:8]),
-		hex.EncodeToString(h[8:10]), hex.EncodeToString(h[10:]),
-	))
+func GenUUID(uuid []byte) string {
+	u := uuid[0:16]
+	buf := make([]byte, 36)
+	hex.Encode(buf[0:], u[0:4])
+	buf[8] = '-'
+	hex.Encode(buf[9:], u[4:6])
+	buf[13] = '-'
+	hex.Encode(buf[14:], u[6:8])
+	buf[18] = '-'
+	hex.Encode(buf[19:], u[8:10])
+	buf[23] = '-'
+	hex.Encode(buf[24:], u[10:16])
+	return string(buf)
 }
 
 func ToIPV4Address(arr []byte) string {
-	if len(arr) != 4 {
-		return ""
-	}
-	return fmt.Sprintf("%d.%d.%d.%d", arr[0], arr[1], arr[2], arr[3])
+	ip := (net.IP)(arr)
+	return ip.String()
 }
 
 func UInt32ToIPV4Address(i uint32) string {
-	addr := make([]byte, 4)
-	binary2.LittleEndian.PutUint32(addr, i)
-	return ToIPV4Address(addr)
+	ip := net.IP{0, 0, 0, 0}
+	binary2.LittleEndian.PutUint32(ip, i)
+	return ip.String()
 }
 
 func ToChunkedBytesF(b []byte, size int, f func([]byte)) {

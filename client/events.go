@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/message"
 	"sync"
 )
@@ -16,11 +17,17 @@ type eventHandlers struct {
 	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
 	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
 	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
+	memberCardUpdatedHandlers   []func(*QQClient, *MemberCardUpdatedEvent)
 	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
 	groupInvitedHandlers        []func(*QQClient, *GroupInvitedRequest)
 	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
 	friendRequestHandlers       []func(*QQClient, *NewFriendRequest)
+	newFriendHandlers           []func(*QQClient, *NewFriendEvent)
 	disconnectHandlers          []func(*QQClient, *ClientDisconnectedEvent)
+	logHandlers                 []func(*QQClient, *LogEvent)
+	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent)
+	notifyHandlers              []func(*QQClient, IGroupNotifyEvent)
+	offlineFileHandlers         []func(*QQClient, *OfflineFileEvent)
 	groupMessageReceiptHandlers sync.Map
 }
 
@@ -64,6 +71,10 @@ func (c *QQClient) OnGroupMemberLeaved(f func(*QQClient, *MemberLeaveGroupEvent)
 	c.eventHandlers.memberLeavedHandlers = append(c.eventHandlers.memberLeavedHandlers, f)
 }
 
+func (c *QQClient) OnGroupMemberCardUpdated(f func(*QQClient, *MemberCardUpdatedEvent)) {
+	c.eventHandlers.memberCardUpdatedHandlers = append(c.eventHandlers.memberCardUpdatedHandlers, f)
+}
+
 func (c *QQClient) OnGroupMemberPermissionChanged(f func(*QQClient, *MemberPermissionChangedEvent)) {
 	c.eventHandlers.permissionChangedHandlers = append(c.eventHandlers.permissionChangedHandlers, f)
 }
@@ -88,8 +99,28 @@ func (c *QQClient) OnNewFriendRequest(f func(*QQClient, *NewFriendRequest)) {
 	c.eventHandlers.friendRequestHandlers = append(c.eventHandlers.friendRequestHandlers, f)
 }
 
+func (c *QQClient) OnNewFriendAdded(f func(*QQClient, *NewFriendEvent)) {
+	c.eventHandlers.newFriendHandlers = append(c.eventHandlers.newFriendHandlers, f)
+}
+
 func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
 	c.eventHandlers.disconnectHandlers = append(c.eventHandlers.disconnectHandlers, f)
+}
+
+func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent)) {
+	c.eventHandlers.serverUpdatedHandlers = append(c.eventHandlers.serverUpdatedHandlers, f)
+}
+
+func (c *QQClient) OnReceivedOfflineFile(f func(*QQClient, *OfflineFileEvent)) {
+	c.eventHandlers.offlineFileHandlers = append(c.eventHandlers.offlineFileHandlers, f)
+}
+
+func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
+	c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
+}
+
+func (c *QQClient) OnGroupNotify(f func(*QQClient, IGroupNotifyEvent)) {
+	c.eventHandlers.notifyHandlers = append(c.eventHandlers.notifyHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
@@ -216,6 +247,17 @@ func (c *QQClient) dispatchMemberLeaveEvent(e *MemberLeaveGroupEvent) {
 	}
 }
 
+func (c *QQClient) dispatchMemberCardUpdatedEvent(e *MemberCardUpdatedEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.memberCardUpdatedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
 func (c *QQClient) dispatchPermissionChanged(e *MemberPermissionChangedEvent) {
 	if e == nil {
 		return
@@ -267,6 +309,28 @@ func (c *QQClient) dispatchNewFriendRequest(r *NewFriendRequest) {
 	}
 }
 
+func (c *QQClient) dispatchNewFriendEvent(e *NewFriendEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.newFriendHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchGroupNotifyEvent(e IGroupNotifyEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.notifyHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
 func (c *QQClient) dispatchDisconnectEvent(e *ClientDisconnectedEvent) {
 	if e == nil {
 		return
@@ -278,10 +342,32 @@ func (c *QQClient) dispatchDisconnectEvent(e *ClientDisconnectedEvent) {
 	}
 }
 
+func (c *QQClient) dispatchOfflineFileEvent(e *OfflineFileEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.offlineFileHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchLogEvent(e *LogEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.logHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
 func cover(f func()) {
 	defer func() {
 		if pan := recover(); pan != nil {
-
+			fmt.Println("event error:", pan)
 		}
 	}()
 	f()

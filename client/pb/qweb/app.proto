@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = ".;qweb";
+
+message GetAppInfoByIdReq {
+  //CommonExt ExtInfo = 1;
+  string appId = 2;
+  int32 needVersionInfo = 3;
+}
+
+message GetAppInfoByIdRsp {
+  ApiAppInfo appInfo = 2;
+}
+
+message ApiAppInfo {
+  string appId = 1;
+  string appName = 2;
+  string icon = 3;
+  string downloadUrl = 4;
+  string version = 5;
+  string desc = 6;
+  // pub accts = 7;
+  int32 type = 8;
+  string baseLibMiniVersion = 9;
+  repeated AppSubPkgInfo subPkgs = 10;
+  // first = 11;
+  DomainConfig domain = 12;
+}
+
+message AppSubPkgInfo {
+  string subPkgName = 1;
+  string downloadUrl = 2;
+  int32 independent = 3;
+  int32 fileSize = 4;
+}
+
+message DomainConfig {
+  repeated string requestDomain = 1;
+  repeated string socketDomain = 2;
+  repeated string uploadFileDomain = 3;
+  repeated string downloadFileDomain = 4;
+  repeated string businessDomain = 5;
+  repeated string udpIpList = 6;
+}

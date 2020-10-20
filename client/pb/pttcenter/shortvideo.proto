@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option go_package = ".;pttcenter";
+
+message ShortVideoReqBody {
+  int32 cmd = 1;
+  int32 seq = 2;
+  ShortVideoDownloadReq pttShortVideoDownloadReq = 4;
+}
+
+message ShortVideoRspBody {
+  int32 cmd = 1;
+  int32 seq = 2;
+  ShortVideoDownloadRsp pttShortVideoDownloadRsp = 4;
+}
+
+message ShortVideoDownloadReq {
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 chatType = 3;
+  int32 clientType = 4;
+  string fileId = 5;
+  int64 groupCode = 6;
+  int32 agentType = 7;
+  bytes fileMd5 = 8;
+  int32 businessType = 9;
+  int32 fileType = 10;
+  int32 downType = 11;
+  int32 sceneType = 12;
+}
+
+message ShortVideoDownloadRsp {
+  int32 retCode = 1;
+  string retMsg = 2;
+  repeated ShortVideoIpList sameAreaOutAddr = 3;
+  repeated ShortVideoIpList diffAreaOutAddr = 4;
+  bytes downloadKey = 5;
+  bytes fileMd5 = 6;
+  repeated ShortVideoIpList sameAreaInnerAddr = 7;
+  repeated ShortVideoIpList diffAreaInnerAddr = 8;
+  ShortVideoAddr downloadAddr = 9;
+  bytes encryptKey = 10;
+}
+
+message ShortVideoIpList {
+  int32 ip = 1;
+  int32 port = 2;
+}
+
+message ShortVideoAddr {
+  repeated string host = 10;
+  string urlArgs = 11;
+  //repeated string domain = 13;
+}

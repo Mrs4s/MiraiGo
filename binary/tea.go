@@ -1,143 +1,154 @@
 package binary
 
 import (
-	"bytes"
+	"crypto/rand"
 	"encoding/binary"
-	"math/rand"
-	"time"
+	"reflect"
+	"unsafe"
 )
 
-const (
-	delta   = uint32(0x9E3779B9)
-	fillnor = 0xF8
-)
-
-type teaCipher struct {
-	keys     [4]uint32
-	value    []byte
-	byte8    [8]byte
-	ubyte32  [2]uint32
-	xor      [8]byte //xor
-	fxor     [8]byte //first xor
-	lxor     [8]byte //last xor
-	nxor     [8]byte //new xor Decrypt add
-	balebuff *bytes.Buffer
-	seedrand *rand.Rand
+func xorQ(a, b []byte, c []byte) { // MAGIC
+	*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&c)).Data)) =
+		*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&a)).Data)) ^
+			*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))
 }
 
-func NewTeaCipher(key []byte) *teaCipher {
+func isZero(a []byte) bool { // MAGIC
+	return *(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&a)).Data)) == 0
+}
+
+type TEA struct {
+	key [4]uint32
+}
+
+// http://bbs.chinaunix.net/thread-583468-1-1.html
+// 感谢xichen大佬对TEA的解释
+func (t *TEA) Encrypt(src []byte) (dst []byte) {
+	lens := len(src)
+	fill := 10 - (lens+1)%8
+	tmp1 := make([]byte, 8) // 非纯src的数据
+	tmp2 := make([]byte, 8)
+	dst = make([]byte, fill+lens+7)
+	//for i := 0; i < fill; i++ {
+	//	dst[i] = ' '
+	//} // For test purpose
+	_, _ = rand.Read(dst[0:fill])
+	dst[0] = byte(fill-3) | 0xF8 // 存储pad长度
+	in := 0                      // 位置
+	// #1
+	if fill < 8 {
+		in = 8 - fill
+		copy(dst[fill:8], src[:in])
+	}
+	copy(tmp2, dst[0:8])
+	t.encode(dst[0:8], dst[0:8])
+	out := 8 // 位置
+	// #2
+	if fill > 8 {
+		copy(dst[fill:out+8], src[:16-fill])
+		xorQ(dst[8:16], dst[0:8], dst[8:16]) // 与前一次结果xor
+		copy(tmp1, dst[8:16])
+		t.encode(dst[8:16], dst[8:16])
+		xorQ(dst[8:16], tmp2, dst[8:16]) // 与前一次数据xor
+		copy(tmp2, tmp1)
+		in = 16 - fill
+		out = 16
+	}
+	// #3+或#4+
+	lens -= 8
+	for in < lens {
+		xorQ(src[in:in+8], dst[out-8:out], dst[out:out+8]) // 与前一次结果xor
+		copy(tmp1, dst[out:out+8])
+		t.encode(dst[out:out+8], dst[out:out+8])
+		xorQ(dst[out:out+8], tmp2, dst[out:out+8]) // 与前一次数据xor
+		copy(tmp2, tmp1)
+		in += 8
+		out += 8
+	}
+	tmp3 := make([]byte, 8)
+	copy(tmp3, src[in:])
+	xorQ(tmp3, dst[out-8:out], dst[out:out+8]) // 与前一次结果xor
+	t.encode(dst[out:out+8], dst[out:out+8])
+	xorQ(dst[out:out+8], tmp2, dst[out:out+8]) // 与前一次数据xor
+	return dst
+}
+
+func (t *TEA) Decrypt(data []byte) []byte {
+	if len(data) < 16 || len(data)%8 != 0 {
+		return nil
+	}
+	dst := make([]byte, len(data))
+	copy(dst, data)
+	t.decode(dst[0:8], dst[0:8])
+	tmp := make([]byte, 8)
+	copy(tmp, dst[0:8])
+	for in := 8; in < len(data); in += 8 {
+		xorQ(dst[in:in+8], tmp, dst[in:in+8])
+		t.decode(dst[in:in+8], dst[in:in+8])
+		xorQ(dst[in:in+8], data[in-8:in], dst[in:in+8])
+		xorQ(dst[in:in+8], data[in-8:in], tmp)
+	}
+	//if !isZero(dst[len(data)-7:]) {
+	//	return nil
+	//}
+	return dst[dst[0]&7+3 : len(data)-7]
+}
+
+//go:nosplit
+func unpack(data []byte) (v0, v1 uint32) {
+	v1 = uint32(data[7]) | uint32(data[6])<<8 | uint32(data[5])<<16 | uint32(data[4])<<24
+	v0 = uint32(data[3]) | uint32(data[2])<<8 | uint32(data[1])<<16 | uint32(data[0])<<24
+	return v0, v1
+}
+
+//go:nosplit
+func repack(data []byte, v0, v1 uint32) {
+	_ = data[7] // early bounds check to guarantee safety of writes below
+	data[0] = byte(v0 >> 24)
+	data[1] = byte(v0 >> 16)
+	data[2] = byte(v0 >> 8)
+	data[3] = byte(v0)
+
+	data[4] = byte(v1 >> 24)
+	data[5] = byte(v1 >> 16)
+	data[6] = byte(v1 >> 8)
+	data[7] = byte(v1)
+}
+
+//go:nosplit
+func (t *TEA) encode(src, dst []byte) {
+	var sum uint32
+	v0, v1 := unpack(src)
+	for i := 0; i < 0x10; i++ {
+		sum += 0x9E3779B9
+		v0 += ((v1 << 4) + t.key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + t.key[1])
+		v1 += ((v0 << 4) + t.key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + t.key[3])
+	}
+	repack(dst, v0, v1)
+}
+
+// 每次8字节
+//go:nosplit
+func (t *TEA) decode(src, dst []byte) {
+	var sum uint32 = 0xE3779B90 // 预计算一次
+	v0, v1 := unpack(src)
+	for i := 0; i < 0x10; i++ {
+		v1 -= ((v0 << 4) + t.key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + t.key[3])
+		v0 -= ((v1 << 4) + t.key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + t.key[1])
+		sum -= 0x9E3779B9
+	}
+	repack(dst, v0, v1)
+}
+
+//go:nosplit
+func NewTeaCipher(key []byte) *TEA {
 	if len(key) != 16 {
 		return nil
 	}
-	cipher := &teaCipher{
-		balebuff: bytes.NewBuffer(nil),
-	}
-	for i := 0; i < 4; i++ {
-		cipher.keys[i] = binary.BigEndian.Uint32(key[i*4:])
-	}
-	cipher.seedrand = rand.New(rand.NewSource(time.Now().UnixNano()))
-	return cipher
-}
-
-func (c *teaCipher) Encrypt(value []byte) []byte {
-	c.balebuff.Reset()
-	vl := len(value)
-	filln := (8 - (vl + 2)) % 8
-	if filln < 0 {
-		filln += 2 + 8
-	} else {
-		filln += 2
-	}
-	bindex := filln + 1
-	if bindex <= 0 {
-		return nil
-	}
-	rands := make([]byte, bindex)
-	for i := 1; i < bindex; i++ {
-		rands[i] = byte((c.seedrand.Intn(236) + 1))
-	}
-	rands[0] = byte((filln - 2) | fillnor)
-	c.balebuff.Write(rands)
-	c.balebuff.Write(value)
-	c.balebuff.Write([]byte{00, 00, 00, 00, 00, 00, 00})
-	vl = c.balebuff.Len()
-	c.value = c.balebuff.Bytes()
-	c.balebuff.Reset()
-	for i := 0; i < vl; i += 8 {
-		c.xor = xor(c.value[i:i+8], c.fxor[0:8])
-		c.ubyte32[0] = binary.BigEndian.Uint32(c.xor[0:4])
-		c.ubyte32[1] = binary.BigEndian.Uint32(c.xor[4:8])
-		c.encipher()
-		c.fxor = xor(c.byte8[0:8], c.lxor[0:8])
-		c.balebuff.Write(c.fxor[0:8])
-		c.lxor = c.xor
-
-	}
-	return c.balebuff.Bytes()
-}
-
-func (c *teaCipher) Decrypt(value []byte) []byte {
-	vl := len(value)
-	if vl <= 0 || (vl%8) != 0 {
-		return nil
-	}
-	c.balebuff.Reset()
-	c.ubyte32[0] = binary.BigEndian.Uint32(value[0:4])
-	c.ubyte32[1] = binary.BigEndian.Uint32(value[4:8])
-	c.decipher()
-	copy(c.lxor[0:8], value[0:8])
-	c.fxor = c.byte8
-	pos := int((c.byte8[0] & 0x7) + 2)
-	c.balebuff.Write(c.byte8[0:8])
-	for i := 8; i < vl; i += 8 {
-		c.xor = xor(value[i:i+8], c.fxor[0:8])
-		c.ubyte32[0] = binary.BigEndian.Uint32(c.xor[0:4])
-		c.ubyte32[1] = binary.BigEndian.Uint32(c.xor[4:8])
-		c.decipher()
-		c.nxor = xor(c.byte8[0:8], c.lxor[0:8])
-		c.balebuff.Write(c.nxor[0:8])
-		c.fxor = xor(c.nxor[0:8], c.lxor[0:8])
-		copy(c.lxor[0:8], value[i:i+8])
-	}
-	pos++
-	c.value = c.balebuff.Bytes()
-	nl := c.balebuff.Len()
-	if pos >= c.balebuff.Len() || (nl-7) <= pos {
-		return nil
-	}
-	return c.value[pos : nl-7]
-}
-
-func (c *teaCipher) encipher() {
-	sum := delta
-	for i := 0x10; i > 0; i-- {
-		c.ubyte32[0] += ((c.ubyte32[1] << 4 & 0xFFFFFFF0) + c.keys[0]) ^ (c.ubyte32[1] + sum) ^ ((c.ubyte32[1] >> 5 & 0x07ffffff) + c.keys[1])
-		c.ubyte32[1] += ((c.ubyte32[0] << 4 & 0xFFFFFFF0) + c.keys[2]) ^ (c.ubyte32[0] + sum) ^ ((c.ubyte32[0] >> 5 & 0x07ffffff) + c.keys[3])
-		sum += delta
-	}
-	binary.BigEndian.PutUint32(c.byte8[0:4], c.ubyte32[0])
-	binary.BigEndian.PutUint32(c.byte8[4:8], c.ubyte32[1])
-}
-
-func (c *teaCipher) decipher() {
-	sum := delta
-	sum = (sum << 4) & 0xffffffff
-
-	for i := 0x10; i > 0; i-- {
-		c.ubyte32[1] -= (((c.ubyte32[0] << 4 & 0xFFFFFFF0) + c.keys[2]) ^ (c.ubyte32[0] + sum) ^ ((c.ubyte32[0] >> 5 & 0x07ffffff) + c.keys[3]))
-		c.ubyte32[1] &= 0xffffffff
-		c.ubyte32[0] -= (((c.ubyte32[1] << 4 & 0xFFFFFFF0) + c.keys[0]) ^ (c.ubyte32[1] + sum) ^ ((c.ubyte32[1] >> 5 & 0x07ffffff) + c.keys[1]))
-		c.ubyte32[0] &= 0xffffffff
-		sum -= delta
-	}
-	binary.BigEndian.PutUint32(c.byte8[0:4], c.ubyte32[0])
-	binary.BigEndian.PutUint32(c.byte8[4:8], c.ubyte32[1])
-}
-
-func xor(a, b []byte) (bts [8]byte) {
-	l := len(a)
-	for i := 0; i < l; i += 4 {
-		binary.BigEndian.PutUint32(bts[i:i+4], binary.BigEndian.Uint32(a[i:i+4])^binary.BigEndian.Uint32(b[i:i+4]))
-	}
-	return bts
+	t := new(TEA)
+	t.key[3] = binary.BigEndian.Uint32(key[12:])
+	t.key[2] = binary.BigEndian.Uint32(key[8:])
+	t.key[1] = binary.BigEndian.Uint32(key[4:])
+	t.key[0] = binary.BigEndian.Uint32(key[0:])
+	return t
 }

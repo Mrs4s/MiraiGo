@@ -27,6 +27,12 @@ type (
 		Map map[string]map[string][]byte `jceId:"0"`
 	}
 
+	SsoServerInfo struct {
+		Server   string `jceId:"1"`
+		Port     int32  `jceId:"2"`
+		Location string `jceId:"8"`
+	}
+
 	SvcReqRegister struct {
 		IJceStruct
 		Uin                int64  `jceId:"0"`
@@ -93,6 +99,30 @@ type (
 		Svrip       int32        `jceId:"2"`
 		PushToken   []byte       `jceId:"3"`
 		ServiceType int32        `jceId:"4"`
+	}
+
+	SvcReqGetDevLoginInfo struct {
+		IJceStruct
+		Guid           []byte `jceId:"0"`
+		AppName        string `jceId:"1"`
+		LoginType      int64  `jceId:"2"`
+		Timestamp      int64  `jceId:"3"`
+		NextItemIndex  int64  `jceId:"4"`
+		RequireMax     int64  `jceId:"5"`
+		GetDevListType int64  `jceId:"6"` // 1: getLoginDevList 2: getRecentLoginDevList 4: getAuthLoginDevList
+	}
+
+	SvcDevLoginInfo struct {
+		AppId          int64
+		Guid           []byte
+		LoginTime      int64
+		LoginPlatform  int64
+		LoginLocation  string
+		DeviceName     string
+		DeviceTypeInfo string
+		TerType        int64
+		ProductType    int64
+		CanBeKicked    int64
 	}
 
 	DelMsgInfo struct {
@@ -311,6 +341,27 @@ type (
 		Email  string `jceId:"5"`
 		Remark string `jceId:"6"`
 	}
+
+	SummaryCardReq struct {
+		IJceStruct
+		Uin                int64 `jceId:"0"`
+		ComeFrom           int32 `jceId:"1"`
+		QzoneFeedTimestamp int64 `jceId:"2"`
+		IsFriend           byte  `jceId:"3"`
+		GroupCode          int64 `jceId:"4"`
+		GroupUin           int64 `jceId:"5"`
+		//Seed               []byte`jceId:"6"`
+		//SearchName         string`jceId:"7"`
+		GetControl       int64   `jceId:"8"`
+		AddFriendSource  int32   `jceId:"9"`
+		SecureSig        []byte  `jceId:"10"`
+		TinyId           int64   `jceId:"15"`
+		LikeSource       int64   `jceId:"16"`
+		ReqMedalWallInfo byte    `jceId:"18"`
+		Req0x5ebFieldId  []int64 `jceId:"19"`
+		ReqNearbyGodInfo byte    `jceId:"20"`
+		ReqExtendCard    byte    `jceId:"22"`
+	}
 )
 
 func (pkt *RequestPacket) ToBytes() []byte {
@@ -358,6 +409,12 @@ func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
 	})
 }
 
+func (pkt *SsoServerInfo) ReadFrom(r *JceReader) {
+	pkt.Server = r.ReadString(1)
+	pkt.Port = r.ReadInt32(2)
+	pkt.Location = r.ReadString(8)
+}
+
 func (pkt *SvcReqRegister) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
@@ -365,6 +422,12 @@ func (pkt *SvcReqRegister) ToBytes() []byte {
 }
 
 func (pkt *FriendListRequest) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SummaryCardReq) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()
@@ -409,6 +472,7 @@ func (pkt *TroopMemberListRequest) ToBytes() []byte {
 func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.MemberUin = r.ReadInt64(0)
 	pkt.FaceId = r.ReadInt16(1)
+	pkt.Gender = r.ReadByte(3)
 	pkt.Nick = r.ReadString(4)
 	pkt.ShowName = r.ReadString(6)
 	pkt.Name = r.ReadString(8)
@@ -434,6 +498,20 @@ func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
 	pkt.FromName = r.ReadString(17)
 }
 
+func (pkt *SvcDevLoginInfo) ReadFrom(r *JceReader) {
+	pkt.AppId = r.ReadInt64(0)
+	pkt.Guid = []byte{}
+	r.ReadSlice(&pkt.Guid, 1)
+	pkt.LoginTime = r.ReadInt64(2)
+	pkt.LoginPlatform = r.ReadInt64(3)
+	pkt.LoginLocation = r.ReadString(4)
+	pkt.DeviceName = r.ReadString(5)
+	pkt.DeviceTypeInfo = r.ReadString(6)
+	pkt.TerType = r.ReadInt64(8)
+	pkt.ProductType = r.ReadInt64(9)
+	pkt.CanBeKicked = r.ReadInt64(10)
+}
+
 func (pkt *SvcRespPushMsg) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
@@ -441,6 +519,12 @@ func (pkt *SvcRespPushMsg) ToBytes() []byte {
 }
 
 func (pkt *ModifyGroupCardRequest) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SvcReqGetDevLoginInfo) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()

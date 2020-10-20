@@ -5,56 +5,96 @@ import (
 	"time"
 )
 
-type TTList struct {
-	list []*item
-	lock *sync.Mutex
+// https://github.com/Konstantin8105/SimpleTTL
+// entry - typical element of cache
+type entry struct {
+	value  interface{}
+	expiry *time.Time
 }
 
-type item struct {
-	i          interface{}
-	lastAccess int64
+// Cache - simple implementation of cache
+// More information: https://en.wikipedia.org/wiki/Time_to_live
+type Cache struct {
+	timeTTL time.Duration
+	cache   map[string]*entry
+	lock    *sync.RWMutex
 }
 
-func NewTTList(ttl int64) *TTList {
-	l := &TTList{
-		lock: new(sync.Mutex),
+// NewCache - initialization of new cache.
+// For avoid mistake - minimal time to live is 1 minute.
+// For simplification, - key is string and cache haven`t stop method
+func NewCache(interval time.Duration) *Cache {
+	if interval < time.Second {
+		interval = time.Second
+	}
+	cache := &Cache{
+		timeTTL: interval,
+		cache:   make(map[string]*entry),
+		lock:    &sync.RWMutex{},
 	}
 	go func() {
-		for now := range time.Tick(time.Second * 5) {
-			l.lock.Lock()
-			pos := 0
-			for _, i := range l.list {
-				if now.Unix()-i.lastAccess > ttl {
-					l.list = append(l.list[:pos], l.list[pos+1:]...)
-					if pos > 0 {
-						pos++
-					}
+		ticker := time.NewTicker(cache.timeTTL)
+		for {
+			// wait of ticker
+			now := <-ticker.C
+
+			// remove entry outside TTL
+			cache.lock.Lock()
+			for id, entry := range cache.cache {
+				if entry.expiry != nil && entry.expiry.Before(now) {
+					delete(cache.cache, id)
 				}
-				pos++
 			}
-			l.lock.Unlock()
+			cache.lock.Unlock()
 		}
 	}()
-	return l
+	return cache
 }
 
-func (l *TTList) Add(i interface{}) {
-	l.lock.Lock()
-	l.lock.Unlock()
-	l.list = append(l.list, &item{
-		i:          i,
-		lastAccess: time.Now().Unix(),
-	})
+// Count - return amount element of TTL map.
+func (cache *Cache) Count() int {
+	cache.lock.RLock()
+	defer cache.lock.RUnlock()
+
+	return len(cache.cache)
 }
 
-func (l *TTList) Any(filter func(i interface{}) bool) bool {
-	l.lock.Lock()
-	l.lock.Unlock()
-	for _, it := range l.list {
-		if filter(it.i) {
-			it.lastAccess = time.Now().Unix()
-			return true
-		}
+// Get - return value from cache
+func (cache *Cache) Get(key string) (interface{}, bool) {
+	cache.lock.RLock()
+	defer cache.lock.RUnlock()
+
+	e, ok := cache.cache[key]
+
+	if ok && e.expiry != nil && e.expiry.After(time.Now()) {
+		return e.value, true
 	}
-	return false
+	return nil, false
+}
+
+// Add - add key/value in cache
+func (cache *Cache) Add(key string, value interface{}, ttl time.Duration) {
+	cache.lock.Lock()
+	defer cache.lock.Unlock()
+
+	expiry := time.Now().Add(ttl)
+
+	cache.cache[key] = &entry{
+		value:  value,
+		expiry: &expiry,
+	}
+}
+
+// GetKeys - return all keys of cache map
+func (cache *Cache) GetKeys() []interface{} {
+	cache.lock.RLock()
+	defer cache.lock.RUnlock()
+
+	keys := make([]interface{}, len(cache.cache))
+	var i int
+	for k := range cache.cache {
+		keys[i] = k
+		i++
+	}
+	return keys
 }

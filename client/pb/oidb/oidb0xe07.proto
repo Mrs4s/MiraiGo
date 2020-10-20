@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+option go_package = ".;oidb";
+
+message DE07ReqBody {
+  int32 version = 1;
+  int32 client = 2;
+  int32 entrance = 3;
+  OCRReqBody ocrReqBody = 10;
+}
+
+message OCRReqBody {
+  string imageUrl = 1;
+  string languageType = 2;
+  string scene = 3;
+  string originMd5 = 10;
+  string afterCompressMd5 = 11;
+  int32 afterCompressFileSize = 12;
+  int32 afterCompressWeight = 13;
+  int32 afterCompressHeight = 14;
+  bool isCut = 15;
+}
+
+message DE07RspBody {
+  int32 retCode = 1;
+  string errMsg = 2;
+  string wording = 3;
+  OCRRspBody ocrRspBody = 10;
+}
+
+message TextDetection {
+  string detectedText = 1;
+  int32 confidence = 2;
+  Polygon polygon = 3;
+  string advancedInfo = 4;
+}
+
+message Polygon {
+  repeated Coordinate coordinates = 1;
+}
+
+message Coordinate {
+  int32 X = 1;
+  int32 Y = 2;
+}
+
+message Language {
+  string language = 1;
+  string languageDesc = 2;
+}
+
+message OCRRspBody {
+  repeated TextDetection textDetections = 1;
+  string language = 2;
+  string requestId = 3;
+  repeated string ocrLanguageList = 101;
+  repeated string dstTranslateLanguageList = 102;
+  repeated Language languageList = 103;
+  int32 afterCompressWeight = 111;
+  int32 afterCompressHeight = 112;
+}

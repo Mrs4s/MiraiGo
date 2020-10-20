@@ -34,9 +34,11 @@ func (r *Reader) ReadByte() byte {
 
 func (r *Reader) ReadBytes(len int) []byte {
 	b := make([]byte, len)
-	_, err := r.buf.Read(b)
-	if err != nil {
-		panic(err)
+	if len > 0 {
+		_, err := r.buf.Read(b)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return b
 }

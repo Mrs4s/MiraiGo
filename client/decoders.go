@@ -1,28 +1,36 @@
 package client
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/notify"
+	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
+	"log"
+	"net"
+	"strconv"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
-	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 var (
-	groupJoinLock  = new(sync.Mutex)
-	groupLeaveLock = new(sync.Mutex)
+	groupJoinLock  sync.Mutex
+	groupLeaveLock sync.Mutex
 )
 
+// wtlogin.login
 func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	reader := binary.NewReader(payload)
 	reader.ReadUInt16() // sub command
@@ -45,8 +53,9 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		c.t104, _ = m[0x104]
 		if m.Exists(0x192) { // slider, not supported yet
 			return LoginResponse{
-				Success: false,
-				Error:   UnknownLoginError,
+				Success:   false,
+				VerifyUrl: string(m[0x192]),
+				Error:     SliderNeededError,
 			}, nil
 		}
 		if m.Exists(0x165) { // image
@@ -68,12 +77,62 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		}
 	} // need captcha
 
-	if t == 160 {
+	if t == 40 {
 		return LoginResponse{
 			Success:      false,
-			Error:        UnsafeDeviceError,
-			VerifyUrl:    string(m[0x204]),
-			ErrorMessage: "",
+			ErrorMessage: "账号被冻结",
+			Error:        UnknownLoginError,
+		}, nil
+	}
+
+	if t == 160 || t == 239 {
+		if t174, ok := m[0x174]; ok { // 短信验证
+			c.t104 = m[0x104]
+			c.t174 = t174
+			c.t402 = m[0x402]
+			phone := func() string {
+				r := binary.NewReader(m[0x178])
+				return r.ReadStringLimit(int(r.ReadInt32()))
+			}()
+			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
+				return LoginResponse{
+					Success:      false,
+					Error:        SMSOrVerifyNeededError,
+					VerifyUrl:    string(t204),
+					SMSPhone:     phone,
+					ErrorMessage: string(m[0x17e]),
+				}, nil
+			}
+			return LoginResponse{
+				Success:      false,
+				Error:        SMSNeededError,
+				SMSPhone:     phone,
+				ErrorMessage: string(m[0x17e]),
+			}, nil
+		}
+
+		if _, ok := m[0x17b]; ok { // 二次验证
+			c.t104 = m[0x104]
+			return LoginResponse{
+				Success: false,
+				Error:   SMSNeededError,
+			}, nil
+		}
+
+		if t204, ok := m[0x204]; ok { // 扫码验证
+			return LoginResponse{
+				Success:      false,
+				Error:        UnsafeDeviceError,
+				VerifyUrl:    string(t204),
+				ErrorMessage: "",
+			}, nil
+		}
+
+	}
+
+	if t == 162 {
+		return LoginResponse{
+			Error: TooManySMSRequestError,
 		}, nil
 	}
 
@@ -104,9 +163,10 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		}, nil
 	}
 
-	return nil, nil // ?
+	return nil, errors.New(fmt.Sprintf("unknown login response: %v", t)) // ?
 }
 
+// StatSvc.register
 func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -115,6 +175,24 @@ func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interf
 	return nil, nil
 }
 
+// wtlogin.exchange_emp
+func decodeExchangeEmpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	reader := binary.NewReader(payload)
+	cmd := reader.ReadUInt16()
+	t := reader.ReadByte()
+	reader.ReadUInt16()
+	m := reader.ReadTlvMap(2)
+	if t != 0 {
+		c.Error("exchange_emp error: %v", t)
+		return nil, nil
+	}
+	if cmd == 15 { // TODO: 免密登录
+		c.decodeT119R(m[0x119])
+	}
+	return nil, nil
+}
+
+// ConfigPushSvc.PushReq
 func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -124,11 +202,37 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	jceBuf := []byte{}
 	t := r.ReadInt32(1)
 	r.ReadSlice(&jceBuf, 2)
+	if t == 1 && len(jceBuf) > 0 {
+		ssoPkt := jce.NewJceReader(jceBuf)
+		servers := []jce.SsoServerInfo{}
+		ssoPkt.ReadSlice(&servers, 1)
+		if len(servers) > 0 {
+			var adds []*net.TCPAddr
+			for _, s := range servers {
+				if strings.Contains(s.Server, "com") {
+					continue
+				}
+				c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
+				adds = append(adds, &net.TCPAddr{
+					IP:   net.ParseIP(s.Server),
+					Port: int(s.Port),
+				})
+			}
+			c.SetCustomServer(adds)
+			for _, e := range c.eventHandlers.serverUpdatedHandlers {
+				cover(func() {
+					e(c, &ServerUpdatedEvent{Servers: servers})
+				})
+			}
+			return nil, nil
+		}
+	}
 	seq := r.ReadInt64(3)
 	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
 	return nil, c.send(pkt)
 }
 
+// MessageSvc.PbGetMsg
 func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := msg.GetMessageResponse{}
 	err := proto.Unmarshal(payload, &rsp)
@@ -159,6 +263,14 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			if message.Head.ToUin != c.Uin {
 				continue
 			}
+			if (int64(pairMsg.LastReadTime) & 4294967295) > int64(message.Head.MsgTime) {
+				continue
+			}
+			strKey := fmt.Sprintf("%d%d%d%d", message.Head.FromUin, message.Head.ToUin, message.Head.MsgSeq, message.Head.MsgUid)
+			if _, ok := c.msgSvcCache.Get(strKey); ok {
+				continue
+			}
+			c.msgSvcCache.Add(strKey, "", time.Second*15)
 			switch message.Head.MsgType {
 			case 33: // 加群同步
 				groupJoinLock.Lock()
@@ -179,8 +291,11 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 							}(),
 							JoinTime:   time.Now().Unix(),
 							Permission: Member,
+							Group:      group,
 						}
-						group.Members = append(group.Members, mem)
+						group.Update(func(info *GroupInfo) {
+							info.Members = append(info.Members, mem)
+						})
 						c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
 							Group:  group,
 							Member: mem,
@@ -199,19 +314,10 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if group == nil {
 					continue
 				}
-				mem := group.FindMember(message.Head.FromUin)
-				if mem == nil || message.Head.FromUin == c.Uin {
+				if message.Head.FromUin == c.Uin {
 					continue
 				}
-				lastSeq, ok := c.lastMessageSeqTmp.Load(mem.Uin)
-				if !ok {
-					c.lastMessageSeqTmp.Store(mem.Uin, int32(-1))
-					lastSeq = int32(-1)
-				}
-				if message.Head.MsgSeq > lastSeq.(int32) {
-					c.lastMessageSeqTmp.Store(mem.Uin, message.Head.MsgSeq)
-					c.dispatchTempMessage(c.parseTempMessage(message))
-				}
+				c.dispatchTempMessage(c.parseTempMessage(message))
 			case 166: // 好友消息
 				if message.Head.FromUin == c.Uin {
 					for {
@@ -228,32 +334,40 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
 					continue
 				}
-				friend := c.FindFriend(message.Head.FromUin)
-				if friend == nil {
-					return nil, nil
-				}
-				if friend.msgSeqList == nil {
-					friend.msgSeqList = utils.NewTTList(60)
-				}
-				if friend.msgSeqList.Any(func(i interface{}) bool { return i.(int32) == message.Head.MsgSeq }) {
-					continue
-				}
-				friend.msgSeqList.Add(message.Head.MsgSeq)
 				c.dispatchFriendMessage(c.parsePrivateMessage(message))
 			case 187:
 				_, pkt := c.buildSystemMsgNewFriendPacket()
 				_ = c.send(pkt)
+			case 529:
+				sub4 := msg.SubMsgType0X4Body{}
+				if err := proto.Unmarshal(message.Body.MsgContent, &sub4); err != nil {
+					c.Error("unmarshal sub msg 0x4 error: %v", err)
+					continue
+				}
+				if sub4.NotOnlineFile != nil {
+					rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
+					if err != nil {
+						continue
+					}
+					c.dispatchOfflineFileEvent(&OfflineFileEvent{
+						FileName:    string(sub4.NotOnlineFile.FileName),
+						FileSize:    sub4.NotOnlineFile.FileSize,
+						Sender:      message.Head.FromUin,
+						DownloadUrl: rsp.(string),
+					})
+				}
 			}
 		}
 	}
 	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
 	if rsp.SyncFlag != msg.SyncFlag_STOP {
-		seq, pkt := c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix())
-		_, _ = c.sendAndWait(seq, pkt)
+		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
+		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix()))
 	}
 	return nil, err
 }
 
+// OnlinePush.PbPushGroupMsg
 func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
 	err := proto.Unmarshal(payload, &pkt)
@@ -264,23 +378,21 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		c.dispatchGroupMessageReceiptEvent(&groupMessageReceiptEvent{
 			Rand: pkt.Message.Body.RichText.Attr.Random,
 			Seq:  pkt.Message.Head.MsgSeq,
+			Msg:  c.parseGroupMessage(pkt.Message),
 		})
 		return nil, nil
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.PkgNum > 1 {
-		var builder *groupMessageBuilder
+		var builder *groupMessageBuilder // TODO: 支持多SEQ
 		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
 		if !ok {
-			builder = &groupMessageBuilder{
-				MessageSeq:   pkt.Message.Content.DivSeq,
-				MessageCount: pkt.Message.Content.PkgNum,
-			}
+			builder = &groupMessageBuilder{}
 			c.groupMsgBuilders.Store(pkt.Message.Content.DivSeq, builder)
 		} else {
 			builder = i.(*groupMessageBuilder)
 		}
 		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
-		if int32(len(builder.MessageSlices)) >= builder.MessageCount {
+		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.PkgNum {
 			c.groupMsgBuilders.Delete(pkt.Message.Content.DivSeq)
 			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
 		}
@@ -290,11 +402,65 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	return nil, nil
 }
 
-func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
-	_, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
-	return nil, c.send(pkt)
+// MessageSvc.PbSendMsg
+func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := msg.SendMessageResponse{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.Result != 0 {
+		c.Error("send msg error: %v %v", rsp.Result, rsp.ErrMsg)
+	}
+	return nil, nil
 }
 
+// MessageSvc.PushNotify
+func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
+	c.msgSvcLock.Lock()
+	defer c.msgSvcLock.Unlock()
+	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
+	return nil, err
+}
+
+// StatSvc.GetDevLoginInfo
+func decodeDevListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	rsp := jce.NewJceReader(data.Map["SvcRspGetDevLoginInfo"]["QQService.SvcRspGetDevLoginInfo"][1:])
+	d := []jce.SvcDevLoginInfo{}
+	ret := rsp.ReadInt64(3)
+	rsp.ReadSlice(&d, 5)
+	return ret, nil
+}
+
+// SummaryCard.ReqSummaryCard
+func decodeSummaryCardResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	rsp := func() *jce.JceReader {
+		if r, ok := data.Map["RespSummaryCard"]["SummaryCard.RespSummaryCard"]; ok {
+			return jce.NewJceReader(r[1:])
+		}
+		return jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard_Old.RespSummaryCard"][1:])
+	}()
+	return &SummaryCardInfo{
+		Sex:       rsp.ReadByte(1),
+		Age:       rsp.ReadByte(2),
+		Nickname:  rsp.ReadString(3),
+		Level:     rsp.ReadInt32(5),
+		City:      rsp.ReadString(7),
+		Sign:      rsp.ReadString(8),
+		Mobile:    rsp.ReadString(11),
+		Uin:       rsp.ReadInt64(23),
+		LoginDays: rsp.ReadInt64(36),
+	}, nil
+}
+
+// friendlist.getFriendGroupList
 func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -320,13 +486,16 @@ func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	return rsp, nil
 }
 
+// friendlist.GetTroopListReqV2
 func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["GetTroopListRespV2"][1:])
+	vecCookie := []byte{}
 	groups := []jce.TroopNumber{}
+	r.ReadSlice(&vecCookie, 4)
 	r.ReadSlice(&groups, 5)
 	var l []*GroupInfo
 	for _, g := range groups {
@@ -341,9 +510,44 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 			client:         c,
 		})
 	}
+	if len(vecCookie) > 0 {
+		rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(vecCookie))
+		if err != nil {
+			return nil, err
+		}
+		l = append(l, rsp.([]*GroupInfo)...)
+	}
 	return l, nil
 }
 
+// OidbSvc.0x88d_0
+func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D88DRspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	if len(rsp.RspGroupInfo) == 0 {
+		return nil, errors.New(string(rsp.StrErrorInfo))
+	}
+	info := rsp.RspGroupInfo[0]
+	return &GroupInfo{
+		Uin:            int64(*info.GroupInfo.GroupUin),
+		Code:           int64(*info.GroupCode),
+		Name:           string(info.GroupInfo.GroupName),
+		Memo:           string(info.GroupInfo.GroupMemo),
+		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
+		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
+		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
+		Members:        []*GroupMemberInfo{},
+		client:         c,
+	}, nil
+}
+
+// friendlist.GetTroopMemberListReq
 func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -358,6 +562,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 		l = append(l, &GroupMemberInfo{
 			Uin:                    m.MemberUin,
 			Nickname:               m.Nick,
+			Gender:                 m.Gender,
 			CardName:               m.Name,
 			Level:                  uint16(m.MemberLevel),
 			JoinTime:               m.JoinTime,
@@ -378,13 +583,47 @@ func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 	}, nil
 }
 
+// group_member_card.get_group_member_card_info
+func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := pb.GroupMemberRspBody{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.MemInfo.Nick == nil && rsp.MemInfo.Age == 0 {
+		return nil, ErrMemberNotFound
+	}
+	group := c.FindGroup(rsp.GroupCode)
+	return &GroupMemberInfo{
+		Group:                  group,
+		Uin:                    rsp.MemInfo.Uin,
+		Gender:                 byte(rsp.MemInfo.Sex),
+		Nickname:               string(rsp.MemInfo.Nick),
+		CardName:               string(rsp.MemInfo.Card),
+		Level:                  uint16(rsp.MemInfo.Level),
+		JoinTime:               rsp.MemInfo.Join,
+		LastSpeakTime:          rsp.MemInfo.LastSpeak,
+		SpecialTitle:           string(rsp.MemInfo.SpecialTitle),
+		SpecialTitleExpireTime: int64(rsp.MemInfo.SpecialTitleExpireTime),
+		Permission: func() MemberPermission {
+			if rsp.MemInfo.Uin == group.OwnerUin {
+				return Owner
+			}
+			if rsp.MemInfo.Role == 1 {
+				return Administrator
+			}
+			return Member
+		}(),
+	}, nil
+}
+
+// ImgStore.GroupPicUp
 func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
 		return nil, err
 	}
-	rsp := pkt.MsgTryupImgRsp[0]
+	rsp := pkt.MsgTryUpImgRsp[0]
 	if rsp.Result != 0 {
 		return imageUploadResponse{
 			ResultCode: rsp.Result,
@@ -392,16 +631,21 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (inter
 		}, nil
 	}
 	if rsp.BoolFileExit {
-		return imageUploadResponse{IsExists: true}, nil
+		if rsp.MsgImgInfo != nil {
+			return imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
+		}
+		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
 	}
 	return imageUploadResponse{
+		FileId:     rsp.Fid,
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.Uint32UpIp,
 		UploadPort: rsp.Uint32UpPort,
 	}, nil
 }
 
-func decodeOffPicUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+// LongConn.OffPicUp
+func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := cmd0x352.RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err
@@ -438,6 +682,7 @@ func decodeOffPicUpResponse(c *QQClient, _ uint16, payload []byte) (interface{},
 	}, nil
 }
 
+// OnlinePush.ReqPush
 func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -481,21 +726,32 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					TargetUin:   target,
 					Time:        t,
 				})
-			case 0x11: // 撤回消息
+			case 0x10, 0x11, 0x14: // group notify msg
 				r.ReadByte()
-				b := pb.NotifyMsgBody{}
+				b := notify.NotifyMsgBody{}
 				_ = proto.Unmarshal(r.ReadAvailable(), &b)
-				if b.OptMsgRecall == nil {
-					continue
+				if b.OptMsgRecall != nil {
+					for _, rm := range b.OptMsgRecall.RecalledMsgList {
+						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
+							GroupCode:   groupId,
+							OperatorUin: b.OptMsgRecall.Uin,
+							AuthorUin:   rm.AuthorUin,
+							MessageId:   rm.Seq,
+							Time:        rm.Time,
+						})
+					}
 				}
-				for _, rm := range b.OptMsgRecall.RecalledMsgList {
-					c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
-						GroupCode:   groupId,
-						OperatorUin: b.OptMsgRecall.Uin,
-						AuthorUin:   rm.AuthorUin,
-						MessageId:   rm.Seq,
-						Time:        rm.Time,
-					})
+				if b.OptGeneralGrayTip != nil {
+					c.grayTipProcessor(groupId, b.OptGeneralGrayTip)
+				}
+				if b.OptMsgRedTips != nil {
+					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
+						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
+							GroupCode: groupId,
+							Sender:    int64(b.OptMsgRedTips.SenderUin),
+							LuckyKing: int64(b.OptMsgRedTips.ReceiverUin),
+						})
+					}
 				}
 			}
 		}
@@ -518,13 +774,24 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 						})
 					}
 				}
+			case 0xB3:
+				b3 := pb.SubB3{}
+				if err := proto.Unmarshal(probuf, &b3); err != nil {
+					return nil, err
+				}
+				frd := &FriendInfo{
+					Uin:      b3.MsgAddFrdNotify.Uin,
+					Nickname: b3.MsgAddFrdNotify.Nick,
+				}
+				c.FriendList = append(c.FriendList, frd)
+				c.dispatchNewFriendEvent(&NewFriendEvent{Friend: frd})
 			case 0xD4:
 				d4 := pb.SubD4{}
 				if err := proto.Unmarshal(probuf, &d4); err != nil {
 					return nil, err
 				}
 				groupLeaveLock.Lock()
-				if g := c.FindGroupByUin(d4.Uin); g != nil {
+				if g := c.FindGroup(d4.Uin); g != nil {
 					if err := c.ReloadGroupList(); err != nil {
 						groupLeaveLock.Unlock()
 						return nil, err
@@ -532,6 +799,34 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 				}
 				groupLeaveLock.Unlock()
+			case 0x44:
+				s44 := pb.Sub44{}
+				if err := proto.Unmarshal(probuf, &s44); err != nil {
+					return nil, err
+				}
+				if s44.GroupSyncMsg != nil {
+					func() {
+						groupJoinLock.Lock()
+						defer groupJoinLock.Unlock()
+						c.Debug("syncing groups.")
+						old := c.GroupList
+						any := func(code int64) bool {
+							for _, g := range old {
+								if g.Code == code {
+									return true
+								}
+							}
+							return false
+						}
+						if err := c.ReloadGroupList(); err == nil {
+							for _, g := range c.GroupList {
+								if !any(g.Code) {
+									c.dispatchJoinGroupEvent(g)
+								}
+							}
+						}
+					}()
+				}
 			}
 		}
 	}
@@ -539,6 +834,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 	return nil, nil
 }
 
+// OnlinePush.PbPushTransMsg
 func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	info := msg.TransMsgInfo{}
 	err := proto.Unmarshal(payload, &info)
@@ -546,6 +842,11 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 		return nil, err
 	}
 	data := binary.NewReader(info.MsgData)
+	idStr := strconv.FormatInt(info.MsgUid, 10)
+	if _, ok := c.transCache.Get(idStr); ok {
+		return nil, nil
+	}
+	c.transCache.Add(idStr, "", time.Second*15)
 	if info.MsgType == 34 {
 		data.ReadInt32()
 		data.ReadByte()
@@ -553,20 +854,43 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 		typ := int32(data.ReadByte())
 		operator := int64(uint32(data.ReadInt32()))
 		if g := c.FindGroupByUin(info.FromUin); g != nil {
+			groupLeaveLock.Lock()
+			defer groupLeaveLock.Unlock()
 			switch typ {
+			case 0x02:
+				if target == c.Uin {
+					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
+				} else {
+					if m := g.FindMember(target); m != nil {
+						g.removeMember(target)
+						c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+							Group:  g,
+							Member: m,
+						})
+					}
+				}
 			case 0x03:
-				groupLeaveLock.Lock()
-				defer groupLeaveLock.Unlock()
 				if err = c.ReloadGroupList(); err != nil {
 					return nil, err
 				}
-				c.dispatchLeaveGroupEvent(&GroupLeaveEvent{
-					Group:    g,
-					Operator: g.FindMember(operator),
-				})
+				if target == c.Uin {
+					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{
+						Group:    g,
+						Operator: g.FindMember(operator),
+					})
+				} else {
+					if m := g.FindMember(target); m != nil {
+						g.removeMember(target)
+						c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+							Group:    g,
+							Member:   m,
+							Operator: g.FindMember(operator),
+						})
+					}
+				}
 			case 0x82:
 				if m := g.FindMember(target); m != nil {
-					g.removeMember(m.Uin)
+					g.removeMember(target)
 					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
 						Group:  g,
 						Member: m,
@@ -574,7 +898,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 				}
 			case 0x83:
 				if m := g.FindMember(target); m != nil {
-					g.removeMember(m.Uin)
+					g.removeMember(target)
 					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
 						Group:    g,
 						Member:   m,
@@ -583,7 +907,6 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 				}
 			}
 		}
-
 	}
 	if info.MsgType == 44 {
 		data.ReadBytes(5)
@@ -618,6 +941,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 	return nil, nil
 }
 
+// ProfileService.Pb.ReqSystemMsgNew.Group
 func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := structmsg.RspSystemMsgNew{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
@@ -628,10 +952,10 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 	}
 	st := rsp.Groupmsgs[0]
 	if st.Msg != nil {
-		// 其他SubType不关心
 		if st.Msg.SubType == 1 {
-			switch st.Msg.C2CInviteJoinGroupFlag {
-			case 0: //成员申请
+			// 处理被邀请入群 或 处理成员入群申请
+			switch st.Msg.GroupMsgType {
+			case 1: // 成员申请
 				c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
 					RequestId:     st.MsgSeq,
 					Message:       st.Msg.MsgAdditional,
@@ -641,7 +965,7 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					GroupName:     st.Msg.GroupName,
 					client:        c,
 				})
-			case 1: // 被邀请
+			case 2: // 被邀请
 				c.dispatchGroupInvitedEvent(&GroupInvitedRequest{
 					RequestId:   st.MsgSeq,
 					InvitorUin:  st.Msg.ActionUin,
@@ -650,12 +974,23 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					GroupName:   st.Msg.GroupName,
 					client:      c,
 				})
+			default:
+				log.Println("unknown group msg:", st)
 			}
+		} else if st.Msg.SubType == 2 {
+			// 被邀请入群, 自动同意, 不需处理
+		} else if st.Msg.SubType == 3 {
+			// 已被其他管理员处理
+		} else if st.Msg.SubType == 5 {
+			// 成员退群消息
+		} else {
+			log.Println("unknown group msg:", st)
 		}
 	}
 	return nil, nil
 }
 
+// ProfileService.Pb.ReqSystemMsgNew.Friend
 func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := structmsg.RspSystemMsgNew{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
@@ -677,6 +1012,7 @@ func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interfa
 	return nil, nil
 }
 
+// MessageSvc.PushForceOffline
 func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
@@ -684,69 +1020,109 @@ func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
 	tips := r.ReadString(2)
-	if c.Online {
-		c.lastLostMsg = tips
-		c.Online = false
-	}
+	c.lastLostMsg = tips
+	c.NetLooping = false
+	c.Online = false
 	return nil, nil
 }
 
+// StatSvc.ReqMSFOffline
 func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
-	if c.Online {
-		c.lastLostMsg = "服务器端强制下线."
-		c.Online = false
-	}
+	c.lastLostMsg = "服务器端强制下线."
+	c.NetLooping = false
+	c.Online = false
 	return nil, nil
 }
 
-func decodeMultiApplyUpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	body := multimsg.MultiRspBody{}
-	if err := proto.Unmarshal(payload, &body); err != nil {
+// OidbSvc.0xd79
+func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := &oidb.D79RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, err
 	}
-	if len(body.MultimsgApplyupRsp) == 0 {
-		return nil, errors.New("rsp is empty")
+	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+		return nil, err
 	}
-	rsp := body.MultimsgApplyupRsp[0]
-	switch rsp.Result {
-	case 0:
-		return rsp, nil
-	case 193:
-		return nil, errors.New("too large")
+	if rsp.Content != nil {
+		return rsp.Content.SliceContent, nil
 	}
-	return nil, errors.New("failed")
+	return nil, errors.New("no word receive")
 }
 
-func decodeMultiApplyDownResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	body := multimsg.MultiRspBody{}
-	if err := proto.Unmarshal(payload, &body); err != nil {
+// OidbSvc.0x6d6_2
+func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D6D6RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, err
 	}
-	if len(body.MultimsgApplydownRsp) == 0 {
-		return nil, errors.New("not found")
-	}
-	rsp := body.MultimsgApplydownRsp[0]
-	i := binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0]))
-	b, err := utils.HttpGetBytes(fmt.Sprintf("http://%s:%d%s", i, body.MultimsgApplydownRsp[0].Uint32DownPort[0], string(rsp.ThumbDownPara)))
-	if err != nil {
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, err
 	}
-	tea := binary.NewTeaCipher(body.MultimsgApplydownRsp[0].MsgKey)
-	r := binary.NewReader(b[1:])
-	i1 := r.ReadInt32()
-	i2 := r.ReadInt32()
-	if i1 > 0 {
-		r.ReadBytes(int(i1)) // im msg head
-	}
-	data := tea.Decrypt(r.ReadBytes(int(i2)))
-	lb := longmsg.LongRspBody{}
-	if err = proto.Unmarshal(data, &lb); err != nil {
+	ip := rsp.DownloadFileRsp.DownloadIp
+	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
+	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
+}
+
+// OidbSvc.0xe07_0
+func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.DE07RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, err
 	}
-	uc := binary.GZipUncompress(lb.MsgDownRsp[0].MsgContent)
-	mt := msg.PbMultiMsgTransmit{}
-	if err = proto.Unmarshal(uc, &mt); err != nil {
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, err
 	}
-	return &mt, nil
+	if rsp.Wording != "" {
+		return nil, errors.New(rsp.Wording)
+	}
+	var texts []*TextDetection
+	for _, text := range rsp.OcrRspBody.TextDetections {
+		var points []*Coordinate
+		for _, c := range text.Polygon.Coordinates {
+			points = append(points, &Coordinate{
+				X: c.X,
+				Y: c.Y,
+			})
+		}
+		texts = append(texts, &TextDetection{
+			Text:        text.DetectedText,
+			Confidence:  text.Confidence,
+			Coordinates: points,
+		})
+	}
+	return &OcrResponse{
+		Texts:    texts,
+		Language: rsp.OcrRspBody.Language,
+	}, nil
+}
+
+// PttCenterSvr.ShortVideoDownReq
+func decodePttShortVideoDownResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := pttcenter.ShortVideoRspBody{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.PttShortVideoDownloadRsp == nil || rsp.PttShortVideoDownloadRsp.DownloadAddr == nil {
+		return nil, errors.New("resp error")
+	}
+	return rsp.PttShortVideoDownloadRsp.DownloadAddr.Host[0] + rsp.PttShortVideoDownloadRsp.DownloadAddr.UrlArgs, nil
+}
+
+// LightAppSvc.mini_app_info.GetAppInfoById
+func decodeAppInfoResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := qweb.QWebRsp{}
+	rsp := qweb.GetAppInfoByIdRsp{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if pkg.RetCode != 0 {
+		return nil, errors.New(pkg.ErrMsg)
+	}
+	if err := proto.Unmarshal(pkg.BusiBuff, &rsp); err != nil {
+		return nil, err
+	}
+	return rsp.AppInfo, nil
 }

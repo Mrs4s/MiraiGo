@@ -2,6 +2,8 @@ package message
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"strconv"
 	"strings"
 )
@@ -13,6 +15,8 @@ type TextElement struct {
 type ImageElement struct {
 	Filename string
 	Size     int32
+	Width    int32
+	Height   int32
 	Url      string
 	Md5      []byte
 	Data     []byte
@@ -20,8 +24,32 @@ type ImageElement struct {
 
 type GroupImageElement struct {
 	ImageId string
+	FileId  int64
+	Size    int32
+	Width   int32
+	Height  int32
 	Md5     []byte
 	Url     string
+}
+
+type VoiceElement struct {
+	Name string
+	Md5  []byte
+	Size int32
+	Url  string
+
+	// --- sending ---
+	Data []byte
+}
+
+type GroupVoiceElement struct {
+	Data []byte
+	Ptt  *msg.Ptt
+}
+
+type PrivateVoiceElement struct {
+	Data []byte
+	Ptt  *msg.Ptt
 }
 
 type FriendImageElement struct {
@@ -56,6 +84,14 @@ type ReplyElement struct {
 	//original []*msg.Elem
 }
 
+type ShortVideoElement struct {
+	Name string
+	Uuid []byte
+	Size int32
+	Md5  []byte
+	Url  string
+}
+
 type ServiceElement struct {
 	Id      int32
 	Content string
@@ -67,6 +103,36 @@ type ForwardElement struct {
 	ResId string
 }
 
+type LightAppElement struct {
+	Content string
+}
+
+type RedBagElement struct {
+	MsgType RedBagMessageType
+	Title   string
+}
+
+type GroupFlashPicElement struct {
+	GroupImageElement
+}
+
+type GroupShowPicElement struct {
+	GroupImageElement
+	EffectId int32
+}
+
+type FriendFlashPicElement struct {
+	FriendImageElement
+}
+
+type RedBagMessageType int
+
+const (
+	Simple RedBagMessageType = 2
+	Lucky  RedBagMessageType = 3
+	World  RedBagMessageType = 6
+)
+
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
 }
@@ -77,11 +143,15 @@ func NewImage(data []byte) *ImageElement {
 	}
 }
 
-func NewGroupImage(id string, md5 []byte) *GroupImageElement {
+func NewGroupImage(id string, md5 []byte, fid int64, size, width, height int32) *GroupImageElement {
 	return &GroupImageElement{
 		ImageId: id,
+		FileId:  fid,
 		Md5:     md5,
-		Url:     "http://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(id[1:36], "-", "") + "/0?term=2",
+		Size:    size,
+		Width:   width,
+		Height:  height,
+		Url:     "http://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
 	}
 }
 
@@ -135,6 +205,28 @@ func NewUrlShare(url, title, content, image string) *ServiceElement {
 		SubType: "UrlShare",
 	}
 }
+func NewRichXml(template string, ResId int64) *ServiceElement {
+	if ResId == 0 {
+		ResId = 60 //默认值60
+	}
+	return &ServiceElement{
+		Id:      int32(ResId),
+		Content: template,
+		SubType: "xml",
+	}
+}
+
+func NewRichJson(template string) *ServiceElement {
+	return &ServiceElement{
+		Id:      1,
+		Content: template,
+		SubType: "json",
+	}
+}
+
+func NewLightApp(content string) *LightAppElement {
+	return &LightAppElement{Content: content}
+}
 
 func (e *TextElement) Type() ElementType {
 	return Text
@@ -174,6 +266,30 @@ func (e *ForwardElement) Type() ElementType {
 
 func (e *GroupFileElement) Type() ElementType {
 	return File
+}
+
+func (e *GroupVoiceElement) Type() ElementType {
+	return Voice
+}
+
+func (e *PrivateVoiceElement) Type() ElementType {
+	return Voice
+}
+
+func (e *VoiceElement) Type() ElementType {
+	return Voice
+}
+
+func (e *ShortVideoElement) Type() ElementType {
+	return Video
+}
+
+func (e *LightAppElement) Type() ElementType {
+	return LightApp
+}
+
+func (e *RedBagElement) Type() ElementType {
+	return RedBag
 }
 
 var faceMap = map[int]string{
