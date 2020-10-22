@@ -151,6 +151,11 @@ type (
 		Message string
 	}
 
+	GroupSystemMessages struct {
+		InvitedRequests []*GroupInvitedRequest
+		JoinRequests    []*UserJoinGroupRequest
+	}
+
 	GroupInvitedRequest struct {
 		RequestId   int64
 		InvitorUin  int64

@@ -943,44 +943,46 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 	if len(rsp.Groupmsgs) == 0 {
 		return nil, nil
 	}
-	st := rsp.Groupmsgs[0]
-	if st.Msg != nil {
-		if st.Msg.SubType == 1 {
-			// 处理被邀请入群 或 处理成员入群申请
-			switch st.Msg.GroupMsgType {
-			case 1: // 成员申请
-				c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
-					RequestId:     st.MsgSeq,
-					Message:       st.Msg.MsgAdditional,
-					RequesterUin:  st.ReqUin,
-					RequesterNick: st.Msg.ReqUinNick,
-					GroupCode:     st.Msg.GroupCode,
-					GroupName:     st.Msg.GroupName,
-					client:        c,
-				})
-			case 2: // 被邀请
-				c.dispatchGroupInvitedEvent(&GroupInvitedRequest{
-					RequestId:   st.MsgSeq,
-					InvitorUin:  st.Msg.ActionUin,
-					InvitorNick: st.Msg.ActionUinNick,
-					GroupCode:   st.Msg.GroupCode,
-					GroupName:   st.Msg.GroupName,
-					client:      c,
-				})
-			default:
+	ret := &GroupSystemMessages{}
+	for _, st := range rsp.Groupmsgs {
+		if st.Msg != nil {
+			if st.Msg.SubType == 1 {
+				// 处理被邀请入群 或 处理成员入群申请
+				switch st.Msg.GroupMsgType {
+				case 1: // 成员申请
+					ret.JoinRequests = append(ret.JoinRequests, &UserJoinGroupRequest{
+						RequestId:     st.MsgSeq,
+						Message:       st.Msg.MsgAdditional,
+						RequesterUin:  st.ReqUin,
+						RequesterNick: st.Msg.ReqUinNick,
+						GroupCode:     st.Msg.GroupCode,
+						GroupName:     st.Msg.GroupName,
+						client:        c,
+					})
+				case 2: // 被邀请
+					ret.InvitedRequests = append(ret.InvitedRequests, &GroupInvitedRequest{
+						RequestId:   st.MsgSeq,
+						InvitorUin:  st.Msg.ActionUin,
+						InvitorNick: st.Msg.ActionUinNick,
+						GroupCode:   st.Msg.GroupCode,
+						GroupName:   st.Msg.GroupName,
+						client:      c,
+					})
+				default:
+					log.Println("unknown group msg:", st)
+				}
+			} else if st.Msg.SubType == 2 {
+				// 被邀请入群, 自动同意, 不需处理
+			} else if st.Msg.SubType == 3 {
+				// 已被其他管理员处理
+			} else if st.Msg.SubType == 5 {
+				// 成员退群消息
+			} else {
 				log.Println("unknown group msg:", st)
 			}
-		} else if st.Msg.SubType == 2 {
-			// 被邀请入群, 自动同意, 不需处理
-		} else if st.Msg.SubType == 3 {
-			// 已被其他管理员处理
-		} else if st.Msg.SubType == 5 {
-			// 成员退群消息
-		} else {
-			log.Println("unknown group msg:", st)
 		}
 	}
-	return nil, nil
+	return ret, nil
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Friend
