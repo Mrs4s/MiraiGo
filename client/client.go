@@ -76,7 +76,7 @@ type QQClient struct {
 	transCache             *utils.Cache
 	lastLostMsg            string
 	groupMsgBuilders       sync.Map
-	onlinePushCache        []int16 // reset on reconnect
+	onlinePushCache        *utils.Cache
 	requestPacketRequestId int32
 	groupSeq               int32
 	friendSeq              int32
@@ -170,6 +170,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		eventHandlers:          &eventHandlers{},
 		msgSvcCache:            utils.NewCache(time.Second * 15),
 		transCache:             utils.NewCache(time.Second * 15),
+		onlinePushCache:        utils.NewCache(time.Second * 15),
 		version:                genVersionInfo(SystemDeviceInfo.Protocol),
 		servers: []*net.TCPAddr{ // default servers
 			{IP: net.IP{42, 81, 169, 46}, Port: 8080},
@@ -946,7 +947,6 @@ func (c *QQClient) connect() error {
 	c.retryTimes = 0
 	c.ConnectTime = time.Now()
 	c.Conn = conn
-	c.onlinePushCache = []int16{}
 	return nil
 }
 
@@ -1101,7 +1101,7 @@ func (c *QQClient) netLoop() {
 			}
 			rsp, err := decoder(c, pkt.SequenceId, payload)
 			if err != nil {
-				//c.Error("decode pkt %v error: %v", pkt.CommandName, err)
+				c.Debug("decode pkt %v error: %v", pkt.CommandName, err)
 				//log.Println("decode", pkt.CommandName, "error:", err)
 			}
 			if f, ok := c.handlers.Load(pkt.SequenceId); ok {

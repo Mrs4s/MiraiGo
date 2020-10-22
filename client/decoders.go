@@ -693,19 +693,12 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 	uin := jr.ReadInt64(0)
 	jr.ReadSlice(&msgInfos, 2)
 	_ = c.send(c.buildDeleteOnlinePushPacket(uin, seq, msgInfos))
-	seqExists := func(ms int16) bool {
-		for _, s := range c.onlinePushCache {
-			if ms == s {
-				return true
-			}
-		}
-		return false
-	}
 	for _, m := range msgInfos {
-		if seqExists(m.MsgSeq) {
+		k := fmt.Sprintf("%v%v%v", m.MsgSeq, m.MsgTime, m.MsgUid)
+		if _, ok := c.onlinePushCache.Get(k); ok {
 			continue
 		}
-		c.onlinePushCache = append(c.onlinePushCache, m.MsgSeq)
+		c.onlinePushCache.Add(k, "", time.Second*30)
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
 			groupId := int64(uint32(r.ReadInt32()))
