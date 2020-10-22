@@ -1267,7 +1267,7 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.
 		Version:   "V 8.4.5.4745",
 		Sig: &oidb.DADLoginSig{
 			Type: 1,
-			Sig:  c.sigInfo.sKey,
+			Sig:  []byte(c.getSKey()),
 		},
 	}
 	b, _ := proto.Marshal(body)
