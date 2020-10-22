@@ -276,7 +276,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 		}
 	}
 	for _, elem := range elems {
-		if e,ok := elem.(IRichMessageElement);ok{
+		if e, ok := elem.(IRichMessageElement); ok {
 			r = append(r, e.Pack()...)
 		}
 	}
@@ -485,7 +485,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 						Size:     flash.FlashTroopPic.Size,
 						Width:    flash.FlashTroopPic.Width,
 						Height:   flash.FlashTroopPic.Height,
-						Md5: 	flash.FlashTroopPic.Md5,
+						Md5:      flash.FlashTroopPic.Md5,
 					})
 				}
 				if flash.FlashC2CPic != nil {
