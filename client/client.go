@@ -75,6 +75,7 @@ type QQClient struct {
 	msgSvcCache            *utils.Cache
 	transCache             *utils.Cache
 	lastLostMsg            string
+	groupSysMsgCache       *GroupSystemMessages
 	groupMsgBuilders       sync.Map
 	onlinePushCache        *utils.Cache
 	requestPacketRequestId int32
@@ -211,12 +212,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.Online = true
-		c.lastLostMsg = ""
-		c.registerClient()
-		if !c.heartbeatEnabled {
-			c.startHeartbeat()
-		}
+		c.init()
 	}
 	return &l, nil
 }
@@ -230,11 +226,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.Online = true
-		c.registerClient()
-		if !c.heartbeatEnabled {
-			c.startHeartbeat()
-		}
+		c.init()
 	}
 	return &l, nil
 }
@@ -246,13 +238,18 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.Online = true
-		c.registerClient()
-		if !c.heartbeatEnabled {
-			c.startHeartbeat()
-		}
+		c.init()
 	}
 	return &l, nil
+}
+
+func (c *QQClient) init() {
+	c.Online = true
+	c.registerClient()
+	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
+	if !c.heartbeatEnabled {
+		c.startHeartbeat()
+	}
 }
 
 func (c *QQClient) RequestSMS() bool {

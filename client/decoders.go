@@ -303,8 +303,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				}
 				groupJoinLock.Unlock()
 			case 84, 87:
-				_, pkt := c.buildSystemMsgNewGroupPacket()
-				_ = c.send(pkt)
+				c.exceptAndDispatchGroupSysMsg()
 			case 141: // 临时会话
 				if message.Head.C2CTmpMsgHead == nil {
 					continue
