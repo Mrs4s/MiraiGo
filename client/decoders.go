@@ -7,7 +7,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
-	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -304,8 +303,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				}
 				groupJoinLock.Unlock()
 			case 84, 87:
-				_, pkt := c.buildSystemMsgNewGroupPacket()
-				_ = c.send(pkt)
+				c.exceptAndDispatchGroupSysMsg()
 			case 141: // 临时会话
 				if message.Head.C2CTmpMsgHead == nil {
 					continue
@@ -929,55 +927,6 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 					})
 				}
 			}
-		}
-	}
-	return nil, nil
-}
-
-// ProfileService.Pb.ReqSystemMsgNew.Group
-func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := structmsg.RspSystemMsgNew{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		return nil, err
-	}
-	if len(rsp.Groupmsgs) == 0 {
-		return nil, nil
-	}
-	st := rsp.Groupmsgs[0]
-	if st.Msg != nil {
-		if st.Msg.SubType == 1 {
-			// 处理被邀请入群 或 处理成员入群申请
-			switch st.Msg.GroupMsgType {
-			case 1: // 成员申请
-				c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
-					RequestId:     st.MsgSeq,
-					Message:       st.Msg.MsgAdditional,
-					RequesterUin:  st.ReqUin,
-					RequesterNick: st.Msg.ReqUinNick,
-					GroupCode:     st.Msg.GroupCode,
-					GroupName:     st.Msg.GroupName,
-					client:        c,
-				})
-			case 2: // 被邀请
-				c.dispatchGroupInvitedEvent(&GroupInvitedRequest{
-					RequestId:   st.MsgSeq,
-					InvitorUin:  st.Msg.ActionUin,
-					InvitorNick: st.Msg.ActionUinNick,
-					GroupCode:   st.Msg.GroupCode,
-					GroupName:   st.Msg.GroupName,
-					client:      c,
-				})
-			default:
-				log.Println("unknown group msg:", st)
-			}
-		} else if st.Msg.SubType == 2 {
-			// 被邀请入群, 自动同意, 不需处理
-		} else if st.Msg.SubType == 3 {
-			// 已被其他管理员处理
-		} else if st.Msg.SubType == 5 {
-			// 成员退群消息
-		} else {
-			log.Println("unknown group msg:", st)
 		}
 	}
 	return nil, nil

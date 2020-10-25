@@ -769,38 +769,6 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 	return
 }
 
-// ProfileService.Pb.ReqSystemMsgNew.Group
-func (c *QQClient) buildSystemMsgNewGroupPacket() (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &structmsg.ReqSystemMsgNew{
-		MsgNum:    100,
-		Version:   1000,
-		Checktype: 3,
-		Flag: &structmsg.FlagInfo{
-			GrpMsgKickAdmin:                   1,
-			GrpMsgHiddenGrp:                   1,
-			GrpMsgWordingDown:                 1,
-			GrpMsgGetOfficialAccount:          1,
-			GrpMsgGetPayInGroup:               1,
-			FrdMsgDiscuss2ManyChat:            1,
-			GrpMsgNotAllowJoinGrpInviteNotFrd: 1,
-			FrdMsgNeedWaitingMsg:              1,
-			FrdMsgUint32NeedAllUnreadMsg:      1,
-			GrpMsgNeedAutoAdminWording:        1,
-			GrpMsgGetTransferGroupMsgFlag:     1,
-			GrpMsgGetQuitPayGroupMsgFlag:      1,
-			GrpMsgSupportInviteAutoJoin:       1,
-			GrpMsgMaskInviteAutoJoin:          1,
-			GrpMsgGetDisbandedByAdmin:         1,
-			GrpMsgGetC2CInviteJoinGroup:       1,
-		},
-		FriendMsgTypeFlag: 1,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // ProfileService.Pb.ReqSystemMsgNew.Friend
 func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
 	seq := c.nextSeq()

@@ -151,27 +151,6 @@ type (
 		Message string
 	}
 
-	GroupInvitedRequest struct {
-		RequestId   int64
-		InvitorUin  int64
-		InvitorNick string
-		GroupCode   int64
-		GroupName   string
-
-		client *QQClient
-	}
-
-	UserJoinGroupRequest struct {
-		RequestId     int64
-		Message       string
-		RequesterUin  int64
-		RequesterNick string
-		GroupCode     int64
-		GroupName     string
-
-		client *QQClient
-	}
-
 	NewFriendRequest struct {
 		RequestId     int64
 		Message       string
