@@ -125,9 +125,6 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err
 	}
-	if len(rsp.Groupmsgs) == 0 {
-		return nil, nil
-	}
 	ret := &GroupSystemMessages{}
 	for _, st := range rsp.Groupmsgs {
 		if st.Msg == nil {
