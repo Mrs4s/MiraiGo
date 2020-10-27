@@ -147,7 +147,7 @@ func (e *LightAppElement) Pack() (r []*msg.Elem) {
 	r = append(r, &msg.Elem{
 		LightApp: &msg.LightAppElem{
 			Data:     append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			MsgResid: []byte{1},
+			// MsgResid: []byte{1},
 		},
 	})
 	return
