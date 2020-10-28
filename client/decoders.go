@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
