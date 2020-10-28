@@ -1113,28 +1113,6 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 	return seq, packet
 }
 
-// OidbSvc.0x6d6_2
-func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId string, busId int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	body := &oidb.D6D6ReqBody{
-		DownloadFileReq: &oidb.DownloadFileReqBody{
-			GroupCode: groupCode,
-			AppId:     3,
-			BusId:     busId,
-			FileId:    fileId,
-		},
-	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     1750,
-		ServiceType: 2,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // OidbSvc.0xe07_0
 func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, height int32) (uint16, []byte) {
 	seq := c.nextSeq()

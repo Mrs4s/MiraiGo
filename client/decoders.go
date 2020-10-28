@@ -992,21 +992,6 @@ func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{},
 	return nil, errors.New("no word receive")
 }
 
-// OidbSvc.0x6d6_2
-func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D6D6RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
-	}
-	ip := rsp.DownloadFileRsp.DownloadIp
-	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
-	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
-}
-
 // OidbSvc.0xe07_0
 func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}

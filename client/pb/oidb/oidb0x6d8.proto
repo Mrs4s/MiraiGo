@@ -1,0 +1,137 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+message D6D8ReqBody {
+  optional GetFileInfoReqBody fileInfoReq = 1;
+  optional GetFileListReqBody fileListInfoReq = 2;
+  optional GetFileCountReqBody groupFileCountReq = 3;
+  optional GetSpaceReqBody groupSpaceReq = 4;
+}
+
+message D6D8RspBody {
+  optional GetFileInfoRspBody fileInfoRsp = 1;
+  optional GetFileListRspBody fileListInfoRsp = 2;
+  optional GetFileCountRspBody fileCountRsp = 3;
+  optional GetSpaceRspBody groupSpaceRsp = 4;
+}
+
+message GetFileInfoReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+  optional uint32 fieldFlag = 5;
+}
+
+message GetFileInfoRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional GroupFileInfo fileInfo = 4;
+}
+
+message GetFileListRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional bool isEnd = 4;
+  message Item {
+    optional uint32 type = 1;
+    optional GroupFolderInfo folderInfo = 2;
+    optional GroupFileInfo fileInfo = 3;
+  }
+  repeated Item itemList = 5;
+  optional FileTimeStamp maxTimestamp = 6;
+  optional uint32 allFileCount = 7;
+  optional uint32 filterCode = 8;
+  optional bool safeCheckFlag = 11;
+  optional uint32 safeCheckRes = 12;
+  optional uint32 nextIndex = 13;
+  optional bytes context = 14;
+  optional uint32 role = 15;
+  optional uint32 openFlag = 16;
+}
+
+message GroupFileInfo {/* renamed from FileInfo */
+  optional string fileId = 1;
+  optional string fileName = 2;
+  optional uint64 fileSize = 3;
+  optional uint32 busId = 4;
+  optional uint64 uploadedSize = 5;
+  optional uint32 uploadTime = 6;
+  optional uint32 deadTime = 7;
+  optional uint32 modifyTime = 8;
+  optional uint32 downloadTimes = 9;
+  optional bytes sha = 10;
+  optional bytes sha3 = 11;
+  optional bytes md5 = 12;
+  optional string localPath = 13;
+  optional string uploaderName = 14;
+  optional uint64 uploaderUin = 15;
+  optional string parentFolderId = 16;
+}
+
+message GroupFolderInfo {/* renamed from FolderInfo */
+  optional string folderId = 1;
+  optional string parentFolderId = 2;
+  optional string folderName = 3;
+  optional uint32 createTime = 4;
+  optional uint32 modifyTime = 5;
+  optional uint64 createUin = 6;
+  optional string creatorName = 7;
+  optional uint32 totalFileCount = 8;
+}
+
+
+message GetFileListReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional string folderId = 3;
+  optional FileTimeStamp startTimestamp = 4;
+  optional uint32 fileCount = 5;
+  optional FileTimeStamp maxTimestamp = 6;
+  optional uint32 allFileCount = 7;
+  optional uint32 reqFrom = 8;
+  optional uint32 sortBy = 9;
+  optional uint32 filterCode = 10;
+  optional uint64 uin = 11;
+  optional uint32 fieldFlag = 12;
+  optional uint32 startIndex = 13;
+  optional bytes context = 14;
+  optional uint32 clientVersion = 15;
+}
+
+message GetFileCountReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+}
+
+message GetSpaceReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+}
+
+message GetFileCountRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional uint32 allFileCount = 4;
+  optional bool fileTooMany = 5;
+  optional uint32 limitCount = 6;
+  optional bool isFull = 7;
+}
+
+message GetSpaceRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional uint64 totalSpace = 4;
+  optional uint64 usedSpace = 5;
+}
+
+message FileTimeStamp {
+  optional uint32 uploadTime = 1;
+  optional string fileId = 2;
+}
