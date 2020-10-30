@@ -209,6 +209,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
 	if err != nil {
+		c.Disconnect()
 		return nil, err
 	}
 	l := rsp.(LoginResponse)
