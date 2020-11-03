@@ -362,6 +362,14 @@ type (
 		ReqNearbyGodInfo byte    `jceId:"20"`
 		ReqExtendCard    byte    `jceId:"22"`
 	}
+
+	SummaryCardReqSearch struct {
+		IJceStruct
+		Keyword     string   `jceId:"0"`
+		CountryCode string   `jceId:"1"`
+		Version     int32    `jceId:"2"`
+		ReqServices [][]byte `jceId:"3"` // busi
+	}
 )
 
 func (pkt *RequestPacket) ToBytes() []byte {
@@ -428,6 +436,12 @@ func (pkt *FriendListRequest) ToBytes() []byte {
 }
 
 func (pkt *SummaryCardReq) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SummaryCardReqSearch) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()

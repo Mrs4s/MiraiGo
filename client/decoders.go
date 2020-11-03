@@ -517,33 +517,6 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	return l, nil
 }
 
-// OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
-	}
-	if len(rsp.RspGroupInfo) == 0 {
-		return nil, errors.New(string(rsp.StrErrorInfo))
-	}
-	info := rsp.RspGroupInfo[0]
-	return &GroupInfo{
-		Uin:            int64(*info.GroupInfo.GroupUin),
-		Code:           int64(*info.GroupCode),
-		Name:           string(info.GroupInfo.GroupName),
-		Memo:           string(info.GroupInfo.GroupMemo),
-		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
-		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
-		Members:        []*GroupMemberInfo{},
-		client:         c,
-	}, nil
-}
-
 // friendlist.GetTroopMemberListReq
 func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}

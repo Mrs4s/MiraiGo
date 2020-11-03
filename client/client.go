@@ -158,6 +158,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"OidbSvc.0xd79":                                            decodeWordSegmentation,
 			"OidbSvc.0x990":                                            decodeTranslateResponse,
 			"SummaryCard.ReqSummaryCard":                               decodeSummaryCardResponse,
+			"SummaryCard.ReqSearch":                                    decodeGroupSearchResponse,
 			"PttCenterSvr.ShortVideoDownReq":                           decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":                 decodeAppInfoResponse,
 			"OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200": decodeOfflineFileDownloadResponse,
@@ -370,14 +371,6 @@ func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
 		return ""
 	}
 	return i.(string)
-}
-
-func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
-	i, err := c.sendAndWait(c.buildGroupInfoRequestPacket(groupCode))
-	if err != nil {
-		return nil, err
-	}
-	return i.(*GroupInfo), nil
 }
 
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
