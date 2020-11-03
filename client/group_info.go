@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/hex"
 	"errors"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
@@ -69,12 +68,11 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 // SummaryCard.ReqSearch
 func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 	seq := c.nextSeq()
-	s, _ := hex.DecodeString(`280000001e00000030080110ffffffff0f2881e8922660026a0a382e342e382e3438313070ca2508001004220935393737393631323232093539373739363132325212090000000000000000110000000000000000600029`)
 	req := &jce.SummaryCardReqSearch{
 		Keyword:     keyword,
 		CountryCode: "+86",
 		Version:     3,
-		ReqServices: [][]byte{s},
+		ReqServices: [][]byte{},
 	}
 	head := jce.NewJceWriter()
 	head.WriteInt32(2, 0)
