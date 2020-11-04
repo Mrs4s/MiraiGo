@@ -248,7 +248,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 
 func (c *QQClient) init() {
 	c.Online = true
-	c.registerClient()
+	_ = c.registerClient()
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	if !c.heartbeatEnabled {
 		c.startHeartbeat()
@@ -949,9 +949,9 @@ func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift message.GroupGift) 
 	_ = c.send(packet)
 }
 
-func (c *QQClient) registerClient() {
-	_, packet := c.buildClientRegisterPacket()
-	_ = c.send(packet)
+func (c *QQClient) registerClient() error {
+	_, err := c.sendAndWait(c.buildClientRegisterPacket())
+	return err
 }
 
 func (c *QQClient) nextSeq() uint16 {
@@ -1034,7 +1034,12 @@ func (c *QQClient) netLoop() {
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
-			c.registerClient()
+			if c.registerClient() != nil {
+				c.Disconnect()
+				c.lastLostMsg = "register client failed."
+				c.Error("reconnect failed: register client failed.")
+				break
+			}
 		}
 		if l <= 0 {
 			retry++
