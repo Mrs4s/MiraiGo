@@ -244,7 +244,7 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 		ChannelNo:    "",
 		CPID:         0,
 		VendorName:   "MIUI",
-		VendorOSName: "ONEPLUS A5000_23_17",
+		VendorOSName: string(SystemDeviceInfo.Product),
 		B769:         []byte{0x0A, 0x04, 0x08, 0x2E, 0x10, 0x00, 0x0A, 0x05, 0x08, 0x9B, 0x02, 0x10, 0x00},
 		SetMute:      0,
 	}

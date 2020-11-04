@@ -73,6 +73,29 @@ type (
 		SetMute            byte   `jceId:"36"`
 	}
 
+	SvcRespRegister struct {
+		Uin                      int64  `jceId:"0"`
+		Bid                      int64  `jceId:"1"`
+		ReplyCode                byte   `jceId:"2"`
+		Result                   string `jceId:"3"`
+		ServerTime               int64  `jceId:"4"`
+		LogQQ                    byte   `jceId:"5"`
+		NeedKik                  byte   `jceId:"6"`
+		UpdateFlag               byte   `jceId:"7"`
+		Timestamp                int64  `jceId:"8"`
+		CrashFlag                byte   `jceId:"9"`
+		ClientIp                 string `jceId:"10"`
+		ClientPort               int32  `jceId:"11"`
+		HelloInterval            int32  `jceId:"12"`
+		LargeSeq                 int32  `jceId:"13"`
+		LargeSeqUpdate           byte   `jceId:"14"`
+		D769RspBody              []byte `jceId:"15"`
+		Status                   int32  `jceId:"16"`
+		ExtOnlineStatus          int64  `jceId:"17"`
+		ClientBatteryGetInterval int64  `jceId:"18"`
+		ClientAutoStatusInterval int64  `jceId:"19"`
+	}
+
 	PushMessageInfo struct {
 		FromUin        int64  `jceId:"0"`
 		MsgTime        int64  `jceId:"1"`
@@ -427,6 +450,27 @@ func (pkt *SvcReqRegister) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()
+}
+
+func (pkt *SvcRespRegister) ReadFrom(r *JceReader) {
+	pkt.Uin = r.ReadInt64(0)
+	pkt.Bid = r.ReadInt64(1)
+	pkt.ReplyCode = r.ReadByte(2)
+	pkt.Result = r.ReadString(3)
+	pkt.ServerTime = r.ReadInt64(4)
+	pkt.LogQQ = r.ReadByte(5)
+	pkt.NeedKik = r.ReadByte(6)
+	pkt.UpdateFlag = r.ReadByte(7)
+	pkt.Timestamp = r.ReadInt64(8)
+	pkt.CrashFlag = r.ReadByte(9)
+	pkt.ClientIp = r.ReadString(10)
+	pkt.ClientPort = r.ReadInt32(11)
+	pkt.HelloInterval = r.ReadInt32(12)
+	pkt.LargeSeq = r.ReadInt32(13)
+	pkt.LargeSeqUpdate = r.ReadByte(14)
+	pkt.D769RspBody = r.ReadAny(15).([]byte)
+	pkt.Status = r.ReadInt32(16)
+	pkt.ExtOnlineStatus = r.ReadInt64(17)
 }
 
 func (pkt *FriendListRequest) ToBytes() []byte {
