@@ -1053,8 +1053,11 @@ func (c *QQClient) netLoop() {
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
+			if err == packets.ErrSessionExpired {
+				break
+			}
 			errCount++
-			if errCount > 5 {
+			if errCount > 2 {
 				break
 			}
 			//log.Println("parse incoming packet error: " + err.Error())
