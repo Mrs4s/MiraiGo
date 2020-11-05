@@ -251,6 +251,9 @@ func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, 
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, err
 	}
+	if rsp.DownloadFileRsp.DownloadUrl == nil {
+		return nil, errors.New(rsp.DownloadFileRsp.ClientWording)
+	}
 	ip := rsp.DownloadFileRsp.DownloadIp
 	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
