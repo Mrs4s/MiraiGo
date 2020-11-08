@@ -2,16 +2,17 @@ package message
 
 import (
 	"crypto/md5"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
-	"github.com/tidwall/gjson"
 	"math"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/golang/protobuf/proto"
+	"github.com/tidwall/gjson"
 )
 
 type (
@@ -480,19 +481,23 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				flash := &msg.MsgElemInfoServtype3{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, flash)
 				if flash.FlashTroopPic != nil {
-					res = append(res, &ImageElement{
-						Filename: flash.FlashTroopPic.FilePath,
-						Size:     flash.FlashTroopPic.Size,
-						Width:    flash.FlashTroopPic.Width,
-						Height:   flash.FlashTroopPic.Height,
-						Md5:      flash.FlashTroopPic.Md5,
+					res = append(res, &GroupFlashImgElement{
+						ImageElement{
+							Filename: flash.FlashTroopPic.FilePath,
+							Size:     flash.FlashTroopPic.Size,
+							Width:    flash.FlashTroopPic.Width,
+							Height:   flash.FlashTroopPic.Height,
+							Md5:      flash.FlashTroopPic.Md5,
+						},
 					})
 				}
 				if flash.FlashC2CPic != nil {
-					res = append(res, &ImageElement{
-						Filename: flash.FlashC2CPic.FilePath,
-						Size:     flash.FlashC2CPic.FileLen,
-						Md5:      flash.FlashC2CPic.PicMd5,
+					res = append(res, &GroupFlashImgElement{
+						ImageElement{
+							Filename: flash.FlashC2CPic.FilePath,
+							Size:     flash.FlashC2CPic.FileLen,
+							Md5:      flash.FlashC2CPic.PicMd5,
+						},
 					})
 				}
 			}

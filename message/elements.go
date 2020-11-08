@@ -2,10 +2,11 @@ package message
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"strconv"
 	"strings"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 )
 
 type TextElement struct {
@@ -112,6 +113,12 @@ type RedBagElement struct {
 	Title   string
 }
 
+// TODO: 总之就是非常傻逼
+
+type GroupFlashImgElement struct {
+	ImageElement
+}
+
 type GroupFlashPicElement struct {
 	GroupImageElement
 }
@@ -119,6 +126,10 @@ type GroupFlashPicElement struct {
 type GroupShowPicElement struct {
 	GroupImageElement
 	EffectId int32
+}
+
+type FriendFlashImgElement struct {
+	ImageElement
 }
 
 type FriendFlashPicElement struct {
