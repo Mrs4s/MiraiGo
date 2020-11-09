@@ -366,16 +366,16 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 		}
 		if elem.LightApp != nil && len(elem.LightApp.Data) > 1 {
-			var content string
+			var content []byte
 			if elem.LightApp.Data[0] == 0 {
-				content = string(elem.LightApp.Data[1:])
+				content = elem.LightApp.Data[1:]
 			}
 			if elem.LightApp.Data[0] == 1 {
-				content = string(binary.ZlibUncompress(elem.LightApp.Data[1:]))
+				content = binary.ZlibUncompress(elem.LightApp.Data[1:])
 			}
-			if content != "" {
+			if len(content) > 0 && len(content) < 1024*1024*1024 { // 解析出错 or 非法内容
 				// TODO: 解析具体的APP
-				return append(res, &LightAppElement{Content: content})
+				return append(res, &LightAppElement{Content: string(content)})
 			}
 		}
 		if elem.VideoFile != nil {
