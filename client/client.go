@@ -152,11 +152,13 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"MultiMsg.ApplyUp":                                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                                       decodeMultiApplyDownResponse,
 			"OidbSvc.0x6d6_2":                                          decodeOIDB6d6Response,
+			"OidbSvc.0x6d8_1":                                          decodeOIDB6d81Response,
 			"OidbSvc.0x88d_0":                                          decodeGroupInfoResponse,
 			"OidbSvc.0xe07_0":                                          decodeImageOcrResponse,
 			"OidbSvc.0xd79":                                            decodeWordSegmentation,
 			"OidbSvc.0x990":                                            decodeTranslateResponse,
 			"SummaryCard.ReqSummaryCard":                               decodeSummaryCardResponse,
+			"SummaryCard.ReqSearch":                                    decodeGroupSearchResponse,
 			"PttCenterSvr.ShortVideoDownReq":                           decodePttShortVideoDownResponse,
 			"LightAppSvc.mini_app_info.GetAppInfoById":                 decodeAppInfoResponse,
 			"OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200": decodeOfflineFileDownloadResponse,
@@ -208,6 +210,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	seq, packet := c.buildLoginPacket()
 	rsp, err := c.sendAndWait(seq, packet)
 	if err != nil {
+		c.Disconnect()
 		return nil, err
 	}
 	l := rsp.(LoginResponse)
@@ -245,7 +248,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 
 func (c *QQClient) init() {
 	c.Online = true
-	c.registerClient()
+	_ = c.registerClient()
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	if !c.heartbeatEnabled {
 		c.startHeartbeat()
@@ -368,24 +371,6 @@ func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
 		return ""
 	}
 	return i.(string)
-}
-
-func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) string {
-	i, err := c.sendAndWait(c.buildGroupFileDownloadReqPacket(groupCode, fileId, busId))
-	if err != nil {
-		return ""
-	}
-	url := i.(string)
-	url += "?fname=" + hex.EncodeToString([]byte(fileId))
-	return url
-}
-
-func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
-	i, err := c.sendAndWait(c.buildGroupInfoRequestPacket(groupCode))
-	if err != nil {
-		return nil, err
-	}
-	return i.(*GroupInfo), nil
 }
 
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
@@ -964,9 +949,9 @@ func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift message.GroupGift) 
 	_ = c.send(packet)
 }
 
-func (c *QQClient) registerClient() {
-	_, packet := c.buildClientRegisterPacket()
-	_ = c.send(packet)
+func (c *QQClient) registerClient() error {
+	_, err := c.sendAndWait(c.buildClientRegisterPacket())
+	return err
 }
 
 func (c *QQClient) nextSeq() uint16 {
@@ -1049,7 +1034,12 @@ func (c *QQClient) netLoop() {
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
-			c.registerClient()
+			if c.registerClient() != nil {
+				c.Disconnect()
+				c.lastLostMsg = "register client failed."
+				c.Error("reconnect failed: register client failed.")
+				break
+			}
 		}
 		if l <= 0 {
 			retry++
@@ -1063,8 +1053,11 @@ func (c *QQClient) netLoop() {
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
+			if err == packets.ErrSessionExpired {
+				break
+			}
 			errCount++
-			if errCount > 5 {
+			if errCount > 2 {
 				break
 			}
 			//log.Println("parse incoming packet error: " + err.Error())

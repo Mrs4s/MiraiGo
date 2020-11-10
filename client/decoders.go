@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
@@ -171,6 +170,11 @@ func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interf
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	svcRsp := &jce.SvcRespRegister{}
+	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
+	if svcRsp.Result != "" || svcRsp.Status != 11 {
+		return nil, errors.New("reg failed")
+	}
 	return nil, nil
 }
 
@@ -516,33 +520,6 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		l = append(l, rsp.([]*GroupInfo)...)
 	}
 	return l, nil
-}
-
-// OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
-	}
-	if len(rsp.RspGroupInfo) == 0 {
-		return nil, errors.New(string(rsp.StrErrorInfo))
-	}
-	info := rsp.RspGroupInfo[0]
-	return &GroupInfo{
-		Uin:            int64(*info.GroupInfo.GroupUin),
-		Code:           int64(*info.GroupCode),
-		Name:           string(info.GroupInfo.GroupName),
-		Memo:           string(info.GroupInfo.GroupMemo),
-		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
-		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
-		Members:        []*GroupMemberInfo{},
-		client:         c,
-	}, nil
 }
 
 // friendlist.GetTroopMemberListReq
@@ -990,21 +967,6 @@ func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{},
 		return rsp.Content.SliceContent, nil
 	}
 	return nil, errors.New("no word receive")
-}
-
-// OidbSvc.0x6d6_2
-func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D6D6RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
-	}
-	ip := rsp.DownloadFileRsp.DownloadIp
-	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
-	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
 // OidbSvc.0xe07_0

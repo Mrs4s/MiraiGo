@@ -16,7 +16,7 @@ type (
 		RequestId   int64  `json:"request_id"`
 		InvitorUin  int64  `json:"invitor_uin"`
 		InvitorNick string `json:"invitor_nick"`
-		GroupCode   int64  `json:"group_code"`
+		GroupCode   int64  `json:"group_id"`
 		GroupName   string `json:"group_name"`
 
 		Checked bool  `json:"checked"`
@@ -30,7 +30,7 @@ type (
 		Message       string `json:"message"`
 		RequesterUin  int64  `json:"requester_uin"`
 		RequesterNick string `json:"requester_nick"`
-		GroupCode     int64  `json:"group_code"`
+		GroupCode     int64  `json:"group_id"`
 		GroupName     string `json:"group_name"`
 
 		Checked bool  `json:"checked"`
@@ -124,9 +124,6 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 	rsp := structmsg.RspSystemMsgNew{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err
-	}
-	if len(rsp.Groupmsgs) == 0 {
-		return nil, nil
 	}
 	ret := &GroupSystemMessages{}
 	for _, st := range rsp.Groupmsgs {
