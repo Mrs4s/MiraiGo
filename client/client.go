@@ -1125,6 +1125,7 @@ func (c *QQClient) doHeartbeat() {
 			_ = c.Conn.Close()
 		}
 		time.AfterFunc(30*time.Second, c.doHeartbeat)
+		return
 	}
 	c.heartbeatEnabled = false
 }
