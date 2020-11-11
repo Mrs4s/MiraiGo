@@ -11,6 +11,7 @@ import (
 var (
 	ErrAlreadyOnline  = errors.New("already online")
 	ErrMemberNotFound = errors.New("member not found")
+	ErrNotExists      = errors.New("not exists")
 )
 
 type (
