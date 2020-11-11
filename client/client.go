@@ -641,7 +641,7 @@ func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.Friend
 func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*message.FriendImageElement, error) {
 	count++
 	h := md5.Sum(img)
-	e, err := c.QueryFriendImage(target, h[:], img, int32(len(img)))
+	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
 	if err == ErrNotExists {
 		// use group highway upload and query again for image id.
 		if _, err = c.UploadGroupImage(target, img); err != nil {
@@ -691,7 +691,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 	return nil, errors.New("image not exists")
 }
 
-func (c *QQClient) QueryFriendImage(target int64, hash, img []byte, size int32) (*message.FriendImageElement, error) {
+func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*message.FriendImageElement, error) {
 	i, err := c.sendAndWait(c.buildOffPicUpPacket(target, hash, size))
 	if err != nil {
 		return nil, err
