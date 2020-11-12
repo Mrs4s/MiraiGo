@@ -142,6 +142,16 @@ func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {
 	return fs.client.GetGroupFileUrl(file.GroupCode, file.FileId, file.BusId)
 }
 
+// DeleteFile 删除群文件，需要管理权限.
+// 返回错误, 空为删除成功
+func (fs *GroupFileSystem) DeleteFile(parentFolderId, fileId string, busId int32) string {
+	i, err := fs.client.sendAndWait(fs.client.buildGroupFileDeleteReqPacket(fs.GroupCode, parentFolderId, fileId, busId))
+	if err != nil {
+		return err.Error()
+	}
+	return i.(string)
+}
+
 // OidbSvc.0x6d8_1
 func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderId string, startIndex uint32) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -229,6 +239,27 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 	return seq, packet
 }
 
+func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId, fileId string, busId int32) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.D6D6ReqBody{DeleteFileReq: &oidb.DeleteFileReqBody{
+		GroupCode:      groupCode,
+		AppId:          3,
+		BusId:          busId,
+		ParentFolderId: parentFolderId,
+		FileId:         fileId,
+	}}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:       1750,
+		ServiceType:   3,
+		Bodybuffer:    b,
+		ClientVersion: "android 8.4.8",
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 func decodeOIDB6d81Response(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D8RspBody{}
@@ -242,7 +273,7 @@ func decodeOIDB6d81Response(c *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOIDB6d62Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -251,7 +282,25 @@ func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, 
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, err
 	}
+	if rsp.DownloadFileRsp.DownloadUrl == nil {
+		return nil, errors.New(rsp.DownloadFileRsp.ClientWording)
+	}
 	ip := rsp.DownloadFileRsp.DownloadIp
 	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
+}
+
+func decodeOIDB6d63Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D6D6RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, err
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, err
+	}
+	if rsp.DeleteFileRsp == nil {
+		return "", nil
+	}
+	return rsp.DeleteFileRsp.ClientWording, nil
 }

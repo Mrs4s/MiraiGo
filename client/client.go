@@ -151,7 +151,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"ProfileService.Pb.ReqSystemMsgNew.Friend":                 decodeSystemMsgFriendPacket,
 			"MultiMsg.ApplyUp":                                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                                       decodeMultiApplyDownResponse,
-			"OidbSvc.0x6d6_2":                                          decodeOIDB6d6Response,
+			"OidbSvc.0x6d6_2":                                          decodeOIDB6d62Response,
+			"OidbSvc.0x6d6_3":                                          decodeOIDB6d63Response,
 			"OidbSvc.0x6d8_1":                                          decodeOIDB6d81Response,
 			"OidbSvc.0x88d_0":                                          decodeGroupInfoResponse,
 			"OidbSvc.0xe07_0":                                          decodeImageOcrResponse,
@@ -641,16 +642,18 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 	count++
 	h := md5.Sum(img)
 	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
-	if err != nil {
+	if err == ErrNotExists {
 		// use group highway upload and query again for image id.
 		if _, err = c.UploadGroupImage(target, img); err != nil {
 			return nil, err
 		}
-		// safe
 		if count >= 5 {
-			return nil, errors.New("upload failed")
+			return e, nil
 		}
 		return c.uploadPrivateImage(target, img, count)
+	}
+	if err != nil {
+		return nil, err
 	}
 	return e, nil
 }
@@ -698,7 +701,10 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 		return nil, errors.New(rsp.Message)
 	}
 	if !rsp.IsExists {
-		return nil, errors.New("image not exists")
+		return &message.FriendImageElement{
+			ImageId: rsp.ResourceId,
+			Md5:     hash,
+		}, ErrNotExists
 	}
 	return &message.FriendImageElement{
 		ImageId: rsp.ResourceId,
@@ -1124,6 +1130,7 @@ func (c *QQClient) doHeartbeat() {
 			_ = c.Conn.Close()
 		}
 		time.AfterFunc(30*time.Second, c.doHeartbeat)
+		return
 	}
 	c.heartbeatEnabled = false
 }
