@@ -25,7 +25,7 @@ type eventHandlers struct {
 	newFriendHandlers           []func(*QQClient, *NewFriendEvent)
 	disconnectHandlers          []func(*QQClient, *ClientDisconnectedEvent)
 	logHandlers                 []func(*QQClient, *LogEvent)
-	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent)
+	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent) bool
 	notifyHandlers              []func(*QQClient, IGroupNotifyEvent)
 	offlineFileHandlers         []func(*QQClient, *OfflineFileEvent)
 	groupMessageReceiptHandlers sync.Map
@@ -107,7 +107,7 @@ func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
 	c.eventHandlers.disconnectHandlers = append(c.eventHandlers.disconnectHandlers, f)
 }
 
-func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent)) {
+func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent) bool) {
 	c.eventHandlers.serverUpdatedHandlers = append(c.eventHandlers.serverUpdatedHandlers, f)
 }
 
