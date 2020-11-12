@@ -208,8 +208,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		return nil, err
 	}
 	go c.netLoop()
-	seq, packet := c.buildLoginPacket()
-	rsp, err := c.sendAndWait(seq, packet)
+	rsp, err := c.sendAndWait(c.buildLoginPacket())
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -226,6 +225,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	seq, packet := c.buildCaptchaPacket(result, sign)
 	rsp, err := c.sendAndWait(seq, packet)
 	if err != nil {
+		c.Disconnect()
 		return nil, err
 	}
 	l := rsp.(LoginResponse)
@@ -238,6 +238,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
 	if err != nil {
+		c.Disconnect()
 		return nil, err
 	}
 	l := rsp.(LoginResponse)
@@ -1027,6 +1028,9 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 }
 
 func (c *QQClient) netLoop() {
+	if c.NetLooping {
+		return
+	}
 	c.NetLooping = true
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
@@ -1126,11 +1130,12 @@ func (c *QQClient) doHeartbeat() {
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
-		if err != nil {
-			_ = c.Conn.Close()
+		if err == nil {
+			time.AfterFunc(30*time.Second, c.doHeartbeat)
+			return
 		}
-		time.AfterFunc(30*time.Second, c.doHeartbeat)
-		return
+		c.lastLostMsg = "Heartbeat failed"
+		c.Disconnect()
 	}
 	c.heartbeatEnabled = false
 }
