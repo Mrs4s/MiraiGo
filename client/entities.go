@@ -203,18 +203,16 @@ type (
 	}
 
 	imageUploadResponse struct {
-		ResultCode int32
-		Message    string
-
-		IsExists bool
-		FileId   int64
-		Width    int32
-		Height   int32
-
-		ResourceId string
 		UploadKey  []byte
 		UploadIp   []int32
 		UploadPort []int32
+		ResourceId string
+		Message    string
+		FileId     int64
+		Width      int32
+		Height     int32
+		ResultCode int32
+		IsExists   bool
 	}
 
 	pttUploadResponse struct {
