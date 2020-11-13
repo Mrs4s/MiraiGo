@@ -33,7 +33,7 @@ type (
 // grayTipProcessor 提取出来专门用于处理群内 notify tips
 func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTipInfo) {
 	switch tipInfo.TemplId {
-	case 10043, 1136: // 戳一戳
+	case 10043, 1136, 1132: // 戳一戳
 		var sender int64 = 0
 		receiver := c.Uin
 		for _, templ := range tipInfo.MsgTemplParam {

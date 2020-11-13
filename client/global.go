@@ -106,7 +106,7 @@ var SystemDeviceInfo = &DeviceInfo{
 	IMEI:        "468356291846738",
 	AndroidId:   []byte("MIRAI.123456.001"),
 	APN:         []byte("wifi"),
-	Protocol:    AndroidPad,
+	Protocol:    IPad,
 	Version: &Version{
 		Incremental: []byte("5891938"),
 		Release:     []byte("10"),
@@ -171,10 +171,10 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
 		}
-	case AndroidPad: // Dumped from qq-hd v5.8.9
+	case IPad:
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537065549,
+			AppId:           537065739,
 			SortVersionName: "5.8.9",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
@@ -201,7 +201,7 @@ func (info *DeviceInfo) ToJson() []byte {
 		IMEI:        info.IMEI,
 		Protocol: func() int {
 			switch info.Protocol {
-			case AndroidPad:
+			case IPad:
 				return 0
 			case AndroidPhone:
 				return 1
@@ -238,7 +238,7 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	case 2:
 		info.Protocol = AndroidWatch
 	default:
-		info.Protocol = AndroidPad
+		info.Protocol = IPad
 	}
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()

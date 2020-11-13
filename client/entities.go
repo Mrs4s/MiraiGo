@@ -252,7 +252,7 @@ const (
 	Member
 
 	AndroidPhone ClientProtocol = 1
-	AndroidPad   ClientProtocol = 2
+	IPad         ClientProtocol = 2
 	AndroidWatch ClientProtocol = 3
 )
 
