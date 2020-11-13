@@ -1044,10 +1044,10 @@ func (c *QQClient) netLoop() {
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
-			if c.registerClient() != nil {
+			if e := c.registerClient(); e != nil {
 				c.Disconnect()
-				c.lastLostMsg = "register client failed."
-				c.Error("reconnect failed: register client failed.")
+				c.lastLostMsg = "register client failed: " + e.Error()
+				c.Error("reconnect failed: " + e.Error())
 				break
 			}
 		}
