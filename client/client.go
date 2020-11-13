@@ -188,11 +188,14 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
-		addr := &net.TCPAddr{
-			IP:   adds[0],
-			Port: 8080,
+		var hostAddrs []*net.TCPAddr
+		for _, addr := range adds {
+			hostAddrs = append(hostAddrs, &net.TCPAddr{
+				IP:   addr,
+				Port: 8080,
+			})
 		}
-		cli.servers = append([]*net.TCPAddr{addr}, cli.servers...)
+		cli.servers = append(hostAddrs, cli.servers...)
 	}
 	rand.Read(cli.RandomKey)
 	return cli
