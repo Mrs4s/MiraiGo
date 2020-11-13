@@ -232,7 +232,7 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 					}
 				})
 			}
-			if !f {
+			if f {
 				c.SetCustomServer(adds)
 			}
 			return nil, nil
