@@ -1129,6 +1129,7 @@ func (c *QQClient) netLoop() {
 
 func (c *QQClient) doHeartbeat() {
 	c.heartbeatEnabled = true
+	times := 0
 	for c.Online {
 		seq := c.nextSeq()
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
@@ -1138,6 +1139,11 @@ func (c *QQClient) doHeartbeat() {
 			c.lastLostMsg = "Heartbeat failed: " + err.Error()
 			c.Disconnect()
 			break
+		}
+		times++
+		if times >= 7 {
+			_ = c.registerClient()
+			times = 0
 		}
 		time.Sleep(time.Second * 30)
 	}
