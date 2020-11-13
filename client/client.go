@@ -1134,7 +1134,7 @@ func (c *QQClient) doHeartbeat() {
 			time.AfterFunc(30*time.Second, c.doHeartbeat)
 			return
 		}
-		c.lastLostMsg = "Heartbeat failed"
+		c.lastLostMsg = "Heartbeat failed: " + err.Error()
 		c.Disconnect()
 	}
 	c.heartbeatEnabled = false
