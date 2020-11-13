@@ -151,7 +151,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			"ProfileService.Pb.ReqSystemMsgNew.Friend":                 decodeSystemMsgFriendPacket,
 			"MultiMsg.ApplyUp":                                         decodeMultiApplyUpResponse,
 			"MultiMsg.ApplyDown":                                       decodeMultiApplyDownResponse,
-			"OidbSvc.0x6d6_2":                                          decodeOIDB6d6Response,
+			"OidbSvc.0x6d6_2":                                          decodeOIDB6d62Response,
+			"OidbSvc.0x6d6_3":                                          decodeOIDB6d63Response,
 			"OidbSvc.0x6d8_1":                                          decodeOIDB6d81Response,
 			"OidbSvc.0x88d_0":                                          decodeGroupInfoResponse,
 			"OidbSvc.0xe07_0":                                          decodeImageOcrResponse,
@@ -187,11 +188,18 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
-		addr := &net.TCPAddr{
-			IP:   adds[0],
-			Port: 8080,
+		var hostAddrs []*net.TCPAddr
+		for _, addr := range adds {
+			hostAddrs = append(hostAddrs, &net.TCPAddr{
+				IP:   addr,
+				Port: 8080,
+			})
 		}
-		cli.servers = append([]*net.TCPAddr{addr}, cli.servers...)
+		cli.servers = append(hostAddrs, cli.servers...)
+	}
+	sso, err := getSSOAddress()
+	if err == nil && len(sso) > 0 {
+		cli.servers = append(sso, cli.servers...)
 	}
 	rand.Read(cli.RandomKey)
 	return cli
@@ -207,8 +215,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		return nil, err
 	}
 	go c.netLoop()
-	seq, packet := c.buildLoginPacket()
-	rsp, err := c.sendAndWait(seq, packet)
+	rsp, err := c.sendAndWait(c.buildLoginPacket())
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -225,6 +232,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	seq, packet := c.buildCaptchaPacket(result, sign)
 	rsp, err := c.sendAndWait(seq, packet)
 	if err != nil {
+		c.Disconnect()
 		return nil, err
 	}
 	l := rsp.(LoginResponse)
@@ -237,6 +245,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
 	if err != nil {
+		c.Disconnect()
 		return nil, err
 	}
 	l := rsp.(LoginResponse)
@@ -251,7 +260,7 @@ func (c *QQClient) init() {
 	_ = c.registerClient()
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	if !c.heartbeatEnabled {
-		c.startHeartbeat()
+		go c.doHeartbeat()
 	}
 }
 
@@ -641,16 +650,18 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 	count++
 	h := md5.Sum(img)
 	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
-	if err != nil {
+	if err == ErrNotExists {
 		// use group highway upload and query again for image id.
 		if _, err = c.UploadGroupImage(target, img); err != nil {
 			return nil, err
 		}
-		// safe
 		if count >= 5 {
-			return nil, errors.New("upload failed")
+			return e, nil
 		}
 		return c.uploadPrivateImage(target, img, count)
+	}
+	if err != nil {
+		return nil, err
 	}
 	return e, nil
 }
@@ -698,7 +709,10 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 		return nil, errors.New(rsp.Message)
 	}
 	if !rsp.IsExists {
-		return nil, errors.New("image not exists")
+		return &message.FriendImageElement{
+			ImageId: rsp.ResourceId,
+			Md5:     hash,
+		}, ErrNotExists
 	}
 	return &message.FriendImageElement{
 		ImageId: rsp.ResourceId,
@@ -1021,6 +1035,9 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 }
 
 func (c *QQClient) netLoop() {
+	if c.NetLooping {
+		return
+	}
 	c.NetLooping = true
 	reader := binary.NewNetworkReader(c.Conn)
 	retry := 0
@@ -1031,13 +1048,14 @@ func (c *QQClient) netLoop() {
 			c.Error("connection dropped by server: %v", err)
 			err = c.connect()
 			if err != nil {
+				c.Error("connect server error: %v", err)
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
-			if c.registerClient() != nil {
+			if e := c.registerClient(); e != nil {
 				c.Disconnect()
-				c.lastLostMsg = "register client failed."
-				c.Error("reconnect failed: register client failed.")
+				c.lastLostMsg = "register client failed: " + e.Error()
+				c.Error("reconnect failed: " + e.Error())
 				break
 			}
 		}
@@ -1053,7 +1071,7 @@ func (c *QQClient) netLoop() {
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
-			if err == packets.ErrSessionExpired {
+			if err == packets.ErrSessionExpired || err == packets.ErrPacketDropped {
 				break
 			}
 			errCount++
@@ -1109,21 +1127,19 @@ func (c *QQClient) netLoop() {
 	c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: c.lastLostMsg})
 }
 
-func (c *QQClient) startHeartbeat() {
-	c.heartbeatEnabled = true
-	time.AfterFunc(30*time.Second, c.doHeartbeat)
-}
-
 func (c *QQClient) doHeartbeat() {
-	if c.Online {
+	c.heartbeatEnabled = true
+	for c.Online {
 		seq := c.nextSeq()
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
 		if err != nil {
-			_ = c.Conn.Close()
+			c.lastLostMsg = "Heartbeat failed: " + err.Error()
+			c.Disconnect()
+			break
 		}
-		time.AfterFunc(30*time.Second, c.doHeartbeat)
+		time.Sleep(time.Second * 30)
 	}
 	c.heartbeatEnabled = false
 }

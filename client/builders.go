@@ -274,7 +274,7 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 	req.WriteInt64(pktSeq, 2)
 	req.WriteBytes(jceBuf, 3)
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"PushResp": packRequestDataV3(req.Bytes())},
+		Map: map[string][]byte{"PushResp": packUniRequestData(req.Bytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -298,7 +298,7 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 		RequireMax:     20,
 		GetDevListType: 2,
 	}
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"SvcReqGetDevLoginInfo": packRequestDataV3(req.ToBytes())}}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"SvcReqGetDevLoginInfo": packUniRequestData(req.ToBytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		SServantName: "StatSvc",
@@ -353,7 +353,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		SnsTypeList:     []int64{13580, 13581, 13582},
 	}
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"FL": packRequestDataV3(req.ToBytes())},
+		Map: map[string][]byte{"FL": packUniRequestData(req.ToBytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -386,8 +386,8 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 	head := jce.NewJceWriter()
 	head.WriteInt32(2, 0)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
-		"ReqHead":        packRequestDataV3(head.Bytes()),
-		"ReqSummaryCard": packRequestDataV3(req.ToBytes()),
+		"ReqHead":        packUniRequestData(head.Bytes()),
+		"ReqSummaryCard": packUniRequestData(req.ToBytes()),
 	}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -869,7 +869,7 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 			},
 		},
 	}
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"MGCREQ": packRequestDataV3(req.ToBytes())}}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"MGCREQ": packUniRequestData(req.ToBytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		IRequestId:   c.nextPacketSeq(),
@@ -1051,7 +1051,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 		w.WriteUInt32(uint32(c.Uin))
 		w.WriteUInt32(uint32(groupCode))
 	}), 2)
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"GroupMngReq": packRequestDataV3(jw.Bytes())}}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"GroupMngReq": packUniRequestData(jw.Bytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		IRequestId:   c.nextPacketSeq(),

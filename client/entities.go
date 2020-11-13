@@ -11,6 +11,7 @@ import (
 var (
 	ErrAlreadyOnline  = errors.New("already online")
 	ErrMemberNotFound = errors.New("member not found")
+	ErrNotExists      = errors.New("not exists")
 )
 
 type (
@@ -251,7 +252,7 @@ const (
 	Member
 
 	AndroidPhone ClientProtocol = 1
-	AndroidPad   ClientProtocol = 2
+	IPad         ClientProtocol = 2
 	AndroidWatch ClientProtocol = 3
 )
 

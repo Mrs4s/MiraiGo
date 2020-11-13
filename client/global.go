@@ -2,9 +2,11 @@ package client
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
@@ -12,7 +14,9 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
 	"math/rand"
+	"net"
 	"sort"
+	"strings"
 )
 
 type DeviceInfo struct {
@@ -102,7 +106,7 @@ var SystemDeviceInfo = &DeviceInfo{
 	IMEI:        "468356291846738",
 	AndroidId:   []byte("MIRAI.123456.001"),
 	APN:         []byte("wifi"),
-	Protocol:    AndroidPad,
+	Protocol:    IPad,
 	Version: &Version{
 		Incremental: []byte("5891938"),
 		Release:     []byte("10"),
@@ -167,10 +171,10 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
 		}
-	case AndroidPad: // Dumped from qq-hd v5.8.9
+	case IPad:
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537065549,
+			AppId:           537065739,
 			SortVersionName: "5.8.9",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
@@ -197,7 +201,7 @@ func (info *DeviceInfo) ToJson() []byte {
 		IMEI:        info.IMEI,
 		Protocol: func() int {
 			switch info.Protocol {
-			case AndroidPad:
+			case IPad:
 				return 0
 			case AndroidPhone:
 				return 1
@@ -234,7 +238,7 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	case 2:
 		info.Protocol = AndroidWatch
 	default:
-		info.Protocol = AndroidPad
+		info.Protocol = IPad
 	}
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
@@ -270,6 +274,53 @@ func (info *DeviceInfo) GenDeviceInfoData() []byte {
 		panic(err)
 	}
 	return data
+}
+
+func getSSOAddress() ([]*net.TCPAddr, error) {
+	protocol := genVersionInfo(SystemDeviceInfo.Protocol)
+	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")
+	payload := jce.NewJceWriter(). // see ServerConfig.d
+					WriteInt64(0, 1).WriteInt64(0, 2).WriteByte(1, 3).
+					WriteString("00000", 4).WriteInt32(100, 5).
+					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
+					WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
+					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).WriteByte(1, 14).Bytes()
+	buf := &jce.RequestDataVersion2{
+		Map: map[string]map[string][]byte{"HttpServerListReq": {"ConfigHttp.HttpServerListReq": packUniRequestData(payload)}},
+	}
+	pkt := &jce.RequestPacket{
+		IVersion:     2,
+		SServantName: "ConfigHttp",
+		SFuncName:    "HttpServerListReq",
+		SBuffer:      buf.ToBytes(),
+	}
+	tea := binary.NewTeaCipher(key)
+	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp", tea.Encrypt(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteIntLvPacket(0, func(w *binary.Writer) {
+			w.Write(pkt.ToBytes())
+		})
+	})))
+	if err != nil {
+		return nil, err
+	}
+	rspPkt := &jce.RequestPacket{}
+	data := &jce.RequestDataVersion2{}
+	rspPkt.ReadFrom(jce.NewJceReader(tea.Decrypt(rsp)[4:]))
+	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
+	reader := jce.NewJceReader(data.Map["HttpServerListRes"]["ConfigHttp.HttpServerListRes"][1:])
+	servers := []jce.SsoServerInfo{}
+	reader.ReadSlice(&servers, 2)
+	var adds []*net.TCPAddr
+	for _, s := range servers {
+		if strings.Contains(s.Server, "com") {
+			continue
+		}
+		adds = append(adds, &net.TCPAddr{
+			IP:   net.ParseIP(s.Server),
+			Port: int(s.Port),
+		})
+	}
+	return adds, nil
 }
 
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
@@ -459,7 +510,7 @@ func (b *groupMessageBuilder) build() *msg.Message {
 	return base
 }
 
-func packRequestDataV3(data []byte) (r []byte) {
+func packUniRequestData(data []byte) (r []byte) {
 	r = append([]byte{0x0A}, data...)
 	r = append(r, 0x0B)
 	return

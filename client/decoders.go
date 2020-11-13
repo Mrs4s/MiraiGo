@@ -165,7 +165,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 }
 
 // StatSvc.register
-func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeClientRegisterResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -173,6 +173,9 @@ func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interf
 	svcRsp := &jce.SvcRespRegister{}
 	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
 	if svcRsp.Result != "" || svcRsp.Status != 11 {
+		if svcRsp.Result != "" {
+			c.Error("reg error: %v", svcRsp.Result)
+		}
 		return nil, errors.New("reg failed")
 	}
 	return nil, nil
@@ -221,11 +224,16 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 					Port: int(s.Port),
 				})
 			}
-			c.SetCustomServer(adds)
+			f := true
 			for _, e := range c.eventHandlers.serverUpdatedHandlers {
 				cover(func() {
-					e(c, &ServerUpdatedEvent{Servers: servers})
+					if !e(c, &ServerUpdatedEvent{Servers: servers}) {
+						f = false
+					}
 				})
+			}
+			if f {
+				c.SetCustomServer(adds)
 			}
 			return nil, nil
 		}

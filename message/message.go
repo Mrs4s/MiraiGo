@@ -432,6 +432,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 		}
 		if elem.CustomFace != nil {
+			if len(elem.CustomFace.Md5) == 0 {
+				continue
+			}
 			res = append(res, &ImageElement{
 				Filename: elem.CustomFace.FilePath,
 				Size:     elem.CustomFace.Size,

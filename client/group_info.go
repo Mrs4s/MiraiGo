@@ -77,8 +77,8 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 	head := jce.NewJceWriter()
 	head.WriteInt32(2, 0)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
-		"ReqHead":   packRequestDataV3(head.Bytes()),
-		"ReqSearch": packRequestDataV3(req.ToBytes()),
+		"ReqHead":   packUniRequestData(head.Bytes()),
+		"ReqSearch": packUniRequestData(req.ToBytes()),
 	}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
