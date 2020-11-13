@@ -430,6 +430,12 @@ func (pkt *RequestDataVersion3) ReadFrom(r *JceReader) {
 	})
 }
 
+func (pkt *RequestDataVersion2) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
 func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
 	pkt.Map = make(map[string]map[string][]byte)
 	r.ReadMapF(0, func(k interface{}, v interface{}) {

@@ -197,6 +197,10 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		}
 		cli.servers = append(hostAddrs, cli.servers...)
 	}
+	sso, err := getSSOAddress()
+	if err == nil && len(sso) > 0 {
+		cli.servers = append(sso, cli.servers...)
+	}
 	rand.Read(cli.RandomKey)
 	return cli
 }
