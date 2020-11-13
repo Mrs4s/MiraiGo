@@ -72,12 +72,12 @@ type groupMessageBuilder struct {
 }
 
 type versionInfo struct {
-	ApkId           string
-	AppId           uint32
-	SortVersionName string
-	BuildTime       uint32
 	ApkSign         []byte
+	ApkId           string
+	SortVersionName string
 	SdkVersion      string
+	AppId           uint32
+	BuildTime       uint32
 	SSOVersion      uint32
 	MiscBitmap      uint32
 	SubSigmap       uint32

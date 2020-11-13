@@ -101,15 +101,20 @@ const (
 	LightApp
 	RedBag
 
-	SweetWink      GroupGift = 285
-	HappyCola      GroupGift = 289
-	LuckyBracelet  GroupGift = 290
-	Cappuccino     GroupGift = 299
-	CatWatch       GroupGift = 302
-	FleeceGloves   GroupGift = 307
-	RainbowCandy   GroupGift = 308
-	Stronger       GroupGift = 313
-	LoveMicrophone GroupGift = 367
+	HoldingYourHand GroupGift = 280
+	CuteCat         GroupGift = 281
+	MysteryMask     GroupGift = 284
+	SweetWink       GroupGift = 285
+	ImBusy          GroupGift = 286
+	HappyCola       GroupGift = 289
+	LuckyBracelet   GroupGift = 290
+	Cappuccino      GroupGift = 299
+	CatWatch        GroupGift = 302
+	FleeceGloves    GroupGift = 307
+	RainbowCandy    GroupGift = 308
+	LoveMask        GroupGift = 312
+	Stronger        GroupGift = 313
+	LoveMicrophone  GroupGift = 367
 )
 
 func (s *Sender) IsAnonymous() bool {
