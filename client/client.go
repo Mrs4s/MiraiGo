@@ -253,7 +253,7 @@ func (c *QQClient) init() {
 	_ = c.registerClient()
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	if !c.heartbeatEnabled {
-		c.startHeartbeat()
+		go c.doHeartbeat()
 	}
 }
 
@@ -1041,6 +1041,7 @@ func (c *QQClient) netLoop() {
 			c.Error("connection dropped by server: %v", err)
 			err = c.connect()
 			if err != nil {
+				c.Error("connect server error: %v", err)
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
@@ -1119,23 +1120,19 @@ func (c *QQClient) netLoop() {
 	c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: c.lastLostMsg})
 }
 
-func (c *QQClient) startHeartbeat() {
-	c.heartbeatEnabled = true
-	time.AfterFunc(30*time.Second, c.doHeartbeat)
-}
-
 func (c *QQClient) doHeartbeat() {
-	if c.Online {
+	c.heartbeatEnabled = true
+	for c.Online {
 		seq := c.nextSeq()
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
-		if err == nil {
-			time.AfterFunc(30*time.Second, c.doHeartbeat)
-			return
+		if err != nil {
+			c.lastLostMsg = "Heartbeat failed: " + err.Error()
+			c.Disconnect()
+			break
 		}
-		c.lastLostMsg = "Heartbeat failed: " + err.Error()
-		c.Disconnect()
+		time.Sleep(time.Second * 30)
 	}
 	c.heartbeatEnabled = false
 }
