@@ -776,6 +776,22 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 				}
 				groupLeaveLock.Unlock()
+			case 290:
+				t := &notify.GeneralGrayTipInfo{}
+				_ = proto.Unmarshal(probuf, t)
+				var sender int64
+				for _, templ := range t.MsgTemplParam {
+					if templ.Name == "uin_str1" {
+						sender, _ = strconv.ParseInt(templ.Value, 10, 64)
+					}
+				}
+				if sender == 0 {
+					return nil, nil
+				}
+				c.dispatchFriendNotifyEvent(&FriendPokeNotifyEvent{
+					Sender: sender,
+					Receiver: c.Uin,
+				})
 			case 0x44:
 				s44 := pb.Sub44{}
 				if err := proto.Unmarshal(probuf, &s44); err != nil {
