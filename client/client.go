@@ -177,6 +177,10 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		version:                genVersionInfo(SystemDeviceInfo.Protocol),
 		servers:                []*net.TCPAddr{},
 	}
+	sso, err := getSSOAddress()
+	if err == nil && len(sso) > 0 {
+		cli.servers = append(sso, cli.servers...)
+	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
 		var hostAddrs []*net.TCPAddr
@@ -185,12 +189,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 				IP:   addr,
 				Port: 8080,
 			})
+			break // 第一个就好23333
 		}
 		cli.servers = append(hostAddrs, cli.servers...)
-	}
-	sso, err := getSSOAddress()
-	if err == nil && len(sso) > 0 {
-		cli.servers = append(sso, cli.servers...)
 	}
 	if len(cli.servers) == 0 {
 		cli.servers = []*net.TCPAddr{ // default servers

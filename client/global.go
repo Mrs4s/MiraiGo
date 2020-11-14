@@ -184,6 +184,19 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			SubSigmap:       66560,
 			MainSigMap:      1970400,
 		}
+	case MacOS:
+		return &versionInfo{
+			ApkId:           "com.tencent.minihd.qq",
+			AppId:           537064315,
+			SortVersionName: "5.8.9",
+			BuildTime:       1595836208,
+			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
+			SdkVersion:      "6.0.0.2433",
+			SSOVersion:      12,
+			MiscBitmap:      150470524,
+			SubSigmap:       66560,
+			MainSigMap:      1970400,
+		}
 	}
 	return nil
 }
@@ -237,6 +250,8 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 		info.Protocol = AndroidPhone
 	case 2:
 		info.Protocol = AndroidWatch
+	case 3:
+		info.Protocol = MacOS
 	default:
 		info.Protocol = IPad
 	}

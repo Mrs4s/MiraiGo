@@ -251,6 +251,7 @@ const (
 	AndroidPhone ClientProtocol = 1
 	IPad         ClientProtocol = 2
 	AndroidWatch ClientProtocol = 3
+	MacOS        ClientProtocol = 4
 )
 
 func (g *GroupInfo) UpdateName(newName string) {
