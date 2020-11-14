@@ -176,15 +176,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		transCache:             utils.NewCache(time.Second * 15),
 		onlinePushCache:        utils.NewCache(time.Second * 15),
 		version:                genVersionInfo(SystemDeviceInfo.Protocol),
-		servers: []*net.TCPAddr{ // default servers
-			{IP: net.IP{42, 81, 169, 46}, Port: 8080},
-			{IP: net.IP{42, 81, 172, 81}, Port: 80},
-			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
-			{IP: net.IP{42, 81, 172, 147}, Port: 443},
-			{IP: net.IP{125, 94, 60, 146}, Port: 80},
-			{IP: net.IP{114, 221, 144, 215}, Port: 80},
-			{IP: net.IP{42, 81, 172, 22}, Port: 80},
-		},
+		servers:                []*net.TCPAddr{},
 	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
@@ -200,6 +192,16 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
 		cli.servers = append(sso, cli.servers...)
+	}
+	if len(cli.servers) == 0 {
+		cli.servers = []*net.TCPAddr{ // default servers
+			{IP: net.IP{42, 81, 172, 81}, Port: 80},
+			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
+			{IP: net.IP{42, 81, 172, 147}, Port: 443},
+			{IP: net.IP{125, 94, 60, 146}, Port: 80},
+			{IP: net.IP{114, 221, 144, 215}, Port: 80},
+			{IP: net.IP{42, 81, 172, 22}, Port: 80},
+		}
 	}
 	rand.Read(cli.RandomKey)
 	return cli
