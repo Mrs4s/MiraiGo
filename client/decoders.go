@@ -426,8 +426,6 @@ func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 
 // MessageSvc.PushNotify
 func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
-	c.msgSvcLock.Lock()
-	defer c.msgSvcLock.Unlock()
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
 }

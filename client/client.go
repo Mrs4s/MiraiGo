@@ -87,7 +87,6 @@ type QQClient struct {
 	eventHandlers          *eventHandlers
 
 	groupListLock sync.Mutex
-	msgSvcLock    sync.Mutex
 }
 
 type loginSigInfo struct {
