@@ -616,6 +616,10 @@ func (c *QQClient) sendGroupPoke(groupCode, target int64) {
 	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
 }
 
+func (c *QQClient) SendFriendPoke(target int64) {
+	_, _ = c.sendAndWait(c.buildFriendPokePacket(target))
+}
+
 func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {
 	h := md5.Sum(img)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, h[:], int32(len(img)))

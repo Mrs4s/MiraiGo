@@ -1019,6 +1019,24 @@ func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte
 	return seq, packet
 }
 
+// OidbSvc.0xed3
+func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DED3ReqBody{
+		ToUin:  target,
+		AioUin: target,
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     3795,
+		ServiceType: 1,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // OidbSvc.0x55c_1
 func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
 	seq := c.nextSeq()
