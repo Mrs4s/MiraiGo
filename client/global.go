@@ -250,6 +250,8 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 		info.Protocol = AndroidPhone
 	case 2:
 		info.Protocol = AndroidWatch
+	case 3:
+		info.Protocol = MacOS
 	default:
 		info.Protocol = IPad
 	}
