@@ -426,8 +426,6 @@ func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 
 // MessageSvc.PushNotify
 func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
-	c.msgSvcLock.Lock()
-	defer c.msgSvcLock.Unlock()
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
 }
@@ -708,6 +706,9 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				_ = proto.Unmarshal(r.ReadAvailable(), &b)
 				if b.OptMsgRecall != nil {
 					for _, rm := range b.OptMsgRecall.RecalledMsgList {
+						if rm.MsgType == 2 {
+							continue
+						}
 						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
 							GroupCode:   groupId,
 							OperatorUin: b.OptMsgRecall.Uin,
