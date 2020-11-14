@@ -44,7 +44,6 @@ type (
 		Nickname string
 		Remark   string
 		FaceId   int16
-
 		//msgSeqList *utils.Cache
 	}
 
@@ -130,7 +129,7 @@ type (
 		Member  *GroupMemberInfo
 	}
 
-	IGroupNotifyEvent interface {
+	INotifyEvent interface {
 		From() int64
 		Content() string
 	}
