@@ -708,6 +708,9 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				_ = proto.Unmarshal(r.ReadAvailable(), &b)
 				if b.OptMsgRecall != nil {
 					for _, rm := range b.OptMsgRecall.RecalledMsgList {
+						if rm.MsgType == 2 {
+							continue
+						}
 						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
 							GroupCode:   groupId,
 							OperatorUin: b.OptMsgRecall.Uin,
