@@ -77,6 +77,8 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 			Useful:   1,
 			//Origin:    1,
 			BizType:   5,
+			Width:     e.Width,
+			Height:    e.Height,
 			FileId:    int32(e.FileId),
 			FilePath:  e.ImageId,
 			ImageType: e.ImageType,

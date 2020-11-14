@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
 	"io"
 	"math"
 	"math/rand"
@@ -645,11 +646,12 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 	}
 	return nil, errors.New("upload failed")
 ok:
+	i, _, _ := image.DecodeConfig(bytes.NewReader(img))
 	var imageType int32 = 1000
 	if bytes.HasPrefix(img, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:], rsp.FileId, int32(len(img)), rsp.Width, rsp.Height, imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:], rsp.FileId, int32(len(img)), int32(i.Width), int32(i.Height), imageType), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
