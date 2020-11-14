@@ -31,8 +31,8 @@ type (
 
 	// FriendPokeNotifyEvent 好友戳一戳提示事件
 	FriendPokeNotifyEvent struct {
-		Sender    int64
-		Receiver  int64
+		Sender   int64
+		Receiver int64
 	}
 )
 

@@ -789,7 +789,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					return nil, nil
 				}
 				c.dispatchFriendNotifyEvent(&FriendPokeNotifyEvent{
-					Sender: sender,
+					Sender:   sender,
 					Receiver: c.Uin,
 				})
 			case 0x44:
