@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
 	"io"
 	"math"
 	"math/rand"
@@ -645,7 +646,12 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 	}
 	return nil, errors.New("upload failed")
 ok:
-	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:], rsp.FileId, int32(len(img)), rsp.Width, rsp.Height), nil
+	i, _, _ := image.DecodeConfig(bytes.NewReader(img))
+	var imageType int32 = 1000
+	if bytes.HasPrefix(img, []byte{0x47, 0x49, 0x46, 0x38}) {
+		imageType = 2000
+	}
+	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:], rsp.FileId, int32(len(img)), int32(i.Width), int32(i.Height), imageType), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
@@ -700,7 +706,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 		return nil, errors.New(rsp.Message)
 	}
 	if rsp.IsExists {
-		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash, rsp.FileId, size, rsp.Width, rsp.Height), nil
+		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash, rsp.FileId, size, rsp.Width, rsp.Height, 1000), nil
 	}
 	return nil, errors.New("image not exists")
 }
