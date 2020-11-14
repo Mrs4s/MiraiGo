@@ -23,13 +23,14 @@ type ImageElement struct {
 }
 
 type GroupImageElement struct {
-	ImageId string
-	FileId  int64
-	Size    int32
-	Width   int32
-	Height  int32
-	Md5     []byte
-	Url     string
+	ImageId   string
+	FileId    int64
+	ImageType int32
+	Size      int32
+	Width     int32
+	Height    int32
+	Md5       []byte
+	Url       string
 }
 
 type VoiceElement struct {
@@ -143,15 +144,16 @@ func NewImage(data []byte) *ImageElement {
 	}
 }
 
-func NewGroupImage(id string, md5 []byte, fid int64, size, width, height int32) *GroupImageElement {
+func NewGroupImage(id string, md5 []byte, fid int64, size, width, height, imageType int32) *GroupImageElement {
 	return &GroupImageElement{
-		ImageId: id,
-		FileId:  fid,
-		Md5:     md5,
-		Size:    size,
-		Width:   width,
-		Height:  height,
-		Url:     "http://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
+		ImageId:   id,
+		FileId:    fid,
+		Md5:       md5,
+		Size:      size,
+		ImageType: imageType,
+		Width:     width,
+		Height:    height,
+		Url:       "http://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
 	}
 }
 
