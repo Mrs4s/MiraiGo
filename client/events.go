@@ -25,8 +25,9 @@ type eventHandlers struct {
 	newFriendHandlers           []func(*QQClient, *NewFriendEvent)
 	disconnectHandlers          []func(*QQClient, *ClientDisconnectedEvent)
 	logHandlers                 []func(*QQClient, *LogEvent)
-	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent)
-	notifyHandlers              []func(*QQClient, IGroupNotifyEvent)
+	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent) bool
+	groupNotifyHandlers         []func(*QQClient, INotifyEvent)
+	friendNotifyHandlers        []func(*QQClient, INotifyEvent)
 	offlineFileHandlers         []func(*QQClient, *OfflineFileEvent)
 	groupMessageReceiptHandlers sync.Map
 }
@@ -107,7 +108,7 @@ func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
 	c.eventHandlers.disconnectHandlers = append(c.eventHandlers.disconnectHandlers, f)
 }
 
-func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent)) {
+func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent) bool) {
 	c.eventHandlers.serverUpdatedHandlers = append(c.eventHandlers.serverUpdatedHandlers, f)
 }
 
@@ -119,8 +120,12 @@ func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
 	c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
 }
 
-func (c *QQClient) OnGroupNotify(f func(*QQClient, IGroupNotifyEvent)) {
-	c.eventHandlers.notifyHandlers = append(c.eventHandlers.notifyHandlers, f)
+func (c *QQClient) OnGroupNotify(f func(*QQClient, INotifyEvent)) {
+	c.eventHandlers.groupNotifyHandlers = append(c.eventHandlers.groupNotifyHandlers, f)
+}
+
+func (c *QQClient) OnFriendNotify(f func(*QQClient, INotifyEvent)) {
+	c.eventHandlers.friendNotifyHandlers = append(c.eventHandlers.friendNotifyHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
@@ -320,11 +325,22 @@ func (c *QQClient) dispatchNewFriendEvent(e *NewFriendEvent) {
 	}
 }
 
-func (c *QQClient) dispatchGroupNotifyEvent(e IGroupNotifyEvent) {
+func (c *QQClient) dispatchGroupNotifyEvent(e INotifyEvent) {
 	if e == nil {
 		return
 	}
-	for _, f := range c.eventHandlers.notifyHandlers {
+	for _, f := range c.eventHandlers.groupNotifyHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchFriendNotifyEvent(e INotifyEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.friendNotifyHandlers {
 		cover(func() {
 			f(c, e)
 		})

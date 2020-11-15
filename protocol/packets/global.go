@@ -10,6 +10,8 @@ import (
 var ErrUnknownFlag = errors.New("unknown flag")
 var ErrInvalidPayload = errors.New("invalid payload")
 var ErrDecryptFailed = errors.New("decrypt failed")
+var ErrSessionExpired = errors.New("session expired")
+var ErrPacketDropped = errors.New("packet dropped")
 
 type ISendingPacket interface {
 	CommandId() uint16
@@ -120,11 +122,14 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	reader := binary.NewReader(payload)
 	if reader.ReadInt32()-4 > int32(reader.Len()) {
-		return nil, errors.New("dropped")
+		return nil, ErrPacketDropped
 	}
 	seqId := reader.ReadInt32()
 	retCode := reader.ReadInt32()
 	if retCode != 0 {
+		if retCode == -10008 {
+			return nil, ErrSessionExpired
+		}
 		return nil, errors.New("return code unsuccessful: " + strconv.FormatInt(int64(retCode), 10))
 	}
 	reader.ReadBytes(int(reader.ReadInt32()) - 4) // extra data

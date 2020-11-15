@@ -26,13 +26,14 @@ func (w *JceWriter) writeHead(t byte, tag int) {
 	}
 }
 
-func (w *JceWriter) WriteByte(b byte, tag int) {
+func (w *JceWriter) WriteByte(b byte, tag int) *JceWriter {
 	if b == 0 {
 		w.writeHead(12, tag)
 	} else {
 		w.writeHead(0, tag)
 		w.buf.WriteByte(b)
 	}
+	return w
 }
 
 func (w *JceWriter) WriteBool(b bool, tag int) {
@@ -52,22 +53,23 @@ func (w *JceWriter) WriteInt16(n int16, tag int) {
 	_ = goBinary.Write(w.buf, goBinary.BigEndian, n)
 }
 
-func (w *JceWriter) WriteInt32(n int32, tag int) {
+func (w *JceWriter) WriteInt32(n int32, tag int) *JceWriter {
 	if n >= -32768 && n <= 32767 { // ? if ((n >= 32768) && (n <= 32767))
 		w.WriteInt16(int16(n), tag)
-		return
+		return w
 	}
 	w.writeHead(2, tag)
 	_ = goBinary.Write(w.buf, goBinary.BigEndian, n)
+	return w
 }
 
-func (w *JceWriter) WriteInt64(n int64, tag int) {
+func (w *JceWriter) WriteInt64(n int64, tag int) *JceWriter {
 	if n >= -2147483648 && n <= 2147483647 {
-		w.WriteInt32(int32(n), tag)
-		return
+		return w.WriteInt32(int32(n), tag)
 	}
 	w.writeHead(3, tag)
 	_ = goBinary.Write(w.buf, goBinary.BigEndian, n)
+	return w
 }
 
 func (w *JceWriter) WriteFloat32(n float32, tag int) {
@@ -80,17 +82,18 @@ func (w *JceWriter) WriteFloat64(n float64, tag int) {
 	_ = goBinary.Write(w.buf, goBinary.BigEndian, n)
 }
 
-func (w *JceWriter) WriteString(s string, tag int) {
+func (w *JceWriter) WriteString(s string, tag int) *JceWriter {
 	by := []byte(s)
 	if len(by) > 255 {
 		w.writeHead(7, tag)
 		_ = goBinary.Write(w.buf, goBinary.BigEndian, len(by))
 		w.buf.Write(by)
-		return
+		return w
 	}
 	w.writeHead(6, tag)
 	w.buf.WriteByte(byte(len(by)))
 	w.buf.Write(by)
+	return w
 }
 
 func (w *JceWriter) WriteBytes(l []byte, tag int) {
@@ -109,6 +112,23 @@ func (w *JceWriter) WriteInt64Slice(l []int64, tag int) {
 	w.WriteInt32(int32(len(l)), 0)
 	for _, v := range l {
 		w.WriteInt64(v, 0)
+	}
+}
+
+func (w *JceWriter) WriteSlice(i interface{}, tag int) {
+	va := reflect.ValueOf(i)
+	if va.Kind() != reflect.Slice {
+		return
+	}
+	w.writeHead(9, tag)
+	if va.Len() == 0 {
+		w.WriteInt32(0, 0)
+		return
+	}
+	w.WriteInt32(int32(va.Len()), 0)
+	for i := 0; i < va.Len(); i++ {
+		v := va.Index(i)
+		w.WriteObject(v.Interface(), 0)
 	}
 }
 
@@ -149,6 +169,14 @@ func (w *JceWriter) WriteObject(i interface{}, tag int) {
 		w.WriteMap(i, tag)
 		return
 	}
+	if t.Kind() == reflect.Slice {
+		if b, ok := i.([]byte); ok {
+			w.WriteBytes(b, tag)
+			return
+		}
+		w.WriteSlice(i, tag)
+		return
+	}
 	switch o := i.(type) {
 	case byte:
 		w.WriteByte(o, tag)
@@ -166,14 +194,8 @@ func (w *JceWriter) WriteObject(i interface{}, tag int) {
 		w.WriteFloat64(o, tag)
 	case string:
 		w.WriteString(o, tag)
-	case []byte:
-		w.WriteBytes(o, tag)
-	case []int64:
-		w.WriteInt64Slice(o, tag)
 	case IJceStruct:
 		w.WriteJceStruct(o, tag)
-	case []IJceStruct:
-		w.WriteJceStructSlice(o, tag)
 	}
 }
 

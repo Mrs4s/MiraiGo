@@ -1,13 +1,11 @@
 package client
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
-	"log"
 	"net"
 	"strconv"
 	"strings"
@@ -167,11 +165,19 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 }
 
 // StatSvc.register
-func decodeClientRegisterResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeClientRegisterResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	svcRsp := &jce.SvcRespRegister{}
+	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
+	if svcRsp.Result != "" || svcRsp.Status != 11 {
+		if svcRsp.Result != "" {
+			c.Error("reg error: %v", svcRsp.Result)
+		}
+		return nil, errors.New("reg failed")
+	}
 	return nil, nil
 }
 
@@ -218,11 +224,16 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 					Port: int(s.Port),
 				})
 			}
-			c.SetCustomServer(adds)
+			f := true
 			for _, e := range c.eventHandlers.serverUpdatedHandlers {
 				cover(func() {
-					e(c, &ServerUpdatedEvent{Servers: servers})
+					if !e(c, &ServerUpdatedEvent{Servers: servers}) {
+						f = false
+					}
 				})
+			}
+			if f {
+				c.SetCustomServer(adds)
 			}
 			return nil, nil
 		}
@@ -304,8 +315,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				}
 				groupJoinLock.Unlock()
 			case 84, 87:
-				_, pkt := c.buildSystemMsgNewGroupPacket()
-				_ = c.send(pkt)
+				c.exceptAndDispatchGroupSysMsg()
 			case 141: // 临时会话
 				if message.Head.C2CTmpMsgHead == nil {
 					continue
@@ -416,8 +426,6 @@ func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 
 // MessageSvc.PushNotify
 func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
-	c.msgSvcLock.Lock()
-	defer c.msgSvcLock.Unlock()
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
 }
@@ -518,33 +526,6 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		l = append(l, rsp.([]*GroupInfo)...)
 	}
 	return l, nil
-}
-
-// OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
-	}
-	if len(rsp.RspGroupInfo) == 0 {
-		return nil, errors.New(string(rsp.StrErrorInfo))
-	}
-	info := rsp.RspGroupInfo[0]
-	return &GroupInfo{
-		Uin:            int64(*info.GroupInfo.GroupUin),
-		Code:           int64(*info.GroupCode),
-		Name:           string(info.GroupInfo.GroupName),
-		Memo:           string(info.GroupInfo.GroupMemo),
-		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
-		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
-		Members:        []*GroupMemberInfo{},
-		client:         c,
-	}, nil
 }
 
 // friendlist.GetTroopMemberListReq
@@ -693,19 +674,12 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 	uin := jr.ReadInt64(0)
 	jr.ReadSlice(&msgInfos, 2)
 	_ = c.send(c.buildDeleteOnlinePushPacket(uin, seq, msgInfos))
-	seqExists := func(ms int16) bool {
-		for _, s := range c.onlinePushCache {
-			if ms == s {
-				return true
-			}
-		}
-		return false
-	}
 	for _, m := range msgInfos {
-		if seqExists(m.MsgSeq) {
+		k := fmt.Sprintf("%v%v%v", m.MsgSeq, m.MsgTime, m.MsgUid)
+		if _, ok := c.onlinePushCache.Get(k); ok {
 			continue
 		}
-		c.onlinePushCache = append(c.onlinePushCache, m.MsgSeq)
+		c.onlinePushCache.Add(k, "", time.Second*30)
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
 			groupId := int64(uint32(r.ReadInt32()))
@@ -732,6 +706,9 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				_ = proto.Unmarshal(r.ReadAvailable(), &b)
 				if b.OptMsgRecall != nil {
 					for _, rm := range b.OptMsgRecall.RecalledMsgList {
+						if rm.MsgType == 2 {
+							continue
+						}
 						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
 							GroupCode:   groupId,
 							OperatorUin: b.OptMsgRecall.Uin,
@@ -799,6 +776,22 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 				}
 				groupLeaveLock.Unlock()
+			case 290:
+				t := &notify.GeneralGrayTipInfo{}
+				_ = proto.Unmarshal(probuf, t)
+				var sender int64
+				for _, templ := range t.MsgTemplParam {
+					if templ.Name == "uin_str1" {
+						sender, _ = strconv.ParseInt(templ.Value, 10, 64)
+					}
+				}
+				if sender == 0 {
+					return nil, nil
+				}
+				c.dispatchFriendNotifyEvent(&FriendPokeNotifyEvent{
+					Sender:   sender,
+					Receiver: c.Uin,
+				})
 			case 0x44:
 				s44 := pb.Sub44{}
 				if err := proto.Unmarshal(probuf, &s44); err != nil {
@@ -941,55 +934,6 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 	return nil, nil
 }
 
-// ProfileService.Pb.ReqSystemMsgNew.Group
-func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := structmsg.RspSystemMsgNew{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		return nil, err
-	}
-	if len(rsp.Groupmsgs) == 0 {
-		return nil, nil
-	}
-	st := rsp.Groupmsgs[0]
-	if st.Msg != nil {
-		if st.Msg.SubType == 1 {
-			// 处理被邀请入群 或 处理成员入群申请
-			switch st.Msg.GroupMsgType {
-			case 1: // 成员申请
-				c.dispatchJoinGroupRequest(&UserJoinGroupRequest{
-					RequestId:     st.MsgSeq,
-					Message:       st.Msg.MsgAdditional,
-					RequesterUin:  st.ReqUin,
-					RequesterNick: st.Msg.ReqUinNick,
-					GroupCode:     st.Msg.GroupCode,
-					GroupName:     st.Msg.GroupName,
-					client:        c,
-				})
-			case 2: // 被邀请
-				c.dispatchGroupInvitedEvent(&GroupInvitedRequest{
-					RequestId:   st.MsgSeq,
-					InvitorUin:  st.Msg.ActionUin,
-					InvitorNick: st.Msg.ActionUinNick,
-					GroupCode:   st.Msg.GroupCode,
-					GroupName:   st.Msg.GroupName,
-					client:      c,
-				})
-			default:
-				log.Println("unknown group msg:", st)
-			}
-		} else if st.Msg.SubType == 2 {
-			// 被邀请入群, 自动同意, 不需处理
-		} else if st.Msg.SubType == 3 {
-			// 已被其他管理员处理
-		} else if st.Msg.SubType == 5 {
-			// 成员退群消息
-		} else {
-			log.Println("unknown group msg:", st)
-		}
-	}
-	return nil, nil
-}
-
 // ProfileService.Pb.ReqSystemMsgNew.Friend
 func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := structmsg.RspSystemMsgNew{}
@@ -1048,21 +992,6 @@ func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{},
 		return rsp.Content.SliceContent, nil
 	}
 	return nil, errors.New("no word receive")
-}
-
-// OidbSvc.0x6d6_2
-func decodeOIDB6d6Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D6D6RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
-	}
-	ip := rsp.DownloadFileRsp.DownloadIp
-	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
-	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
 // OidbSvc.0xe07_0

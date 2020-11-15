@@ -75,12 +75,16 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 		CustomFace: &msg.CustomFace{
 			FileType: 66,
 			Useful:   1,
-			Origin:   1,
-			FileId:   int32(e.FileId),
-			FilePath: e.ImageId,
-			Size:     e.Size,
-			Md5:      e.Md5[:],
-			Flag:     make([]byte, 4),
+			//Origin:    1,
+			BizType:   5,
+			Width:     e.Width,
+			Height:    e.Height,
+			FileId:    int32(e.FileId),
+			FilePath:  e.ImageId,
+			ImageType: e.ImageType,
+			Size:      e.Size,
+			Md5:       e.Md5[:],
+			Flag:      make([]byte, 4),
 			//OldData:  imgOld,
 		},
 	})
@@ -146,8 +150,8 @@ func (e *LightAppElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{
 		LightApp: &msg.LightAppElem{
-			Data:     append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			MsgResid: []byte{1},
+			Data: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+			// MsgResid: []byte{1},
 		},
 	})
 	return

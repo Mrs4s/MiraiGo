@@ -28,12 +28,18 @@ type (
 		Uin       int64
 		Nick      string
 	}
+
+	// FriendPokeNotifyEvent 好友戳一戳提示事件
+	FriendPokeNotifyEvent struct {
+		Sender   int64
+		Receiver int64
+	}
 )
 
 // grayTipProcessor 提取出来专门用于处理群内 notify tips
 func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTipInfo) {
 	switch tipInfo.TemplId {
-	case 10043, 1136: // 戳一戳
+	case 10043, 1136, 1132: // 戳一戳
 		var sender int64 = 0
 		receiver := c.Uin
 		for _, templ := range tipInfo.MsgTemplParam {
@@ -85,6 +91,14 @@ func (e *GroupPokeNotifyEvent) From() int64 {
 }
 
 func (e *GroupPokeNotifyEvent) Content() string {
+	return fmt.Sprintf("%d戳了戳%d", e.Sender, e.Receiver)
+}
+
+func (e *FriendPokeNotifyEvent) From() int64 {
+	return e.Sender
+}
+
+func (e *FriendPokeNotifyEvent) Content() string {
 	return fmt.Sprintf("%d戳了戳%d", e.Sender, e.Receiver)
 }
 

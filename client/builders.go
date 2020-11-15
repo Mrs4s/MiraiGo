@@ -244,7 +244,7 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 		ChannelNo:    "",
 		CPID:         0,
 		VendorName:   "MIUI",
-		VendorOSName: "ONEPLUS A5000_23_17",
+		VendorOSName: string(SystemDeviceInfo.Product),
 		B769:         []byte{0x0A, 0x04, 0x08, 0x2E, 0x10, 0x00, 0x0A, 0x05, 0x08, 0x9B, 0x02, 0x10, 0x00},
 		SetMute:      0,
 	}
@@ -274,7 +274,7 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 	req.WriteInt64(pktSeq, 2)
 	req.WriteBytes(jceBuf, 3)
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"PushResp": packRequestDataV3(req.Bytes())},
+		Map: map[string][]byte{"PushResp": packUniRequestData(req.Bytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -298,7 +298,7 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 		RequireMax:     20,
 		GetDevListType: 2,
 	}
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"SvcReqGetDevLoginInfo": packRequestDataV3(req.ToBytes())}}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"SvcReqGetDevLoginInfo": packUniRequestData(req.ToBytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		SServantName: "StatSvc",
@@ -353,7 +353,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		SnsTypeList:     []int64{13580, 13581, 13582},
 	}
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"FL": packRequestDataV3(req.ToBytes())},
+		Map: map[string][]byte{"FL": packUniRequestData(req.ToBytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -386,8 +386,8 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 	head := jce.NewJceWriter()
 	head.WriteInt32(2, 0)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
-		"ReqHead":        packRequestDataV3(head.Bytes()),
-		"ReqSummaryCard": packRequestDataV3(req.ToBytes()),
+		"ReqHead":        packUniRequestData(head.Bytes()),
+		"ReqSummaryCard": packUniRequestData(req.ToBytes()),
 	}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
@@ -769,38 +769,6 @@ func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, 
 	return
 }
 
-// ProfileService.Pb.ReqSystemMsgNew.Group
-func (c *QQClient) buildSystemMsgNewGroupPacket() (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &structmsg.ReqSystemMsgNew{
-		MsgNum:    100,
-		Version:   1000,
-		Checktype: 3,
-		Flag: &structmsg.FlagInfo{
-			GrpMsgKickAdmin:                   1,
-			GrpMsgHiddenGrp:                   1,
-			GrpMsgWordingDown:                 1,
-			GrpMsgGetOfficialAccount:          1,
-			GrpMsgGetPayInGroup:               1,
-			FrdMsgDiscuss2ManyChat:            1,
-			GrpMsgNotAllowJoinGrpInviteNotFrd: 1,
-			FrdMsgNeedWaitingMsg:              1,
-			FrdMsgUint32NeedAllUnreadMsg:      1,
-			GrpMsgNeedAutoAdminWording:        1,
-			GrpMsgGetTransferGroupMsgFlag:     1,
-			GrpMsgGetQuitPayGroupMsgFlag:      1,
-			GrpMsgSupportInviteAutoJoin:       1,
-			GrpMsgMaskInviteAutoJoin:          1,
-			GrpMsgGetDisbandedByAdmin:         1,
-			GrpMsgGetC2CInviteJoinGroup:       1,
-		},
-		FriendMsgTypeFlag: 1,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // ProfileService.Pb.ReqSystemMsgNew.Friend
 func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
 	seq := c.nextSeq()
@@ -901,7 +869,7 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 			},
 		},
 	}
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"MGCREQ": packRequestDataV3(req.ToBytes())}}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"MGCREQ": packUniRequestData(req.ToBytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		IRequestId:   c.nextPacketSeq(),
@@ -1051,6 +1019,24 @@ func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte
 	return seq, packet
 }
 
+// OidbSvc.0xed3
+func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.DED3ReqBody{
+		ToUin:  target,
+		AioUin: target,
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:     3795,
+		ServiceType: 1,
+		Bodybuffer:  b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // OidbSvc.0x55c_1
 func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -1073,54 +1059,6 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	return seq, packet
 }
 
-// OidbSvc.0x88d_0
-func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
-	seq := c.nextSeq()
-	body := &oidb.D88DReqBody{
-		AppId: proto.Uint32(c.version.AppId),
-		ReqGroupInfo: []*oidb.ReqGroupInfo{
-			{
-				GroupCode: proto.Uint64(uint64(groupCode)),
-				Stgroupinfo: &oidb.D88DGroupInfo{
-					GroupOwner:           proto.Uint64(0),
-					GroupUin:             proto.Uint64(0),
-					GroupCreateTime:      proto.Uint32(0),
-					GroupFlag:            proto.Uint32(0),
-					GroupMemberMaxNum:    proto.Uint32(0),
-					GroupMemberNum:       proto.Uint32(0),
-					GroupOption:          proto.Uint32(0),
-					GroupLevel:           proto.Uint32(0),
-					GroupFace:            proto.Uint32(0),
-					GroupName:            EmptyBytes,
-					GroupMemo:            EmptyBytes,
-					GroupFingerMemo:      EmptyBytes,
-					GroupLastMsgTime:     proto.Uint32(0),
-					GroupQuestion:        EmptyBytes,
-					GroupAnswer:          EmptyBytes,
-					GroupGrade:           proto.Uint32(0),
-					ActiveMemberNum:      proto.Uint32(0),
-					HeadPortraitSeq:      proto.Uint32(0),
-					MsgHeadPortrait:      &oidb.D88DGroupHeadPortrait{},
-					StGroupExInfo:        &oidb.D88DGroupExInfoOnly{},
-					GroupSecLevel:        proto.Uint32(0),
-					CmduinPrivilege:      proto.Uint32(0),
-					NoFingerOpenFlag:     proto.Uint32(0),
-					NoCodeFingerOpenFlag: proto.Uint32(0),
-				},
-			},
-		},
-		PcClientVersion: proto.Uint32(0),
-	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2189,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x88d_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // ProfileService.GroupMngReq
 func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -1131,7 +1069,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 		w.WriteUInt32(uint32(c.Uin))
 		w.WriteUInt32(uint32(groupCode))
 	}), 2)
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"GroupMngReq": packRequestDataV3(jw.Bytes())}}
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"GroupMngReq": packUniRequestData(jw.Bytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		IRequestId:   c.nextPacketSeq(),
@@ -1142,28 +1080,6 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 		Status:       map[string]string{},
 	}
 	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.GroupMngReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
-	return seq, packet
-}
-
-// OidbSvc.0x6d6_2
-func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId string, busId int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	body := &oidb.D6D6ReqBody{
-		DownloadFileReq: &oidb.DownloadFileReqBody{
-			GroupCode: groupCode,
-			AppId:     3,
-			BusId:     busId,
-			FileId:    fileId,
-		},
-	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     1750,
-		ServiceType: 2,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1267,7 +1183,7 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.
 		Version:   "V 8.4.5.4745",
 		Sig: &oidb.DADLoginSig{
 			Type: 1,
-			Sig:  c.sigInfo.sKey,
+			Sig:  []byte(c.getSKey()),
 		},
 	}
 	b, _ := proto.Marshal(body)

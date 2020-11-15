@@ -101,15 +101,20 @@ const (
 	LightApp
 	RedBag
 
-	SweetWink      GroupGift = 285
-	HappyCola      GroupGift = 289
-	LuckyBracelet  GroupGift = 290
-	Cappuccino     GroupGift = 299
-	CatWatch       GroupGift = 302
-	FleeceGloves   GroupGift = 307
-	RainbowCandy   GroupGift = 308
-	Stronger       GroupGift = 313
-	LoveMicrophone GroupGift = 367
+	HoldingYourHand GroupGift = 280
+	CuteCat         GroupGift = 281
+	MysteryMask     GroupGift = 284
+	SweetWink       GroupGift = 285
+	ImBusy          GroupGift = 286
+	HappyCola       GroupGift = 289
+	LuckyBracelet   GroupGift = 290
+	Cappuccino      GroupGift = 299
+	CatWatch        GroupGift = 302
+	FleeceGloves    GroupGift = 307
+	RainbowCandy    GroupGift = 308
+	LoveMask        GroupGift = 312
+	Stronger        GroupGift = 313
+	LoveMicrophone  GroupGift = 367
 )
 
 func (s *Sender) IsAnonymous() bool {
@@ -276,7 +281,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 		}
 	}
 	for _, elem := range elems {
-		if e,ok := elem.(IRichMessageElement);ok{
+		if e, ok := elem.(IRichMessageElement); ok {
 			r = append(r, e.Pack()...)
 		}
 	}
@@ -366,16 +371,16 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 		}
 		if elem.LightApp != nil && len(elem.LightApp.Data) > 1 {
-			var content string
+			var content []byte
 			if elem.LightApp.Data[0] == 0 {
-				content = string(elem.LightApp.Data[1:])
+				content = elem.LightApp.Data[1:]
 			}
 			if elem.LightApp.Data[0] == 1 {
-				content = string(binary.ZlibUncompress(elem.LightApp.Data[1:]))
+				content = binary.ZlibUncompress(elem.LightApp.Data[1:])
 			}
-			if content != "" {
+			if len(content) > 0 && len(content) < 1024*1024*1024 { // 解析出错 or 非法内容
 				// TODO: 解析具体的APP
-				return append(res, &LightAppElement{Content: content})
+				return append(res, &LightAppElement{Content: string(content)})
 			}
 		}
 		if elem.VideoFile != nil {
@@ -432,6 +437,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 		}
 		if elem.CustomFace != nil {
+			if len(elem.CustomFace.Md5) == 0 {
+				continue
+			}
 			res = append(res, &ImageElement{
 				Filename: elem.CustomFace.FilePath,
 				Size:     elem.CustomFace.Size,
@@ -485,7 +493,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 						Size:     flash.FlashTroopPic.Size,
 						Width:    flash.FlashTroopPic.Width,
 						Height:   flash.FlashTroopPic.Height,
-						Md5: 	flash.FlashTroopPic.Md5,
+						Md5:      flash.FlashTroopPic.Md5,
 					})
 				}
 				if flash.FlashC2CPic != nil {
