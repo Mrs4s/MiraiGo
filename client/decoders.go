@@ -281,7 +281,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			if _, ok := c.msgSvcCache.Get(strKey); ok {
 				continue
 			}
-			c.msgSvcCache.Add(strKey, "", time.Second*15)
+			c.msgSvcCache.Add(strKey, "", time.Minute)
 			switch message.Head.MsgType {
 			case 33: // 加群同步
 				groupJoinLock.Lock()
