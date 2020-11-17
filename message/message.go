@@ -128,6 +128,9 @@ func (msg *PrivateMessage) ToString() (res string) {
 			res += e.Content
 		case *ImageElement:
 			res += "[Image:" + e.Filename + "]"
+		case *FriendFlashImgElement:
+			// NOTE: ignore other components
+			return "[Image (flash):" + e.Filename + "]"
 		case *FaceElement:
 			res += "[" + e.Name + "]"
 		case *AtElement:
@@ -164,6 +167,9 @@ func (msg *GroupMessage) ToString() (res string) {
 			res += "[" + e.Name + "]"
 		case *GroupImageElement:
 			res += "[Image: " + e.ImageId + "]"
+		case *GroupFlashImgElement:
+			// NOTE: ignore other components
+			return "[Image (flash):" + e.Filename + "]"
 		case *AtElement:
 			res += e.Display
 		case *RedBagElement:
@@ -557,6 +563,12 @@ func ToReadableString(m []IMessageElement) (r string) {
 			r += "/" + e.Name
 		case *GroupImageElement:
 			r += "[图片]"
+		// NOTE: flash pic is singular
+		// To be clarified
+		// case *GroupFlashImgElement:
+		// 	return "[闪照]"
+		// case *FriendFlashImgElement:
+		// 	return "[闪照]"
 		case *AtElement:
 			r += e.Display
 		}

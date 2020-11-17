@@ -247,6 +247,14 @@ func (e *ImageElement) Type() ElementType {
 	return Image
 }
 
+func (e *GroupFlashImgElement) Type() ElementType {
+	return Image
+}
+
+func (e *FriendFlashImgElement) Type() ElementType {
+	return Image
+}
+
 func (e *FaceElement) Type() ElementType {
 	return Face
 }
