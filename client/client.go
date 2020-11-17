@@ -12,6 +12,7 @@ import (
 	"math"
 	"math/rand"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -190,7 +191,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 				IP:   addr,
 				Port: 8080,
 			})
-			break // 第一个就好23333
 		}
 		cli.servers = append(hostAddrs, cli.servers...)
 	}
@@ -203,6 +203,27 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			{IP: net.IP{114, 221, 144, 215}, Port: 80},
 			{IP: net.IP{42, 81, 172, 22}, Port: 80},
 		}
+	}
+	pings := make([]int64, len(cli.servers))
+	wg := sync.WaitGroup{}
+	wg.Add(len(cli.servers))
+	for i := range cli.servers {
+		go func(index int, w sync.WaitGroup) {
+			p, err := qualityTest(cli.servers[index])
+			if err != nil {
+				pings[index] = 9999
+				return
+			}
+			pings[index] = p
+			wg.Done()
+		}(i, wg)
+	}
+	wg.Wait()
+	sort.Slice(cli.servers, func(i, j int) bool {
+		return pings[i] < pings[j]
+	})
+	if len(cli.servers) > 3 {
+		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
 	}
 	rand.Read(cli.RandomKey)
 	return cli

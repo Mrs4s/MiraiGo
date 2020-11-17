@@ -17,6 +17,7 @@ import (
 	"net"
 	"sort"
 	"strings"
+	"time"
 )
 
 type DeviceInfo struct {
@@ -336,6 +337,18 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 		})
 	}
 	return adds, nil
+}
+
+func qualityTest(addr *net.TCPAddr) (int64, error) {
+	// see QualityTestManager
+	start := time.Now()
+	conn, err := net.DialTCP("tcp", nil, addr)
+	if err != nil {
+		return 0, err
+	}
+	_ = conn.Close()
+	end := time.Now()
+	return end.Sub(start).Milliseconds(), nil
 }
 
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
