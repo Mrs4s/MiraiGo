@@ -703,6 +703,13 @@ message MsgElemInfo_servtype3 {
   NotOnlineImage flash_c2c_pic = 2;
 }
 
+message MsgElemInfo_servtype33 {
+  uint32 index = 1;
+  bytes text = 2;
+  bytes compat = 3;
+  bytes buf = 4;
+}
+
 message SubMsgType0x4Body {
   NotOnlineFile notOnlineFile = 1;
   uint32 msgTime = 2;

@@ -21,13 +21,29 @@ func (e *TextElement) Pack() (r []*msg.Elem) {
 
 func (e *FaceElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
-	r = append(r, &msg.Elem{
-		Face: &msg.Face{
-			Index: e.Index,
-			Old:   binary.ToBytes(int16(0x1445 - 4 + e.Index)),
-			Buf:   []byte{0x00, 0x01, 0x00, 0x04, 0x52, 0xCC, 0xF5, 0xD0},
-		},
-	})
+	if e.NewSysFace {
+		elem := &msg.MsgElemInfoServtype33{
+			Index:  uint32(e.Index),
+			Text:   []byte("/" + e.Name),
+			Compat: []byte("/" + e.Name),
+		}
+		b, _ := proto.Marshal(elem)
+		r = append(r, &msg.Elem{
+			CommonElem: &msg.CommonElem{
+				ServiceType:  33,
+				PbElem:       b,
+				BusinessType: 1,
+			},
+		})
+	} else {
+		r = append(r, &msg.Elem{
+			Face: &msg.Face{
+				Index: e.Index,
+				Old:   binary.ToBytes(int16(0x1445 - 4 + e.Index)),
+				Buf:   []byte{0x00, 0x01, 0x00, 0x04, 0x52, 0xCC, 0xF5, 0xD0},
+			},
+		})
+	}
 	return
 }
 

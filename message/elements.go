@@ -61,8 +61,9 @@ type FriendImageElement struct {
 }
 
 type FaceElement struct {
-	Index int32
-	Name  string
+	Index      int32
+	NewSysFace bool
+	Name       string
 }
 
 type AtElement struct {
@@ -171,6 +172,14 @@ func NewGroupImage(id string, md5 []byte, fid int64, size, width, height, imageT
 func NewFace(index int32) *FaceElement {
 	name := faceMap[int(index)]
 	if name == "" {
+		name = newSysFaceMap[int(index)]
+		if name != "" {
+			return &FaceElement{
+				Index:      index,
+				NewSysFace: true,
+				Name:       name,
+			}
+		}
 		name = "未知表情"
 	}
 	return &FaceElement{
@@ -468,4 +477,23 @@ var faceMap = map[int]string{
 	208: "小样儿",
 	210: "飙泪",
 	211: "我不看",
+	247: "口罩护体",
+}
+
+var newSysFaceMap = map[int]string{
+	260: "搬砖中",
+	261: "忙到飞起",
+	262: "脑阔疼",
+	263: "沧桑",
+	264: "捂脸",
+	265: "辣眼睛",
+	266: "哦呦",
+	267: "头秃",
+	268: "问号脸",
+	269: "暗中观察",
+	270: "emm",
+	271: "吃瓜",
+	272: "呵呵哒",
+	273: "我酸了",
+	277: "汪汪",
 }

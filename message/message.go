@@ -516,6 +516,10 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					})
 					return res
 				}
+			case 33:
+				newSysFaceMsg := &msg.MsgElemInfoServtype33{}
+				_ = proto.Unmarshal(elem.CommonElem.PbElem, newSysFaceMsg)
+				res = append(res, NewFace(int32(newSysFaceMsg.Index)))
 			}
 		}
 	}
