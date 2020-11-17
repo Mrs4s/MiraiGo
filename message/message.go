@@ -496,6 +496,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 							Md5:      flash.FlashTroopPic.Md5,
 						},
 					})
+					return res
 				}
 				if flash.FlashC2CPic != nil {
 					res = append(res, &GroupFlashImgElement{
@@ -505,6 +506,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 							Md5:      flash.FlashC2CPic.PicMd5,
 						},
 					})
+					return res
 				}
 			}
 		}
