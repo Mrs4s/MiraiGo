@@ -209,7 +209,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	wg.Add(len(cli.servers))
 	for i := range cli.servers {
 		go func(index int, w sync.WaitGroup) {
-			defer wg.Done()
+			defer w.Done()
 			p, err := qualityTest(cli.servers[index])
 			if err != nil {
 				pings[index] = 9999
