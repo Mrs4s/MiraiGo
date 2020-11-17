@@ -342,7 +342,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 func qualityTest(addr *net.TCPAddr) (int64, error) {
 	// see QualityTestManager
 	start := time.Now()
-	conn, err := net.DialTCP("tcp", nil, addr)
+	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*5)
 	if err != nil {
 		return 0, err
 	}
