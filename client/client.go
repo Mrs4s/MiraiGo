@@ -208,15 +208,15 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	wg := sync.WaitGroup{}
 	wg.Add(len(cli.servers))
 	for i := range cli.servers {
-		go func(index int, w sync.WaitGroup) {
-			defer w.Done()
+		go func(index int) {
+			defer wg.Done()
 			p, err := qualityTest(cli.servers[index])
 			if err != nil {
 				pings[index] = 9999
 				return
 			}
 			pings[index] = p
-		}(i, wg)
+		}(i)
 	}
 	wg.Wait()
 	sort.Slice(cli.servers, func(i, j int) bool {
