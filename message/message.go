@@ -2,16 +2,17 @@ package message
 
 import (
 	"crypto/md5"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
-	"github.com/tidwall/gjson"
 	"math"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/golang/protobuf/proto"
+	"github.com/tidwall/gjson"
 )
 
 type (
@@ -132,6 +133,9 @@ func (msg *PrivateMessage) ToString() (res string) {
 			res += e.Content
 		case *ImageElement:
 			res += "[Image:" + e.Filename + "]"
+		case *FriendFlashImgElement:
+			// NOTE: ignore other components
+			return "[Image (flash):" + e.Filename + "]"
 		case *FaceElement:
 			res += "[" + e.Name + "]"
 		case *AtElement:
@@ -168,6 +172,9 @@ func (msg *GroupMessage) ToString() (res string) {
 			res += "[" + e.Name + "]"
 		case *GroupImageElement:
 			res += "[Image: " + e.ImageId + "]"
+		case *GroupFlashImgElement:
+			// NOTE: ignore other components
+			return "[Image (flash):" + e.Filename + "]"
 		case *AtElement:
 			res += e.Display
 		case *RedBagElement:
@@ -488,20 +495,26 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				flash := &msg.MsgElemInfoServtype3{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, flash)
 				if flash.FlashTroopPic != nil {
-					res = append(res, &ImageElement{
-						Filename: flash.FlashTroopPic.FilePath,
-						Size:     flash.FlashTroopPic.Size,
-						Width:    flash.FlashTroopPic.Width,
-						Height:   flash.FlashTroopPic.Height,
-						Md5:      flash.FlashTroopPic.Md5,
+					res = append(res, &GroupFlashImgElement{
+						ImageElement{
+							Filename: flash.FlashTroopPic.FilePath,
+							Size:     flash.FlashTroopPic.Size,
+							Width:    flash.FlashTroopPic.Width,
+							Height:   flash.FlashTroopPic.Height,
+							Md5:      flash.FlashTroopPic.Md5,
+						},
 					})
+					return res
 				}
 				if flash.FlashC2CPic != nil {
-					res = append(res, &ImageElement{
-						Filename: flash.FlashC2CPic.FilePath,
-						Size:     flash.FlashC2CPic.FileLen,
-						Md5:      flash.FlashC2CPic.PicMd5,
+					res = append(res, &GroupFlashImgElement{
+						ImageElement{
+							Filename: flash.FlashC2CPic.FilePath,
+							Size:     flash.FlashC2CPic.FileLen,
+							Md5:      flash.FlashC2CPic.PicMd5,
+						},
 					})
+					return res
 				}
 			}
 		}
@@ -560,6 +573,12 @@ func ToReadableString(m []IMessageElement) (r string) {
 			r += "/" + e.Name
 		case *GroupImageElement:
 			r += "[图片]"
+		// NOTE: flash pic is singular
+		// To be clarified
+		// case *GroupFlashImgElement:
+		// 	return "[闪照]"
+		// case *FriendFlashImgElement:
+		// 	return "[闪照]"
 		case *AtElement:
 			r += e.Display
 		}
