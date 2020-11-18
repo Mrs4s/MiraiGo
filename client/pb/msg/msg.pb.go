@@ -69,6 +69,16 @@ func (x SyncFlag) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
+// Deprecated: Do not use.
+func (x *SyncFlag) UnmarshalJSON(b []byte) error {
+	num, err := protoimpl.X.UnmarshalJSONEnum(x.Descriptor(), b)
+	if err != nil {
+		return err
+	}
+	*x = SyncFlag(num)
+	return nil
+}
+
 // Deprecated: Use SyncFlag.Descriptor instead.
 func (SyncFlag) EnumDescriptor() ([]byte, []int) {
 	return file_msg_proto_rawDescGZIP(), []int{0}
@@ -79,18 +89,18 @@ type GetMessageRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SyncFlag           SyncFlag `protobuf:"varint,1,opt,name=syncFlag,proto3,enum=SyncFlag" json:"syncFlag,omitempty"`
-	SyncCookie         []byte   `protobuf:"bytes,2,opt,name=syncCookie,proto3" json:"syncCookie,omitempty"`
-	RambleFlag         int32    `protobuf:"varint,3,opt,name=rambleFlag,proto3" json:"rambleFlag,omitempty"`
-	LatestRambleNumber int32    `protobuf:"varint,4,opt,name=latestRambleNumber,proto3" json:"latestRambleNumber,omitempty"`
-	OtherRambleNumber  int32    `protobuf:"varint,5,opt,name=otherRambleNumber,proto3" json:"otherRambleNumber,omitempty"`
-	OnlineSyncFlag     int32    `protobuf:"varint,6,opt,name=onlineSyncFlag,proto3" json:"onlineSyncFlag,omitempty"`
-	ContextFlag        int32    `protobuf:"varint,7,opt,name=contextFlag,proto3" json:"contextFlag,omitempty"`
-	WhisperSessionId   int32    `protobuf:"varint,8,opt,name=whisperSessionId,proto3" json:"whisperSessionId,omitempty"`
-	MsgReqType         int32    `protobuf:"varint,9,opt,name=msgReqType,proto3" json:"msgReqType,omitempty"`
-	PubaccountCookie   []byte   `protobuf:"bytes,10,opt,name=pubaccountCookie,proto3" json:"pubaccountCookie,omitempty"`
-	MsgCtrlBuf         []byte   `protobuf:"bytes,11,opt,name=msgCtrlBuf,proto3" json:"msgCtrlBuf,omitempty"`
-	ServerBuf          []byte   `protobuf:"bytes,12,opt,name=serverBuf,proto3" json:"serverBuf,omitempty"`
+	SyncFlag           *SyncFlag `protobuf:"varint,1,opt,name=syncFlag,enum=SyncFlag" json:"syncFlag,omitempty"`
+	SyncCookie         []byte    `protobuf:"bytes,2,opt,name=syncCookie" json:"syncCookie,omitempty"`
+	RambleFlag         *int32    `protobuf:"varint,3,opt,name=rambleFlag" json:"rambleFlag,omitempty"`
+	LatestRambleNumber *int32    `protobuf:"varint,4,opt,name=latestRambleNumber" json:"latestRambleNumber,omitempty"`
+	OtherRambleNumber  *int32    `protobuf:"varint,5,opt,name=otherRambleNumber" json:"otherRambleNumber,omitempty"`
+	OnlineSyncFlag     *int32    `protobuf:"varint,6,opt,name=onlineSyncFlag" json:"onlineSyncFlag,omitempty"`
+	ContextFlag        *int32    `protobuf:"varint,7,opt,name=contextFlag" json:"contextFlag,omitempty"`
+	WhisperSessionId   *int32    `protobuf:"varint,8,opt,name=whisperSessionId" json:"whisperSessionId,omitempty"`
+	MsgReqType         *int32    `protobuf:"varint,9,opt,name=msgReqType" json:"msgReqType,omitempty"`
+	PubaccountCookie   []byte    `protobuf:"bytes,10,opt,name=pubaccountCookie" json:"pubaccountCookie,omitempty"`
+	MsgCtrlBuf         []byte    `protobuf:"bytes,11,opt,name=msgCtrlBuf" json:"msgCtrlBuf,omitempty"`
+	ServerBuf          []byte    `protobuf:"bytes,12,opt,name=serverBuf" json:"serverBuf,omitempty"`
 }
 
 func (x *GetMessageRequest) Reset() {
@@ -126,8 +136,8 @@ func (*GetMessageRequest) Descriptor() ([]byte, []int) {
 }
 
 func (x *GetMessageRequest) GetSyncFlag() SyncFlag {
-	if x != nil {
-		return x.SyncFlag
+	if x != nil && x.SyncFlag != nil {
+		return *x.SyncFlag
 	}
 	return SyncFlag_START
 }
@@ -140,50 +150,50 @@ func (x *GetMessageRequest) GetSyncCookie() []byte {
 }
 
 func (x *GetMessageRequest) GetRambleFlag() int32 {
-	if x != nil {
-		return x.RambleFlag
+	if x != nil && x.RambleFlag != nil {
+		return *x.RambleFlag
 	}
 	return 0
 }
 
 func (x *GetMessageRequest) GetLatestRambleNumber() int32 {
-	if x != nil {
-		return x.LatestRambleNumber
+	if x != nil && x.LatestRambleNumber != nil {
+		return *x.LatestRambleNumber
 	}
 	return 0
 }
 
 func (x *GetMessageRequest) GetOtherRambleNumber() int32 {
-	if x != nil {
-		return x.OtherRambleNumber
+	if x != nil && x.OtherRambleNumber != nil {
+		return *x.OtherRambleNumber
 	}
 	return 0
 }
 
 func (x *GetMessageRequest) GetOnlineSyncFlag() int32 {
-	if x != nil {
-		return x.OnlineSyncFlag
+	if x != nil && x.OnlineSyncFlag != nil {
+		return *x.OnlineSyncFlag
 	}
 	return 0
 }
 
 func (x *GetMessageRequest) GetContextFlag() int32 {
-	if x != nil {
-		return x.ContextFlag
+	if x != nil && x.ContextFlag != nil {
+		return *x.ContextFlag
 	}
 	return 0
 }
 
 func (x *GetMessageRequest) GetWhisperSessionId() int32 {
-	if x != nil {
-		return x.WhisperSessionId
+	if x != nil && x.WhisperSessionId != nil {
+		return *x.WhisperSessionId
 	}
 	return 0
 }
 
 func (x *GetMessageRequest) GetMsgReqType() int32 {
-	if x != nil {
-		return x.MsgReqType
+	if x != nil && x.MsgReqType != nil {
+		return *x.MsgReqType
 	}
 	return 0
 }
@@ -214,20 +224,20 @@ type SendMessageRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	RoutingHead *RoutingHead `protobuf:"bytes,1,opt,name=routingHead,proto3" json:"routingHead,omitempty"`
-	ContentHead *ContentHead `protobuf:"bytes,2,opt,name=contentHead,proto3" json:"contentHead,omitempty"`
-	MsgBody     *MessageBody `protobuf:"bytes,3,opt,name=msgBody,proto3" json:"msgBody,omitempty"`
-	MsgSeq      int32        `protobuf:"varint,4,opt,name=msgSeq,proto3" json:"msgSeq,omitempty"`
-	MsgRand     int32        `protobuf:"varint,5,opt,name=msgRand,proto3" json:"msgRand,omitempty"`
-	SyncCookie  []byte       `protobuf:"bytes,6,opt,name=syncCookie,proto3" json:"syncCookie,omitempty"`
+	RoutingHead *RoutingHead `protobuf:"bytes,1,opt,name=routingHead" json:"routingHead,omitempty"`
+	ContentHead *ContentHead `protobuf:"bytes,2,opt,name=contentHead" json:"contentHead,omitempty"`
+	MsgBody     *MessageBody `protobuf:"bytes,3,opt,name=msgBody" json:"msgBody,omitempty"`
+	MsgSeq      *int32       `protobuf:"varint,4,opt,name=msgSeq" json:"msgSeq,omitempty"`
+	MsgRand     *int32       `protobuf:"varint,5,opt,name=msgRand" json:"msgRand,omitempty"`
+	SyncCookie  []byte       `protobuf:"bytes,6,opt,name=syncCookie" json:"syncCookie,omitempty"`
 	//MsgComm.AppShareInfo? appShare = 7;
-	MsgVia      int32 `protobuf:"varint,8,opt,name=msgVia,proto3" json:"msgVia,omitempty"`
-	DataStatist int32 `protobuf:"varint,9,opt,name=dataStatist,proto3" json:"dataStatist,omitempty"`
+	MsgVia      *int32 `protobuf:"varint,8,opt,name=msgVia" json:"msgVia,omitempty"`
+	DataStatist *int32 `protobuf:"varint,9,opt,name=dataStatist" json:"dataStatist,omitempty"`
 	//MultiMsgAssist? multiMsgAssist = 10;
 	//PbInputNotifyInfo? inputNotifyInfo = 11;
-	MsgCtrl *MsgCtrl `protobuf:"bytes,12,opt,name=msgCtrl,proto3" json:"msgCtrl,omitempty"`
+	MsgCtrl *MsgCtrl `protobuf:"bytes,12,opt,name=msgCtrl" json:"msgCtrl,omitempty"`
 	//ImReceipt.ReceiptReq? receiptReq = 13;
-	MultiSendSeq int32 `protobuf:"varint,14,opt,name=multiSendSeq,proto3" json:"multiSendSeq,omitempty"`
+	MultiSendSeq *int32 `protobuf:"varint,14,opt,name=multiSendSeq" json:"multiSendSeq,omitempty"`
 }
 
 func (x *SendMessageRequest) Reset() {
@@ -284,15 +294,15 @@ func (x *SendMessageRequest) GetMsgBody() *MessageBody {
 }
 
 func (x *SendMessageRequest) GetMsgSeq() int32 {
-	if x != nil {
-		return x.MsgSeq
+	if x != nil && x.MsgSeq != nil {
+		return *x.MsgSeq
 	}
 	return 0
 }
 
 func (x *SendMessageRequest) GetMsgRand() int32 {
-	if x != nil {
-		return x.MsgRand
+	if x != nil && x.MsgRand != nil {
+		return *x.MsgRand
 	}
 	return 0
 }
@@ -305,15 +315,15 @@ func (x *SendMessageRequest) GetSyncCookie() []byte {
 }
 
 func (x *SendMessageRequest) GetMsgVia() int32 {
-	if x != nil {
-		return x.MsgVia
+	if x != nil && x.MsgVia != nil {
+		return *x.MsgVia
 	}
 	return 0
 }
 
 func (x *SendMessageRequest) GetDataStatist() int32 {
-	if x != nil {
-		return x.DataStatist
+	if x != nil && x.DataStatist != nil {
+		return *x.DataStatist
 	}
 	return 0
 }
@@ -326,8 +336,8 @@ func (x *SendMessageRequest) GetMsgCtrl() *MsgCtrl {
 }
 
 func (x *SendMessageRequest) GetMultiSendSeq() int32 {
-	if x != nil {
-		return x.MultiSendSeq
+	if x != nil && x.MultiSendSeq != nil {
+		return *x.MultiSendSeq
 	}
 	return 0
 }
@@ -337,8 +347,8 @@ type SendMessageResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Result int32  `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"`
-	ErrMsg string `protobuf:"bytes,2,opt,name=errMsg,proto3" json:"errMsg,omitempty"`
+	Result *int32  `protobuf:"varint,1,opt,name=result" json:"result,omitempty"`
+	ErrMsg *string `protobuf:"bytes,2,opt,name=errMsg" json:"errMsg,omitempty"`
 }
 
 func (x *SendMessageResponse) Reset() {
@@ -374,15 +384,15 @@ func (*SendMessageResponse) Descriptor() ([]byte, []int) {
 }
 
 func (x *SendMessageResponse) GetResult() int32 {
-	if x != nil {
-		return x.Result
+	if x != nil && x.Result != nil {
+		return *x.Result
 	}
 	return 0
 }
 
 func (x *SendMessageResponse) GetErrMsg() string {
-	if x != nil {
-		return x.ErrMsg
+	if x != nil && x.ErrMsg != nil {
+		return *x.ErrMsg
 	}
 	return ""
 }
@@ -392,8 +402,8 @@ type MsgWithDrawReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	C2CWithDraw   []*C2CMsgWithDrawReq   `protobuf:"bytes,1,rep,name=c2cWithDraw,proto3" json:"c2cWithDraw,omitempty"`
-	GroupWithDraw []*GroupMsgWithDrawReq `protobuf:"bytes,2,rep,name=groupWithDraw,proto3" json:"groupWithDraw,omitempty"`
+	C2CWithDraw   []*C2CMsgWithDrawReq   `protobuf:"bytes,1,rep,name=c2cWithDraw" json:"c2cWithDraw,omitempty"`
+	GroupWithDraw []*GroupMsgWithDrawReq `protobuf:"bytes,2,rep,name=groupWithDraw" json:"groupWithDraw,omitempty"`
 }
 
 func (x *MsgWithDrawReq) Reset() {
@@ -447,10 +457,10 @@ type C2CMsgWithDrawReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MsgInfo         []*C2CMsgInfo `protobuf:"bytes,1,rep,name=msgInfo,proto3" json:"msgInfo,omitempty"`
-	LongMessageFlag int32         `protobuf:"varint,2,opt,name=longMessageFlag,proto3" json:"longMessageFlag,omitempty"`
-	Reserved        []byte        `protobuf:"bytes,3,opt,name=reserved,proto3" json:"reserved,omitempty"`
-	SubCmd          int32         `protobuf:"varint,4,opt,name=subCmd,proto3" json:"subCmd,omitempty"`
+	MsgInfo         []*C2CMsgInfo `protobuf:"bytes,1,rep,name=msgInfo" json:"msgInfo,omitempty"`
+	LongMessageFlag *int32        `protobuf:"varint,2,opt,name=longMessageFlag" json:"longMessageFlag,omitempty"`
+	Reserved        []byte        `protobuf:"bytes,3,opt,name=reserved" json:"reserved,omitempty"`
+	SubCmd          *int32        `protobuf:"varint,4,opt,name=subCmd" json:"subCmd,omitempty"`
 }
 
 func (x *C2CMsgWithDrawReq) Reset() {
@@ -493,8 +503,8 @@ func (x *C2CMsgWithDrawReq) GetMsgInfo() []*C2CMsgInfo {
 }
 
 func (x *C2CMsgWithDrawReq) GetLongMessageFlag() int32 {
-	if x != nil {
-		return x.LongMessageFlag
+	if x != nil && x.LongMessageFlag != nil {
+		return *x.LongMessageFlag
 	}
 	return 0
 }
@@ -507,8 +517,8 @@ func (x *C2CMsgWithDrawReq) GetReserved() []byte {
 }
 
 func (x *C2CMsgWithDrawReq) GetSubCmd() int32 {
-	if x != nil {
-		return x.SubCmd
+	if x != nil && x.SubCmd != nil {
+		return *x.SubCmd
 	}
 	return 0
 }
@@ -518,11 +528,11 @@ type GroupMsgWithDrawReq struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SubCmd    int32           `protobuf:"varint,1,opt,name=subCmd,proto3" json:"subCmd,omitempty"`
-	GroupType int32           `protobuf:"varint,2,opt,name=groupType,proto3" json:"groupType,omitempty"`
-	GroupCode int64           `protobuf:"varint,3,opt,name=groupCode,proto3" json:"groupCode,omitempty"`
-	MsgList   []*GroupMsgInfo `protobuf:"bytes,4,rep,name=msgList,proto3" json:"msgList,omitempty"`
-	UserDef   []byte          `protobuf:"bytes,5,opt,name=userDef,proto3" json:"userDef,omitempty"`
+	SubCmd    *int32          `protobuf:"varint,1,opt,name=subCmd" json:"subCmd,omitempty"`
+	GroupType *int32          `protobuf:"varint,2,opt,name=groupType" json:"groupType,omitempty"`
+	GroupCode *int64          `protobuf:"varint,3,opt,name=groupCode" json:"groupCode,omitempty"`
+	MsgList   []*GroupMsgInfo `protobuf:"bytes,4,rep,name=msgList" json:"msgList,omitempty"`
+	UserDef   []byte          `protobuf:"bytes,5,opt,name=userDef" json:"userDef,omitempty"`
 }
 
 func (x *GroupMsgWithDrawReq) Reset() {
@@ -558,22 +568,22 @@ func (*GroupMsgWithDrawReq) Descriptor() ([]byte, []int) {
 }
 
 func (x *GroupMsgWithDrawReq) GetSubCmd() int32 {
-	if x != nil {
-		return x.SubCmd
+	if x != nil && x.SubCmd != nil {
+		return *x.SubCmd
 	}
 	return 0
 }
 
 func (x *GroupMsgWithDrawReq) GetGroupType() int32 {
-	if x != nil {
-		return x.GroupType
+	if x != nil && x.GroupType != nil {
+		return *x.GroupType
 	}
 	return 0
 }
 
 func (x *GroupMsgWithDrawReq) GetGroupCode() int64 {
-	if x != nil {
-		return x.GroupCode
+	if x != nil && x.GroupCode != nil {
+		return *x.GroupCode
 	}
 	return 0
 }
@@ -597,9 +607,9 @@ type GroupMsgInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MsgSeq    int32 `protobuf:"varint,1,opt,name=msgSeq,proto3" json:"msgSeq,omitempty"`
-	MsgRandom int32 `protobuf:"varint,2,opt,name=msgRandom,proto3" json:"msgRandom,omitempty"`
-	MsgType   int32 `protobuf:"varint,3,opt,name=msgType,proto3" json:"msgType,omitempty"`
+	MsgSeq    *int32 `protobuf:"varint,1,opt,name=msgSeq" json:"msgSeq,omitempty"`
+	MsgRandom *int32 `protobuf:"varint,2,opt,name=msgRandom" json:"msgRandom,omitempty"`
+	MsgType   *int32 `protobuf:"varint,3,opt,name=msgType" json:"msgType,omitempty"`
 }
 
 func (x *GroupMsgInfo) Reset() {
@@ -635,22 +645,22 @@ func (*GroupMsgInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *GroupMsgInfo) GetMsgSeq() int32 {
-	if x != nil {
-		return x.MsgSeq
+	if x != nil && x.MsgSeq != nil {
+		return *x.MsgSeq
 	}
 	return 0
 }
 
 func (x *GroupMsgInfo) GetMsgRandom() int32 {
-	if x != nil {
-		return x.MsgRandom
+	if x != nil && x.MsgRandom != nil {
+		return *x.MsgRandom
 	}
 	return 0
 }
 
 func (x *GroupMsgInfo) GetMsgType() int32 {
-	if x != nil {
-		return x.MsgType
+	if x != nil && x.MsgType != nil {
+		return *x.MsgType
 	}
 	return 0
 }
@@ -660,17 +670,17 @@ type C2CMsgInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FromUin     int64        `protobuf:"varint,1,opt,name=fromUin,proto3" json:"fromUin,omitempty"`
-	ToUin       int64        `protobuf:"varint,2,opt,name=toUin,proto3" json:"toUin,omitempty"`
-	MsgSeq      int32        `protobuf:"varint,3,opt,name=msgSeq,proto3" json:"msgSeq,omitempty"`
-	MsgUid      int64        `protobuf:"varint,4,opt,name=msgUid,proto3" json:"msgUid,omitempty"`
-	MsgTime     int64        `protobuf:"varint,5,opt,name=msgTime,proto3" json:"msgTime,omitempty"`
-	MsgRandom   int32        `protobuf:"varint,6,opt,name=msgRandom,proto3" json:"msgRandom,omitempty"`
-	PkgNum      int32        `protobuf:"varint,7,opt,name=pkgNum,proto3" json:"pkgNum,omitempty"`
-	PkgIndex    int32        `protobuf:"varint,8,opt,name=pkgIndex,proto3" json:"pkgIndex,omitempty"`
-	DivSeq      int32        `protobuf:"varint,9,opt,name=divSeq,proto3" json:"divSeq,omitempty"`
-	MsgType     int32        `protobuf:"varint,10,opt,name=msgType,proto3" json:"msgType,omitempty"`
-	RoutingHead *RoutingHead `protobuf:"bytes,20,opt,name=routingHead,proto3" json:"routingHead,omitempty"`
+	FromUin     *int64       `protobuf:"varint,1,opt,name=fromUin" json:"fromUin,omitempty"`
+	ToUin       *int64       `protobuf:"varint,2,opt,name=toUin" json:"toUin,omitempty"`
+	MsgSeq      *int32       `protobuf:"varint,3,opt,name=msgSeq" json:"msgSeq,omitempty"`
+	MsgUid      *int64       `protobuf:"varint,4,opt,name=msgUid" json:"msgUid,omitempty"`
+	MsgTime     *int64       `protobuf:"varint,5,opt,name=msgTime" json:"msgTime,omitempty"`
+	MsgRandom   *int32       `protobuf:"varint,6,opt,name=msgRandom" json:"msgRandom,omitempty"`
+	PkgNum      *int32       `protobuf:"varint,7,opt,name=pkgNum" json:"pkgNum,omitempty"`
+	PkgIndex    *int32       `protobuf:"varint,8,opt,name=pkgIndex" json:"pkgIndex,omitempty"`
+	DivSeq      *int32       `protobuf:"varint,9,opt,name=divSeq" json:"divSeq,omitempty"`
+	MsgType     *int32       `protobuf:"varint,10,opt,name=msgType" json:"msgType,omitempty"`
+	RoutingHead *RoutingHead `protobuf:"bytes,20,opt,name=routingHead" json:"routingHead,omitempty"`
 }
 
 func (x *C2CMsgInfo) Reset() {
@@ -706,71 +716,71 @@ func (*C2CMsgInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *C2CMsgInfo) GetFromUin() int64 {
-	if x != nil {
-		return x.FromUin
+	if x != nil && x.FromUin != nil {
+		return *x.FromUin
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetToUin() int64 {
-	if x != nil {
-		return x.ToUin
+	if x != nil && x.ToUin != nil {
+		return *x.ToUin
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetMsgSeq() int32 {
-	if x != nil {
-		return x.MsgSeq
+	if x != nil && x.MsgSeq != nil {
+		return *x.MsgSeq
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetMsgUid() int64 {
-	if x != nil {
-		return x.MsgUid
+	if x != nil && x.MsgUid != nil {
+		return *x.MsgUid
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetMsgTime() int64 {
-	if x != nil {
-		return x.MsgTime
+	if x != nil && x.MsgTime != nil {
+		return *x.MsgTime
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetMsgRandom() int32 {
-	if x != nil {
-		return x.MsgRandom
+	if x != nil && x.MsgRandom != nil {
+		return *x.MsgRandom
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetPkgNum() int32 {
-	if x != nil {
-		return x.PkgNum
+	if x != nil && x.PkgNum != nil {
+		return *x.PkgNum
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetPkgIndex() int32 {
-	if x != nil {
-		return x.PkgIndex
+	if x != nil && x.PkgIndex != nil {
+		return *x.PkgIndex
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetDivSeq() int32 {
-	if x != nil {
-		return x.DivSeq
+	if x != nil && x.DivSeq != nil {
+		return *x.DivSeq
 	}
 	return 0
 }
 
 func (x *C2CMsgInfo) GetMsgType() int32 {
-	if x != nil {
-		return x.MsgType
+	if x != nil && x.MsgType != nil {
+		return *x.MsgType
 	}
 	return 0
 }
@@ -787,9 +797,9 @@ type RoutingHead struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	C2C    *C2C    `protobuf:"bytes,1,opt,name=c2c,proto3" json:"c2c,omitempty"`
-	Grp    *Grp    `protobuf:"bytes,2,opt,name=grp,proto3" json:"grp,omitempty"`
-	GrpTmp *GrpTmp `protobuf:"bytes,3,opt,name=grpTmp,proto3" json:"grpTmp,omitempty"`
+	C2C    *C2C    `protobuf:"bytes,1,opt,name=c2c" json:"c2c,omitempty"`
+	Grp    *Grp    `protobuf:"bytes,2,opt,name=grp" json:"grp,omitempty"`
+	GrpTmp *GrpTmp `protobuf:"bytes,3,opt,name=grpTmp" json:"grpTmp,omitempty"`
 }
 
 func (x *RoutingHead) Reset() {
@@ -850,7 +860,7 @@ type C2C struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ToUin int64 `protobuf:"varint,1,opt,name=toUin,proto3" json:"toUin,omitempty"`
+	ToUin *int64 `protobuf:"varint,1,opt,name=toUin" json:"toUin,omitempty"`
 }
 
 func (x *C2C) Reset() {
@@ -886,8 +896,8 @@ func (*C2C) Descriptor() ([]byte, []int) {
 }
 
 func (x *C2C) GetToUin() int64 {
-	if x != nil {
-		return x.ToUin
+	if x != nil && x.ToUin != nil {
+		return *x.ToUin
 	}
 	return 0
 }
@@ -897,7 +907,7 @@ type Grp struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GroupCode int64 `protobuf:"varint,1,opt,name=groupCode,proto3" json:"groupCode,omitempty"`
+	GroupCode *int64 `protobuf:"varint,1,opt,name=groupCode" json:"groupCode,omitempty"`
 }
 
 func (x *Grp) Reset() {
@@ -933,8 +943,8 @@ func (*Grp) Descriptor() ([]byte, []int) {
 }
 
 func (x *Grp) GetGroupCode() int64 {
-	if x != nil {
-		return x.GroupCode
+	if x != nil && x.GroupCode != nil {
+		return *x.GroupCode
 	}
 	return 0
 }
@@ -944,8 +954,8 @@ type GrpTmp struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GroupUin int64 `protobuf:"varint,1,opt,name=groupUin,proto3" json:"groupUin,omitempty"`
-	ToUin    int64 `protobuf:"varint,2,opt,name=toUin,proto3" json:"toUin,omitempty"`
+	GroupUin *int64 `protobuf:"varint,1,opt,name=groupUin" json:"groupUin,omitempty"`
+	ToUin    *int64 `protobuf:"varint,2,opt,name=toUin" json:"toUin,omitempty"`
 }
 
 func (x *GrpTmp) Reset() {
@@ -981,15 +991,15 @@ func (*GrpTmp) Descriptor() ([]byte, []int) {
 }
 
 func (x *GrpTmp) GetGroupUin() int64 {
-	if x != nil {
-		return x.GroupUin
+	if x != nil && x.GroupUin != nil {
+		return *x.GroupUin
 	}
 	return 0
 }
 
 func (x *GrpTmp) GetToUin() int64 {
-	if x != nil {
-		return x.ToUin
+	if x != nil && x.ToUin != nil {
+		return *x.ToUin
 	}
 	return 0
 }
@@ -999,7 +1009,7 @@ type MsgCtrl struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MsgFlag int32 `protobuf:"varint,1,opt,name=msgFlag,proto3" json:"msgFlag,omitempty"`
+	MsgFlag *int32 `protobuf:"varint,1,opt,name=msgFlag" json:"msgFlag,omitempty"`
 }
 
 func (x *MsgCtrl) Reset() {
@@ -1035,8 +1045,8 @@ func (*MsgCtrl) Descriptor() ([]byte, []int) {
 }
 
 func (x *MsgCtrl) GetMsgFlag() int32 {
-	if x != nil {
-		return x.MsgFlag
+	if x != nil && x.MsgFlag != nil {
+		return *x.MsgFlag
 	}
 	return 0
 }
@@ -1046,16 +1056,16 @@ type GetMessageResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Result           int32             `protobuf:"varint,1,opt,name=result,proto3" json:"result,omitempty"`
-	ErrorMessage     string            `protobuf:"bytes,2,opt,name=errorMessage,proto3" json:"errorMessage,omitempty"`
-	SyncCookie       []byte            `protobuf:"bytes,3,opt,name=syncCookie,proto3" json:"syncCookie,omitempty"`
-	SyncFlag         SyncFlag          `protobuf:"varint,4,opt,name=syncFlag,proto3,enum=SyncFlag" json:"syncFlag,omitempty"`
-	UinPairMsgs      []*UinPairMessage `protobuf:"bytes,5,rep,name=uinPairMsgs,proto3" json:"uinPairMsgs,omitempty"`
-	BindUin          int64             `protobuf:"varint,6,opt,name=bindUin,proto3" json:"bindUin,omitempty"`
-	MsgRspType       int32             `protobuf:"varint,7,opt,name=msgRspType,proto3" json:"msgRspType,omitempty"`
-	PubAccountCookie []byte            `protobuf:"bytes,8,opt,name=pubAccountCookie,proto3" json:"pubAccountCookie,omitempty"`
-	IsPartialSync    bool              `protobuf:"varint,9,opt,name=isPartialSync,proto3" json:"isPartialSync,omitempty"`
-	MsgCtrlBuf       []byte            `protobuf:"bytes,10,opt,name=msgCtrlBuf,proto3" json:"msgCtrlBuf,omitempty"`
+	Result           *int32            `protobuf:"varint,1,opt,name=result" json:"result,omitempty"`
+	ErrorMessage     *string           `protobuf:"bytes,2,opt,name=errorMessage" json:"errorMessage,omitempty"`
+	SyncCookie       []byte            `protobuf:"bytes,3,opt,name=syncCookie" json:"syncCookie,omitempty"`
+	SyncFlag         *SyncFlag         `protobuf:"varint,4,opt,name=syncFlag,enum=SyncFlag" json:"syncFlag,omitempty"`
+	UinPairMsgs      []*UinPairMessage `protobuf:"bytes,5,rep,name=uinPairMsgs" json:"uinPairMsgs,omitempty"`
+	BindUin          *int64            `protobuf:"varint,6,opt,name=bindUin" json:"bindUin,omitempty"`
+	MsgRspType       *int32            `protobuf:"varint,7,opt,name=msgRspType" json:"msgRspType,omitempty"`
+	PubAccountCookie []byte            `protobuf:"bytes,8,opt,name=pubAccountCookie" json:"pubAccountCookie,omitempty"`
+	IsPartialSync    *bool             `protobuf:"varint,9,opt,name=isPartialSync" json:"isPartialSync,omitempty"`
+	MsgCtrlBuf       []byte            `protobuf:"bytes,10,opt,name=msgCtrlBuf" json:"msgCtrlBuf,omitempty"`
 }
 
 func (x *GetMessageResponse) Reset() {
@@ -1091,15 +1101,15 @@ func (*GetMessageResponse) Descriptor() ([]byte, []int) {
 }
 
 func (x *GetMessageResponse) GetResult() int32 {
-	if x != nil {
-		return x.Result
+	if x != nil && x.Result != nil {
+		return *x.Result
 	}
 	return 0
 }
 
 func (x *GetMessageResponse) GetErrorMessage() string {
-	if x != nil {
-		return x.ErrorMessage
+	if x != nil && x.ErrorMessage != nil {
+		return *x.ErrorMessage
 	}
 	return ""
 }
@@ -1112,8 +1122,8 @@ func (x *GetMessageResponse) GetSyncCookie() []byte {
 }
 
 func (x *GetMessageResponse) GetSyncFlag() SyncFlag {
-	if x != nil {
-		return x.SyncFlag
+	if x != nil && x.SyncFlag != nil {
+		return *x.SyncFlag
 	}
 	return SyncFlag_START
 }
@@ -1126,15 +1136,15 @@ func (x *GetMessageResponse) GetUinPairMsgs() []*UinPairMessage {
 }
 
 func (x *GetMessageResponse) GetBindUin() int64 {
-	if x != nil {
-		return x.BindUin
+	if x != nil && x.BindUin != nil {
+		return *x.BindUin
 	}
 	return 0
 }
 
 func (x *GetMessageResponse) GetMsgRspType() int32 {
-	if x != nil {
-		return x.MsgRspType
+	if x != nil && x.MsgRspType != nil {
+		return *x.MsgRspType
 	}
 	return 0
 }
@@ -1147,8 +1157,8 @@ func (x *GetMessageResponse) GetPubAccountCookie() []byte {
 }
 
 func (x *GetMessageResponse) GetIsPartialSync() bool {
-	if x != nil {
-		return x.IsPartialSync
+	if x != nil && x.IsPartialSync != nil {
+		return *x.IsPartialSync
 	}
 	return false
 }
@@ -1165,11 +1175,11 @@ type PushMessagePacket struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Message     *Message `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
-	Svrip       int32    `protobuf:"varint,2,opt,name=svrip,proto3" json:"svrip,omitempty"`
-	PushToken   []byte   `protobuf:"bytes,3,opt,name=pushToken,proto3" json:"pushToken,omitempty"`
-	PingFLag    int32    `protobuf:"varint,4,opt,name=pingFLag,proto3" json:"pingFLag,omitempty"`
-	GeneralFlag int32    `protobuf:"varint,9,opt,name=generalFlag,proto3" json:"generalFlag,omitempty"`
+	Message     *Message `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
+	Svrip       *int32   `protobuf:"varint,2,opt,name=svrip" json:"svrip,omitempty"`
+	PushToken   []byte   `protobuf:"bytes,3,opt,name=pushToken" json:"pushToken,omitempty"`
+	PingFLag    *int32   `protobuf:"varint,4,opt,name=pingFLag" json:"pingFLag,omitempty"`
+	GeneralFlag *int32   `protobuf:"varint,9,opt,name=generalFlag" json:"generalFlag,omitempty"`
 }
 
 func (x *PushMessagePacket) Reset() {
@@ -1212,8 +1222,8 @@ func (x *PushMessagePacket) GetMessage() *Message {
 }
 
 func (x *PushMessagePacket) GetSvrip() int32 {
-	if x != nil {
-		return x.Svrip
+	if x != nil && x.Svrip != nil {
+		return *x.Svrip
 	}
 	return 0
 }
@@ -1226,15 +1236,15 @@ func (x *PushMessagePacket) GetPushToken() []byte {
 }
 
 func (x *PushMessagePacket) GetPingFLag() int32 {
-	if x != nil {
-		return x.PingFLag
+	if x != nil && x.PingFLag != nil {
+		return *x.PingFLag
 	}
 	return 0
 }
 
 func (x *PushMessagePacket) GetGeneralFlag() int32 {
-	if x != nil {
-		return x.GeneralFlag
+	if x != nil && x.GeneralFlag != nil {
+		return *x.GeneralFlag
 	}
 	return 0
 }
@@ -1244,10 +1254,10 @@ type UinPairMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	LastReadTime int32      `protobuf:"varint,1,opt,name=lastReadTime,proto3" json:"lastReadTime,omitempty"`
-	PeerUin      int64      `protobuf:"varint,2,opt,name=peerUin,proto3" json:"peerUin,omitempty"`
-	MsgCompleted int32      `protobuf:"varint,3,opt,name=msgCompleted,proto3" json:"msgCompleted,omitempty"`
-	Messages     []*Message `protobuf:"bytes,4,rep,name=messages,proto3" json:"messages,omitempty"`
+	LastReadTime *int32     `protobuf:"varint,1,opt,name=lastReadTime" json:"lastReadTime,omitempty"`
+	PeerUin      *int64     `protobuf:"varint,2,opt,name=peerUin" json:"peerUin,omitempty"`
+	MsgCompleted *int32     `protobuf:"varint,3,opt,name=msgCompleted" json:"msgCompleted,omitempty"`
+	Messages     []*Message `protobuf:"bytes,4,rep,name=messages" json:"messages,omitempty"`
 }
 
 func (x *UinPairMessage) Reset() {
@@ -1283,22 +1293,22 @@ func (*UinPairMessage) Descriptor() ([]byte, []int) {
 }
 
 func (x *UinPairMessage) GetLastReadTime() int32 {
-	if x != nil {
-		return x.LastReadTime
+	if x != nil && x.LastReadTime != nil {
+		return *x.LastReadTime
 	}
 	return 0
 }
 
 func (x *UinPairMessage) GetPeerUin() int64 {
-	if x != nil {
-		return x.PeerUin
+	if x != nil && x.PeerUin != nil {
+		return *x.PeerUin
 	}
 	return 0
 }
 
 func (x *UinPairMessage) GetMsgCompleted() int32 {
-	if x != nil {
-		return x.MsgCompleted
+	if x != nil && x.MsgCompleted != nil {
+		return *x.MsgCompleted
 	}
 	return 0
 }
@@ -1315,9 +1325,9 @@ type Message struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Head    *MessageHead `protobuf:"bytes,1,opt,name=head,proto3" json:"head,omitempty"`
-	Content *ContentHead `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
-	Body    *MessageBody `protobuf:"bytes,3,opt,name=body,proto3" json:"body,omitempty"`
+	Head    *MessageHead `protobuf:"bytes,1,opt,name=head" json:"head,omitempty"`
+	Content *ContentHead `protobuf:"bytes,2,opt,name=content" json:"content,omitempty"`
+	Body    *MessageBody `protobuf:"bytes,3,opt,name=body" json:"body,omitempty"`
 }
 
 func (x *Message) Reset() {
@@ -1378,9 +1388,9 @@ type MessageBody struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	RichText          *RichText `protobuf:"bytes,1,opt,name=richText,proto3" json:"richText,omitempty"`
-	MsgContent        []byte    `protobuf:"bytes,2,opt,name=msgContent,proto3" json:"msgContent,omitempty"`
-	MsgEncryptContent []byte    `protobuf:"bytes,3,opt,name=msgEncryptContent,proto3" json:"msgEncryptContent,omitempty"`
+	RichText          *RichText `protobuf:"bytes,1,opt,name=richText" json:"richText,omitempty"`
+	MsgContent        []byte    `protobuf:"bytes,2,opt,name=msgContent" json:"msgContent,omitempty"`
+	MsgEncryptContent []byte    `protobuf:"bytes,3,opt,name=msgEncryptContent" json:"msgEncryptContent,omitempty"`
 }
 
 func (x *MessageBody) Reset() {
@@ -1441,10 +1451,10 @@ type RichText struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Attr          *Attr          `protobuf:"bytes,1,opt,name=attr,proto3" json:"attr,omitempty"`
-	Elems         []*Elem        `protobuf:"bytes,2,rep,name=elems,proto3" json:"elems,omitempty"`
-	NotOnlineFile *NotOnlineFile `protobuf:"bytes,3,opt,name=notOnlineFile,proto3" json:"notOnlineFile,omitempty"`
-	Ptt           *Ptt           `protobuf:"bytes,4,opt,name=ptt,proto3" json:"ptt,omitempty"`
+	Attr          *Attr          `protobuf:"bytes,1,opt,name=attr" json:"attr,omitempty"`
+	Elems         []*Elem        `protobuf:"bytes,2,rep,name=elems" json:"elems,omitempty"`
+	NotOnlineFile *NotOnlineFile `protobuf:"bytes,3,opt,name=notOnlineFile" json:"notOnlineFile,omitempty"`
+	Ptt           *Ptt           `protobuf:"bytes,4,opt,name=ptt" json:"ptt,omitempty"`
 }
 
 func (x *RichText) Reset() {
@@ -1512,43 +1522,43 @@ type Elem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Text           *Text           `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
-	Face           *Face           `protobuf:"bytes,2,opt,name=face,proto3" json:"face,omitempty"`
-	OnlineImage    *OnlineImage    `protobuf:"bytes,3,opt,name=onlineImage,proto3" json:"onlineImage,omitempty"`
-	NotOnlineImage *NotOnlineImage `protobuf:"bytes,4,opt,name=notOnlineImage,proto3" json:"notOnlineImage,omitempty"`
-	TransElemInfo  *TransElem      `protobuf:"bytes,5,opt,name=transElemInfo,proto3" json:"transElemInfo,omitempty"`
+	Text           *Text           `protobuf:"bytes,1,opt,name=text" json:"text,omitempty"`
+	Face           *Face           `protobuf:"bytes,2,opt,name=face" json:"face,omitempty"`
+	OnlineImage    *OnlineImage    `protobuf:"bytes,3,opt,name=onlineImage" json:"onlineImage,omitempty"`
+	NotOnlineImage *NotOnlineImage `protobuf:"bytes,4,opt,name=notOnlineImage" json:"notOnlineImage,omitempty"`
+	TransElemInfo  *TransElem      `protobuf:"bytes,5,opt,name=transElemInfo" json:"transElemInfo,omitempty"`
 	//MarketFace marketFace = 6;
 	//ElemFlags elemFlags = 7;
-	CustomFace *CustomFace `protobuf:"bytes,8,opt,name=customFace,proto3" json:"customFace,omitempty"`
+	CustomFace *CustomFace `protobuf:"bytes,8,opt,name=customFace" json:"customFace,omitempty"`
 	//ElemFlags2 elemFlags2 = 9;
 	//FunFace funFace = 10;
 	//SecretFileMsg secretFile = 11;
-	RichMsg   *RichMsg   `protobuf:"bytes,12,opt,name=richMsg,proto3" json:"richMsg,omitempty"`
-	GroupFile *GroupFile `protobuf:"bytes,13,opt,name=groupFile,proto3" json:"groupFile,omitempty"`
+	RichMsg   *RichMsg   `protobuf:"bytes,12,opt,name=richMsg" json:"richMsg,omitempty"`
+	GroupFile *GroupFile `protobuf:"bytes,13,opt,name=groupFile" json:"groupFile,omitempty"`
 	//PubGroup pubGroup = 14;
 	//MarketTrans marketTrans = 15;
-	ExtraInfo *ExtraInfo `protobuf:"bytes,16,opt,name=extraInfo,proto3" json:"extraInfo,omitempty"`
+	ExtraInfo *ExtraInfo `protobuf:"bytes,16,opt,name=extraInfo" json:"extraInfo,omitempty"`
 	//ShakeWindow? shakeWindow = 17;
 	//PubAccount? pubAccount = 18;
-	VideoFile *VideoFile `protobuf:"bytes,19,opt,name=videoFile,proto3" json:"videoFile,omitempty"`
+	VideoFile *VideoFile `protobuf:"bytes,19,opt,name=videoFile" json:"videoFile,omitempty"`
 	//TipsInfo? tipsInfo = 20;
-	AnonGroupMsg *AnonymousGroupMessage `protobuf:"bytes,21,opt,name=anonGroupMsg,proto3" json:"anonGroupMsg,omitempty"`
+	AnonGroupMsg *AnonymousGroupMessage `protobuf:"bytes,21,opt,name=anonGroupMsg" json:"anonGroupMsg,omitempty"`
 	//QQLiveOld? qqLiveOld = 22;
 	//LifeOnlineAccount? lifeOnline = 23;
-	QQWalletMsg *QQWalletMsg `protobuf:"bytes,24,opt,name=QQWalletMsg,proto3" json:"QQWalletMsg,omitempty"`
+	QQWalletMsg *QQWalletMsg `protobuf:"bytes,24,opt,name=QQWalletMsg" json:"QQWalletMsg,omitempty"`
 	//CrmElem? crmElem = 25;
 	//ConferenceTipsInfo? conferenceTipsInfo = 26;
 	//RedBagInfo? redbagInfo = 27;
 	//LowVersionTips? lowVersionTips = 28;
 	//bytes bankcodeCtrlInfo = 29;
 	//NearByMessageType? nearByMsg = 30;
-	CustomElem *CustomElem `protobuf:"bytes,31,opt,name=customElem,proto3" json:"customElem,omitempty"`
+	CustomElem *CustomElem `protobuf:"bytes,31,opt,name=customElem" json:"customElem,omitempty"`
 	//LocationInfo? locationInfo = 32;
 	//PubAccInfo? pubAccInfo = 33;
 	//SmallEmoji? smallEmoji = 34;
 	//FSJMessageElem? fsjMsgElem = 35;
 	//ArkAppElem? arkApp = 36;
-	GeneralFlags *GeneralFlags `protobuf:"bytes,37,opt,name=generalFlags,proto3" json:"generalFlags,omitempty"`
+	GeneralFlags *GeneralFlags `protobuf:"bytes,37,opt,name=generalFlags" json:"generalFlags,omitempty"`
 	//CustomFace? hcFlashPic = 38;
 	//DeliverGiftMsg? deliverGiftMsg = 39;
 	//BitAppMsg? bitappMsg = 40;
@@ -1556,15 +1566,15 @@ type Elem struct {
 	//ApolloActMsg? apolloMsg = 42;
 	//GroupPubAccountInfo? groupPubAccInfo = 43;
 	//BlessingMessage? blessMsg = 44;
-	SrcMsg *SourceMsg `protobuf:"bytes,45,opt,name=srcMsg,proto3" json:"srcMsg,omitempty"`
+	SrcMsg *SourceMsg `protobuf:"bytes,45,opt,name=srcMsg" json:"srcMsg,omitempty"`
 	//LolaMsg? lolaMsg = 46;
 	//GroupBusinessMsg? groupBusinessMsg = 47;
 	//WorkflowNotifyMsg? msgWorkflowNotify = 48;
 	//PatsElem? patElem = 49;
 	//GroupPostElem? groupPostElem = 50;
-	LightApp *LightAppElem `protobuf:"bytes,51,opt,name=lightApp,proto3" json:"lightApp,omitempty"`
+	LightApp *LightAppElem `protobuf:"bytes,51,opt,name=lightApp" json:"lightApp,omitempty"`
 	//EIMInfo? eimInfo = 52;
-	CommonElem *CommonElem `protobuf:"bytes,53,opt,name=commonElem,proto3" json:"commonElem,omitempty"`
+	CommonElem *CommonElem `protobuf:"bytes,53,opt,name=commonElem" json:"commonElem,omitempty"`
 }
 
 func (x *Elem) Reset() {
@@ -1723,9 +1733,9 @@ type CommonElem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ServiceType  int32  `protobuf:"varint,1,opt,name=serviceType,proto3" json:"serviceType,omitempty"`
-	PbElem       []byte `protobuf:"bytes,2,opt,name=pbElem,proto3" json:"pbElem,omitempty"`
-	BusinessType int32  `protobuf:"varint,3,opt,name=businessType,proto3" json:"businessType,omitempty"`
+	ServiceType  *int32 `protobuf:"varint,1,opt,name=serviceType" json:"serviceType,omitempty"`
+	PbElem       []byte `protobuf:"bytes,2,opt,name=pbElem" json:"pbElem,omitempty"`
+	BusinessType *int32 `protobuf:"varint,3,opt,name=businessType" json:"businessType,omitempty"`
 }
 
 func (x *CommonElem) Reset() {
@@ -1761,8 +1771,8 @@ func (*CommonElem) Descriptor() ([]byte, []int) {
 }
 
 func (x *CommonElem) GetServiceType() int32 {
-	if x != nil {
-		return x.ServiceType
+	if x != nil && x.ServiceType != nil {
+		return *x.ServiceType
 	}
 	return 0
 }
@@ -1775,8 +1785,8 @@ func (x *CommonElem) GetPbElem() []byte {
 }
 
 func (x *CommonElem) GetBusinessType() int32 {
-	if x != nil {
-		return x.BusinessType
+	if x != nil && x.BusinessType != nil {
+		return *x.BusinessType
 	}
 	return 0
 }
@@ -1786,7 +1796,7 @@ type QQWalletMsg struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	AioBody *QQWalletAioBody `protobuf:"bytes,1,opt,name=aioBody,proto3" json:"aioBody,omitempty"`
+	AioBody *QQWalletAioBody `protobuf:"bytes,1,opt,name=aioBody" json:"aioBody,omitempty"`
 }
 
 func (x *QQWalletMsg) Reset() {
@@ -1833,27 +1843,27 @@ type QQWalletAioBody struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	SendUin     uint64           `protobuf:"varint,1,opt,name=sendUin,proto3" json:"sendUin,omitempty"`
-	Sender      *QQWalletAioElem `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
-	Receiver    *QQWalletAioElem `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	ChannelId   int32            `protobuf:"zigzag32,4,opt,name=ChannelId,proto3" json:"ChannelId,omitempty"`
-	TemplateId  int32            `protobuf:"zigzag32,5,opt,name=templateId,proto3" json:"templateId,omitempty"`
-	Resend      uint32           `protobuf:"varint,6,opt,name=resend,proto3" json:"resend,omitempty"`
-	MsgPriority uint32           `protobuf:"varint,7,opt,name=msgPriority,proto3" json:"msgPriority,omitempty"`
-	RedType     int32            `protobuf:"zigzag32,8,opt,name=redType,proto3" json:"redType,omitempty"`
-	BillNo      []byte           `protobuf:"bytes,9,opt,name=billNo,proto3" json:"billNo,omitempty"`
-	AuthKey     []byte           `protobuf:"bytes,10,opt,name=authKey,proto3" json:"authKey,omitempty"`
-	SessionType int32            `protobuf:"zigzag32,11,opt,name=sessionType,proto3" json:"sessionType,omitempty"`
-	MsgType     int32            `protobuf:"zigzag32,12,opt,name=msgType,proto3" json:"msgType,omitempty"`
-	EnvelOpeId  int32            `protobuf:"zigzag32,13,opt,name=envelOpeId,proto3" json:"envelOpeId,omitempty"`
-	Name        []byte           `protobuf:"bytes,14,opt,name=name,proto3" json:"name,omitempty"`
-	ConfType    int32            `protobuf:"zigzag32,15,opt,name=confType,proto3" json:"confType,omitempty"`
-	MsgFrom     int32            `protobuf:"zigzag32,16,opt,name=msgFrom,proto3" json:"msgFrom,omitempty"`
-	PcBody      []byte           `protobuf:"bytes,17,opt,name=pcBody,proto3" json:"pcBody,omitempty"`
-	Index       []byte           `protobuf:"bytes,18,opt,name=index,proto3" json:"index,omitempty"`
-	RedChannel  uint32           `protobuf:"varint,19,opt,name=redChannel,proto3" json:"redChannel,omitempty"`
-	GrapUin     []uint64         `protobuf:"varint,20,rep,packed,name=grapUin,proto3" json:"grapUin,omitempty"`
-	PbReserve   []byte           `protobuf:"bytes,21,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	SendUin     *uint64          `protobuf:"varint,1,opt,name=sendUin" json:"sendUin,omitempty"`
+	Sender      *QQWalletAioElem `protobuf:"bytes,2,opt,name=sender" json:"sender,omitempty"`
+	Receiver    *QQWalletAioElem `protobuf:"bytes,3,opt,name=receiver" json:"receiver,omitempty"`
+	ChannelId   *int32           `protobuf:"zigzag32,4,opt,name=ChannelId" json:"ChannelId,omitempty"`
+	TemplateId  *int32           `protobuf:"zigzag32,5,opt,name=templateId" json:"templateId,omitempty"`
+	Resend      *uint32          `protobuf:"varint,6,opt,name=resend" json:"resend,omitempty"`
+	MsgPriority *uint32          `protobuf:"varint,7,opt,name=msgPriority" json:"msgPriority,omitempty"`
+	RedType     *int32           `protobuf:"zigzag32,8,opt,name=redType" json:"redType,omitempty"`
+	BillNo      []byte           `protobuf:"bytes,9,opt,name=billNo" json:"billNo,omitempty"`
+	AuthKey     []byte           `protobuf:"bytes,10,opt,name=authKey" json:"authKey,omitempty"`
+	SessionType *int32           `protobuf:"zigzag32,11,opt,name=sessionType" json:"sessionType,omitempty"`
+	MsgType     *int32           `protobuf:"zigzag32,12,opt,name=msgType" json:"msgType,omitempty"`
+	EnvelOpeId  *int32           `protobuf:"zigzag32,13,opt,name=envelOpeId" json:"envelOpeId,omitempty"`
+	Name        []byte           `protobuf:"bytes,14,opt,name=name" json:"name,omitempty"`
+	ConfType    *int32           `protobuf:"zigzag32,15,opt,name=confType" json:"confType,omitempty"`
+	MsgFrom     *int32           `protobuf:"zigzag32,16,opt,name=msgFrom" json:"msgFrom,omitempty"`
+	PcBody      []byte           `protobuf:"bytes,17,opt,name=pcBody" json:"pcBody,omitempty"`
+	Index       []byte           `protobuf:"bytes,18,opt,name=index" json:"index,omitempty"`
+	RedChannel  *uint32          `protobuf:"varint,19,opt,name=redChannel" json:"redChannel,omitempty"`
+	GrapUin     []uint64         `protobuf:"varint,20,rep,name=grapUin" json:"grapUin,omitempty"`
+	PbReserve   []byte           `protobuf:"bytes,21,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *QQWalletAioBody) Reset() {
@@ -1889,8 +1899,8 @@ func (*QQWalletAioBody) Descriptor() ([]byte, []int) {
 }
 
 func (x *QQWalletAioBody) GetSendUin() uint64 {
-	if x != nil {
-		return x.SendUin
+	if x != nil && x.SendUin != nil {
+		return *x.SendUin
 	}
 	return 0
 }
@@ -1910,36 +1920,36 @@ func (x *QQWalletAioBody) GetReceiver() *QQWalletAioElem {
 }
 
 func (x *QQWalletAioBody) GetChannelId() int32 {
-	if x != nil {
-		return x.ChannelId
+	if x != nil && x.ChannelId != nil {
+		return *x.ChannelId
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetTemplateId() int32 {
-	if x != nil {
-		return x.TemplateId
+	if x != nil && x.TemplateId != nil {
+		return *x.TemplateId
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetResend() uint32 {
-	if x != nil {
-		return x.Resend
+	if x != nil && x.Resend != nil {
+		return *x.Resend
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetMsgPriority() uint32 {
-	if x != nil {
-		return x.MsgPriority
+	if x != nil && x.MsgPriority != nil {
+		return *x.MsgPriority
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetRedType() int32 {
-	if x != nil {
-		return x.RedType
+	if x != nil && x.RedType != nil {
+		return *x.RedType
 	}
 	return 0
 }
@@ -1959,22 +1969,22 @@ func (x *QQWalletAioBody) GetAuthKey() []byte {
 }
 
 func (x *QQWalletAioBody) GetSessionType() int32 {
-	if x != nil {
-		return x.SessionType
+	if x != nil && x.SessionType != nil {
+		return *x.SessionType
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetMsgType() int32 {
-	if x != nil {
-		return x.MsgType
+	if x != nil && x.MsgType != nil {
+		return *x.MsgType
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetEnvelOpeId() int32 {
-	if x != nil {
-		return x.EnvelOpeId
+	if x != nil && x.EnvelOpeId != nil {
+		return *x.EnvelOpeId
 	}
 	return 0
 }
@@ -1987,15 +1997,15 @@ func (x *QQWalletAioBody) GetName() []byte {
 }
 
 func (x *QQWalletAioBody) GetConfType() int32 {
-	if x != nil {
-		return x.ConfType
+	if x != nil && x.ConfType != nil {
+		return *x.ConfType
 	}
 	return 0
 }
 
 func (x *QQWalletAioBody) GetMsgFrom() int32 {
-	if x != nil {
-		return x.MsgFrom
+	if x != nil && x.MsgFrom != nil {
+		return *x.MsgFrom
 	}
 	return 0
 }
@@ -2015,8 +2025,8 @@ func (x *QQWalletAioBody) GetIndex() []byte {
 }
 
 func (x *QQWalletAioBody) GetRedChannel() uint32 {
-	if x != nil {
-		return x.RedChannel
+	if x != nil && x.RedChannel != nil {
+		return *x.RedChannel
 	}
 	return 0
 }
@@ -2040,27 +2050,27 @@ type QQWalletAioElem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Background      uint32 `protobuf:"varint,1,opt,name=background,proto3" json:"background,omitempty"`
-	Icon            uint32 `protobuf:"varint,2,opt,name=icon,proto3" json:"icon,omitempty"`
-	Title           string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
-	Subtitle        string `protobuf:"bytes,4,opt,name=subtitle,proto3" json:"subtitle,omitempty"`
-	Content         string `protobuf:"bytes,5,opt,name=content,proto3" json:"content,omitempty"`
-	LinkUrl         []byte `protobuf:"bytes,6,opt,name=linkUrl,proto3" json:"linkUrl,omitempty"`
-	BlackStripe     []byte `protobuf:"bytes,7,opt,name=blackStripe,proto3" json:"blackStripe,omitempty"`
-	Notice          []byte `protobuf:"bytes,8,opt,name=notice,proto3" json:"notice,omitempty"`
-	TitleColor      uint32 `protobuf:"varint,9,opt,name=titleColor,proto3" json:"titleColor,omitempty"`
-	SubtitleColor   uint32 `protobuf:"varint,10,opt,name=subtitleColor,proto3" json:"subtitleColor,omitempty"`
-	ActionsPriority []byte `protobuf:"bytes,11,opt,name=actionsPriority,proto3" json:"actionsPriority,omitempty"`
-	JumpUrl         []byte `protobuf:"bytes,12,opt,name=jumpUrl,proto3" json:"jumpUrl,omitempty"`
-	NativeIos       []byte `protobuf:"bytes,13,opt,name=nativeIos,proto3" json:"nativeIos,omitempty"`
-	NativeAndroid   []byte `protobuf:"bytes,14,opt,name=nativeAndroid,proto3" json:"nativeAndroid,omitempty"`
-	IconUrl         []byte `protobuf:"bytes,15,opt,name=iconUrl,proto3" json:"iconUrl,omitempty"`
-	ContentColor    uint32 `protobuf:"varint,16,opt,name=contentColor,proto3" json:"contentColor,omitempty"`
-	ContentBgColor  uint32 `protobuf:"varint,17,opt,name=contentBgColor,proto3" json:"contentBgColor,omitempty"`
-	AioImageLeft    []byte `protobuf:"bytes,18,opt,name=aioImageLeft,proto3" json:"aioImageLeft,omitempty"`
-	AioImageRight   []byte `protobuf:"bytes,19,opt,name=aioImageRight,proto3" json:"aioImageRight,omitempty"`
-	CftImage        []byte `protobuf:"bytes,20,opt,name=cftImage,proto3" json:"cftImage,omitempty"`
-	PbReserve       []byte `protobuf:"bytes,21,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	Background      *uint32 `protobuf:"varint,1,opt,name=background" json:"background,omitempty"`
+	Icon            *uint32 `protobuf:"varint,2,opt,name=icon" json:"icon,omitempty"`
+	Title           *string `protobuf:"bytes,3,opt,name=title" json:"title,omitempty"`
+	Subtitle        *string `protobuf:"bytes,4,opt,name=subtitle" json:"subtitle,omitempty"`
+	Content         *string `protobuf:"bytes,5,opt,name=content" json:"content,omitempty"`
+	LinkUrl         []byte  `protobuf:"bytes,6,opt,name=linkUrl" json:"linkUrl,omitempty"`
+	BlackStripe     []byte  `protobuf:"bytes,7,opt,name=blackStripe" json:"blackStripe,omitempty"`
+	Notice          []byte  `protobuf:"bytes,8,opt,name=notice" json:"notice,omitempty"`
+	TitleColor      *uint32 `protobuf:"varint,9,opt,name=titleColor" json:"titleColor,omitempty"`
+	SubtitleColor   *uint32 `protobuf:"varint,10,opt,name=subtitleColor" json:"subtitleColor,omitempty"`
+	ActionsPriority []byte  `protobuf:"bytes,11,opt,name=actionsPriority" json:"actionsPriority,omitempty"`
+	JumpUrl         []byte  `protobuf:"bytes,12,opt,name=jumpUrl" json:"jumpUrl,omitempty"`
+	NativeIos       []byte  `protobuf:"bytes,13,opt,name=nativeIos" json:"nativeIos,omitempty"`
+	NativeAndroid   []byte  `protobuf:"bytes,14,opt,name=nativeAndroid" json:"nativeAndroid,omitempty"`
+	IconUrl         []byte  `protobuf:"bytes,15,opt,name=iconUrl" json:"iconUrl,omitempty"`
+	ContentColor    *uint32 `protobuf:"varint,16,opt,name=contentColor" json:"contentColor,omitempty"`
+	ContentBgColor  *uint32 `protobuf:"varint,17,opt,name=contentBgColor" json:"contentBgColor,omitempty"`
+	AioImageLeft    []byte  `protobuf:"bytes,18,opt,name=aioImageLeft" json:"aioImageLeft,omitempty"`
+	AioImageRight   []byte  `protobuf:"bytes,19,opt,name=aioImageRight" json:"aioImageRight,omitempty"`
+	CftImage        []byte  `protobuf:"bytes,20,opt,name=cftImage" json:"cftImage,omitempty"`
+	PbReserve       []byte  `protobuf:"bytes,21,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *QQWalletAioElem) Reset() {
@@ -2096,36 +2106,36 @@ func (*QQWalletAioElem) Descriptor() ([]byte, []int) {
 }
 
 func (x *QQWalletAioElem) GetBackground() uint32 {
-	if x != nil {
-		return x.Background
+	if x != nil && x.Background != nil {
+		return *x.Background
 	}
 	return 0
 }
 
 func (x *QQWalletAioElem) GetIcon() uint32 {
-	if x != nil {
-		return x.Icon
+	if x != nil && x.Icon != nil {
+		return *x.Icon
 	}
 	return 0
 }
 
 func (x *QQWalletAioElem) GetTitle() string {
-	if x != nil {
-		return x.Title
+	if x != nil && x.Title != nil {
+		return *x.Title
 	}
 	return ""
 }
 
 func (x *QQWalletAioElem) GetSubtitle() string {
-	if x != nil {
-		return x.Subtitle
+	if x != nil && x.Subtitle != nil {
+		return *x.Subtitle
 	}
 	return ""
 }
 
 func (x *QQWalletAioElem) GetContent() string {
-	if x != nil {
-		return x.Content
+	if x != nil && x.Content != nil {
+		return *x.Content
 	}
 	return ""
 }
@@ -2152,15 +2162,15 @@ func (x *QQWalletAioElem) GetNotice() []byte {
 }
 
 func (x *QQWalletAioElem) GetTitleColor() uint32 {
-	if x != nil {
-		return x.TitleColor
+	if x != nil && x.TitleColor != nil {
+		return *x.TitleColor
 	}
 	return 0
 }
 
 func (x *QQWalletAioElem) GetSubtitleColor() uint32 {
-	if x != nil {
-		return x.SubtitleColor
+	if x != nil && x.SubtitleColor != nil {
+		return *x.SubtitleColor
 	}
 	return 0
 }
@@ -2201,15 +2211,15 @@ func (x *QQWalletAioElem) GetIconUrl() []byte {
 }
 
 func (x *QQWalletAioElem) GetContentColor() uint32 {
-	if x != nil {
-		return x.ContentColor
+	if x != nil && x.ContentColor != nil {
+		return *x.ContentColor
 	}
 	return 0
 }
 
 func (x *QQWalletAioElem) GetContentBgColor() uint32 {
-	if x != nil {
-		return x.ContentBgColor
+	if x != nil && x.ContentBgColor != nil {
+		return *x.ContentBgColor
 	}
 	return 0
 }
@@ -2247,11 +2257,11 @@ type RichMsg struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Template1 []byte `protobuf:"bytes,1,opt,name=template1,proto3" json:"template1,omitempty"`
-	ServiceId int32  `protobuf:"varint,2,opt,name=serviceId,proto3" json:"serviceId,omitempty"`
-	MsgResId  []byte `protobuf:"bytes,3,opt,name=msgResId,proto3" json:"msgResId,omitempty"`
-	Rand      int32  `protobuf:"varint,4,opt,name=rand,proto3" json:"rand,omitempty"`
-	Seq       int32  `protobuf:"varint,5,opt,name=seq,proto3" json:"seq,omitempty"`
+	Template1 []byte `protobuf:"bytes,1,opt,name=template1" json:"template1,omitempty"`
+	ServiceId *int32 `protobuf:"varint,2,opt,name=serviceId" json:"serviceId,omitempty"`
+	MsgResId  []byte `protobuf:"bytes,3,opt,name=msgResId" json:"msgResId,omitempty"`
+	Rand      *int32 `protobuf:"varint,4,opt,name=rand" json:"rand,omitempty"`
+	Seq       *int32 `protobuf:"varint,5,opt,name=seq" json:"seq,omitempty"`
 }
 
 func (x *RichMsg) Reset() {
@@ -2294,8 +2304,8 @@ func (x *RichMsg) GetTemplate1() []byte {
 }
 
 func (x *RichMsg) GetServiceId() int32 {
-	if x != nil {
-		return x.ServiceId
+	if x != nil && x.ServiceId != nil {
+		return *x.ServiceId
 	}
 	return 0
 }
@@ -2308,15 +2318,15 @@ func (x *RichMsg) GetMsgResId() []byte {
 }
 
 func (x *RichMsg) GetRand() int32 {
-	if x != nil {
-		return x.Rand
+	if x != nil && x.Rand != nil {
+		return *x.Rand
 	}
 	return 0
 }
 
 func (x *RichMsg) GetSeq() int32 {
-	if x != nil {
-		return x.Seq
+	if x != nil && x.Seq != nil {
+		return *x.Seq
 	}
 	return 0
 }
@@ -2326,11 +2336,11 @@ type CustomElem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Desc     []byte `protobuf:"bytes,1,opt,name=desc,proto3" json:"desc,omitempty"`
-	Data     []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	EnumType int32  `protobuf:"varint,3,opt,name=enumType,proto3" json:"enumType,omitempty"`
-	Ext      []byte `protobuf:"bytes,4,opt,name=ext,proto3" json:"ext,omitempty"`
-	Sound    []byte `protobuf:"bytes,5,opt,name=sound,proto3" json:"sound,omitempty"`
+	Desc     []byte `protobuf:"bytes,1,opt,name=desc" json:"desc,omitempty"`
+	Data     []byte `protobuf:"bytes,2,opt,name=data" json:"data,omitempty"`
+	EnumType *int32 `protobuf:"varint,3,opt,name=enumType" json:"enumType,omitempty"`
+	Ext      []byte `protobuf:"bytes,4,opt,name=ext" json:"ext,omitempty"`
+	Sound    []byte `protobuf:"bytes,5,opt,name=sound" json:"sound,omitempty"`
 }
 
 func (x *CustomElem) Reset() {
@@ -2380,8 +2390,8 @@ func (x *CustomElem) GetData() []byte {
 }
 
 func (x *CustomElem) GetEnumType() int32 {
-	if x != nil {
-		return x.EnumType
+	if x != nil && x.EnumType != nil {
+		return *x.EnumType
 	}
 	return 0
 }
@@ -2405,12 +2415,12 @@ type Text struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Str       string `protobuf:"bytes,1,opt,name=str,proto3" json:"str,omitempty"`
-	Link      string `protobuf:"bytes,2,opt,name=link,proto3" json:"link,omitempty"`
-	Attr6Buf  []byte `protobuf:"bytes,3,opt,name=attr6Buf,proto3" json:"attr6Buf,omitempty"`
-	Attr7Buf  []byte `protobuf:"bytes,4,opt,name=attr7Buf,proto3" json:"attr7Buf,omitempty"`
-	Buf       []byte `protobuf:"bytes,11,opt,name=buf,proto3" json:"buf,omitempty"`
-	PbReserve []byte `protobuf:"bytes,12,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	Str       *string `protobuf:"bytes,1,opt,name=str" json:"str,omitempty"`
+	Link      *string `protobuf:"bytes,2,opt,name=link" json:"link,omitempty"`
+	Attr6Buf  []byte  `protobuf:"bytes,3,opt,name=attr6Buf" json:"attr6Buf,omitempty"`
+	Attr7Buf  []byte  `protobuf:"bytes,4,opt,name=attr7Buf" json:"attr7Buf,omitempty"`
+	Buf       []byte  `protobuf:"bytes,11,opt,name=buf" json:"buf,omitempty"`
+	PbReserve []byte  `protobuf:"bytes,12,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *Text) Reset() {
@@ -2446,15 +2456,15 @@ func (*Text) Descriptor() ([]byte, []int) {
 }
 
 func (x *Text) GetStr() string {
-	if x != nil {
-		return x.Str
+	if x != nil && x.Str != nil {
+		return *x.Str
 	}
 	return ""
 }
 
 func (x *Text) GetLink() string {
-	if x != nil {
-		return x.Link
+	if x != nil && x.Link != nil {
+		return *x.Link
 	}
 	return ""
 }
@@ -2492,16 +2502,16 @@ type Attr struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CodePage       int32  `protobuf:"varint,1,opt,name=codePage,proto3" json:"codePage,omitempty"`
-	Time           int32  `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty"`
-	Random         int32  `protobuf:"varint,3,opt,name=random,proto3" json:"random,omitempty"`
-	Color          int32  `protobuf:"varint,4,opt,name=color,proto3" json:"color,omitempty"`
-	Size           int32  `protobuf:"varint,5,opt,name=size,proto3" json:"size,omitempty"`
-	Effect         int32  `protobuf:"varint,6,opt,name=effect,proto3" json:"effect,omitempty"`
-	CharSet        int32  `protobuf:"varint,7,opt,name=charSet,proto3" json:"charSet,omitempty"`
-	PitchAndFamily int32  `protobuf:"varint,8,opt,name=pitchAndFamily,proto3" json:"pitchAndFamily,omitempty"`
-	FontName       string `protobuf:"bytes,9,opt,name=fontName,proto3" json:"fontName,omitempty"`
-	ReserveData    []byte `protobuf:"bytes,10,opt,name=reserveData,proto3" json:"reserveData,omitempty"`
+	CodePage       *int32  `protobuf:"varint,1,opt,name=codePage" json:"codePage,omitempty"`
+	Time           *int32  `protobuf:"varint,2,opt,name=time" json:"time,omitempty"`
+	Random         *int32  `protobuf:"varint,3,opt,name=random" json:"random,omitempty"`
+	Color          *int32  `protobuf:"varint,4,opt,name=color" json:"color,omitempty"`
+	Size           *int32  `protobuf:"varint,5,opt,name=size" json:"size,omitempty"`
+	Effect         *int32  `protobuf:"varint,6,opt,name=effect" json:"effect,omitempty"`
+	CharSet        *int32  `protobuf:"varint,7,opt,name=charSet" json:"charSet,omitempty"`
+	PitchAndFamily *int32  `protobuf:"varint,8,opt,name=pitchAndFamily" json:"pitchAndFamily,omitempty"`
+	FontName       *string `protobuf:"bytes,9,opt,name=fontName" json:"fontName,omitempty"`
+	ReserveData    []byte  `protobuf:"bytes,10,opt,name=reserveData" json:"reserveData,omitempty"`
 }
 
 func (x *Attr) Reset() {
@@ -2537,64 +2547,64 @@ func (*Attr) Descriptor() ([]byte, []int) {
 }
 
 func (x *Attr) GetCodePage() int32 {
-	if x != nil {
-		return x.CodePage
+	if x != nil && x.CodePage != nil {
+		return *x.CodePage
 	}
 	return 0
 }
 
 func (x *Attr) GetTime() int32 {
-	if x != nil {
-		return x.Time
+	if x != nil && x.Time != nil {
+		return *x.Time
 	}
 	return 0
 }
 
 func (x *Attr) GetRandom() int32 {
-	if x != nil {
-		return x.Random
+	if x != nil && x.Random != nil {
+		return *x.Random
 	}
 	return 0
 }
 
 func (x *Attr) GetColor() int32 {
-	if x != nil {
-		return x.Color
+	if x != nil && x.Color != nil {
+		return *x.Color
 	}
 	return 0
 }
 
 func (x *Attr) GetSize() int32 {
-	if x != nil {
-		return x.Size
+	if x != nil && x.Size != nil {
+		return *x.Size
 	}
 	return 0
 }
 
 func (x *Attr) GetEffect() int32 {
-	if x != nil {
-		return x.Effect
+	if x != nil && x.Effect != nil {
+		return *x.Effect
 	}
 	return 0
 }
 
 func (x *Attr) GetCharSet() int32 {
-	if x != nil {
-		return x.CharSet
+	if x != nil && x.CharSet != nil {
+		return *x.CharSet
 	}
 	return 0
 }
 
 func (x *Attr) GetPitchAndFamily() int32 {
-	if x != nil {
-		return x.PitchAndFamily
+	if x != nil && x.PitchAndFamily != nil {
+		return *x.PitchAndFamily
 	}
 	return 0
 }
 
 func (x *Attr) GetFontName() string {
-	if x != nil {
-		return x.FontName
+	if x != nil && x.FontName != nil {
+		return *x.FontName
 	}
 	return ""
 }
@@ -2611,30 +2621,30 @@ type Ptt struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FileType      int32    `protobuf:"varint,1,opt,name=fileType,proto3" json:"fileType,omitempty"`
-	SrcUin        int64    `protobuf:"varint,2,opt,name=srcUin,proto3" json:"srcUin,omitempty"`
-	FileUuid      []byte   `protobuf:"bytes,3,opt,name=fileUuid,proto3" json:"fileUuid,omitempty"`
-	FileMd5       []byte   `protobuf:"bytes,4,opt,name=fileMd5,proto3" json:"fileMd5,omitempty"`
-	FileName      string   `protobuf:"bytes,5,opt,name=fileName,proto3" json:"fileName,omitempty"`
-	FileSize      int32    `protobuf:"varint,6,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
-	Reserve       []byte   `protobuf:"bytes,7,opt,name=reserve,proto3" json:"reserve,omitempty"`
-	FileId        int32    `protobuf:"varint,8,opt,name=fileId,proto3" json:"fileId,omitempty"`
-	ServerIp      int32    `protobuf:"varint,9,opt,name=serverIp,proto3" json:"serverIp,omitempty"`
-	ServerPort    int32    `protobuf:"varint,10,opt,name=serverPort,proto3" json:"serverPort,omitempty"`
-	BoolValid     bool     `protobuf:"varint,11,opt,name=boolValid,proto3" json:"boolValid,omitempty"`
-	Signature     []byte   `protobuf:"bytes,12,opt,name=signature,proto3" json:"signature,omitempty"`
-	Shortcut      []byte   `protobuf:"bytes,13,opt,name=shortcut,proto3" json:"shortcut,omitempty"`
-	FileKey       []byte   `protobuf:"bytes,14,opt,name=fileKey,proto3" json:"fileKey,omitempty"`
-	MagicPttIndex int32    `protobuf:"varint,15,opt,name=magicPttIndex,proto3" json:"magicPttIndex,omitempty"`
-	VoiceSwitch   int32    `protobuf:"varint,16,opt,name=voiceSwitch,proto3" json:"voiceSwitch,omitempty"`
-	PttUrl        []byte   `protobuf:"bytes,17,opt,name=pttUrl,proto3" json:"pttUrl,omitempty"`
-	GroupFileKey  []byte   `protobuf:"bytes,18,opt,name=groupFileKey,proto3" json:"groupFileKey,omitempty"`
-	Time          int32    `protobuf:"varint,19,opt,name=time,proto3" json:"time,omitempty"`
-	DownPara      []byte   `protobuf:"bytes,20,opt,name=downPara,proto3" json:"downPara,omitempty"`
-	Format        int32    `protobuf:"varint,29,opt,name=format,proto3" json:"format,omitempty"`
-	PbReserve     []byte   `protobuf:"bytes,30,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
-	BytesPttUrls  [][]byte `protobuf:"bytes,31,rep,name=bytesPttUrls,proto3" json:"bytesPttUrls,omitempty"`
-	DownloadFlag  int32    `protobuf:"varint,32,opt,name=downloadFlag,proto3" json:"downloadFlag,omitempty"`
+	FileType      *int32   `protobuf:"varint,1,opt,name=fileType" json:"fileType,omitempty"`
+	SrcUin        *int64   `protobuf:"varint,2,opt,name=srcUin" json:"srcUin,omitempty"`
+	FileUuid      []byte   `protobuf:"bytes,3,opt,name=fileUuid" json:"fileUuid,omitempty"`
+	FileMd5       []byte   `protobuf:"bytes,4,opt,name=fileMd5" json:"fileMd5,omitempty"`
+	FileName      *string  `protobuf:"bytes,5,opt,name=fileName" json:"fileName,omitempty"`
+	FileSize      *int32   `protobuf:"varint,6,opt,name=fileSize" json:"fileSize,omitempty"`
+	Reserve       []byte   `protobuf:"bytes,7,opt,name=reserve" json:"reserve,omitempty"`
+	FileId        *int32   `protobuf:"varint,8,opt,name=fileId" json:"fileId,omitempty"`
+	ServerIp      *int32   `protobuf:"varint,9,opt,name=serverIp" json:"serverIp,omitempty"`
+	ServerPort    *int32   `protobuf:"varint,10,opt,name=serverPort" json:"serverPort,omitempty"`
+	BoolValid     *bool    `protobuf:"varint,11,opt,name=boolValid" json:"boolValid,omitempty"`
+	Signature     []byte   `protobuf:"bytes,12,opt,name=signature" json:"signature,omitempty"`
+	Shortcut      []byte   `protobuf:"bytes,13,opt,name=shortcut" json:"shortcut,omitempty"`
+	FileKey       []byte   `protobuf:"bytes,14,opt,name=fileKey" json:"fileKey,omitempty"`
+	MagicPttIndex *int32   `protobuf:"varint,15,opt,name=magicPttIndex" json:"magicPttIndex,omitempty"`
+	VoiceSwitch   *int32   `protobuf:"varint,16,opt,name=voiceSwitch" json:"voiceSwitch,omitempty"`
+	PttUrl        []byte   `protobuf:"bytes,17,opt,name=pttUrl" json:"pttUrl,omitempty"`
+	GroupFileKey  []byte   `protobuf:"bytes,18,opt,name=groupFileKey" json:"groupFileKey,omitempty"`
+	Time          *int32   `protobuf:"varint,19,opt,name=time" json:"time,omitempty"`
+	DownPara      []byte   `protobuf:"bytes,20,opt,name=downPara" json:"downPara,omitempty"`
+	Format        *int32   `protobuf:"varint,29,opt,name=format" json:"format,omitempty"`
+	PbReserve     []byte   `protobuf:"bytes,30,opt,name=pbReserve" json:"pbReserve,omitempty"`
+	BytesPttUrls  [][]byte `protobuf:"bytes,31,rep,name=bytesPttUrls" json:"bytesPttUrls,omitempty"`
+	DownloadFlag  *int32   `protobuf:"varint,32,opt,name=downloadFlag" json:"downloadFlag,omitempty"`
 }
 
 func (x *Ptt) Reset() {
@@ -2670,15 +2680,15 @@ func (*Ptt) Descriptor() ([]byte, []int) {
 }
 
 func (x *Ptt) GetFileType() int32 {
-	if x != nil {
-		return x.FileType
+	if x != nil && x.FileType != nil {
+		return *x.FileType
 	}
 	return 0
 }
 
 func (x *Ptt) GetSrcUin() int64 {
-	if x != nil {
-		return x.SrcUin
+	if x != nil && x.SrcUin != nil {
+		return *x.SrcUin
 	}
 	return 0
 }
@@ -2698,15 +2708,15 @@ func (x *Ptt) GetFileMd5() []byte {
 }
 
 func (x *Ptt) GetFileName() string {
-	if x != nil {
-		return x.FileName
+	if x != nil && x.FileName != nil {
+		return *x.FileName
 	}
 	return ""
 }
 
 func (x *Ptt) GetFileSize() int32 {
-	if x != nil {
-		return x.FileSize
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
 	}
 	return 0
 }
@@ -2719,29 +2729,29 @@ func (x *Ptt) GetReserve() []byte {
 }
 
 func (x *Ptt) GetFileId() int32 {
-	if x != nil {
-		return x.FileId
+	if x != nil && x.FileId != nil {
+		return *x.FileId
 	}
 	return 0
 }
 
 func (x *Ptt) GetServerIp() int32 {
-	if x != nil {
-		return x.ServerIp
+	if x != nil && x.ServerIp != nil {
+		return *x.ServerIp
 	}
 	return 0
 }
 
 func (x *Ptt) GetServerPort() int32 {
-	if x != nil {
-		return x.ServerPort
+	if x != nil && x.ServerPort != nil {
+		return *x.ServerPort
 	}
 	return 0
 }
 
 func (x *Ptt) GetBoolValid() bool {
-	if x != nil {
-		return x.BoolValid
+	if x != nil && x.BoolValid != nil {
+		return *x.BoolValid
 	}
 	return false
 }
@@ -2768,15 +2778,15 @@ func (x *Ptt) GetFileKey() []byte {
 }
 
 func (x *Ptt) GetMagicPttIndex() int32 {
-	if x != nil {
-		return x.MagicPttIndex
+	if x != nil && x.MagicPttIndex != nil {
+		return *x.MagicPttIndex
 	}
 	return 0
 }
 
 func (x *Ptt) GetVoiceSwitch() int32 {
-	if x != nil {
-		return x.VoiceSwitch
+	if x != nil && x.VoiceSwitch != nil {
+		return *x.VoiceSwitch
 	}
 	return 0
 }
@@ -2796,8 +2806,8 @@ func (x *Ptt) GetGroupFileKey() []byte {
 }
 
 func (x *Ptt) GetTime() int32 {
-	if x != nil {
-		return x.Time
+	if x != nil && x.Time != nil {
+		return *x.Time
 	}
 	return 0
 }
@@ -2810,8 +2820,8 @@ func (x *Ptt) GetDownPara() []byte {
 }
 
 func (x *Ptt) GetFormat() int32 {
-	if x != nil {
-		return x.Format
+	if x != nil && x.Format != nil {
+		return *x.Format
 	}
 	return 0
 }
@@ -2831,8 +2841,8 @@ func (x *Ptt) GetBytesPttUrls() [][]byte {
 }
 
 func (x *Ptt) GetDownloadFlag() int32 {
-	if x != nil {
-		return x.DownloadFlag
+	if x != nil && x.DownloadFlag != nil {
+		return *x.DownloadFlag
 	}
 	return 0
 }
@@ -2842,9 +2852,9 @@ type OnlineImage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Guid           []byte `protobuf:"bytes,1,opt,name=guid,proto3" json:"guid,omitempty"`
-	FilePath       []byte `protobuf:"bytes,2,opt,name=filePath,proto3" json:"filePath,omitempty"`
-	OldVerSendFile []byte `protobuf:"bytes,3,opt,name=oldVerSendFile,proto3" json:"oldVerSendFile,omitempty"`
+	Guid           []byte `protobuf:"bytes,1,opt,name=guid" json:"guid,omitempty"`
+	FilePath       []byte `protobuf:"bytes,2,opt,name=filePath" json:"filePath,omitempty"`
+	OldVerSendFile []byte `protobuf:"bytes,3,opt,name=oldVerSendFile" json:"oldVerSendFile,omitempty"`
 }
 
 func (x *OnlineImage) Reset() {
@@ -2905,32 +2915,32 @@ type NotOnlineImage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FilePath       string `protobuf:"bytes,1,opt,name=filePath,proto3" json:"filePath,omitempty"`
-	FileLen        int32  `protobuf:"varint,2,opt,name=fileLen,proto3" json:"fileLen,omitempty"`
-	DownloadPath   string `protobuf:"bytes,3,opt,name=downloadPath,proto3" json:"downloadPath,omitempty"`
-	OldVerSendFile []byte `protobuf:"bytes,4,opt,name=oldVerSendFile,proto3" json:"oldVerSendFile,omitempty"`
-	ImgType        int32  `protobuf:"varint,5,opt,name=imgType,proto3" json:"imgType,omitempty"`
-	PreviewsImage  []byte `protobuf:"bytes,6,opt,name=previewsImage,proto3" json:"previewsImage,omitempty"`
-	PicMd5         []byte `protobuf:"bytes,7,opt,name=picMd5,proto3" json:"picMd5,omitempty"`
-	PicHeight      int32  `protobuf:"varint,8,opt,name=picHeight,proto3" json:"picHeight,omitempty"`
-	PicWidth       int32  `protobuf:"varint,9,opt,name=picWidth,proto3" json:"picWidth,omitempty"`
-	ResId          string `protobuf:"bytes,10,opt,name=resId,proto3" json:"resId,omitempty"`
-	Flag           []byte `protobuf:"bytes,11,opt,name=flag,proto3" json:"flag,omitempty"`
-	ThumbUrl       string `protobuf:"bytes,12,opt,name=thumbUrl,proto3" json:"thumbUrl,omitempty"`
-	Original       int32  `protobuf:"varint,13,opt,name=original,proto3" json:"original,omitempty"`
-	BigUrl         string `protobuf:"bytes,14,opt,name=bigUrl,proto3" json:"bigUrl,omitempty"`
-	OrigUrl        string `protobuf:"bytes,15,opt,name=origUrl,proto3" json:"origUrl,omitempty"`
-	BizType        int32  `protobuf:"varint,16,opt,name=bizType,proto3" json:"bizType,omitempty"`
-	Result         int32  `protobuf:"varint,17,opt,name=result,proto3" json:"result,omitempty"`
-	Index          int32  `protobuf:"varint,18,opt,name=index,proto3" json:"index,omitempty"`
-	OpFaceBuf      []byte `protobuf:"bytes,19,opt,name=opFaceBuf,proto3" json:"opFaceBuf,omitempty"`
-	OldPicMd5      bool   `protobuf:"varint,20,opt,name=oldPicMd5,proto3" json:"oldPicMd5,omitempty"`
-	ThumbWidth     int32  `protobuf:"varint,21,opt,name=thumbWidth,proto3" json:"thumbWidth,omitempty"`
-	ThumbHeight    int32  `protobuf:"varint,22,opt,name=thumbHeight,proto3" json:"thumbHeight,omitempty"`
-	FileId         int32  `protobuf:"varint,23,opt,name=fileId,proto3" json:"fileId,omitempty"`
-	ShowLen        int32  `protobuf:"varint,24,opt,name=showLen,proto3" json:"showLen,omitempty"`
-	DownloadLen    int32  `protobuf:"varint,25,opt,name=downloadLen,proto3" json:"downloadLen,omitempty"`
-	PbReserve      []byte `protobuf:"bytes,29,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	FilePath       *string `protobuf:"bytes,1,opt,name=filePath" json:"filePath,omitempty"`
+	FileLen        *int32  `protobuf:"varint,2,opt,name=fileLen" json:"fileLen,omitempty"`
+	DownloadPath   *string `protobuf:"bytes,3,opt,name=downloadPath" json:"downloadPath,omitempty"`
+	OldVerSendFile []byte  `protobuf:"bytes,4,opt,name=oldVerSendFile" json:"oldVerSendFile,omitempty"`
+	ImgType        *int32  `protobuf:"varint,5,opt,name=imgType" json:"imgType,omitempty"`
+	PreviewsImage  []byte  `protobuf:"bytes,6,opt,name=previewsImage" json:"previewsImage,omitempty"`
+	PicMd5         []byte  `protobuf:"bytes,7,opt,name=picMd5" json:"picMd5,omitempty"`
+	PicHeight      *int32  `protobuf:"varint,8,opt,name=picHeight" json:"picHeight,omitempty"`
+	PicWidth       *int32  `protobuf:"varint,9,opt,name=picWidth" json:"picWidth,omitempty"`
+	ResId          *string `protobuf:"bytes,10,opt,name=resId" json:"resId,omitempty"`
+	Flag           []byte  `protobuf:"bytes,11,opt,name=flag" json:"flag,omitempty"`
+	ThumbUrl       *string `protobuf:"bytes,12,opt,name=thumbUrl" json:"thumbUrl,omitempty"`
+	Original       *int32  `protobuf:"varint,13,opt,name=original" json:"original,omitempty"`
+	BigUrl         *string `protobuf:"bytes,14,opt,name=bigUrl" json:"bigUrl,omitempty"`
+	OrigUrl        *string `protobuf:"bytes,15,opt,name=origUrl" json:"origUrl,omitempty"`
+	BizType        *int32  `protobuf:"varint,16,opt,name=bizType" json:"bizType,omitempty"`
+	Result         *int32  `protobuf:"varint,17,opt,name=result" json:"result,omitempty"`
+	Index          *int32  `protobuf:"varint,18,opt,name=index" json:"index,omitempty"`
+	OpFaceBuf      []byte  `protobuf:"bytes,19,opt,name=opFaceBuf" json:"opFaceBuf,omitempty"`
+	OldPicMd5      *bool   `protobuf:"varint,20,opt,name=oldPicMd5" json:"oldPicMd5,omitempty"`
+	ThumbWidth     *int32  `protobuf:"varint,21,opt,name=thumbWidth" json:"thumbWidth,omitempty"`
+	ThumbHeight    *int32  `protobuf:"varint,22,opt,name=thumbHeight" json:"thumbHeight,omitempty"`
+	FileId         *int32  `protobuf:"varint,23,opt,name=fileId" json:"fileId,omitempty"`
+	ShowLen        *int32  `protobuf:"varint,24,opt,name=showLen" json:"showLen,omitempty"`
+	DownloadLen    *int32  `protobuf:"varint,25,opt,name=downloadLen" json:"downloadLen,omitempty"`
+	PbReserve      []byte  `protobuf:"bytes,29,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *NotOnlineImage) Reset() {
@@ -2966,22 +2976,22 @@ func (*NotOnlineImage) Descriptor() ([]byte, []int) {
 }
 
 func (x *NotOnlineImage) GetFilePath() string {
-	if x != nil {
-		return x.FilePath
+	if x != nil && x.FilePath != nil {
+		return *x.FilePath
 	}
 	return ""
 }
 
 func (x *NotOnlineImage) GetFileLen() int32 {
-	if x != nil {
-		return x.FileLen
+	if x != nil && x.FileLen != nil {
+		return *x.FileLen
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetDownloadPath() string {
-	if x != nil {
-		return x.DownloadPath
+	if x != nil && x.DownloadPath != nil {
+		return *x.DownloadPath
 	}
 	return ""
 }
@@ -2994,8 +3004,8 @@ func (x *NotOnlineImage) GetOldVerSendFile() []byte {
 }
 
 func (x *NotOnlineImage) GetImgType() int32 {
-	if x != nil {
-		return x.ImgType
+	if x != nil && x.ImgType != nil {
+		return *x.ImgType
 	}
 	return 0
 }
@@ -3015,22 +3025,22 @@ func (x *NotOnlineImage) GetPicMd5() []byte {
 }
 
 func (x *NotOnlineImage) GetPicHeight() int32 {
-	if x != nil {
-		return x.PicHeight
+	if x != nil && x.PicHeight != nil {
+		return *x.PicHeight
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetPicWidth() int32 {
-	if x != nil {
-		return x.PicWidth
+	if x != nil && x.PicWidth != nil {
+		return *x.PicWidth
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetResId() string {
-	if x != nil {
-		return x.ResId
+	if x != nil && x.ResId != nil {
+		return *x.ResId
 	}
 	return ""
 }
@@ -3043,50 +3053,50 @@ func (x *NotOnlineImage) GetFlag() []byte {
 }
 
 func (x *NotOnlineImage) GetThumbUrl() string {
-	if x != nil {
-		return x.ThumbUrl
+	if x != nil && x.ThumbUrl != nil {
+		return *x.ThumbUrl
 	}
 	return ""
 }
 
 func (x *NotOnlineImage) GetOriginal() int32 {
-	if x != nil {
-		return x.Original
+	if x != nil && x.Original != nil {
+		return *x.Original
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetBigUrl() string {
-	if x != nil {
-		return x.BigUrl
+	if x != nil && x.BigUrl != nil {
+		return *x.BigUrl
 	}
 	return ""
 }
 
 func (x *NotOnlineImage) GetOrigUrl() string {
-	if x != nil {
-		return x.OrigUrl
+	if x != nil && x.OrigUrl != nil {
+		return *x.OrigUrl
 	}
 	return ""
 }
 
 func (x *NotOnlineImage) GetBizType() int32 {
-	if x != nil {
-		return x.BizType
+	if x != nil && x.BizType != nil {
+		return *x.BizType
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetResult() int32 {
-	if x != nil {
-		return x.Result
+	if x != nil && x.Result != nil {
+		return *x.Result
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetIndex() int32 {
-	if x != nil {
-		return x.Index
+	if x != nil && x.Index != nil {
+		return *x.Index
 	}
 	return 0
 }
@@ -3099,43 +3109,43 @@ func (x *NotOnlineImage) GetOpFaceBuf() []byte {
 }
 
 func (x *NotOnlineImage) GetOldPicMd5() bool {
-	if x != nil {
-		return x.OldPicMd5
+	if x != nil && x.OldPicMd5 != nil {
+		return *x.OldPicMd5
 	}
 	return false
 }
 
 func (x *NotOnlineImage) GetThumbWidth() int32 {
-	if x != nil {
-		return x.ThumbWidth
+	if x != nil && x.ThumbWidth != nil {
+		return *x.ThumbWidth
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetThumbHeight() int32 {
-	if x != nil {
-		return x.ThumbHeight
+	if x != nil && x.ThumbHeight != nil {
+		return *x.ThumbHeight
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetFileId() int32 {
-	if x != nil {
-		return x.FileId
+	if x != nil && x.FileId != nil {
+		return *x.FileId
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetShowLen() int32 {
-	if x != nil {
-		return x.ShowLen
+	if x != nil && x.ShowLen != nil {
+		return *x.ShowLen
 	}
 	return 0
 }
 
 func (x *NotOnlineImage) GetDownloadLen() int32 {
-	if x != nil {
-		return x.DownloadLen
+	if x != nil && x.DownloadLen != nil {
+		return *x.DownloadLen
 	}
 	return 0
 }
@@ -3152,25 +3162,25 @@ type NotOnlineFile struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FileType      int32    `protobuf:"varint,1,opt,name=fileType,proto3" json:"fileType,omitempty"`
-	Sig           []byte   `protobuf:"bytes,2,opt,name=sig,proto3" json:"sig,omitempty"`
-	FileUuid      []byte   `protobuf:"bytes,3,opt,name=fileUuid,proto3" json:"fileUuid,omitempty"`
-	FileMd5       []byte   `protobuf:"bytes,4,opt,name=fileMd5,proto3" json:"fileMd5,omitempty"`
-	FileName      []byte   `protobuf:"bytes,5,opt,name=fileName,proto3" json:"fileName,omitempty"`
-	FileSize      int64    `protobuf:"varint,6,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
-	Note          []byte   `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
-	Reserved      int32    `protobuf:"varint,8,opt,name=reserved,proto3" json:"reserved,omitempty"`
-	Subcmd        int32    `protobuf:"varint,9,opt,name=subcmd,proto3" json:"subcmd,omitempty"`
-	MicroCloud    int32    `protobuf:"varint,10,opt,name=microCloud,proto3" json:"microCloud,omitempty"`
-	BytesFileUrls [][]byte `protobuf:"bytes,11,rep,name=bytesFileUrls,proto3" json:"bytesFileUrls,omitempty"`
-	DownloadFlag  int32    `protobuf:"varint,12,opt,name=downloadFlag,proto3" json:"downloadFlag,omitempty"`
-	DangerEvel    int32    `protobuf:"varint,50,opt,name=dangerEvel,proto3" json:"dangerEvel,omitempty"`
-	LifeTime      int32    `protobuf:"varint,51,opt,name=lifeTime,proto3" json:"lifeTime,omitempty"`
-	UploadTime    int32    `protobuf:"varint,52,opt,name=uploadTime,proto3" json:"uploadTime,omitempty"`
-	AbsFileType   int32    `protobuf:"varint,53,opt,name=absFileType,proto3" json:"absFileType,omitempty"`
-	ClientType    int32    `protobuf:"varint,54,opt,name=clientType,proto3" json:"clientType,omitempty"`
-	ExpireTime    int32    `protobuf:"varint,55,opt,name=expireTime,proto3" json:"expireTime,omitempty"`
-	PbReserve     []byte   `protobuf:"bytes,56,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	FileType      *int32   `protobuf:"varint,1,opt,name=fileType" json:"fileType,omitempty"`
+	Sig           []byte   `protobuf:"bytes,2,opt,name=sig" json:"sig,omitempty"`
+	FileUuid      []byte   `protobuf:"bytes,3,opt,name=fileUuid" json:"fileUuid,omitempty"`
+	FileMd5       []byte   `protobuf:"bytes,4,opt,name=fileMd5" json:"fileMd5,omitempty"`
+	FileName      []byte   `protobuf:"bytes,5,opt,name=fileName" json:"fileName,omitempty"`
+	FileSize      *int64   `protobuf:"varint,6,opt,name=fileSize" json:"fileSize,omitempty"`
+	Note          []byte   `protobuf:"bytes,7,opt,name=note" json:"note,omitempty"`
+	Reserved      *int32   `protobuf:"varint,8,opt,name=reserved" json:"reserved,omitempty"`
+	Subcmd        *int32   `protobuf:"varint,9,opt,name=subcmd" json:"subcmd,omitempty"`
+	MicroCloud    *int32   `protobuf:"varint,10,opt,name=microCloud" json:"microCloud,omitempty"`
+	BytesFileUrls [][]byte `protobuf:"bytes,11,rep,name=bytesFileUrls" json:"bytesFileUrls,omitempty"`
+	DownloadFlag  *int32   `protobuf:"varint,12,opt,name=downloadFlag" json:"downloadFlag,omitempty"`
+	DangerEvel    *int32   `protobuf:"varint,50,opt,name=dangerEvel" json:"dangerEvel,omitempty"`
+	LifeTime      *int32   `protobuf:"varint,51,opt,name=lifeTime" json:"lifeTime,omitempty"`
+	UploadTime    *int32   `protobuf:"varint,52,opt,name=uploadTime" json:"uploadTime,omitempty"`
+	AbsFileType   *int32   `protobuf:"varint,53,opt,name=absFileType" json:"absFileType,omitempty"`
+	ClientType    *int32   `protobuf:"varint,54,opt,name=clientType" json:"clientType,omitempty"`
+	ExpireTime    *int32   `protobuf:"varint,55,opt,name=expireTime" json:"expireTime,omitempty"`
+	PbReserve     []byte   `protobuf:"bytes,56,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *NotOnlineFile) Reset() {
@@ -3206,8 +3216,8 @@ func (*NotOnlineFile) Descriptor() ([]byte, []int) {
 }
 
 func (x *NotOnlineFile) GetFileType() int32 {
-	if x != nil {
-		return x.FileType
+	if x != nil && x.FileType != nil {
+		return *x.FileType
 	}
 	return 0
 }
@@ -3241,8 +3251,8 @@ func (x *NotOnlineFile) GetFileName() []byte {
 }
 
 func (x *NotOnlineFile) GetFileSize() int64 {
-	if x != nil {
-		return x.FileSize
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
 	}
 	return 0
 }
@@ -3255,22 +3265,22 @@ func (x *NotOnlineFile) GetNote() []byte {
 }
 
 func (x *NotOnlineFile) GetReserved() int32 {
-	if x != nil {
-		return x.Reserved
+	if x != nil && x.Reserved != nil {
+		return *x.Reserved
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetSubcmd() int32 {
-	if x != nil {
-		return x.Subcmd
+	if x != nil && x.Subcmd != nil {
+		return *x.Subcmd
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetMicroCloud() int32 {
-	if x != nil {
-		return x.MicroCloud
+	if x != nil && x.MicroCloud != nil {
+		return *x.MicroCloud
 	}
 	return 0
 }
@@ -3283,50 +3293,50 @@ func (x *NotOnlineFile) GetBytesFileUrls() [][]byte {
 }
 
 func (x *NotOnlineFile) GetDownloadFlag() int32 {
-	if x != nil {
-		return x.DownloadFlag
+	if x != nil && x.DownloadFlag != nil {
+		return *x.DownloadFlag
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetDangerEvel() int32 {
-	if x != nil {
-		return x.DangerEvel
+	if x != nil && x.DangerEvel != nil {
+		return *x.DangerEvel
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetLifeTime() int32 {
-	if x != nil {
-		return x.LifeTime
+	if x != nil && x.LifeTime != nil {
+		return *x.LifeTime
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetUploadTime() int32 {
-	if x != nil {
-		return x.UploadTime
+	if x != nil && x.UploadTime != nil {
+		return *x.UploadTime
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetAbsFileType() int32 {
-	if x != nil {
-		return x.AbsFileType
+	if x != nil && x.AbsFileType != nil {
+		return *x.AbsFileType
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetClientType() int32 {
-	if x != nil {
-		return x.ClientType
+	if x != nil && x.ClientType != nil {
+		return *x.ClientType
 	}
 	return 0
 }
 
 func (x *NotOnlineFile) GetExpireTime() int32 {
-	if x != nil {
-		return x.ExpireTime
+	if x != nil && x.ExpireTime != nil {
+		return *x.ExpireTime
 	}
 	return 0
 }
@@ -3343,8 +3353,8 @@ type TransElem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ElemType  int32  `protobuf:"varint,1,opt,name=elemType,proto3" json:"elemType,omitempty"`
-	ElemValue []byte `protobuf:"bytes,2,opt,name=elemValue,proto3" json:"elemValue,omitempty"`
+	ElemType  *int32 `protobuf:"varint,1,opt,name=elemType" json:"elemType,omitempty"`
+	ElemValue []byte `protobuf:"bytes,2,opt,name=elemValue" json:"elemValue,omitempty"`
 }
 
 func (x *TransElem) Reset() {
@@ -3380,8 +3390,8 @@ func (*TransElem) Descriptor() ([]byte, []int) {
 }
 
 func (x *TransElem) GetElemType() int32 {
-	if x != nil {
-		return x.ElemType
+	if x != nil && x.ElemType != nil {
+		return *x.ElemType
 	}
 	return 0
 }
@@ -3398,18 +3408,18 @@ type ExtraInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Nick          []byte `protobuf:"bytes,1,opt,name=nick,proto3" json:"nick,omitempty"`
-	GroupCard     []byte `protobuf:"bytes,2,opt,name=groupCard,proto3" json:"groupCard,omitempty"`
-	Level         int32  `protobuf:"varint,3,opt,name=level,proto3" json:"level,omitempty"`
-	Flags         int32  `protobuf:"varint,4,opt,name=flags,proto3" json:"flags,omitempty"`
-	GroupMask     int32  `protobuf:"varint,5,opt,name=groupMask,proto3" json:"groupMask,omitempty"`
-	MsgTailId     int32  `protobuf:"varint,6,opt,name=msgTailId,proto3" json:"msgTailId,omitempty"`
-	SenderTitle   []byte `protobuf:"bytes,7,opt,name=senderTitle,proto3" json:"senderTitle,omitempty"`
-	ApnsTips      []byte `protobuf:"bytes,8,opt,name=apnsTips,proto3" json:"apnsTips,omitempty"`
-	Uin           int64  `protobuf:"varint,9,opt,name=uin,proto3" json:"uin,omitempty"`
-	MsgStateFlag  int32  `protobuf:"varint,10,opt,name=msgStateFlag,proto3" json:"msgStateFlag,omitempty"`
-	ApnsSoundType int32  `protobuf:"varint,11,opt,name=apnsSoundType,proto3" json:"apnsSoundType,omitempty"`
-	NewGroupFlag  int32  `protobuf:"varint,12,opt,name=newGroupFlag,proto3" json:"newGroupFlag,omitempty"`
+	Nick          []byte `protobuf:"bytes,1,opt,name=nick" json:"nick,omitempty"`
+	GroupCard     []byte `protobuf:"bytes,2,opt,name=groupCard" json:"groupCard,omitempty"`
+	Level         *int32 `protobuf:"varint,3,opt,name=level" json:"level,omitempty"`
+	Flags         *int32 `protobuf:"varint,4,opt,name=flags" json:"flags,omitempty"`
+	GroupMask     *int32 `protobuf:"varint,5,opt,name=groupMask" json:"groupMask,omitempty"`
+	MsgTailId     *int32 `protobuf:"varint,6,opt,name=msgTailId" json:"msgTailId,omitempty"`
+	SenderTitle   []byte `protobuf:"bytes,7,opt,name=senderTitle" json:"senderTitle,omitempty"`
+	ApnsTips      []byte `protobuf:"bytes,8,opt,name=apnsTips" json:"apnsTips,omitempty"`
+	Uin           *int64 `protobuf:"varint,9,opt,name=uin" json:"uin,omitempty"`
+	MsgStateFlag  *int32 `protobuf:"varint,10,opt,name=msgStateFlag" json:"msgStateFlag,omitempty"`
+	ApnsSoundType *int32 `protobuf:"varint,11,opt,name=apnsSoundType" json:"apnsSoundType,omitempty"`
+	NewGroupFlag  *int32 `protobuf:"varint,12,opt,name=newGroupFlag" json:"newGroupFlag,omitempty"`
 }
 
 func (x *ExtraInfo) Reset() {
@@ -3459,29 +3469,29 @@ func (x *ExtraInfo) GetGroupCard() []byte {
 }
 
 func (x *ExtraInfo) GetLevel() int32 {
-	if x != nil {
-		return x.Level
+	if x != nil && x.Level != nil {
+		return *x.Level
 	}
 	return 0
 }
 
 func (x *ExtraInfo) GetFlags() int32 {
-	if x != nil {
-		return x.Flags
+	if x != nil && x.Flags != nil {
+		return *x.Flags
 	}
 	return 0
 }
 
 func (x *ExtraInfo) GetGroupMask() int32 {
-	if x != nil {
-		return x.GroupMask
+	if x != nil && x.GroupMask != nil {
+		return *x.GroupMask
 	}
 	return 0
 }
 
 func (x *ExtraInfo) GetMsgTailId() int32 {
-	if x != nil {
-		return x.MsgTailId
+	if x != nil && x.MsgTailId != nil {
+		return *x.MsgTailId
 	}
 	return 0
 }
@@ -3501,29 +3511,29 @@ func (x *ExtraInfo) GetApnsTips() []byte {
 }
 
 func (x *ExtraInfo) GetUin() int64 {
-	if x != nil {
-		return x.Uin
+	if x != nil && x.Uin != nil {
+		return *x.Uin
 	}
 	return 0
 }
 
 func (x *ExtraInfo) GetMsgStateFlag() int32 {
-	if x != nil {
-		return x.MsgStateFlag
+	if x != nil && x.MsgStateFlag != nil {
+		return *x.MsgStateFlag
 	}
 	return 0
 }
 
 func (x *ExtraInfo) GetApnsSoundType() int32 {
-	if x != nil {
-		return x.ApnsSoundType
+	if x != nil && x.ApnsSoundType != nil {
+		return *x.ApnsSoundType
 	}
 	return 0
 }
 
 func (x *ExtraInfo) GetNewGroupFlag() int32 {
-	if x != nil {
-		return x.NewGroupFlag
+	if x != nil && x.NewGroupFlag != nil {
+		return *x.NewGroupFlag
 	}
 	return 0
 }
@@ -3533,16 +3543,16 @@ type GroupFile struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Filename    []byte `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	FileSize    int64  `protobuf:"varint,2,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
-	FileId      []byte `protobuf:"bytes,3,opt,name=fileId,proto3" json:"fileId,omitempty"`
-	BatchId     []byte `protobuf:"bytes,4,opt,name=batchId,proto3" json:"batchId,omitempty"`
-	FileKey     []byte `protobuf:"bytes,5,opt,name=fileKey,proto3" json:"fileKey,omitempty"`
-	Mark        []byte `protobuf:"bytes,6,opt,name=mark,proto3" json:"mark,omitempty"`
-	Sequence    int64  `protobuf:"varint,7,opt,name=sequence,proto3" json:"sequence,omitempty"`
-	BatchItemId []byte `protobuf:"bytes,8,opt,name=batchItemId,proto3" json:"batchItemId,omitempty"`
-	FeedMsgTime int32  `protobuf:"varint,9,opt,name=feedMsgTime,proto3" json:"feedMsgTime,omitempty"`
-	PbReserve   []byte `protobuf:"bytes,10,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	Filename    []byte `protobuf:"bytes,1,opt,name=filename" json:"filename,omitempty"`
+	FileSize    *int64 `protobuf:"varint,2,opt,name=fileSize" json:"fileSize,omitempty"`
+	FileId      []byte `protobuf:"bytes,3,opt,name=fileId" json:"fileId,omitempty"`
+	BatchId     []byte `protobuf:"bytes,4,opt,name=batchId" json:"batchId,omitempty"`
+	FileKey     []byte `protobuf:"bytes,5,opt,name=fileKey" json:"fileKey,omitempty"`
+	Mark        []byte `protobuf:"bytes,6,opt,name=mark" json:"mark,omitempty"`
+	Sequence    *int64 `protobuf:"varint,7,opt,name=sequence" json:"sequence,omitempty"`
+	BatchItemId []byte `protobuf:"bytes,8,opt,name=batchItemId" json:"batchItemId,omitempty"`
+	FeedMsgTime *int32 `protobuf:"varint,9,opt,name=feedMsgTime" json:"feedMsgTime,omitempty"`
+	PbReserve   []byte `protobuf:"bytes,10,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *GroupFile) Reset() {
@@ -3585,8 +3595,8 @@ func (x *GroupFile) GetFilename() []byte {
 }
 
 func (x *GroupFile) GetFileSize() int64 {
-	if x != nil {
-		return x.FileSize
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
 	}
 	return 0
 }
@@ -3620,8 +3630,8 @@ func (x *GroupFile) GetMark() []byte {
 }
 
 func (x *GroupFile) GetSequence() int64 {
-	if x != nil {
-		return x.Sequence
+	if x != nil && x.Sequence != nil {
+		return *x.Sequence
 	}
 	return 0
 }
@@ -3634,8 +3644,8 @@ func (x *GroupFile) GetBatchItemId() []byte {
 }
 
 func (x *GroupFile) GetFeedMsgTime() int32 {
-	if x != nil {
-		return x.FeedMsgTime
+	if x != nil && x.FeedMsgTime != nil {
+		return *x.FeedMsgTime
 	}
 	return 0
 }
@@ -3652,13 +3662,13 @@ type AnonymousGroupMessage struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Flags        int32  `protobuf:"varint,1,opt,name=flags,proto3" json:"flags,omitempty"`
-	AnonId       []byte `protobuf:"bytes,2,opt,name=anonId,proto3" json:"anonId,omitempty"`
-	AnonNick     []byte `protobuf:"bytes,3,opt,name=anonNick,proto3" json:"anonNick,omitempty"`
-	HeadPortrait int32  `protobuf:"varint,4,opt,name=headPortrait,proto3" json:"headPortrait,omitempty"`
-	ExpireTime   int32  `protobuf:"varint,5,opt,name=expireTime,proto3" json:"expireTime,omitempty"`
-	BubbleId     int32  `protobuf:"varint,6,opt,name=bubbleId,proto3" json:"bubbleId,omitempty"`
-	RankColor    []byte `protobuf:"bytes,7,opt,name=rankColor,proto3" json:"rankColor,omitempty"`
+	Flags        *int32 `protobuf:"varint,1,opt,name=flags" json:"flags,omitempty"`
+	AnonId       []byte `protobuf:"bytes,2,opt,name=anonId" json:"anonId,omitempty"`
+	AnonNick     []byte `protobuf:"bytes,3,opt,name=anonNick" json:"anonNick,omitempty"`
+	HeadPortrait *int32 `protobuf:"varint,4,opt,name=headPortrait" json:"headPortrait,omitempty"`
+	ExpireTime   *int32 `protobuf:"varint,5,opt,name=expireTime" json:"expireTime,omitempty"`
+	BubbleId     *int32 `protobuf:"varint,6,opt,name=bubbleId" json:"bubbleId,omitempty"`
+	RankColor    []byte `protobuf:"bytes,7,opt,name=rankColor" json:"rankColor,omitempty"`
 }
 
 func (x *AnonymousGroupMessage) Reset() {
@@ -3694,8 +3704,8 @@ func (*AnonymousGroupMessage) Descriptor() ([]byte, []int) {
 }
 
 func (x *AnonymousGroupMessage) GetFlags() int32 {
-	if x != nil {
-		return x.Flags
+	if x != nil && x.Flags != nil {
+		return *x.Flags
 	}
 	return 0
 }
@@ -3715,22 +3725,22 @@ func (x *AnonymousGroupMessage) GetAnonNick() []byte {
 }
 
 func (x *AnonymousGroupMessage) GetHeadPortrait() int32 {
-	if x != nil {
-		return x.HeadPortrait
+	if x != nil && x.HeadPortrait != nil {
+		return *x.HeadPortrait
 	}
 	return 0
 }
 
 func (x *AnonymousGroupMessage) GetExpireTime() int32 {
-	if x != nil {
-		return x.ExpireTime
+	if x != nil && x.ExpireTime != nil {
+		return *x.ExpireTime
 	}
 	return 0
 }
 
 func (x *AnonymousGroupMessage) GetBubbleId() int32 {
-	if x != nil {
-		return x.BubbleId
+	if x != nil && x.BubbleId != nil {
+		return *x.BubbleId
 	}
 	return 0
 }
@@ -3747,30 +3757,30 @@ type VideoFile struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FileUuid               []byte   `protobuf:"bytes,1,opt,name=fileUuid,proto3" json:"fileUuid,omitempty"`
-	FileMd5                []byte   `protobuf:"bytes,2,opt,name=fileMd5,proto3" json:"fileMd5,omitempty"`
-	FileName               []byte   `protobuf:"bytes,3,opt,name=fileName,proto3" json:"fileName,omitempty"`
-	FileFormat             int32    `protobuf:"varint,4,opt,name=fileFormat,proto3" json:"fileFormat,omitempty"`
-	FileTime               int32    `protobuf:"varint,5,opt,name=fileTime,proto3" json:"fileTime,omitempty"`
-	FileSize               int32    `protobuf:"varint,6,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
-	ThumbWidth             int32    `protobuf:"varint,7,opt,name=thumbWidth,proto3" json:"thumbWidth,omitempty"`
-	ThumbHeight            int32    `protobuf:"varint,8,opt,name=thumbHeight,proto3" json:"thumbHeight,omitempty"`
-	ThumbFileMd5           []byte   `protobuf:"bytes,9,opt,name=thumbFileMd5,proto3" json:"thumbFileMd5,omitempty"`
-	Source                 []byte   `protobuf:"bytes,10,opt,name=source,proto3" json:"source,omitempty"`
-	ThumbFileSize          int32    `protobuf:"varint,11,opt,name=thumbFileSize,proto3" json:"thumbFileSize,omitempty"`
-	BusiType               int32    `protobuf:"varint,12,opt,name=busiType,proto3" json:"busiType,omitempty"`
-	FromChatType           int32    `protobuf:"varint,13,opt,name=fromChatType,proto3" json:"fromChatType,omitempty"`
-	ToChatType             int32    `protobuf:"varint,14,opt,name=toChatType,proto3" json:"toChatType,omitempty"`
-	BoolSupportProgressive bool     `protobuf:"varint,15,opt,name=boolSupportProgressive,proto3" json:"boolSupportProgressive,omitempty"`
-	FileWidth              int32    `protobuf:"varint,16,opt,name=fileWidth,proto3" json:"fileWidth,omitempty"`
-	FileHeight             int32    `protobuf:"varint,17,opt,name=fileHeight,proto3" json:"fileHeight,omitempty"`
-	SubBusiType            int32    `protobuf:"varint,18,opt,name=subBusiType,proto3" json:"subBusiType,omitempty"`
-	VideoAttr              int32    `protobuf:"varint,19,opt,name=videoAttr,proto3" json:"videoAttr,omitempty"`
-	BytesThumbFileUrls     [][]byte `protobuf:"bytes,20,rep,name=bytesThumbFileUrls,proto3" json:"bytesThumbFileUrls,omitempty"`
-	BytesVideoFileUrls     [][]byte `protobuf:"bytes,21,rep,name=bytesVideoFileUrls,proto3" json:"bytesVideoFileUrls,omitempty"`
-	ThumbDownloadFlag      int32    `protobuf:"varint,22,opt,name=thumbDownloadFlag,proto3" json:"thumbDownloadFlag,omitempty"`
-	VideoDownloadFlag      int32    `protobuf:"varint,23,opt,name=videoDownloadFlag,proto3" json:"videoDownloadFlag,omitempty"`
-	PbReserve              []byte   `protobuf:"bytes,24,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	FileUuid               []byte   `protobuf:"bytes,1,opt,name=fileUuid" json:"fileUuid,omitempty"`
+	FileMd5                []byte   `protobuf:"bytes,2,opt,name=fileMd5" json:"fileMd5,omitempty"`
+	FileName               []byte   `protobuf:"bytes,3,opt,name=fileName" json:"fileName,omitempty"`
+	FileFormat             *int32   `protobuf:"varint,4,opt,name=fileFormat" json:"fileFormat,omitempty"`
+	FileTime               *int32   `protobuf:"varint,5,opt,name=fileTime" json:"fileTime,omitempty"`
+	FileSize               *int32   `protobuf:"varint,6,opt,name=fileSize" json:"fileSize,omitempty"`
+	ThumbWidth             *int32   `protobuf:"varint,7,opt,name=thumbWidth" json:"thumbWidth,omitempty"`
+	ThumbHeight            *int32   `protobuf:"varint,8,opt,name=thumbHeight" json:"thumbHeight,omitempty"`
+	ThumbFileMd5           []byte   `protobuf:"bytes,9,opt,name=thumbFileMd5" json:"thumbFileMd5,omitempty"`
+	Source                 []byte   `protobuf:"bytes,10,opt,name=source" json:"source,omitempty"`
+	ThumbFileSize          *int32   `protobuf:"varint,11,opt,name=thumbFileSize" json:"thumbFileSize,omitempty"`
+	BusiType               *int32   `protobuf:"varint,12,opt,name=busiType" json:"busiType,omitempty"`
+	FromChatType           *int32   `protobuf:"varint,13,opt,name=fromChatType" json:"fromChatType,omitempty"`
+	ToChatType             *int32   `protobuf:"varint,14,opt,name=toChatType" json:"toChatType,omitempty"`
+	BoolSupportProgressive *bool    `protobuf:"varint,15,opt,name=boolSupportProgressive" json:"boolSupportProgressive,omitempty"`
+	FileWidth              *int32   `protobuf:"varint,16,opt,name=fileWidth" json:"fileWidth,omitempty"`
+	FileHeight             *int32   `protobuf:"varint,17,opt,name=fileHeight" json:"fileHeight,omitempty"`
+	SubBusiType            *int32   `protobuf:"varint,18,opt,name=subBusiType" json:"subBusiType,omitempty"`
+	VideoAttr              *int32   `protobuf:"varint,19,opt,name=videoAttr" json:"videoAttr,omitempty"`
+	BytesThumbFileUrls     [][]byte `protobuf:"bytes,20,rep,name=bytesThumbFileUrls" json:"bytesThumbFileUrls,omitempty"`
+	BytesVideoFileUrls     [][]byte `protobuf:"bytes,21,rep,name=bytesVideoFileUrls" json:"bytesVideoFileUrls,omitempty"`
+	ThumbDownloadFlag      *int32   `protobuf:"varint,22,opt,name=thumbDownloadFlag" json:"thumbDownloadFlag,omitempty"`
+	VideoDownloadFlag      *int32   `protobuf:"varint,23,opt,name=videoDownloadFlag" json:"videoDownloadFlag,omitempty"`
+	PbReserve              []byte   `protobuf:"bytes,24,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *VideoFile) Reset() {
@@ -3827,36 +3837,36 @@ func (x *VideoFile) GetFileName() []byte {
 }
 
 func (x *VideoFile) GetFileFormat() int32 {
-	if x != nil {
-		return x.FileFormat
+	if x != nil && x.FileFormat != nil {
+		return *x.FileFormat
 	}
 	return 0
 }
 
 func (x *VideoFile) GetFileTime() int32 {
-	if x != nil {
-		return x.FileTime
+	if x != nil && x.FileTime != nil {
+		return *x.FileTime
 	}
 	return 0
 }
 
 func (x *VideoFile) GetFileSize() int32 {
-	if x != nil {
-		return x.FileSize
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
 	}
 	return 0
 }
 
 func (x *VideoFile) GetThumbWidth() int32 {
-	if x != nil {
-		return x.ThumbWidth
+	if x != nil && x.ThumbWidth != nil {
+		return *x.ThumbWidth
 	}
 	return 0
 }
 
 func (x *VideoFile) GetThumbHeight() int32 {
-	if x != nil {
-		return x.ThumbHeight
+	if x != nil && x.ThumbHeight != nil {
+		return *x.ThumbHeight
 	}
 	return 0
 }
@@ -3876,64 +3886,64 @@ func (x *VideoFile) GetSource() []byte {
 }
 
 func (x *VideoFile) GetThumbFileSize() int32 {
-	if x != nil {
-		return x.ThumbFileSize
+	if x != nil && x.ThumbFileSize != nil {
+		return *x.ThumbFileSize
 	}
 	return 0
 }
 
 func (x *VideoFile) GetBusiType() int32 {
-	if x != nil {
-		return x.BusiType
+	if x != nil && x.BusiType != nil {
+		return *x.BusiType
 	}
 	return 0
 }
 
 func (x *VideoFile) GetFromChatType() int32 {
-	if x != nil {
-		return x.FromChatType
+	if x != nil && x.FromChatType != nil {
+		return *x.FromChatType
 	}
 	return 0
 }
 
 func (x *VideoFile) GetToChatType() int32 {
-	if x != nil {
-		return x.ToChatType
+	if x != nil && x.ToChatType != nil {
+		return *x.ToChatType
 	}
 	return 0
 }
 
 func (x *VideoFile) GetBoolSupportProgressive() bool {
-	if x != nil {
-		return x.BoolSupportProgressive
+	if x != nil && x.BoolSupportProgressive != nil {
+		return *x.BoolSupportProgressive
 	}
 	return false
 }
 
 func (x *VideoFile) GetFileWidth() int32 {
-	if x != nil {
-		return x.FileWidth
+	if x != nil && x.FileWidth != nil {
+		return *x.FileWidth
 	}
 	return 0
 }
 
 func (x *VideoFile) GetFileHeight() int32 {
-	if x != nil {
-		return x.FileHeight
+	if x != nil && x.FileHeight != nil {
+		return *x.FileHeight
 	}
 	return 0
 }
 
 func (x *VideoFile) GetSubBusiType() int32 {
-	if x != nil {
-		return x.SubBusiType
+	if x != nil && x.SubBusiType != nil {
+		return *x.SubBusiType
 	}
 	return 0
 }
 
 func (x *VideoFile) GetVideoAttr() int32 {
-	if x != nil {
-		return x.VideoAttr
+	if x != nil && x.VideoAttr != nil {
+		return *x.VideoAttr
 	}
 	return 0
 }
@@ -3953,15 +3963,15 @@ func (x *VideoFile) GetBytesVideoFileUrls() [][]byte {
 }
 
 func (x *VideoFile) GetThumbDownloadFlag() int32 {
-	if x != nil {
-		return x.ThumbDownloadFlag
+	if x != nil && x.ThumbDownloadFlag != nil {
+		return *x.ThumbDownloadFlag
 	}
 	return 0
 }
 
 func (x *VideoFile) GetVideoDownloadFlag() int32 {
-	if x != nil {
-		return x.VideoDownloadFlag
+	if x != nil && x.VideoDownloadFlag != nil {
+		return *x.VideoDownloadFlag
 	}
 	return 0
 }
@@ -3978,17 +3988,17 @@ type SourceMsg struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	OrigSeqs  []int32 `protobuf:"varint,1,rep,packed,name=origSeqs,proto3" json:"origSeqs,omitempty"`
-	SenderUin int64   `protobuf:"varint,2,opt,name=senderUin,proto3" json:"senderUin,omitempty"`
-	Time      int32   `protobuf:"varint,3,opt,name=time,proto3" json:"time,omitempty"`
-	Flag      int32   `protobuf:"varint,4,opt,name=flag,proto3" json:"flag,omitempty"`
-	Elems     []*Elem `protobuf:"bytes,5,rep,name=elems,proto3" json:"elems,omitempty"`
-	Type      int32   `protobuf:"varint,6,opt,name=type,proto3" json:"type,omitempty"`
-	RichMsg   []byte  `protobuf:"bytes,7,opt,name=richMsg,proto3" json:"richMsg,omitempty"`
-	PbReserve []byte  `protobuf:"bytes,8,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
-	SrcMsg    []byte  `protobuf:"bytes,9,opt,name=srcMsg,proto3" json:"srcMsg,omitempty"`
-	ToUin     int64   `protobuf:"varint,10,opt,name=toUin,proto3" json:"toUin,omitempty"`
-	TroopName []byte  `protobuf:"bytes,11,opt,name=troopName,proto3" json:"troopName,omitempty"`
+	OrigSeqs  []int32 `protobuf:"varint,1,rep,name=origSeqs" json:"origSeqs,omitempty"`
+	SenderUin *int64  `protobuf:"varint,2,opt,name=senderUin" json:"senderUin,omitempty"`
+	Time      *int32  `protobuf:"varint,3,opt,name=time" json:"time,omitempty"`
+	Flag      *int32  `protobuf:"varint,4,opt,name=flag" json:"flag,omitempty"`
+	Elems     []*Elem `protobuf:"bytes,5,rep,name=elems" json:"elems,omitempty"`
+	Type      *int32  `protobuf:"varint,6,opt,name=type" json:"type,omitempty"`
+	RichMsg   []byte  `protobuf:"bytes,7,opt,name=richMsg" json:"richMsg,omitempty"`
+	PbReserve []byte  `protobuf:"bytes,8,opt,name=pbReserve" json:"pbReserve,omitempty"`
+	SrcMsg    []byte  `protobuf:"bytes,9,opt,name=srcMsg" json:"srcMsg,omitempty"`
+	ToUin     *int64  `protobuf:"varint,10,opt,name=toUin" json:"toUin,omitempty"`
+	TroopName []byte  `protobuf:"bytes,11,opt,name=troopName" json:"troopName,omitempty"`
 }
 
 func (x *SourceMsg) Reset() {
@@ -4031,22 +4041,22 @@ func (x *SourceMsg) GetOrigSeqs() []int32 {
 }
 
 func (x *SourceMsg) GetSenderUin() int64 {
-	if x != nil {
-		return x.SenderUin
+	if x != nil && x.SenderUin != nil {
+		return *x.SenderUin
 	}
 	return 0
 }
 
 func (x *SourceMsg) GetTime() int32 {
-	if x != nil {
-		return x.Time
+	if x != nil && x.Time != nil {
+		return *x.Time
 	}
 	return 0
 }
 
 func (x *SourceMsg) GetFlag() int32 {
-	if x != nil {
-		return x.Flag
+	if x != nil && x.Flag != nil {
+		return *x.Flag
 	}
 	return 0
 }
@@ -4059,8 +4069,8 @@ func (x *SourceMsg) GetElems() []*Elem {
 }
 
 func (x *SourceMsg) GetType() int32 {
-	if x != nil {
-		return x.Type
+	if x != nil && x.Type != nil {
+		return *x.Type
 	}
 	return 0
 }
@@ -4087,8 +4097,8 @@ func (x *SourceMsg) GetSrcMsg() []byte {
 }
 
 func (x *SourceMsg) GetToUin() int64 {
-	if x != nil {
-		return x.ToUin
+	if x != nil && x.ToUin != nil {
+		return *x.ToUin
 	}
 	return 0
 }
@@ -4105,9 +4115,9 @@ type Face struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Index int32  `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
-	Old   []byte `protobuf:"bytes,2,opt,name=old,proto3" json:"old,omitempty"`
-	Buf   []byte `protobuf:"bytes,11,opt,name=buf,proto3" json:"buf,omitempty"`
+	Index *int32 `protobuf:"varint,1,opt,name=index" json:"index,omitempty"`
+	Old   []byte `protobuf:"bytes,2,opt,name=old" json:"old,omitempty"`
+	Buf   []byte `protobuf:"bytes,11,opt,name=buf" json:"buf,omitempty"`
 }
 
 func (x *Face) Reset() {
@@ -4143,8 +4153,8 @@ func (*Face) Descriptor() ([]byte, []int) {
 }
 
 func (x *Face) GetIndex() int32 {
-	if x != nil {
-		return x.Index
+	if x != nil && x.Index != nil {
+		return *x.Index
 	}
 	return 0
 }
@@ -4168,8 +4178,8 @@ type LightAppElem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Data     []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	MsgResid []byte `protobuf:"bytes,2,opt,name=msgResid,proto3" json:"msgResid,omitempty"`
+	Data     []byte `protobuf:"bytes,1,opt,name=data" json:"data,omitempty"`
+	MsgResid []byte `protobuf:"bytes,2,opt,name=msgResid" json:"msgResid,omitempty"`
 }
 
 func (x *LightAppElem) Reset() {
@@ -4223,40 +4233,40 @@ type CustomFace struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Guid        []byte `protobuf:"bytes,1,opt,name=guid,proto3" json:"guid,omitempty"`
-	FilePath    string `protobuf:"bytes,2,opt,name=filePath,proto3" json:"filePath,omitempty"`
-	Shortcut    string `protobuf:"bytes,3,opt,name=shortcut,proto3" json:"shortcut,omitempty"`
-	Buffer      []byte `protobuf:"bytes,4,opt,name=buffer,proto3" json:"buffer,omitempty"`
-	Flag        []byte `protobuf:"bytes,5,opt,name=flag,proto3" json:"flag,omitempty"`
-	OldData     []byte `protobuf:"bytes,6,opt,name=oldData,proto3" json:"oldData,omitempty"`
-	FileId      int32  `protobuf:"varint,7,opt,name=fileId,proto3" json:"fileId,omitempty"`
-	ServerIp    int32  `protobuf:"varint,8,opt,name=serverIp,proto3" json:"serverIp,omitempty"`
-	ServerPort  int32  `protobuf:"varint,9,opt,name=serverPort,proto3" json:"serverPort,omitempty"`
-	FileType    int32  `protobuf:"varint,10,opt,name=fileType,proto3" json:"fileType,omitempty"`
-	Signature   []byte `protobuf:"bytes,11,opt,name=signature,proto3" json:"signature,omitempty"`
-	Useful      int32  `protobuf:"varint,12,opt,name=useful,proto3" json:"useful,omitempty"`
-	Md5         []byte `protobuf:"bytes,13,opt,name=md5,proto3" json:"md5,omitempty"`
-	ThumbUrl    string `protobuf:"bytes,14,opt,name=thumbUrl,proto3" json:"thumbUrl,omitempty"`
-	BigUrl      string `protobuf:"bytes,15,opt,name=bigUrl,proto3" json:"bigUrl,omitempty"`
-	OrigUrl     string `protobuf:"bytes,16,opt,name=origUrl,proto3" json:"origUrl,omitempty"`
-	BizType     int32  `protobuf:"varint,17,opt,name=bizType,proto3" json:"bizType,omitempty"`
-	RepeatIndex int32  `protobuf:"varint,18,opt,name=repeatIndex,proto3" json:"repeatIndex,omitempty"`
-	RepeatImage int32  `protobuf:"varint,19,opt,name=repeatImage,proto3" json:"repeatImage,omitempty"`
-	ImageType   int32  `protobuf:"varint,20,opt,name=imageType,proto3" json:"imageType,omitempty"`
-	Index       int32  `protobuf:"varint,21,opt,name=index,proto3" json:"index,omitempty"`
-	Width       int32  `protobuf:"varint,22,opt,name=width,proto3" json:"width,omitempty"`
-	Height      int32  `protobuf:"varint,23,opt,name=height,proto3" json:"height,omitempty"`
-	Source      int32  `protobuf:"varint,24,opt,name=source,proto3" json:"source,omitempty"`
-	Size        int32  `protobuf:"varint,25,opt,name=size,proto3" json:"size,omitempty"`
-	Origin      int32  `protobuf:"varint,26,opt,name=origin,proto3" json:"origin,omitempty"`
-	ThumbWidth  int32  `protobuf:"varint,27,opt,name=thumbWidth,proto3" json:"thumbWidth,omitempty"`
-	ThumbHeight int32  `protobuf:"varint,28,opt,name=thumbHeight,proto3" json:"thumbHeight,omitempty"`
-	ShowLen     int32  `protobuf:"varint,29,opt,name=showLen,proto3" json:"showLen,omitempty"`
-	DownloadLen int32  `protobuf:"varint,30,opt,name=downloadLen,proto3" json:"downloadLen,omitempty"`
-	X400Url     string `protobuf:"bytes,31,opt,name=_400Url,json=400Url,proto3" json:"_400Url,omitempty"`
-	X400Width   int32  `protobuf:"varint,32,opt,name=_400Width,json=400Width,proto3" json:"_400Width,omitempty"`
-	X400Height  int32  `protobuf:"varint,33,opt,name=_400Height,json=400Height,proto3" json:"_400Height,omitempty"`
-	PbReserve   []byte `protobuf:"bytes,34,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	Guid        []byte  `protobuf:"bytes,1,opt,name=guid" json:"guid,omitempty"`
+	FilePath    *string `protobuf:"bytes,2,opt,name=filePath" json:"filePath,omitempty"`
+	Shortcut    *string `protobuf:"bytes,3,opt,name=shortcut" json:"shortcut,omitempty"`
+	Buffer      []byte  `protobuf:"bytes,4,opt,name=buffer" json:"buffer,omitempty"`
+	Flag        []byte  `protobuf:"bytes,5,opt,name=flag" json:"flag,omitempty"`
+	OldData     []byte  `protobuf:"bytes,6,opt,name=oldData" json:"oldData,omitempty"`
+	FileId      *int32  `protobuf:"varint,7,opt,name=fileId" json:"fileId,omitempty"`
+	ServerIp    *int32  `protobuf:"varint,8,opt,name=serverIp" json:"serverIp,omitempty"`
+	ServerPort  *int32  `protobuf:"varint,9,opt,name=serverPort" json:"serverPort,omitempty"`
+	FileType    *int32  `protobuf:"varint,10,opt,name=fileType" json:"fileType,omitempty"`
+	Signature   []byte  `protobuf:"bytes,11,opt,name=signature" json:"signature,omitempty"`
+	Useful      *int32  `protobuf:"varint,12,opt,name=useful" json:"useful,omitempty"`
+	Md5         []byte  `protobuf:"bytes,13,opt,name=md5" json:"md5,omitempty"`
+	ThumbUrl    *string `protobuf:"bytes,14,opt,name=thumbUrl" json:"thumbUrl,omitempty"`
+	BigUrl      *string `protobuf:"bytes,15,opt,name=bigUrl" json:"bigUrl,omitempty"`
+	OrigUrl     *string `protobuf:"bytes,16,opt,name=origUrl" json:"origUrl,omitempty"`
+	BizType     *int32  `protobuf:"varint,17,opt,name=bizType" json:"bizType,omitempty"`
+	RepeatIndex *int32  `protobuf:"varint,18,opt,name=repeatIndex" json:"repeatIndex,omitempty"`
+	RepeatImage *int32  `protobuf:"varint,19,opt,name=repeatImage" json:"repeatImage,omitempty"`
+	ImageType   *int32  `protobuf:"varint,20,opt,name=imageType" json:"imageType,omitempty"`
+	Index       *int32  `protobuf:"varint,21,opt,name=index" json:"index,omitempty"`
+	Width       *int32  `protobuf:"varint,22,opt,name=width" json:"width,omitempty"`
+	Height      *int32  `protobuf:"varint,23,opt,name=height" json:"height,omitempty"`
+	Source      *int32  `protobuf:"varint,24,opt,name=source" json:"source,omitempty"`
+	Size        *int32  `protobuf:"varint,25,opt,name=size" json:"size,omitempty"`
+	Origin      *int32  `protobuf:"varint,26,opt,name=origin" json:"origin,omitempty"`
+	ThumbWidth  *int32  `protobuf:"varint,27,opt,name=thumbWidth" json:"thumbWidth,omitempty"`
+	ThumbHeight *int32  `protobuf:"varint,28,opt,name=thumbHeight" json:"thumbHeight,omitempty"`
+	ShowLen     *int32  `protobuf:"varint,29,opt,name=showLen" json:"showLen,omitempty"`
+	DownloadLen *int32  `protobuf:"varint,30,opt,name=downloadLen" json:"downloadLen,omitempty"`
+	X400Url     *string `protobuf:"bytes,31,opt,name=_400Url,json=400Url" json:"_400Url,omitempty"`
+	X400Width   *int32  `protobuf:"varint,32,opt,name=_400Width,json=400Width" json:"_400Width,omitempty"`
+	X400Height  *int32  `protobuf:"varint,33,opt,name=_400Height,json=400Height" json:"_400Height,omitempty"`
+	PbReserve   []byte  `protobuf:"bytes,34,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *CustomFace) Reset() {
@@ -4299,15 +4309,15 @@ func (x *CustomFace) GetGuid() []byte {
 }
 
 func (x *CustomFace) GetFilePath() string {
-	if x != nil {
-		return x.FilePath
+	if x != nil && x.FilePath != nil {
+		return *x.FilePath
 	}
 	return ""
 }
 
 func (x *CustomFace) GetShortcut() string {
-	if x != nil {
-		return x.Shortcut
+	if x != nil && x.Shortcut != nil {
+		return *x.Shortcut
 	}
 	return ""
 }
@@ -4334,29 +4344,29 @@ func (x *CustomFace) GetOldData() []byte {
 }
 
 func (x *CustomFace) GetFileId() int32 {
-	if x != nil {
-		return x.FileId
+	if x != nil && x.FileId != nil {
+		return *x.FileId
 	}
 	return 0
 }
 
 func (x *CustomFace) GetServerIp() int32 {
-	if x != nil {
-		return x.ServerIp
+	if x != nil && x.ServerIp != nil {
+		return *x.ServerIp
 	}
 	return 0
 }
 
 func (x *CustomFace) GetServerPort() int32 {
-	if x != nil {
-		return x.ServerPort
+	if x != nil && x.ServerPort != nil {
+		return *x.ServerPort
 	}
 	return 0
 }
 
 func (x *CustomFace) GetFileType() int32 {
-	if x != nil {
-		return x.FileType
+	if x != nil && x.FileType != nil {
+		return *x.FileType
 	}
 	return 0
 }
@@ -4369,8 +4379,8 @@ func (x *CustomFace) GetSignature() []byte {
 }
 
 func (x *CustomFace) GetUseful() int32 {
-	if x != nil {
-		return x.Useful
+	if x != nil && x.Useful != nil {
+		return *x.Useful
 	}
 	return 0
 }
@@ -4383,141 +4393,141 @@ func (x *CustomFace) GetMd5() []byte {
 }
 
 func (x *CustomFace) GetThumbUrl() string {
-	if x != nil {
-		return x.ThumbUrl
+	if x != nil && x.ThumbUrl != nil {
+		return *x.ThumbUrl
 	}
 	return ""
 }
 
 func (x *CustomFace) GetBigUrl() string {
-	if x != nil {
-		return x.BigUrl
+	if x != nil && x.BigUrl != nil {
+		return *x.BigUrl
 	}
 	return ""
 }
 
 func (x *CustomFace) GetOrigUrl() string {
-	if x != nil {
-		return x.OrigUrl
+	if x != nil && x.OrigUrl != nil {
+		return *x.OrigUrl
 	}
 	return ""
 }
 
 func (x *CustomFace) GetBizType() int32 {
-	if x != nil {
-		return x.BizType
+	if x != nil && x.BizType != nil {
+		return *x.BizType
 	}
 	return 0
 }
 
 func (x *CustomFace) GetRepeatIndex() int32 {
-	if x != nil {
-		return x.RepeatIndex
+	if x != nil && x.RepeatIndex != nil {
+		return *x.RepeatIndex
 	}
 	return 0
 }
 
 func (x *CustomFace) GetRepeatImage() int32 {
-	if x != nil {
-		return x.RepeatImage
+	if x != nil && x.RepeatImage != nil {
+		return *x.RepeatImage
 	}
 	return 0
 }
 
 func (x *CustomFace) GetImageType() int32 {
-	if x != nil {
-		return x.ImageType
+	if x != nil && x.ImageType != nil {
+		return *x.ImageType
 	}
 	return 0
 }
 
 func (x *CustomFace) GetIndex() int32 {
-	if x != nil {
-		return x.Index
+	if x != nil && x.Index != nil {
+		return *x.Index
 	}
 	return 0
 }
 
 func (x *CustomFace) GetWidth() int32 {
-	if x != nil {
-		return x.Width
+	if x != nil && x.Width != nil {
+		return *x.Width
 	}
 	return 0
 }
 
 func (x *CustomFace) GetHeight() int32 {
-	if x != nil {
-		return x.Height
+	if x != nil && x.Height != nil {
+		return *x.Height
 	}
 	return 0
 }
 
 func (x *CustomFace) GetSource() int32 {
-	if x != nil {
-		return x.Source
+	if x != nil && x.Source != nil {
+		return *x.Source
 	}
 	return 0
 }
 
 func (x *CustomFace) GetSize() int32 {
-	if x != nil {
-		return x.Size
+	if x != nil && x.Size != nil {
+		return *x.Size
 	}
 	return 0
 }
 
 func (x *CustomFace) GetOrigin() int32 {
-	if x != nil {
-		return x.Origin
+	if x != nil && x.Origin != nil {
+		return *x.Origin
 	}
 	return 0
 }
 
 func (x *CustomFace) GetThumbWidth() int32 {
-	if x != nil {
-		return x.ThumbWidth
+	if x != nil && x.ThumbWidth != nil {
+		return *x.ThumbWidth
 	}
 	return 0
 }
 
 func (x *CustomFace) GetThumbHeight() int32 {
-	if x != nil {
-		return x.ThumbHeight
+	if x != nil && x.ThumbHeight != nil {
+		return *x.ThumbHeight
 	}
 	return 0
 }
 
 func (x *CustomFace) GetShowLen() int32 {
-	if x != nil {
-		return x.ShowLen
+	if x != nil && x.ShowLen != nil {
+		return *x.ShowLen
 	}
 	return 0
 }
 
 func (x *CustomFace) GetDownloadLen() int32 {
-	if x != nil {
-		return x.DownloadLen
+	if x != nil && x.DownloadLen != nil {
+		return *x.DownloadLen
 	}
 	return 0
 }
 
 func (x *CustomFace) GetX400Url() string {
-	if x != nil {
-		return x.X400Url
+	if x != nil && x.X400Url != nil {
+		return *x.X400Url
 	}
 	return ""
 }
 
 func (x *CustomFace) GetX400Width() int32 {
-	if x != nil {
-		return x.X400Width
+	if x != nil && x.X400Width != nil {
+		return *x.X400Width
 	}
 	return 0
 }
 
 func (x *CustomFace) GetX400Height() int32 {
-	if x != nil {
-		return x.X400Height
+	if x != nil && x.X400Height != nil {
+		return *x.X400Height
 	}
 	return 0
 }
@@ -4534,10 +4544,10 @@ type ContentHead struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	PkgNum    int32 `protobuf:"varint,1,opt,name=pkgNum,proto3" json:"pkgNum,omitempty"`
-	PkgIndex  int32 `protobuf:"varint,2,opt,name=pkgIndex,proto3" json:"pkgIndex,omitempty"`
-	DivSeq    int32 `protobuf:"varint,3,opt,name=divSeq,proto3" json:"divSeq,omitempty"`
-	AutoReply int32 `protobuf:"varint,4,opt,name=autoReply,proto3" json:"autoReply,omitempty"`
+	PkgNum    *int32 `protobuf:"varint,1,opt,name=pkgNum" json:"pkgNum,omitempty"`
+	PkgIndex  *int32 `protobuf:"varint,2,opt,name=pkgIndex" json:"pkgIndex,omitempty"`
+	DivSeq    *int32 `protobuf:"varint,3,opt,name=divSeq" json:"divSeq,omitempty"`
+	AutoReply *int32 `protobuf:"varint,4,opt,name=autoReply" json:"autoReply,omitempty"`
 }
 
 func (x *ContentHead) Reset() {
@@ -4573,29 +4583,29 @@ func (*ContentHead) Descriptor() ([]byte, []int) {
 }
 
 func (x *ContentHead) GetPkgNum() int32 {
-	if x != nil {
-		return x.PkgNum
+	if x != nil && x.PkgNum != nil {
+		return *x.PkgNum
 	}
 	return 0
 }
 
 func (x *ContentHead) GetPkgIndex() int32 {
-	if x != nil {
-		return x.PkgIndex
+	if x != nil && x.PkgIndex != nil {
+		return *x.PkgIndex
 	}
 	return 0
 }
 
 func (x *ContentHead) GetDivSeq() int32 {
-	if x != nil {
-		return x.DivSeq
+	if x != nil && x.DivSeq != nil {
+		return *x.DivSeq
 	}
 	return 0
 }
 
 func (x *ContentHead) GetAutoReply() int32 {
-	if x != nil {
-		return x.AutoReply
+	if x != nil && x.AutoReply != nil {
+		return *x.AutoReply
 	}
 	return 0
 }
@@ -4605,34 +4615,34 @@ type MessageHead struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FromUin                    int64               `protobuf:"varint,1,opt,name=fromUin,proto3" json:"fromUin,omitempty"`
-	ToUin                      int64               `protobuf:"varint,2,opt,name=toUin,proto3" json:"toUin,omitempty"`
-	MsgType                    int32               `protobuf:"varint,3,opt,name=msgType,proto3" json:"msgType,omitempty"`
-	C2CCmd                     int32               `protobuf:"varint,4,opt,name=c2cCmd,proto3" json:"c2cCmd,omitempty"`
-	MsgSeq                     int32               `protobuf:"varint,5,opt,name=msgSeq,proto3" json:"msgSeq,omitempty"`
-	MsgTime                    int32               `protobuf:"varint,6,opt,name=msgTime,proto3" json:"msgTime,omitempty"`
-	MsgUid                     int64               `protobuf:"varint,7,opt,name=msgUid,proto3" json:"msgUid,omitempty"`
-	C2CTmpMsgHead              *C2CTempMessageHead `protobuf:"bytes,8,opt,name=c2cTmpMsgHead,proto3" json:"c2cTmpMsgHead,omitempty"`
-	GroupInfo                  *GroupInfo          `protobuf:"bytes,9,opt,name=groupInfo,proto3" json:"groupInfo,omitempty"`
-	FromAppid                  int32               `protobuf:"varint,10,opt,name=fromAppid,proto3" json:"fromAppid,omitempty"`
-	FromInstid                 int32               `protobuf:"varint,11,opt,name=fromInstid,proto3" json:"fromInstid,omitempty"`
-	UserActive                 int32               `protobuf:"varint,12,opt,name=userActive,proto3" json:"userActive,omitempty"`
-	DiscussInfo                *DiscussInfo        `protobuf:"bytes,13,opt,name=discussInfo,proto3" json:"discussInfo,omitempty"`
-	FromNick                   string              `protobuf:"bytes,14,opt,name=fromNick,proto3" json:"fromNick,omitempty"`
-	AuthUin                    int64               `protobuf:"varint,15,opt,name=authUin,proto3" json:"authUin,omitempty"`
-	AuthNick                   string              `protobuf:"bytes,16,opt,name=authNick,proto3" json:"authNick,omitempty"`
-	MsgFlag                    int32               `protobuf:"varint,17,opt,name=msgFlag,proto3" json:"msgFlag,omitempty"`
-	AuthRemark                 string              `protobuf:"bytes,18,opt,name=authRemark,proto3" json:"authRemark,omitempty"`
-	GroupName                  string              `protobuf:"bytes,19,opt,name=groupName,proto3" json:"groupName,omitempty"`
-	MutiltransHead             *MutilTransHead     `protobuf:"bytes,20,opt,name=mutiltransHead,proto3" json:"mutiltransHead,omitempty"`
-	MsgInstCtrl                *InstCtrl           `protobuf:"bytes,21,opt,name=msgInstCtrl,proto3" json:"msgInstCtrl,omitempty"`
-	PublicAccountGroupSendFlag int32               `protobuf:"varint,22,opt,name=publicAccountGroupSendFlag,proto3" json:"publicAccountGroupSendFlag,omitempty"`
-	WseqInC2CMsghead           int32               `protobuf:"varint,23,opt,name=wseqInC2cMsghead,proto3" json:"wseqInC2cMsghead,omitempty"`
-	Cpid                       int64               `protobuf:"varint,24,opt,name=cpid,proto3" json:"cpid,omitempty"`
-	ExtGroupKeyInfo            *ExtGroupKeyInfo    `protobuf:"bytes,25,opt,name=extGroupKeyInfo,proto3" json:"extGroupKeyInfo,omitempty"`
-	MultiCompatibleText        string              `protobuf:"bytes,26,opt,name=multiCompatibleText,proto3" json:"multiCompatibleText,omitempty"`
-	AuthSex                    int32               `protobuf:"varint,27,opt,name=authSex,proto3" json:"authSex,omitempty"`
-	IsSrcMsg                   bool                `protobuf:"varint,28,opt,name=isSrcMsg,proto3" json:"isSrcMsg,omitempty"`
+	FromUin                    *int64              `protobuf:"varint,1,opt,name=fromUin" json:"fromUin,omitempty"`
+	ToUin                      *int64              `protobuf:"varint,2,opt,name=toUin" json:"toUin,omitempty"`
+	MsgType                    *int32              `protobuf:"varint,3,opt,name=msgType" json:"msgType,omitempty"`
+	C2CCmd                     *int32              `protobuf:"varint,4,opt,name=c2cCmd" json:"c2cCmd,omitempty"`
+	MsgSeq                     *int32              `protobuf:"varint,5,opt,name=msgSeq" json:"msgSeq,omitempty"`
+	MsgTime                    *int32              `protobuf:"varint,6,opt,name=msgTime" json:"msgTime,omitempty"`
+	MsgUid                     *int64              `protobuf:"varint,7,opt,name=msgUid" json:"msgUid,omitempty"`
+	C2CTmpMsgHead              *C2CTempMessageHead `protobuf:"bytes,8,opt,name=c2cTmpMsgHead" json:"c2cTmpMsgHead,omitempty"`
+	GroupInfo                  *GroupInfo          `protobuf:"bytes,9,opt,name=groupInfo" json:"groupInfo,omitempty"`
+	FromAppid                  *int32              `protobuf:"varint,10,opt,name=fromAppid" json:"fromAppid,omitempty"`
+	FromInstid                 *int32              `protobuf:"varint,11,opt,name=fromInstid" json:"fromInstid,omitempty"`
+	UserActive                 *int32              `protobuf:"varint,12,opt,name=userActive" json:"userActive,omitempty"`
+	DiscussInfo                *DiscussInfo        `protobuf:"bytes,13,opt,name=discussInfo" json:"discussInfo,omitempty"`
+	FromNick                   *string             `protobuf:"bytes,14,opt,name=fromNick" json:"fromNick,omitempty"`
+	AuthUin                    *int64              `protobuf:"varint,15,opt,name=authUin" json:"authUin,omitempty"`
+	AuthNick                   *string             `protobuf:"bytes,16,opt,name=authNick" json:"authNick,omitempty"`
+	MsgFlag                    *int32              `protobuf:"varint,17,opt,name=msgFlag" json:"msgFlag,omitempty"`
+	AuthRemark                 *string             `protobuf:"bytes,18,opt,name=authRemark" json:"authRemark,omitempty"`
+	GroupName                  *string             `protobuf:"bytes,19,opt,name=groupName" json:"groupName,omitempty"`
+	MutiltransHead             *MutilTransHead     `protobuf:"bytes,20,opt,name=mutiltransHead" json:"mutiltransHead,omitempty"`
+	MsgInstCtrl                *InstCtrl           `protobuf:"bytes,21,opt,name=msgInstCtrl" json:"msgInstCtrl,omitempty"`
+	PublicAccountGroupSendFlag *int32              `protobuf:"varint,22,opt,name=publicAccountGroupSendFlag" json:"publicAccountGroupSendFlag,omitempty"`
+	WseqInC2CMsghead           *int32              `protobuf:"varint,23,opt,name=wseqInC2cMsghead" json:"wseqInC2cMsghead,omitempty"`
+	Cpid                       *int64              `protobuf:"varint,24,opt,name=cpid" json:"cpid,omitempty"`
+	ExtGroupKeyInfo            *ExtGroupKeyInfo    `protobuf:"bytes,25,opt,name=extGroupKeyInfo" json:"extGroupKeyInfo,omitempty"`
+	MultiCompatibleText        *string             `protobuf:"bytes,26,opt,name=multiCompatibleText" json:"multiCompatibleText,omitempty"`
+	AuthSex                    *int32              `protobuf:"varint,27,opt,name=authSex" json:"authSex,omitempty"`
+	IsSrcMsg                   *bool               `protobuf:"varint,28,opt,name=isSrcMsg" json:"isSrcMsg,omitempty"`
 }
 
 func (x *MessageHead) Reset() {
@@ -4668,50 +4678,50 @@ func (*MessageHead) Descriptor() ([]byte, []int) {
 }
 
 func (x *MessageHead) GetFromUin() int64 {
-	if x != nil {
-		return x.FromUin
+	if x != nil && x.FromUin != nil {
+		return *x.FromUin
 	}
 	return 0
 }
 
 func (x *MessageHead) GetToUin() int64 {
-	if x != nil {
-		return x.ToUin
+	if x != nil && x.ToUin != nil {
+		return *x.ToUin
 	}
 	return 0
 }
 
 func (x *MessageHead) GetMsgType() int32 {
-	if x != nil {
-		return x.MsgType
+	if x != nil && x.MsgType != nil {
+		return *x.MsgType
 	}
 	return 0
 }
 
 func (x *MessageHead) GetC2CCmd() int32 {
-	if x != nil {
-		return x.C2CCmd
+	if x != nil && x.C2CCmd != nil {
+		return *x.C2CCmd
 	}
 	return 0
 }
 
 func (x *MessageHead) GetMsgSeq() int32 {
-	if x != nil {
-		return x.MsgSeq
+	if x != nil && x.MsgSeq != nil {
+		return *x.MsgSeq
 	}
 	return 0
 }
 
 func (x *MessageHead) GetMsgTime() int32 {
-	if x != nil {
-		return x.MsgTime
+	if x != nil && x.MsgTime != nil {
+		return *x.MsgTime
 	}
 	return 0
 }
 
 func (x *MessageHead) GetMsgUid() int64 {
-	if x != nil {
-		return x.MsgUid
+	if x != nil && x.MsgUid != nil {
+		return *x.MsgUid
 	}
 	return 0
 }
@@ -4731,22 +4741,22 @@ func (x *MessageHead) GetGroupInfo() *GroupInfo {
 }
 
 func (x *MessageHead) GetFromAppid() int32 {
-	if x != nil {
-		return x.FromAppid
+	if x != nil && x.FromAppid != nil {
+		return *x.FromAppid
 	}
 	return 0
 }
 
 func (x *MessageHead) GetFromInstid() int32 {
-	if x != nil {
-		return x.FromInstid
+	if x != nil && x.FromInstid != nil {
+		return *x.FromInstid
 	}
 	return 0
 }
 
 func (x *MessageHead) GetUserActive() int32 {
-	if x != nil {
-		return x.UserActive
+	if x != nil && x.UserActive != nil {
+		return *x.UserActive
 	}
 	return 0
 }
@@ -4759,43 +4769,43 @@ func (x *MessageHead) GetDiscussInfo() *DiscussInfo {
 }
 
 func (x *MessageHead) GetFromNick() string {
-	if x != nil {
-		return x.FromNick
+	if x != nil && x.FromNick != nil {
+		return *x.FromNick
 	}
 	return ""
 }
 
 func (x *MessageHead) GetAuthUin() int64 {
-	if x != nil {
-		return x.AuthUin
+	if x != nil && x.AuthUin != nil {
+		return *x.AuthUin
 	}
 	return 0
 }
 
 func (x *MessageHead) GetAuthNick() string {
-	if x != nil {
-		return x.AuthNick
+	if x != nil && x.AuthNick != nil {
+		return *x.AuthNick
 	}
 	return ""
 }
 
 func (x *MessageHead) GetMsgFlag() int32 {
-	if x != nil {
-		return x.MsgFlag
+	if x != nil && x.MsgFlag != nil {
+		return *x.MsgFlag
 	}
 	return 0
 }
 
 func (x *MessageHead) GetAuthRemark() string {
-	if x != nil {
-		return x.AuthRemark
+	if x != nil && x.AuthRemark != nil {
+		return *x.AuthRemark
 	}
 	return ""
 }
 
 func (x *MessageHead) GetGroupName() string {
-	if x != nil {
-		return x.GroupName
+	if x != nil && x.GroupName != nil {
+		return *x.GroupName
 	}
 	return ""
 }
@@ -4815,22 +4825,22 @@ func (x *MessageHead) GetMsgInstCtrl() *InstCtrl {
 }
 
 func (x *MessageHead) GetPublicAccountGroupSendFlag() int32 {
-	if x != nil {
-		return x.PublicAccountGroupSendFlag
+	if x != nil && x.PublicAccountGroupSendFlag != nil {
+		return *x.PublicAccountGroupSendFlag
 	}
 	return 0
 }
 
 func (x *MessageHead) GetWseqInC2CMsghead() int32 {
-	if x != nil {
-		return x.WseqInC2CMsghead
+	if x != nil && x.WseqInC2CMsghead != nil {
+		return *x.WseqInC2CMsghead
 	}
 	return 0
 }
 
 func (x *MessageHead) GetCpid() int64 {
-	if x != nil {
-		return x.Cpid
+	if x != nil && x.Cpid != nil {
+		return *x.Cpid
 	}
 	return 0
 }
@@ -4843,22 +4853,22 @@ func (x *MessageHead) GetExtGroupKeyInfo() *ExtGroupKeyInfo {
 }
 
 func (x *MessageHead) GetMultiCompatibleText() string {
-	if x != nil {
-		return x.MultiCompatibleText
+	if x != nil && x.MultiCompatibleText != nil {
+		return *x.MultiCompatibleText
 	}
 	return ""
 }
 
 func (x *MessageHead) GetAuthSex() int32 {
-	if x != nil {
-		return x.AuthSex
+	if x != nil && x.AuthSex != nil {
+		return *x.AuthSex
 	}
 	return 0
 }
 
 func (x *MessageHead) GetIsSrcMsg() bool {
-	if x != nil {
-		return x.IsSrcMsg
+	if x != nil && x.IsSrcMsg != nil {
+		return *x.IsSrcMsg
 	}
 	return false
 }
@@ -4868,14 +4878,14 @@ type GroupInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GroupCode     int64  `protobuf:"varint,1,opt,name=groupCode,proto3" json:"groupCode,omitempty"`
-	GroupType     int32  `protobuf:"varint,2,opt,name=groupType,proto3" json:"groupType,omitempty"`
-	GroupInfoSeq  int64  `protobuf:"varint,3,opt,name=groupInfoSeq,proto3" json:"groupInfoSeq,omitempty"`
-	GroupCard     string `protobuf:"bytes,4,opt,name=groupCard,proto3" json:"groupCard,omitempty"`
-	GroupRank     []byte `protobuf:"bytes,5,opt,name=groupRank,proto3" json:"groupRank,omitempty"`
-	GroupLevel    int32  `protobuf:"varint,6,opt,name=groupLevel,proto3" json:"groupLevel,omitempty"`
-	GroupCardType int32  `protobuf:"varint,7,opt,name=groupCardType,proto3" json:"groupCardType,omitempty"`
-	GroupName     []byte `protobuf:"bytes,8,opt,name=groupName,proto3" json:"groupName,omitempty"`
+	GroupCode     *int64  `protobuf:"varint,1,opt,name=groupCode" json:"groupCode,omitempty"`
+	GroupType     *int32  `protobuf:"varint,2,opt,name=groupType" json:"groupType,omitempty"`
+	GroupInfoSeq  *int64  `protobuf:"varint,3,opt,name=groupInfoSeq" json:"groupInfoSeq,omitempty"`
+	GroupCard     *string `protobuf:"bytes,4,opt,name=groupCard" json:"groupCard,omitempty"`
+	GroupRank     []byte  `protobuf:"bytes,5,opt,name=groupRank" json:"groupRank,omitempty"`
+	GroupLevel    *int32  `protobuf:"varint,6,opt,name=groupLevel" json:"groupLevel,omitempty"`
+	GroupCardType *int32  `protobuf:"varint,7,opt,name=groupCardType" json:"groupCardType,omitempty"`
+	GroupName     []byte  `protobuf:"bytes,8,opt,name=groupName" json:"groupName,omitempty"`
 }
 
 func (x *GroupInfo) Reset() {
@@ -4911,29 +4921,29 @@ func (*GroupInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *GroupInfo) GetGroupCode() int64 {
-	if x != nil {
-		return x.GroupCode
+	if x != nil && x.GroupCode != nil {
+		return *x.GroupCode
 	}
 	return 0
 }
 
 func (x *GroupInfo) GetGroupType() int32 {
-	if x != nil {
-		return x.GroupType
+	if x != nil && x.GroupType != nil {
+		return *x.GroupType
 	}
 	return 0
 }
 
 func (x *GroupInfo) GetGroupInfoSeq() int64 {
-	if x != nil {
-		return x.GroupInfoSeq
+	if x != nil && x.GroupInfoSeq != nil {
+		return *x.GroupInfoSeq
 	}
 	return 0
 }
 
 func (x *GroupInfo) GetGroupCard() string {
-	if x != nil {
-		return x.GroupCard
+	if x != nil && x.GroupCard != nil {
+		return *x.GroupCard
 	}
 	return ""
 }
@@ -4946,15 +4956,15 @@ func (x *GroupInfo) GetGroupRank() []byte {
 }
 
 func (x *GroupInfo) GetGroupLevel() int32 {
-	if x != nil {
-		return x.GroupLevel
+	if x != nil && x.GroupLevel != nil {
+		return *x.GroupLevel
 	}
 	return 0
 }
 
 func (x *GroupInfo) GetGroupCardType() int32 {
-	if x != nil {
-		return x.GroupCardType
+	if x != nil && x.GroupCardType != nil {
+		return *x.GroupCardType
 	}
 	return 0
 }
@@ -4971,11 +4981,11 @@ type DiscussInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	DiscussUin     int64  `protobuf:"varint,1,opt,name=discussUin,proto3" json:"discussUin,omitempty"`
-	DiscussType    int32  `protobuf:"varint,2,opt,name=discussType,proto3" json:"discussType,omitempty"`
-	DiscussInfoSeq int64  `protobuf:"varint,3,opt,name=discussInfoSeq,proto3" json:"discussInfoSeq,omitempty"`
-	DiscussRemark  []byte `protobuf:"bytes,4,opt,name=discussRemark,proto3" json:"discussRemark,omitempty"`
-	DiscussName    []byte `protobuf:"bytes,5,opt,name=discussName,proto3" json:"discussName,omitempty"`
+	DiscussUin     *int64 `protobuf:"varint,1,opt,name=discussUin" json:"discussUin,omitempty"`
+	DiscussType    *int32 `protobuf:"varint,2,opt,name=discussType" json:"discussType,omitempty"`
+	DiscussInfoSeq *int64 `protobuf:"varint,3,opt,name=discussInfoSeq" json:"discussInfoSeq,omitempty"`
+	DiscussRemark  []byte `protobuf:"bytes,4,opt,name=discussRemark" json:"discussRemark,omitempty"`
+	DiscussName    []byte `protobuf:"bytes,5,opt,name=discussName" json:"discussName,omitempty"`
 }
 
 func (x *DiscussInfo) Reset() {
@@ -5011,22 +5021,22 @@ func (*DiscussInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *DiscussInfo) GetDiscussUin() int64 {
-	if x != nil {
-		return x.DiscussUin
+	if x != nil && x.DiscussUin != nil {
+		return *x.DiscussUin
 	}
 	return 0
 }
 
 func (x *DiscussInfo) GetDiscussType() int32 {
-	if x != nil {
-		return x.DiscussType
+	if x != nil && x.DiscussType != nil {
+		return *x.DiscussType
 	}
 	return 0
 }
 
 func (x *DiscussInfo) GetDiscussInfoSeq() int64 {
-	if x != nil {
-		return x.DiscussInfoSeq
+	if x != nil && x.DiscussInfoSeq != nil {
+		return *x.DiscussInfoSeq
 	}
 	return 0
 }
@@ -5050,8 +5060,8 @@ type MutilTransHead struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Status int32 `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
-	MsgId  int32 `protobuf:"varint,2,opt,name=msgId,proto3" json:"msgId,omitempty"`
+	Status *int32 `protobuf:"varint,1,opt,name=status" json:"status,omitempty"`
+	MsgId  *int32 `protobuf:"varint,2,opt,name=msgId" json:"msgId,omitempty"`
 }
 
 func (x *MutilTransHead) Reset() {
@@ -5087,15 +5097,15 @@ func (*MutilTransHead) Descriptor() ([]byte, []int) {
 }
 
 func (x *MutilTransHead) GetStatus() int32 {
-	if x != nil {
-		return x.Status
+	if x != nil && x.Status != nil {
+		return *x.Status
 	}
 	return 0
 }
 
 func (x *MutilTransHead) GetMsgId() int32 {
-	if x != nil {
-		return x.MsgId
+	if x != nil && x.MsgId != nil {
+		return *x.MsgId
 	}
 	return 0
 }
@@ -5105,17 +5115,17 @@ type C2CTempMessageHead struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	C2CType       int32  `protobuf:"varint,1,opt,name=c2cType,proto3" json:"c2cType,omitempty"`
-	ServiceType   int32  `protobuf:"varint,2,opt,name=serviceType,proto3" json:"serviceType,omitempty"`
-	GroupUin      int64  `protobuf:"varint,3,opt,name=groupUin,proto3" json:"groupUin,omitempty"`
-	GroupCode     int64  `protobuf:"varint,4,opt,name=groupCode,proto3" json:"groupCode,omitempty"`
-	Sig           []byte `protobuf:"bytes,5,opt,name=sig,proto3" json:"sig,omitempty"`
-	SigType       int32  `protobuf:"varint,6,opt,name=sigType,proto3" json:"sigType,omitempty"`
-	FromPhone     string `protobuf:"bytes,7,opt,name=fromPhone,proto3" json:"fromPhone,omitempty"`
-	ToPhone       string `protobuf:"bytes,8,opt,name=toPhone,proto3" json:"toPhone,omitempty"`
-	LockDisplay   int32  `protobuf:"varint,9,opt,name=lockDisplay,proto3" json:"lockDisplay,omitempty"`
-	DirectionFlag int32  `protobuf:"varint,10,opt,name=directionFlag,proto3" json:"directionFlag,omitempty"`
-	Reserved      []byte `protobuf:"bytes,11,opt,name=reserved,proto3" json:"reserved,omitempty"`
+	C2CType       *int32  `protobuf:"varint,1,opt,name=c2cType" json:"c2cType,omitempty"`
+	ServiceType   *int32  `protobuf:"varint,2,opt,name=serviceType" json:"serviceType,omitempty"`
+	GroupUin      *int64  `protobuf:"varint,3,opt,name=groupUin" json:"groupUin,omitempty"`
+	GroupCode     *int64  `protobuf:"varint,4,opt,name=groupCode" json:"groupCode,omitempty"`
+	Sig           []byte  `protobuf:"bytes,5,opt,name=sig" json:"sig,omitempty"`
+	SigType       *int32  `protobuf:"varint,6,opt,name=sigType" json:"sigType,omitempty"`
+	FromPhone     *string `protobuf:"bytes,7,opt,name=fromPhone" json:"fromPhone,omitempty"`
+	ToPhone       *string `protobuf:"bytes,8,opt,name=toPhone" json:"toPhone,omitempty"`
+	LockDisplay   *int32  `protobuf:"varint,9,opt,name=lockDisplay" json:"lockDisplay,omitempty"`
+	DirectionFlag *int32  `protobuf:"varint,10,opt,name=directionFlag" json:"directionFlag,omitempty"`
+	Reserved      []byte  `protobuf:"bytes,11,opt,name=reserved" json:"reserved,omitempty"`
 }
 
 func (x *C2CTempMessageHead) Reset() {
@@ -5151,29 +5161,29 @@ func (*C2CTempMessageHead) Descriptor() ([]byte, []int) {
 }
 
 func (x *C2CTempMessageHead) GetC2CType() int32 {
-	if x != nil {
-		return x.C2CType
+	if x != nil && x.C2CType != nil {
+		return *x.C2CType
 	}
 	return 0
 }
 
 func (x *C2CTempMessageHead) GetServiceType() int32 {
-	if x != nil {
-		return x.ServiceType
+	if x != nil && x.ServiceType != nil {
+		return *x.ServiceType
 	}
 	return 0
 }
 
 func (x *C2CTempMessageHead) GetGroupUin() int64 {
-	if x != nil {
-		return x.GroupUin
+	if x != nil && x.GroupUin != nil {
+		return *x.GroupUin
 	}
 	return 0
 }
 
 func (x *C2CTempMessageHead) GetGroupCode() int64 {
-	if x != nil {
-		return x.GroupCode
+	if x != nil && x.GroupCode != nil {
+		return *x.GroupCode
 	}
 	return 0
 }
@@ -5186,36 +5196,36 @@ func (x *C2CTempMessageHead) GetSig() []byte {
 }
 
 func (x *C2CTempMessageHead) GetSigType() int32 {
-	if x != nil {
-		return x.SigType
+	if x != nil && x.SigType != nil {
+		return *x.SigType
 	}
 	return 0
 }
 
 func (x *C2CTempMessageHead) GetFromPhone() string {
-	if x != nil {
-		return x.FromPhone
+	if x != nil && x.FromPhone != nil {
+		return *x.FromPhone
 	}
 	return ""
 }
 
 func (x *C2CTempMessageHead) GetToPhone() string {
-	if x != nil {
-		return x.ToPhone
+	if x != nil && x.ToPhone != nil {
+		return *x.ToPhone
 	}
 	return ""
 }
 
 func (x *C2CTempMessageHead) GetLockDisplay() int32 {
-	if x != nil {
-		return x.LockDisplay
+	if x != nil && x.LockDisplay != nil {
+		return *x.LockDisplay
 	}
 	return 0
 }
 
 func (x *C2CTempMessageHead) GetDirectionFlag() int32 {
-	if x != nil {
-		return x.DirectionFlag
+	if x != nil && x.DirectionFlag != nil {
+		return *x.DirectionFlag
 	}
 	return 0
 }
@@ -5232,9 +5242,9 @@ type InstCtrl struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	MsgSendToInst  []*InstInfo `protobuf:"bytes,1,rep,name=msgSendToInst,proto3" json:"msgSendToInst,omitempty"`
-	MsgExcludeInst []*InstInfo `protobuf:"bytes,2,rep,name=msgExcludeInst,proto3" json:"msgExcludeInst,omitempty"`
-	MsgFromInst    *InstInfo   `protobuf:"bytes,3,opt,name=msgFromInst,proto3" json:"msgFromInst,omitempty"`
+	MsgSendToInst  []*InstInfo `protobuf:"bytes,1,rep,name=msgSendToInst" json:"msgSendToInst,omitempty"`
+	MsgExcludeInst []*InstInfo `protobuf:"bytes,2,rep,name=msgExcludeInst" json:"msgExcludeInst,omitempty"`
+	MsgFromInst    *InstInfo   `protobuf:"bytes,3,opt,name=msgFromInst" json:"msgFromInst,omitempty"`
 }
 
 func (x *InstCtrl) Reset() {
@@ -5295,10 +5305,10 @@ type InstInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Apppid         int32 `protobuf:"varint,1,opt,name=apppid,proto3" json:"apppid,omitempty"`
-	Instid         int32 `protobuf:"varint,2,opt,name=instid,proto3" json:"instid,omitempty"`
-	Platform       int32 `protobuf:"varint,3,opt,name=platform,proto3" json:"platform,omitempty"`
-	EnumDeviceType int32 `protobuf:"varint,10,opt,name=enumDeviceType,proto3" json:"enumDeviceType,omitempty"`
+	Apppid         *int32 `protobuf:"varint,1,opt,name=apppid" json:"apppid,omitempty"`
+	Instid         *int32 `protobuf:"varint,2,opt,name=instid" json:"instid,omitempty"`
+	Platform       *int32 `protobuf:"varint,3,opt,name=platform" json:"platform,omitempty"`
+	EnumDeviceType *int32 `protobuf:"varint,10,opt,name=enumDeviceType" json:"enumDeviceType,omitempty"`
 }
 
 func (x *InstInfo) Reset() {
@@ -5334,29 +5344,29 @@ func (*InstInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *InstInfo) GetApppid() int32 {
-	if x != nil {
-		return x.Apppid
+	if x != nil && x.Apppid != nil {
+		return *x.Apppid
 	}
 	return 0
 }
 
 func (x *InstInfo) GetInstid() int32 {
-	if x != nil {
-		return x.Instid
+	if x != nil && x.Instid != nil {
+		return *x.Instid
 	}
 	return 0
 }
 
 func (x *InstInfo) GetPlatform() int32 {
-	if x != nil {
-		return x.Platform
+	if x != nil && x.Platform != nil {
+		return *x.Platform
 	}
 	return 0
 }
 
 func (x *InstInfo) GetEnumDeviceType() int32 {
-	if x != nil {
-		return x.EnumDeviceType
+	if x != nil && x.EnumDeviceType != nil {
+		return *x.EnumDeviceType
 	}
 	return 0
 }
@@ -5366,8 +5376,8 @@ type ExtGroupKeyInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CurMaxSeq int32 `protobuf:"varint,1,opt,name=curMaxSeq,proto3" json:"curMaxSeq,omitempty"`
-	CurTime   int64 `protobuf:"varint,2,opt,name=curTime,proto3" json:"curTime,omitempty"`
+	CurMaxSeq *int32 `protobuf:"varint,1,opt,name=curMaxSeq" json:"curMaxSeq,omitempty"`
+	CurTime   *int64 `protobuf:"varint,2,opt,name=curTime" json:"curTime,omitempty"`
 }
 
 func (x *ExtGroupKeyInfo) Reset() {
@@ -5403,15 +5413,15 @@ func (*ExtGroupKeyInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *ExtGroupKeyInfo) GetCurMaxSeq() int32 {
-	if x != nil {
-		return x.CurMaxSeq
+	if x != nil && x.CurMaxSeq != nil {
+		return *x.CurMaxSeq
 	}
 	return 0
 }
 
 func (x *ExtGroupKeyInfo) GetCurTime() int64 {
-	if x != nil {
-		return x.CurTime
+	if x != nil && x.CurTime != nil {
+		return *x.CurTime
 	}
 	return 0
 }
@@ -5421,15 +5431,15 @@ type SyncCookie struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Time1        int64 `protobuf:"varint,1,opt,name=time1,proto3" json:"time1,omitempty"`
-	Time         int64 `protobuf:"varint,2,opt,name=time,proto3" json:"time,omitempty"`
-	Ran1         int64 `protobuf:"varint,3,opt,name=ran1,proto3" json:"ran1,omitempty"`
-	Ran2         int64 `protobuf:"varint,4,opt,name=ran2,proto3" json:"ran2,omitempty"`
-	Const1       int64 `protobuf:"varint,5,opt,name=const1,proto3" json:"const1,omitempty"`
-	Const2       int64 `protobuf:"varint,11,opt,name=const2,proto3" json:"const2,omitempty"`
-	Const3       int64 `protobuf:"varint,12,opt,name=const3,proto3" json:"const3,omitempty"`
-	LastSyncTime int64 `protobuf:"varint,13,opt,name=lastSyncTime,proto3" json:"lastSyncTime,omitempty"`
-	Const4       int64 `protobuf:"varint,14,opt,name=const4,proto3" json:"const4,omitempty"`
+	Time1        *int64 `protobuf:"varint,1,opt,name=time1" json:"time1,omitempty"`
+	Time         *int64 `protobuf:"varint,2,opt,name=time" json:"time,omitempty"`
+	Ran1         *int64 `protobuf:"varint,3,opt,name=ran1" json:"ran1,omitempty"`
+	Ran2         *int64 `protobuf:"varint,4,opt,name=ran2" json:"ran2,omitempty"`
+	Const1       *int64 `protobuf:"varint,5,opt,name=const1" json:"const1,omitempty"`
+	Const2       *int64 `protobuf:"varint,11,opt,name=const2" json:"const2,omitempty"`
+	Const3       *int64 `protobuf:"varint,12,opt,name=const3" json:"const3,omitempty"`
+	LastSyncTime *int64 `protobuf:"varint,13,opt,name=lastSyncTime" json:"lastSyncTime,omitempty"`
+	Const4       *int64 `protobuf:"varint,14,opt,name=const4" json:"const4,omitempty"`
 }
 
 func (x *SyncCookie) Reset() {
@@ -5465,64 +5475,64 @@ func (*SyncCookie) Descriptor() ([]byte, []int) {
 }
 
 func (x *SyncCookie) GetTime1() int64 {
-	if x != nil {
-		return x.Time1
+	if x != nil && x.Time1 != nil {
+		return *x.Time1
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetTime() int64 {
-	if x != nil {
-		return x.Time
+	if x != nil && x.Time != nil {
+		return *x.Time
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetRan1() int64 {
-	if x != nil {
-		return x.Ran1
+	if x != nil && x.Ran1 != nil {
+		return *x.Ran1
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetRan2() int64 {
-	if x != nil {
-		return x.Ran2
+	if x != nil && x.Ran2 != nil {
+		return *x.Ran2
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetConst1() int64 {
-	if x != nil {
-		return x.Const1
+	if x != nil && x.Const1 != nil {
+		return *x.Const1
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetConst2() int64 {
-	if x != nil {
-		return x.Const2
+	if x != nil && x.Const2 != nil {
+		return *x.Const2
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetConst3() int64 {
-	if x != nil {
-		return x.Const3
+	if x != nil && x.Const3 != nil {
+		return *x.Const3
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetLastSyncTime() int64 {
-	if x != nil {
-		return x.LastSyncTime
+	if x != nil && x.LastSyncTime != nil {
+		return *x.LastSyncTime
 	}
 	return 0
 }
 
 func (x *SyncCookie) GetConst4() int64 {
-	if x != nil {
-		return x.Const4
+	if x != nil && x.Const4 != nil {
+		return *x.Const4
 	}
 	return 0
 }
@@ -5532,19 +5542,19 @@ type TransMsgInfo struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FromUin         int64            `protobuf:"varint,1,opt,name=fromUin,proto3" json:"fromUin,omitempty"`
-	ToUin           int64            `protobuf:"varint,2,opt,name=toUin,proto3" json:"toUin,omitempty"`
-	MsgType         int32            `protobuf:"varint,3,opt,name=msgType,proto3" json:"msgType,omitempty"`
-	MsgSubtype      int32            `protobuf:"varint,4,opt,name=msgSubtype,proto3" json:"msgSubtype,omitempty"`
-	MsgSeq          int32            `protobuf:"varint,5,opt,name=msgSeq,proto3" json:"msgSeq,omitempty"`
-	MsgUid          int64            `protobuf:"varint,6,opt,name=msgUid,proto3" json:"msgUid,omitempty"`
-	MsgTime         int32            `protobuf:"varint,7,opt,name=msgTime,proto3" json:"msgTime,omitempty"`
-	RealMsgTime     int32            `protobuf:"varint,8,opt,name=realMsgTime,proto3" json:"realMsgTime,omitempty"`
-	NickName        string           `protobuf:"bytes,9,opt,name=nickName,proto3" json:"nickName,omitempty"`
-	MsgData         []byte           `protobuf:"bytes,10,opt,name=msgData,proto3" json:"msgData,omitempty"`
-	SvrIp           int32            `protobuf:"varint,11,opt,name=svrIp,proto3" json:"svrIp,omitempty"`
-	ExtGroupKeyInfo *ExtGroupKeyInfo `protobuf:"bytes,12,opt,name=extGroupKeyInfo,proto3" json:"extGroupKeyInfo,omitempty"`
-	GeneralFlag     int32            `protobuf:"varint,17,opt,name=generalFlag,proto3" json:"generalFlag,omitempty"`
+	FromUin         *int64           `protobuf:"varint,1,opt,name=fromUin" json:"fromUin,omitempty"`
+	ToUin           *int64           `protobuf:"varint,2,opt,name=toUin" json:"toUin,omitempty"`
+	MsgType         *int32           `protobuf:"varint,3,opt,name=msgType" json:"msgType,omitempty"`
+	MsgSubtype      *int32           `protobuf:"varint,4,opt,name=msgSubtype" json:"msgSubtype,omitempty"`
+	MsgSeq          *int32           `protobuf:"varint,5,opt,name=msgSeq" json:"msgSeq,omitempty"`
+	MsgUid          *int64           `protobuf:"varint,6,opt,name=msgUid" json:"msgUid,omitempty"`
+	MsgTime         *int32           `protobuf:"varint,7,opt,name=msgTime" json:"msgTime,omitempty"`
+	RealMsgTime     *int32           `protobuf:"varint,8,opt,name=realMsgTime" json:"realMsgTime,omitempty"`
+	NickName        *string          `protobuf:"bytes,9,opt,name=nickName" json:"nickName,omitempty"`
+	MsgData         []byte           `protobuf:"bytes,10,opt,name=msgData" json:"msgData,omitempty"`
+	SvrIp           *int32           `protobuf:"varint,11,opt,name=svrIp" json:"svrIp,omitempty"`
+	ExtGroupKeyInfo *ExtGroupKeyInfo `protobuf:"bytes,12,opt,name=extGroupKeyInfo" json:"extGroupKeyInfo,omitempty"`
+	GeneralFlag     *int32           `protobuf:"varint,17,opt,name=generalFlag" json:"generalFlag,omitempty"`
 }
 
 func (x *TransMsgInfo) Reset() {
@@ -5580,64 +5590,64 @@ func (*TransMsgInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *TransMsgInfo) GetFromUin() int64 {
-	if x != nil {
-		return x.FromUin
+	if x != nil && x.FromUin != nil {
+		return *x.FromUin
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetToUin() int64 {
-	if x != nil {
-		return x.ToUin
+	if x != nil && x.ToUin != nil {
+		return *x.ToUin
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetMsgType() int32 {
-	if x != nil {
-		return x.MsgType
+	if x != nil && x.MsgType != nil {
+		return *x.MsgType
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetMsgSubtype() int32 {
-	if x != nil {
-		return x.MsgSubtype
+	if x != nil && x.MsgSubtype != nil {
+		return *x.MsgSubtype
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetMsgSeq() int32 {
-	if x != nil {
-		return x.MsgSeq
+	if x != nil && x.MsgSeq != nil {
+		return *x.MsgSeq
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetMsgUid() int64 {
-	if x != nil {
-		return x.MsgUid
+	if x != nil && x.MsgUid != nil {
+		return *x.MsgUid
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetMsgTime() int32 {
-	if x != nil {
-		return x.MsgTime
+	if x != nil && x.MsgTime != nil {
+		return *x.MsgTime
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetRealMsgTime() int32 {
-	if x != nil {
-		return x.RealMsgTime
+	if x != nil && x.RealMsgTime != nil {
+		return *x.RealMsgTime
 	}
 	return 0
 }
 
 func (x *TransMsgInfo) GetNickName() string {
-	if x != nil {
-		return x.NickName
+	if x != nil && x.NickName != nil {
+		return *x.NickName
 	}
 	return ""
 }
@@ -5650,8 +5660,8 @@ func (x *TransMsgInfo) GetMsgData() []byte {
 }
 
 func (x *TransMsgInfo) GetSvrIp() int32 {
-	if x != nil {
-		return x.SvrIp
+	if x != nil && x.SvrIp != nil {
+		return *x.SvrIp
 	}
 	return 0
 }
@@ -5664,8 +5674,8 @@ func (x *TransMsgInfo) GetExtGroupKeyInfo() *ExtGroupKeyInfo {
 }
 
 func (x *TransMsgInfo) GetGeneralFlag() int32 {
-	if x != nil {
-		return x.GeneralFlag
+	if x != nil && x.GeneralFlag != nil {
+		return *x.GeneralFlag
 	}
 	return 0
 }
@@ -5675,25 +5685,25 @@ type GeneralFlags struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	BubbleDiyTextId     int32  `protobuf:"varint,1,opt,name=bubbleDiyTextId,proto3" json:"bubbleDiyTextId,omitempty"`
-	GroupFlagNew        int32  `protobuf:"varint,2,opt,name=groupFlagNew,proto3" json:"groupFlagNew,omitempty"`
-	Uin                 int64  `protobuf:"varint,3,opt,name=uin,proto3" json:"uin,omitempty"`
-	RpId                []byte `protobuf:"bytes,4,opt,name=rpId,proto3" json:"rpId,omitempty"`
-	PrpFold             int32  `protobuf:"varint,5,opt,name=prpFold,proto3" json:"prpFold,omitempty"`
-	LongTextFlag        int32  `protobuf:"varint,6,opt,name=longTextFlag,proto3" json:"longTextFlag,omitempty"`
-	LongTextResid       string `protobuf:"bytes,7,opt,name=longTextResid,proto3" json:"longTextResid,omitempty"`
-	GroupType           int32  `protobuf:"varint,8,opt,name=groupType,proto3" json:"groupType,omitempty"`
-	ToUinFlag           int32  `protobuf:"varint,9,opt,name=toUinFlag,proto3" json:"toUinFlag,omitempty"`
-	GlamourLevel        int32  `protobuf:"varint,10,opt,name=glamourLevel,proto3" json:"glamourLevel,omitempty"`
-	MemberLevel         int32  `protobuf:"varint,11,opt,name=memberLevel,proto3" json:"memberLevel,omitempty"`
-	GroupRankSeq        int64  `protobuf:"varint,12,opt,name=groupRankSeq,proto3" json:"groupRankSeq,omitempty"`
-	OlympicTorch        int32  `protobuf:"varint,13,opt,name=olympicTorch,proto3" json:"olympicTorch,omitempty"`
-	BabyqGuideMsgCookie []byte `protobuf:"bytes,14,opt,name=babyqGuideMsgCookie,proto3" json:"babyqGuideMsgCookie,omitempty"`
-	Uin32ExpertFlag     int32  `protobuf:"varint,15,opt,name=uin32ExpertFlag,proto3" json:"uin32ExpertFlag,omitempty"`
-	BubbleSubId         int32  `protobuf:"varint,16,opt,name=bubbleSubId,proto3" json:"bubbleSubId,omitempty"`
-	PendantId           int64  `protobuf:"varint,17,opt,name=pendantId,proto3" json:"pendantId,omitempty"`
-	RpIndex             []byte `protobuf:"bytes,18,opt,name=rpIndex,proto3" json:"rpIndex,omitempty"`
-	PbReserve           []byte `protobuf:"bytes,19,opt,name=pbReserve,proto3" json:"pbReserve,omitempty"`
+	BubbleDiyTextId     *int32  `protobuf:"varint,1,opt,name=bubbleDiyTextId" json:"bubbleDiyTextId,omitempty"`
+	GroupFlagNew        *int32  `protobuf:"varint,2,opt,name=groupFlagNew" json:"groupFlagNew,omitempty"`
+	Uin                 *int64  `protobuf:"varint,3,opt,name=uin" json:"uin,omitempty"`
+	RpId                []byte  `protobuf:"bytes,4,opt,name=rpId" json:"rpId,omitempty"`
+	PrpFold             *int32  `protobuf:"varint,5,opt,name=prpFold" json:"prpFold,omitempty"`
+	LongTextFlag        *int32  `protobuf:"varint,6,opt,name=longTextFlag" json:"longTextFlag,omitempty"`
+	LongTextResid       *string `protobuf:"bytes,7,opt,name=longTextResid" json:"longTextResid,omitempty"`
+	GroupType           *int32  `protobuf:"varint,8,opt,name=groupType" json:"groupType,omitempty"`
+	ToUinFlag           *int32  `protobuf:"varint,9,opt,name=toUinFlag" json:"toUinFlag,omitempty"`
+	GlamourLevel        *int32  `protobuf:"varint,10,opt,name=glamourLevel" json:"glamourLevel,omitempty"`
+	MemberLevel         *int32  `protobuf:"varint,11,opt,name=memberLevel" json:"memberLevel,omitempty"`
+	GroupRankSeq        *int64  `protobuf:"varint,12,opt,name=groupRankSeq" json:"groupRankSeq,omitempty"`
+	OlympicTorch        *int32  `protobuf:"varint,13,opt,name=olympicTorch" json:"olympicTorch,omitempty"`
+	BabyqGuideMsgCookie []byte  `protobuf:"bytes,14,opt,name=babyqGuideMsgCookie" json:"babyqGuideMsgCookie,omitempty"`
+	Uin32ExpertFlag     *int32  `protobuf:"varint,15,opt,name=uin32ExpertFlag" json:"uin32ExpertFlag,omitempty"`
+	BubbleSubId         *int32  `protobuf:"varint,16,opt,name=bubbleSubId" json:"bubbleSubId,omitempty"`
+	PendantId           *int64  `protobuf:"varint,17,opt,name=pendantId" json:"pendantId,omitempty"`
+	RpIndex             []byte  `protobuf:"bytes,18,opt,name=rpIndex" json:"rpIndex,omitempty"`
+	PbReserve           []byte  `protobuf:"bytes,19,opt,name=pbReserve" json:"pbReserve,omitempty"`
 }
 
 func (x *GeneralFlags) Reset() {
@@ -5729,22 +5739,22 @@ func (*GeneralFlags) Descriptor() ([]byte, []int) {
 }
 
 func (x *GeneralFlags) GetBubbleDiyTextId() int32 {
-	if x != nil {
-		return x.BubbleDiyTextId
+	if x != nil && x.BubbleDiyTextId != nil {
+		return *x.BubbleDiyTextId
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetGroupFlagNew() int32 {
-	if x != nil {
-		return x.GroupFlagNew
+	if x != nil && x.GroupFlagNew != nil {
+		return *x.GroupFlagNew
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetUin() int64 {
-	if x != nil {
-		return x.Uin
+	if x != nil && x.Uin != nil {
+		return *x.Uin
 	}
 	return 0
 }
@@ -5757,64 +5767,64 @@ func (x *GeneralFlags) GetRpId() []byte {
 }
 
 func (x *GeneralFlags) GetPrpFold() int32 {
-	if x != nil {
-		return x.PrpFold
+	if x != nil && x.PrpFold != nil {
+		return *x.PrpFold
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetLongTextFlag() int32 {
-	if x != nil {
-		return x.LongTextFlag
+	if x != nil && x.LongTextFlag != nil {
+		return *x.LongTextFlag
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetLongTextResid() string {
-	if x != nil {
-		return x.LongTextResid
+	if x != nil && x.LongTextResid != nil {
+		return *x.LongTextResid
 	}
 	return ""
 }
 
 func (x *GeneralFlags) GetGroupType() int32 {
-	if x != nil {
-		return x.GroupType
+	if x != nil && x.GroupType != nil {
+		return *x.GroupType
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetToUinFlag() int32 {
-	if x != nil {
-		return x.ToUinFlag
+	if x != nil && x.ToUinFlag != nil {
+		return *x.ToUinFlag
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetGlamourLevel() int32 {
-	if x != nil {
-		return x.GlamourLevel
+	if x != nil && x.GlamourLevel != nil {
+		return *x.GlamourLevel
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetMemberLevel() int32 {
-	if x != nil {
-		return x.MemberLevel
+	if x != nil && x.MemberLevel != nil {
+		return *x.MemberLevel
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetGroupRankSeq() int64 {
-	if x != nil {
-		return x.GroupRankSeq
+	if x != nil && x.GroupRankSeq != nil {
+		return *x.GroupRankSeq
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetOlympicTorch() int32 {
-	if x != nil {
-		return x.OlympicTorch
+	if x != nil && x.OlympicTorch != nil {
+		return *x.OlympicTorch
 	}
 	return 0
 }
@@ -5827,22 +5837,22 @@ func (x *GeneralFlags) GetBabyqGuideMsgCookie() []byte {
 }
 
 func (x *GeneralFlags) GetUin32ExpertFlag() int32 {
-	if x != nil {
-		return x.Uin32ExpertFlag
+	if x != nil && x.Uin32ExpertFlag != nil {
+		return *x.Uin32ExpertFlag
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetBubbleSubId() int32 {
-	if x != nil {
-		return x.BubbleSubId
+	if x != nil && x.BubbleSubId != nil {
+		return *x.BubbleSubId
 	}
 	return 0
 }
 
 func (x *GeneralFlags) GetPendantId() int64 {
-	if x != nil {
-		return x.PendantId
+	if x != nil && x.PendantId != nil {
+		return *x.PendantId
 	}
 	return 0
 }
@@ -5866,8 +5876,8 @@ type PbMultiMsgItem struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FileName string `protobuf:"bytes,1,opt,name=fileName,proto3" json:"fileName,omitempty"`
-	Buffer   []byte `protobuf:"bytes,2,opt,name=buffer,proto3" json:"buffer,omitempty"`
+	FileName *string `protobuf:"bytes,1,opt,name=fileName" json:"fileName,omitempty"`
+	Buffer   []byte  `protobuf:"bytes,2,opt,name=buffer" json:"buffer,omitempty"`
 }
 
 func (x *PbMultiMsgItem) Reset() {
@@ -5903,8 +5913,8 @@ func (*PbMultiMsgItem) Descriptor() ([]byte, []int) {
 }
 
 func (x *PbMultiMsgItem) GetFileName() string {
-	if x != nil {
-		return x.FileName
+	if x != nil && x.FileName != nil {
+		return *x.FileName
 	}
 	return ""
 }
@@ -5921,7 +5931,7 @@ type PbMultiMsgNew struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Msg []*Message `protobuf:"bytes,1,rep,name=msg,proto3" json:"msg,omitempty"`
+	Msg []*Message `protobuf:"bytes,1,rep,name=msg" json:"msg,omitempty"`
 }
 
 func (x *PbMultiMsgNew) Reset() {
@@ -5968,8 +5978,8 @@ type PbMultiMsgTransmit struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Msg        []*Message        `protobuf:"bytes,1,rep,name=msg,proto3" json:"msg,omitempty"`
-	PbItemList []*PbMultiMsgItem `protobuf:"bytes,2,rep,name=pbItemList,proto3" json:"pbItemList,omitempty"`
+	Msg        []*Message        `protobuf:"bytes,1,rep,name=msg" json:"msg,omitempty"`
+	PbItemList []*PbMultiMsgItem `protobuf:"bytes,2,rep,name=pbItemList" json:"pbItemList,omitempty"`
 }
 
 func (x *PbMultiMsgTransmit) Reset() {
@@ -6023,8 +6033,8 @@ type MsgElemInfoServtype3 struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FlashTroopPic *CustomFace     `protobuf:"bytes,1,opt,name=flash_troop_pic,json=flashTroopPic,proto3" json:"flash_troop_pic,omitempty"`
-	FlashC2CPic   *NotOnlineImage `protobuf:"bytes,2,opt,name=flash_c2c_pic,json=flashC2cPic,proto3" json:"flash_c2c_pic,omitempty"`
+	FlashTroopPic *CustomFace     `protobuf:"bytes,1,opt,name=flash_troop_pic,json=flashTroopPic" json:"flash_troop_pic,omitempty"`
+	FlashC2CPic   *NotOnlineImage `protobuf:"bytes,2,opt,name=flash_c2c_pic,json=flashC2cPic" json:"flash_c2c_pic,omitempty"`
 }
 
 func (x *MsgElemInfoServtype3) Reset() {
@@ -6078,10 +6088,10 @@ type MsgElemInfoServtype33 struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Index  uint32 `protobuf:"varint,1,opt,name=index,proto3" json:"index,omitempty"`
-	Text   []byte `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
-	Compat []byte `protobuf:"bytes,3,opt,name=compat,proto3" json:"compat,omitempty"`
-	Buf    []byte `protobuf:"bytes,4,opt,name=buf,proto3" json:"buf,omitempty"`
+	Index  *uint32 `protobuf:"varint,1,opt,name=index" json:"index,omitempty"`
+	Text   []byte  `protobuf:"bytes,2,opt,name=text" json:"text,omitempty"`
+	Compat []byte  `protobuf:"bytes,3,opt,name=compat" json:"compat,omitempty"`
+	Buf    []byte  `protobuf:"bytes,4,opt,name=buf" json:"buf,omitempty"`
 }
 
 func (x *MsgElemInfoServtype33) Reset() {
@@ -6117,8 +6127,8 @@ func (*MsgElemInfoServtype33) Descriptor() ([]byte, []int) {
 }
 
 func (x *MsgElemInfoServtype33) GetIndex() uint32 {
-	if x != nil {
-		return x.Index
+	if x != nil && x.Index != nil {
+		return *x.Index
 	}
 	return 0
 }
@@ -6149,9 +6159,9 @@ type SubMsgType0X4Body struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	NotOnlineFile              *NotOnlineFile `protobuf:"bytes,1,opt,name=notOnlineFile,proto3" json:"notOnlineFile,omitempty"`
-	MsgTime                    uint32         `protobuf:"varint,2,opt,name=msgTime,proto3" json:"msgTime,omitempty"`
-	OnlineFileForPolyToOffline uint32         `protobuf:"varint,3,opt,name=onlineFileForPolyToOffline,proto3" json:"onlineFileForPolyToOffline,omitempty"` // fileImageInfo
+	NotOnlineFile              *NotOnlineFile `protobuf:"bytes,1,opt,name=notOnlineFile" json:"notOnlineFile,omitempty"`
+	MsgTime                    *uint32        `protobuf:"varint,2,opt,name=msgTime" json:"msgTime,omitempty"`
+	OnlineFileForPolyToOffline *uint32        `protobuf:"varint,3,opt,name=onlineFileForPolyToOffline" json:"onlineFileForPolyToOffline,omitempty"` // fileImageInfo
 }
 
 func (x *SubMsgType0X4Body) Reset() {
@@ -6194,15 +6204,15 @@ func (x *SubMsgType0X4Body) GetNotOnlineFile() *NotOnlineFile {
 }
 
 func (x *SubMsgType0X4Body) GetMsgTime() uint32 {
-	if x != nil {
-		return x.MsgTime
+	if x != nil && x.MsgTime != nil {
+		return *x.MsgTime
 	}
 	return 0
 }
 
 func (x *SubMsgType0X4Body) GetOnlineFileForPolyToOffline() uint32 {
-	if x != nil {
-		return x.OnlineFileForPolyToOffline
+	if x != nil && x.OnlineFileForPolyToOffline != nil {
+		return *x.OnlineFileForPolyToOffline
 	}
 	return 0
 }
@@ -6212,7 +6222,7 @@ type ResvAttr struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ImageShow *AnimationImageShow `protobuf:"bytes,7,opt,name=image_show,json=imageShow,proto3" json:"image_show,omitempty"`
+	ImageShow *AnimationImageShow `protobuf:"bytes,7,opt,name=image_show,json=imageShow" json:"image_show,omitempty"`
 }
 
 func (x *ResvAttr) Reset() {
@@ -6259,8 +6269,8 @@ type AnimationImageShow struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	EffectId       int32  `protobuf:"varint,1,opt,name=effect_id,json=effectId,proto3" json:"effect_id,omitempty"`
-	AnimationParam []byte `protobuf:"bytes,2,opt,name=animation_param,json=animationParam,proto3" json:"animation_param,omitempty"`
+	EffectId       *int32 `protobuf:"varint,1,opt,name=effect_id,json=effectId" json:"effect_id,omitempty"`
+	AnimationParam []byte `protobuf:"bytes,2,opt,name=animation_param,json=animationParam" json:"animation_param,omitempty"`
 }
 
 func (x *AnimationImageShow) Reset() {
@@ -6296,8 +6306,8 @@ func (*AnimationImageShow) Descriptor() ([]byte, []int) {
 }
 
 func (x *AnimationImageShow) GetEffectId() int32 {
-	if x != nil {
-		return x.EffectId
+	if x != nil && x.EffectId != nil {
+		return *x.EffectId
 	}
 	return 0
 }
@@ -6314,9 +6324,9 @@ type UinTypeUserDef struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	FromUinType   int32  `protobuf:"varint,1,opt,name=fromUinType,proto3" json:"fromUinType,omitempty"`
-	FromGroupCode int64  `protobuf:"varint,2,opt,name=fromGroupCode,proto3" json:"fromGroupCode,omitempty"`
-	FileUuid      string `protobuf:"bytes,3,opt,name=fileUuid,proto3" json:"fileUuid,omitempty"`
+	FromUinType   *int32  `protobuf:"varint,1,opt,name=fromUinType" json:"fromUinType,omitempty"`
+	FromGroupCode *int64  `protobuf:"varint,2,opt,name=fromGroupCode" json:"fromGroupCode,omitempty"`
+	FileUuid      *string `protobuf:"bytes,3,opt,name=fileUuid" json:"fileUuid,omitempty"`
 }
 
 func (x *UinTypeUserDef) Reset() {
@@ -6352,22 +6362,22 @@ func (*UinTypeUserDef) Descriptor() ([]byte, []int) {
 }
 
 func (x *UinTypeUserDef) GetFromUinType() int32 {
-	if x != nil {
-		return x.FromUinType
+	if x != nil && x.FromUinType != nil {
+		return *x.FromUinType
 	}
 	return 0
 }
 
 func (x *UinTypeUserDef) GetFromGroupCode() int64 {
-	if x != nil {
-		return x.FromGroupCode
+	if x != nil && x.FromGroupCode != nil {
+		return *x.FromGroupCode
 	}
 	return 0
 }
 
 func (x *UinTypeUserDef) GetFileUuid() string {
-	if x != nil {
-		return x.FileUuid
+	if x != nil && x.FileUuid != nil {
+		return *x.FileUuid
 	}
 	return ""
 }
@@ -7369,8 +7379,7 @@ var file_msg_proto_rawDesc = []byte{
 	0x65, 0x55, 0x75, 0x69, 0x64, 0x2a, 0x2e, 0x0a, 0x08, 0x53, 0x79, 0x6e, 0x63, 0x46, 0x6c, 0x61,
 	0x67, 0x12, 0x09, 0x0a, 0x05, 0x53, 0x54, 0x41, 0x52, 0x54, 0x10, 0x00, 0x12, 0x0d, 0x0a, 0x09,
 	0x43, 0x4f, 0x4e, 0x54, 0x49, 0x4e, 0x55, 0x4d, 0x45, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x53,
-	0x54, 0x4f, 0x50, 0x10, 0x02, 0x42, 0x07, 0x5a, 0x05, 0x2e, 0x3b, 0x6d, 0x73, 0x67, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x54, 0x4f, 0x50, 0x10, 0x02, 0x42, 0x07, 0x5a, 0x05, 0x2e, 0x3b, 0x6d, 0x73, 0x67,
 }
 
 var (

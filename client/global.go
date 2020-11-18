@@ -352,12 +352,12 @@ func qualityTest(addr *net.TCPAddr) (int64, error) {
 }
 
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
-	friend := c.FindFriend(msg.Head.FromUin)
+	friend := c.FindFriend(msg.Head.GetFromUin())
 	var sender *message.Sender
 	if friend == nil {
 		sender = &message.Sender{
-			Uin:      msg.Head.FromUin,
-			Nickname: msg.Head.FromNick,
+			Uin:      msg.Head.GetFromUin(),
+			Nickname: msg.Head.GetFromNick(),
 			IsFriend: false,
 		}
 	} else {
@@ -367,23 +367,23 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		}
 	}
 	ret := &message.PrivateMessage{
-		Id:       msg.Head.MsgSeq,
+		Id:       msg.Head.GetMsgSeq(),
 		Target:   c.Uin,
-		Time:     msg.Head.MsgTime,
+		Time:     msg.Head.GetMsgTime(),
 		Sender:   sender,
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
 	if msg.Body.RichText.Attr != nil {
-		ret.InternalId = msg.Body.RichText.Attr.Random
+		ret.InternalId = msg.Body.RichText.Attr.GetRandom()
 	}
 	return ret
 }
 
 func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
-	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GroupUin)
-	mem := group.FindMember(msg.Head.FromUin)
+	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GetGroupUin())
+	mem := group.FindMember(msg.Head.GetFromUin())
 	sender := &message.Sender{
-		Uin:      msg.Head.FromUin,
+		Uin:      msg.Head.GetFromUin(),
 		Nickname: "Unknown",
 		IsFriend: false,
 	}
@@ -392,7 +392,7 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 		sender.CardName = mem.CardName
 	}
 	return &message.TempMessage{
-		Id:        msg.Head.MsgSeq,
+		Id:        msg.Head.GetMsgSeq(),
 		GroupCode: group.Code,
 		GroupName: group.Name,
 		Sender:    sender,
@@ -401,10 +401,10 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 }
 
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
-	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
+	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
 	if group == nil {
 		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
-		info, err := c.GetGroupInfo(m.Head.GroupInfo.GroupCode)
+		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
 		if err != nil {
 			c.Error("error to sync group %v : %v", m.Head.GroupInfo.GroupCode, err)
 			return nil
@@ -434,9 +434,9 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 			IsFriend: false,
 		}
 	} else {
-		mem := group.FindMember(m.Head.FromUin)
+		mem := group.FindMember(m.Head.GetFromUin())
 		if mem == nil {
-			info, _ := c.getMemberInfo(group.Code, m.Head.FromUin)
+			info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
 			if info == nil {
 				return nil
 			}
@@ -456,25 +456,25 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	var g *message.GroupMessage
 	g = &message.GroupMessage{
-		Id:        m.Head.MsgSeq,
+		Id:        m.Head.GetMsgSeq(),
 		GroupCode: group.Code,
 		GroupName: string(m.Head.GroupInfo.GroupName),
 		Sender:    sender,
-		Time:      m.Head.MsgTime,
+		Time:      m.Head.GetMsgTime(),
 		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
 	}
 	var extInfo *msg.ExtraInfo
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
 		// is rich long msg
-		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid != "" {
-			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid); f != nil && len(f.Nodes) == 1 {
+		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" {
+			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
-					Id:        m.Head.MsgSeq,
+					Id:        m.Head.GetMsgSeq(),
 					GroupCode: group.Code,
 					GroupName: string(m.Head.GroupInfo.GroupName),
 					Sender:    sender,
-					Time:      m.Head.MsgTime,
+					Time:      m.Head.GetMsgTime(),
 					Elements:  f.Nodes[0].Message,
 				}
 			}
@@ -484,8 +484,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		}
 	}
 	if !sender.IsAnonymous() {
-		mem := group.FindMember(m.Head.FromUin)
-		groupCard := m.Head.GroupInfo.GroupCard
+		mem := group.FindMember(m.Head.GetFromUin())
+		groupCard := m.Head.GroupInfo.GetGroupCard()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb.D8FCCommCardNameBuf{}
 			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
@@ -514,22 +514,22 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if m.Body.RichText.Ptt != nil {
 		g.Elements = []message.IMessageElement{
 			&message.VoiceElement{
-				Name: m.Body.RichText.Ptt.FileName,
+				Name: m.Body.RichText.Ptt.GetFileName(),
 				Md5:  m.Body.RichText.Ptt.FileMd5,
-				Size: m.Body.RichText.Ptt.FileSize,
+				Size: m.Body.RichText.Ptt.GetFileSize(),
 				Url:  "http://grouptalk.c2c.qq.com" + string(m.Body.RichText.Ptt.DownPara),
 			},
 		}
 	}
 	if m.Body.RichText.Attr != nil {
-		g.InternalId = m.Body.RichText.Attr.Random
+		g.InternalId = m.Body.RichText.Attr.GetRandom()
 	}
 	return g
 }
 
 func (b *groupMessageBuilder) build() *msg.Message {
 	sort.Slice(b.MessageSlices, func(i, j int) bool {
-		return b.MessageSlices[i].Content.PkgIndex < b.MessageSlices[j].Content.PkgIndex
+		return b.MessageSlices[i].Content.GetPkgIndex() < b.MessageSlices[j].Content.GetPkgIndex()
 	})
 	base := b.MessageSlices[0]
 	for _, m := range b.MessageSlices[1:] {

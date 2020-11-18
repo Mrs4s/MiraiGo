@@ -560,14 +560,14 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	ret := &message.ForwardMessage{}
 	for _, m := range multiMsg.Msg {
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
-			SenderId: m.Head.FromUin,
+			SenderId: m.Head.GetFromUin(),
 			SenderName: func() string {
-				if m.Head.MsgType == 82 && m.Head.GroupInfo != nil {
-					return m.Head.GroupInfo.GroupCard
+				if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
+					return m.Head.GroupInfo.GetGroupCard()
 				}
-				return m.Head.FromNick
+				return m.Head.GetFromNick()
 			}(),
-			Time:    m.Head.MsgTime,
+			Time:    m.Head.GetMsgTime(),
 			Message: message.ParseMessageElems(m.Body.RichText.Elems),
 		})
 	}

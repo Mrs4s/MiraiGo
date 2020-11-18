@@ -250,7 +250,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	if err != nil {
 		return nil, err
 	}
-	if rsp.Result != 0 {
+	if rsp.GetResult() != 0 {
 		return nil, errors.New("message svc result unsuccessful")
 	}
 	c.syncCookie = rsp.SyncCookie
@@ -264,17 +264,17 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 		for _, message := range pairMsg.Messages {
 			// delete message
 			delItem := &pb.MessageItem{
-				FromUin: message.Head.FromUin,
-				ToUin:   message.Head.ToUin,
+				FromUin: message.Head.GetFromUin(),
+				ToUin:   message.Head.GetToUin(),
 				MsgType: 187,
-				MsgSeq:  message.Head.MsgSeq,
-				MsgUid:  message.Head.MsgUid,
+				MsgSeq:  message.Head.GetMsgSeq(),
+				MsgUid:  message.Head.GetMsgUid(),
 			}
 			delItems = append(delItems, delItem)
-			if message.Head.ToUin != c.Uin {
+			if message.Head.GetToUin() != c.Uin {
 				continue
 			}
-			if (int64(pairMsg.LastReadTime) & 4294967295) > int64(message.Head.MsgTime) {
+			if (int64(pairMsg.GetLastReadTime()) & 4294967295) > int64(message.Head.GetMsgTime()) {
 				continue
 			}
 			strKey := fmt.Sprintf("%d%d%d%d", message.Head.FromUin, message.Head.ToUin, message.Head.MsgSeq, message.Head.MsgUid)
@@ -282,23 +282,23 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				continue
 			}
 			c.msgSvcCache.Add(strKey, "", time.Minute)
-			switch message.Head.MsgType {
+			switch message.Head.GetMsgType() {
 			case 33: // 加群同步
 				groupJoinLock.Lock()
-				group := c.FindGroupByUin(message.Head.FromUin)
-				if message.Head.AuthUin == c.Uin {
+				group := c.FindGroupByUin(message.Head.GetFromUin())
+				if message.Head.GetAuthUin() == c.Uin {
 					if group == nil && c.ReloadGroupList() == nil {
-						c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.FromUin))
+						c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.GetFromUin()))
 					}
 				} else {
-					if group != nil && group.FindMember(message.Head.AuthUin) == nil {
+					if group != nil && group.FindMember(message.Head.GetAuthUin()) == nil {
 						mem := &GroupMemberInfo{
-							Uin: message.Head.AuthUin,
+							Uin: message.Head.GetAuthUin(),
 							Nickname: func() string {
-								if message.Head.AuthNick == "" {
-									return message.Head.FromNick
+								if message.Head.GetAuthNick() == "" {
+									return message.Head.GetFromNick()
 								}
-								return message.Head.AuthNick
+								return message.Head.GetAuthNick()
 							}(),
 							JoinTime:   time.Now().Unix(),
 							Permission: Member,
@@ -320,20 +320,20 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 				if message.Head.C2CTmpMsgHead == nil {
 					continue
 				}
-				group := c.FindGroupByUin(message.Head.C2CTmpMsgHead.GroupUin)
+				group := c.FindGroupByUin(message.Head.C2CTmpMsgHead.GetGroupUin())
 				if group == nil {
 					continue
 				}
-				if message.Head.FromUin == c.Uin {
+				if message.Head.GetFromUin() == c.Uin {
 					continue
 				}
 				c.dispatchTempMessage(c.parseTempMessage(message))
 			case 166: // 好友消息
-				if message.Head.FromUin == c.Uin {
+				if message.Head.GetFromUin() == c.Uin {
 					for {
 						frdSeq := atomic.LoadInt32(&c.friendSeq)
-						if frdSeq < message.Head.MsgSeq {
-							if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, message.Head.MsgSeq) {
+						if frdSeq < message.Head.GetMsgSeq() {
+							if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, message.Head.GetMsgSeq()) {
 								break
 							}
 						} else {
@@ -361,8 +361,8 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					}
 					c.dispatchOfflineFileEvent(&OfflineFileEvent{
 						FileName:    string(sub4.NotOnlineFile.FileName),
-						FileSize:    sub4.NotOnlineFile.FileSize,
-						Sender:      message.Head.FromUin,
+						FileSize:    sub4.NotOnlineFile.GetFileSize(),
+						Sender:      message.Head.GetFromUin(),
 						DownloadUrl: rsp.(string),
 					})
 				}
@@ -370,9 +370,9 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 		}
 	}
 	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
-	if rsp.SyncFlag != msg.SyncFlag_STOP {
+	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
-		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(rsp.SyncFlag, time.Now().Unix()))
+		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix()))
 	}
 	return nil, err
 }
@@ -384,15 +384,15 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	if err != nil {
 		return nil, err
 	}
-	if pkt.Message.Head.FromUin == c.Uin {
+	if pkt.Message.Head.GetFromUin() == c.Uin {
 		c.dispatchGroupMessageReceiptEvent(&groupMessageReceiptEvent{
-			Rand: pkt.Message.Body.RichText.Attr.Random,
-			Seq:  pkt.Message.Head.MsgSeq,
+			Rand: pkt.Message.Body.RichText.Attr.GetRandom(),
+			Seq:  pkt.Message.Head.GetMsgSeq(),
 			Msg:  c.parseGroupMessage(pkt.Message),
 		})
 		return nil, nil
 	}
-	if pkt.Message.Content != nil && pkt.Message.Content.PkgNum > 1 {
+	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
 		var builder *groupMessageBuilder // TODO: 支持多SEQ
 		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
 		if !ok {
@@ -402,7 +402,7 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 			builder = i.(*groupMessageBuilder)
 		}
 		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
-		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.PkgNum {
+		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.GetPkgNum() {
 			c.groupMsgBuilders.Delete(pkt.Message.Content.DivSeq)
 			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
 		}
@@ -418,7 +418,7 @@ func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err
 	}
-	if rsp.Result != 0 {
+	if rsp.GetResult() != 0 {
 		c.Error("send msg error: %v %v", rsp.Result, rsp.ErrMsg)
 	}
 	return nil, nil
@@ -835,18 +835,18 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 		return nil, err
 	}
 	data := binary.NewReader(info.MsgData)
-	idStr := strconv.FormatInt(info.MsgUid, 10)
+	idStr := strconv.FormatInt(info.GetMsgUid(), 10)
 	if _, ok := c.transCache.Get(idStr); ok {
 		return nil, nil
 	}
 	c.transCache.Add(idStr, "", time.Second*15)
-	if info.MsgType == 34 {
+	if info.GetMsgType() == 34 {
 		data.ReadInt32()
 		data.ReadByte()
 		target := int64(uint32(data.ReadInt32()))
 		typ := int32(data.ReadByte())
 		operator := int64(uint32(data.ReadInt32()))
-		if g := c.FindGroupByUin(info.FromUin); g != nil {
+		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
 			groupLeaveLock.Lock()
 			defer groupLeaveLock.Unlock()
 			switch typ {
@@ -901,7 +901,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 			}
 		}
 	}
-	if info.MsgType == 44 {
+	if info.GetMsgType() == 44 {
 		data.ReadBytes(5)
 		var4 := int32(data.ReadByte())
 		var var5 int64 = 0
@@ -909,7 +909,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 		if var4 != 0 && var4 != 1 {
 			var5 = int64(uint32(data.ReadInt32()))
 		}
-		if g := c.FindGroupByUin(info.FromUin); g != nil {
+		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
 			if var5 == 0 && data.Len() == 1 {
 				newPermission := func() MemberPermission {
 					if data.ReadByte() == 1 {

@@ -24,13 +24,13 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 	req := &msg.MsgWithDrawReq{
 		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
 			{
-				SubCmd:    1,
-				GroupCode: groupCode,
+				SubCmd:    proto.Int32(1),
+				GroupCode: &groupCode,
 				MsgList: []*msg.GroupMsgInfo{
 					{
-						MsgSeq:    msgSeq,
-						MsgRandom: msgRan,
-						MsgType:   0,
+						MsgSeq:    &msgSeq,
+						MsgRandom: &msgRan,
+						MsgType:   proto.Int32(0),
 					},
 				},
 				UserDef: []byte{0x08, 0x00},
@@ -48,16 +48,16 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		{
 			MsgInfo: []*msg.C2CMsgInfo{
 				{
-					FromUin:   c.Uin,
-					ToUin:     uin,
-					MsgTime:   ts,
-					MsgUid:    int64(random),
-					MsgSeq:    msgSeq,
-					MsgRandom: random,
+					FromUin:   &c.Uin,
+					ToUin:     &uin,
+					MsgTime:   &ts,
+					MsgUid:    proto.Int64(int64(random)),
+					MsgSeq:    &msgSeq,
+					MsgRandom: &random,
 				},
 			},
 			Reserved: []byte{0x08, 0x00},
-			SubCmd:   1,
+			SubCmd:   proto.Int32(1),
 		},
 	}}
 	payload, _ := proto.Marshal(req)

@@ -42,13 +42,13 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.Group
 ok:
 	return &message.GroupVoiceElement{
 		Ptt: &msg.Ptt{
-			FileType:     4,
-			SrcUin:       c.Uin,
+			FileType:     proto.Int32(4),
+			SrcUin:       &c.Uin,
 			FileMd5:      h[:],
-			FileName:     hex.EncodeToString(h[:]) + ".amr",
-			FileSize:     int32(len(voice)),
+			FileName:     proto.String(hex.EncodeToString(h[:]) + ".amr"),
+			FileSize:     proto.Int32(int32(len(voice))),
 			GroupFileKey: rsp.FileKey,
-			BoolValid:    true,
+			BoolValid:    proto.Bool(true),
 			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
 }
@@ -75,13 +75,13 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice []byte) (*message.Privat
 ok:
 	return &message.PrivateVoiceElement{
 		Ptt: &msg.Ptt{
-			FileType:  4,
-			SrcUin:    c.Uin,
+			FileType:  proto.Int32(4),
+			SrcUin:    &c.Uin,
 			FileMd5:   h[:],
-			FileName:  hex.EncodeToString(h[:]) + ".amr",
-			FileSize:  int32(len(voice)),
+			FileName:  proto.String(hex.EncodeToString(h[:]) + ".amr"),
+			FileSize:  proto.Int32(int32(len(voice))),
 			FileKey:   rsp.FileKey,
-			BoolValid: true,
+			BoolValid: proto.Bool(true),
 			PbReserve: []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
 }
