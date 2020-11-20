@@ -353,9 +353,9 @@ func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 	}
 }
 
-func (m *GroupMemberInfo) Kick(msg string) {
+func (m *GroupMemberInfo) Kick(msg string, block bool) {
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg)
+		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
 	}
 }
 
