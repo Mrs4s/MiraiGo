@@ -328,7 +328,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					continue
 				}
 				c.dispatchTempMessage(c.parseTempMessage(message))
-			case 166: // 好友消息
+			case 166, 208: // 好友消息
 				if message.Head.GetFromUin() == c.Uin {
 					for {
 						frdSeq := atomic.LoadInt32(&c.friendSeq)

@@ -367,11 +367,23 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		}
 	}
 	ret := &message.PrivateMessage{
-		Id:       msg.Head.GetMsgSeq(),
-		Target:   c.Uin,
-		Time:     msg.Head.GetMsgTime(),
-		Sender:   sender,
-		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
+		Id:     msg.Head.GetMsgSeq(),
+		Target: c.Uin,
+		Time:   msg.Head.GetMsgTime(),
+		Sender: sender,
+		Elements: func() []message.IMessageElement {
+			if msg.Body.RichText.Ptt != nil {
+				return []message.IMessageElement{
+					&message.VoiceElement{
+						Name: msg.Body.RichText.Ptt.GetFileName(),
+						Md5:  msg.Body.RichText.Ptt.FileMd5,
+						Size: msg.Body.RichText.Ptt.GetFileSize(),
+						Url:  string(msg.Body.RichText.Ptt.DownPara),
+					},
+				}
+			}
+			return message.ParseMessageElems(msg.Body.RichText.Elems)
+		}(),
 	}
 	if msg.Body.RichText.Attr != nil {
 		ret.InternalId = msg.Body.RichText.Attr.GetRandom()
