@@ -87,6 +87,7 @@ type QQClient struct {
 	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
+	stat                   Statistics
 
 	groupListLock sync.Mutex
 }
@@ -286,6 +287,20 @@ func (c *QQClient) init() {
 	if !c.heartbeatEnabled {
 		go c.doHeartbeat()
 	}
+	c.stat.once.Do(func() {
+		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
+			c.stat.MessageReceived++
+		})
+		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
+			c.stat.MessageReceived++
+		})
+		c.OnTempMessage(func(_ *QQClient, _ *message.TempMessage) {
+			c.stat.MessageReceived++
+		})
+		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
+			c.stat.MessageSent++
+		})
+	})
 }
 
 func (c *QQClient) RequestSMS() bool {
@@ -504,6 +519,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
 		_ = c.send(pkt)
 	}
+	c.stat.MessageSent++
 	return &message.PrivateMessage{
 		Id:         seq,
 		InternalId: mr,
@@ -538,6 +554,7 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 	t := time.Now().Unix()
 	_, pkt := c.buildTempSendingPacket(group.Uin, target, seq, mr, t, m)
 	_ = c.send(pkt)
+	c.stat.MessageSent++
 	return &message.TempMessage{
 		Id:        seq,
 		GroupCode: group.Code,
@@ -1027,6 +1044,11 @@ func (c *QQClient) nextHighwayApplySeq() int32 {
 
 func (c *QQClient) send(pkt []byte) error {
 	_, err := c.Conn.Write(pkt)
+	if err != nil {
+		c.stat.PacketSent++
+	} else {
+		c.stat.PacketLost++
+	}
 	return err
 }
 
@@ -1037,8 +1059,10 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 	}
 	_, err := c.Conn.Write(pkt)
 	if err != nil {
+		c.stat.PacketLost++
 		return nil, err
 	}
+	c.stat.PacketSent++
 	ch := make(chan T)
 	defer close(ch)
 	c.handlers.Store(seq, func(i interface{}, err error) {
@@ -1079,6 +1103,7 @@ func (c *QQClient) netLoop() {
 		l, err := reader.ReadInt32()
 		if err == io.EOF || err == io.ErrClosedPipe {
 			c.Error("connection dropped by server: %v", err)
+			c.stat.DisconnectTimes++
 			err = c.connect()
 			if err != nil {
 				c.Error("connect server error: %v", err)
@@ -1125,6 +1150,7 @@ func (c *QQClient) netLoop() {
 		errCount = 0
 		retry = 0
 		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
+		c.stat.PacketReceived++
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
@@ -1157,6 +1183,7 @@ func (c *QQClient) netLoop() {
 	if c.lastLostMsg == "" {
 		c.lastLostMsg = "Connection lost."
 	}
+	c.stat.LostTimes++
 	c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: c.lastLostMsg})
 }
 
