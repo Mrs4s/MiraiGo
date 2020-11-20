@@ -436,7 +436,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if (msgLen > 300 || imgCount > 2) && !useFram {
+	if (msgLen > 200 || imgCount > 1) && !useFram {
 		ret := c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
 			{
 				SenderId:   c.Uin,
@@ -462,7 +462,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	defer c.onGroupMessageReceipt(eid)
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
 	msgLen := message.EstimateLength(m.Elements, 703)
-	if (msgLen > 300 || imgCount > 2) && !forward && !m.Any(func(e message.IMessageElement) bool {
+	if (msgLen > 200 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
 		_, ok := e.(*message.GroupVoiceElement)
 		_, ok2 := e.(*message.ServiceElement)
 		return ok || ok2
