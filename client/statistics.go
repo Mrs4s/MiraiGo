@@ -14,6 +14,6 @@ type Statistics struct {
 	once sync.Once
 }
 
-func (c *QQClient) GetStatistics() Statistics {
+func (c *QQClient) GetStatistics() *Statistics {
 	return c.stat
 }

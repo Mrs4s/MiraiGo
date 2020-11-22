@@ -87,7 +87,7 @@ type QQClient struct {
 	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
-	stat                   Statistics
+	stat                   *Statistics
 
 	groupListLock sync.Mutex
 }
@@ -179,6 +179,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		onlinePushCache:        utils.NewCache(time.Second * 15),
 		version:                genVersionInfo(SystemDeviceInfo.Protocol),
 		servers:                []*net.TCPAddr{},
+		stat:                   &Statistics{},
 	}
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
