@@ -1046,9 +1046,9 @@ func (c *QQClient) nextHighwayApplySeq() int32 {
 func (c *QQClient) send(pkt []byte) error {
 	_, err := c.Conn.Write(pkt)
 	if err != nil {
-		c.stat.PacketSent++
-	} else {
 		c.stat.PacketLost++
+	} else {
+		c.stat.PacketSent++
 	}
 	return err
 }
