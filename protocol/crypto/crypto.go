@@ -1,8 +1,10 @@
 package crypto
 
 import (
+	"crypto/elliptic"
 	"crypto/md5"
 	"crypto/rand"
+	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"math/big"
 )
@@ -18,39 +20,45 @@ type EncryptSession struct {
 
 var ECDH = &EncryptECDH{}
 
-var tenKeyX = new(big.Int).SetBytes([]byte{ // pubkey[1:24]
-	0x92, 0x8d, 0x88, 0x50, 0x67, 0x30, 0x88, 0xb3, 0x43, 0x26, 0x4e, 0x0c,
-	0x6b, 0xac, 0xb8, 0x49, 0x6d, 0x69, 0x77, 0x99, 0xf3, 0x72, 0x11, 0xde,
+var tenKeyX = new(big.Int).SetBytes([]byte{
+	0xEB, 0xCA, 0x94, 0xD7, 0x33, 0xE3, 0x99, 0xB2,
+	0xDB, 0x96, 0xEA, 0xCD, 0xD3, 0xF6, 0x9A, 0x8B,
+	0xB0, 0xF7, 0x42, 0x24, 0xE2, 0xB4, 0x4E, 0x33,
+	0x57, 0x81, 0x22, 0x11, 0xD2, 0xE6, 0x2E, 0xFB,
 })
 
-var tenKeyY = new(big.Int).SetBytes([]byte{ // pubkey[25:48]
-	0xb2, 0x5b, 0xb7, 0x39, 0x06, 0xcb, 0x08, 0x9f, 0xea, 0x96, 0x39, 0xb4,
-	0xe0, 0x26, 0x04, 0x98, 0xb5, 0x1a, 0x99, 0x2d, 0x50, 0x81, 0x3d, 0xa8,
+var tenKeyY = new(big.Int).SetBytes([]byte{
+	0xC9, 0x1B, 0xB5, 0x53, 0x09, 0x8E, 0x25, 0xE3,
+	0x3A, 0x79, 0x9A, 0xDC, 0x7F, 0x76, 0xFE, 0xB2,
+	0x08, 0xDA, 0x7C, 0x65, 0x22, 0xCD, 0xB0, 0x71,
+	0x9A, 0x30, 0x51, 0x80, 0xCC, 0x54, 0xA8, 0x2E,
 })
 
 func init() {
-	key, sx, sy, err := secp192k1.GenerateKey(rand.Reader)
+	p256 := elliptic.P256()
+	key, sx, sy, err := elliptic.GenerateKey(p256, rand.Reader)
 	if err != nil {
 		panic("Can't Create ECDH key pair")
 	}
-	x, _ := secp192k1.ScalarMult(tenKeyX, tenKeyY, key)
+	x, _ := p256.ScalarMult(tenKeyX, tenKeyY, key)
 	hash := md5.Sum(x.Bytes())
 	ECDH.InitialShareKey = hash[:]
-	ECDH.PublicKey = make([]byte, 49)[:0]
+	ECDH.PublicKey = make([]byte, 65)[:0]
 	ECDH.PublicKey = append(ECDH.PublicKey, 0x04)
 	ECDH.PublicKey = append(ECDH.PublicKey, sx.Bytes()...)
 	ECDH.PublicKey = append(ECDH.PublicKey, sy.Bytes()...)
 
-	//ECDH.InitialShareKey, _ = hex.DecodeString("41d0d17c506a5256d0d08d7aac133c70")
-	//ECDH.PublicKey, _ = hex.DecodeString("049fb03421ba7ab5fc91c2d94a7657fff7ba8fe09f08a22951a24865212cbc45aff1b5125188fa8f0e30473bc55d54edc2")
+	ECDH.InitialShareKey, _ = hex.DecodeString("c129edba736f4909ecc4ab8e010f46a3")
+	ECDH.PublicKey, _ = hex.DecodeString("04edb8906046f5bfbe9abbc5a88b37d70a6006bfbabc1f0cd49dfb33505e63efc5d78ee4e0a4595033b93d02096dcd3190279211f7b4f6785079e19004aa0e03bc")
 }
 
 func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 	w := binary.NewWriter()
-	w.WriteByte(0x01)
+	w.WriteByte(0x02)
 	w.WriteByte(0x01)
 	w.Write(k)
-	w.WriteUInt16(258)
+	w.WriteUInt16(0x01_31)
+	w.WriteUInt16(0x00_02)
 	w.WriteUInt16(uint16(len(ECDH.PublicKey)))
 	w.Write(ECDH.PublicKey)
 	w.EncryptAndWrite(ECDH.InitialShareKey, d)
@@ -58,7 +66,7 @@ func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 }
 
 func (e *EncryptECDH) Id() byte {
-	return 7
+	return 0x87
 }
 
 func NewEncryptSession(t133 []byte) *EncryptSession {

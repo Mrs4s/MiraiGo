@@ -46,7 +46,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 0))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, c.version.AppId, c.version.MainSigMap))
-		w.Write(tlv.T107(0))
+		w.Write(tlv.T107(6))
 		w.Write(tlv.T142(c.version.ApkId))
 		w.Write(tlv.T144(
 			[]byte(SystemDeviceInfo.IMEI),
