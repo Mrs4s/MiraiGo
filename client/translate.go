@@ -1,10 +1,10 @@
 package client
 
 import (
-	"errors"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) {
@@ -46,10 +46,10 @@ func decodeTranslateResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.TranslateRspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return rsp.BatchTranslateRsp, nil
 }

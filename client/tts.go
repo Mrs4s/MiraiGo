@@ -1,12 +1,13 @@
 package client
 
 import (
-	"errors"
 	"fmt"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/richmedia"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 func (c *QQClient) GetTts(text string) ([]byte, error) {
@@ -14,7 +15,7 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 	data := fmt.Sprintf("{\"appid\": \"201908021016\",\"sendUin\": %v,\"text\": \"%v\"}", c.Uin, text)
 	rsp, err := utils.HttpPostBytesWithCookie(url, []byte(data), c.getCookies())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to post to tts server")
 	}
 	ttsReader := binary.NewReader(rsp)
 	ttsWriter := binary.NewWriter()
@@ -34,7 +35,7 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 		ttsRsp := &richmedia.TtsRspBody{}
 		err := proto.Unmarshal(ttsReader.ReadBytes(length), ttsRsp)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 		}
 		if ttsRsp.RetCode != 0 {
 			return nil, errors.New("can't convert text to voice")

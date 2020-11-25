@@ -5,19 +5,21 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"image"
 	"io"
 	"math"
 	"math/rand"
 	"net"
+	"runtime/debug"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/golang/protobuf/proto"
 
@@ -701,7 +703,7 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 	count++
 	h := md5.Sum(img)
 	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
-	if err == ErrNotExists {
+	if errors.Is(err, ErrNotExists) {
 		// use group highway upload and query again for image id.
 		if _, err = c.UploadGroupImage(target, img); err != nil {
 			return nil, err
@@ -747,7 +749,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 	if rsp.IsExists {
 		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash, rsp.FileId, size, rsp.Width, rsp.Height, 1000), nil
 	}
-	return nil, errors.New("image not exists")
+	return nil, errors.New("image does not exist")
 }
 
 func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*message.FriendImageElement, error) {
@@ -763,7 +765,7 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 		return &message.FriendImageElement{
 			ImageId: rsp.ResourceId,
 			Md5:     hash,
-		}, ErrNotExists
+		}, errors.WithStack(ErrNotExists)
 	}
 	return &message.FriendImageElement{
 		ImageId: rsp.ResourceId,
@@ -820,7 +822,7 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 			return nil, err
 		}
 		if data == nil {
-			return nil, errors.New("rsp is nil")
+			return nil, errors.New("group member list unavailable: rsp is nil")
 		}
 		rsp := data.(groupMemberListResponse)
 		nextUin = rsp.NextUin
@@ -983,7 +985,7 @@ func (c *QQClient) connect() error {
 	if err != nil || conn == nil {
 		c.retryTimes++
 		if c.retryTimes > len(c.servers) {
-			return errors.New("network error")
+			return errors.New("All servers are unreachable")
 		}
 		c.Error("connect server error: %v", err)
 		if err = c.connect(); err != nil {
@@ -1050,7 +1052,7 @@ func (c *QQClient) send(pkt []byte) error {
 	} else {
 		c.stat.PacketSent++
 	}
-	return err
+	return errors.Wrap(err, "Packet failed to send")
 }
 
 func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
@@ -1058,12 +1060,12 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 		Response interface{}
 		Error    error
 	}
-	_, err := c.Conn.Write(pkt)
+
+	err := c.send(pkt)
 	if err != nil {
-		c.stat.PacketLost++
 		return nil, err
 	}
-	c.stat.PacketSent++
+
 	ch := make(chan T)
 	defer close(ch)
 	c.handlers.Store(seq, func(i interface{}, err error) {
@@ -1072,6 +1074,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 			Error:    err,
 		}
 	})
+
 	retry := 0
 	for true {
 		select {
@@ -1086,7 +1089,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 			c.handlers.Delete(seq)
 			//c.Error("packet timed out, seq: %v", seq)
 			//println("Packet Timed out")
-			return nil, errors.New("timeout")
+			return nil, errors.New("Packet timed out")
 		}
 	}
 	return nil, nil
@@ -1102,7 +1105,7 @@ func (c *QQClient) netLoop() {
 	errCount := 0
 	for c.NetLooping {
 		l, err := reader.ReadInt32()
-		if err == io.EOF || err == io.ErrClosedPipe {
+		if errors.Is(err, io.EOF) || errors.Is(err, io.ErrClosedPipe) {
 			c.Error("connection dropped by server: %v", err)
 			c.stat.DisconnectTimes++
 			err = c.connect()
@@ -1130,7 +1133,7 @@ func (c *QQClient) netLoop() {
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
-			if err == packets.ErrSessionExpired || err == packets.ErrPacketDropped {
+			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
 				break
 			}
 			errCount++
@@ -1155,26 +1158,26 @@ func (c *QQClient) netLoop() {
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {
-					c.Error("panic on decoder %v : %v", pkt.CommandName, pan)
-					//fmt.Println("panic on decoder:", pan)
+					c.Error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
 				}
 			}()
-			decoder, ok := c.decoders[pkt.CommandName]
-			if !ok {
+
+			if decoder, ok := c.decoders[pkt.CommandName]; ok {
+				// found predefined decoder
+				rsp, err := decoder(c, pkt.SequenceId, payload)
+				if err != nil {
+					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
+				}
 				if f, ok := c.handlers.Load(pkt.SequenceId); ok {
 					c.handlers.Delete(pkt.SequenceId)
-					f.(func(i interface{}, err error))(nil, nil)
+					f.(func(i interface{}, err error))(rsp, err)
 				}
-				return
-			}
-			rsp, err := decoder(c, pkt.SequenceId, payload)
-			if err != nil {
-				c.Debug("decode pkt %v error: %v", pkt.CommandName, err)
-				//log.Println("decode", pkt.CommandName, "error:", err)
-			}
-			if f, ok := c.handlers.Load(pkt.SequenceId); ok {
+			} else if f, ok := c.handlers.Load(pkt.SequenceId); ok {
+				// does not need decoder
 				c.handlers.Delete(pkt.SequenceId)
-				f.(func(i interface{}, err error))(rsp, err)
+				f.(func(i interface{}, err error))(nil, nil)
+			} else {
+				c.Debug("\nUnhandled Command: %s\nSeq: %d\nData: %x\n", pkt.CommandName, pkt.SequenceId, payload)
 			}
 		}()
 	}

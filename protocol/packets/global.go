@@ -1,10 +1,11 @@
 package packets
 
 import (
-	"errors"
+	"strconv"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
-	"strconv"
+	"github.com/pkg/errors"
 )
 
 var ErrUnknownFlag = errors.New("unknown flag")
@@ -88,13 +89,13 @@ func BuildSsoPacket(seq uint16, appId uint32, commandName, imei string, extData,
 
 func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 	if len(payload) < 6 {
-		return nil, ErrInvalidPayload
+		return nil, errors.WithStack(ErrInvalidPayload)
 	}
 	reader := binary.NewReader(payload)
 	flag1 := reader.ReadInt32()
 	flag2 := reader.ReadByte()
 	if reader.ReadByte() != 0 { // flag3
-		return nil, ErrUnknownFlag
+		return nil, errors.WithStack(ErrUnknownFlag)
 	}
 	reader.ReadString() // uin string
 	decrypted := func() (data []byte) {
@@ -111,10 +112,10 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 		return nil
 	}()
 	if len(decrypted) == 0 {
-		return nil, ErrDecryptFailed
+		return nil, errors.WithStack(ErrDecryptFailed)
 	}
 	if flag1 != 0x0A && flag1 != 0x0B {
-		return nil, ErrDecryptFailed
+		return nil, errors.WithStack(ErrDecryptFailed)
 	}
 	return parseSsoFrame(decrypted, flag2)
 }
@@ -122,13 +123,13 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	reader := binary.NewReader(payload)
 	if reader.ReadInt32()-4 > int32(reader.Len()) {
-		return nil, ErrPacketDropped
+		return nil, errors.WithStack(ErrPacketDropped)
 	}
 	seqId := reader.ReadInt32()
 	retCode := reader.ReadInt32()
 	if retCode != 0 {
 		if retCode == -10008 {
-			return nil, ErrSessionExpired
+			return nil, errors.WithStack(ErrSessionExpired)
 		}
 		return nil, errors.New("return code unsuccessful: " + strconv.FormatInt(int64(retCode), 10))
 	}
@@ -208,5 +209,5 @@ func (pkt *IncomingPacket) DecryptPayload(random, sessionKey []byte) ([]byte, er
 	if encryptType == 4 {
 		panic("todo")
 	}
-	return nil, ErrUnknownFlag
+	return nil, errors.WithStack(ErrUnknownFlag)
 }

@@ -3,14 +3,14 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
-	"fmt"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -122,7 +122,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interfa
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	rsp := pkt.MsgTryUpPttRsp[0]
 	if rsp.Result != 0 {
@@ -180,7 +180,7 @@ func decodePrivatePttStoreResponse(c *QQClient, _ uint16, payload []byte) (inter
 	rsp := cmd0x346.C346RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		c.Error("unmarshal cmd0x346 rsp body error: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "unmarshal cmd0x346 rsp body error")
 	}
 	if rsp.ApplyUploadRsp == nil {
 		c.Error("decode apply upload 500 error: apply rsp is nil.")
@@ -188,7 +188,7 @@ func decodePrivatePttStoreResponse(c *QQClient, _ uint16, payload []byte) (inter
 	}
 	if rsp.ApplyUploadRsp.RetCode != 0 {
 		c.Error("decode apply upload 500 error: %v", rsp.ApplyUploadRsp.RetCode)
-		return nil, errors.New(fmt.Sprint(rsp.ApplyUploadRsp.RetCode))
+		return nil, errors.Errorf("apply upload rsp error: %d", rsp.ApplyUploadRsp.RetCode)
 	}
 	if rsp.ApplyUploadRsp.BoolFileExist {
 		return pttUploadResponse{IsExists: true}, nil
