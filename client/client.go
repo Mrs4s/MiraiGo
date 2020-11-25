@@ -1177,7 +1177,7 @@ func (c *QQClient) netLoop() {
 				c.handlers.Delete(pkt.SequenceId)
 				f.(func(i interface{}, err error))(nil, nil)
 			} else {
-				c.Debug("\nUnhandled Command: %s\nSeq: %d\nData: %x\n", pkt.CommandName, pkt.SequenceId, payload)
+				c.Debug("\nUnhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}
 		}()
 	}
