@@ -143,6 +143,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interfa
 		UploadIp:   ip,
 		UploadPort: rsp.Uint32UpPort,
 		FileKey:    rsp.FileKey,
+		FileId:     rsp.FileId2,
 	}, nil
 }
 

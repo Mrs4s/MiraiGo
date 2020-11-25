@@ -226,6 +226,7 @@ type (
 		UploadIp   []string
 		UploadPort []int32
 		FileKey    []byte
+		FileId     int64
 	}
 
 	groupMessageReceiptEvent struct {
