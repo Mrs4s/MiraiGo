@@ -284,14 +284,13 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			c.msgSvcCache.Add(strKey, "", time.Minute)
 			switch message.Head.GetMsgType() {
 			case 33: // 加群同步
-				groupJoinLock.Lock()
 				group := c.FindGroupByUin(message.Head.GetFromUin())
 				if message.Head.GetAuthUin() == c.Uin {
 					if group == nil && c.ReloadGroupList() == nil {
 						c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.GetFromUin()))
 					}
 				} else {
-					if group != nil && group.FindMember(message.Head.GetAuthUin()) == nil {
+					if group != nil {
 						mem := &GroupMemberInfo{
 							Uin: message.Head.GetAuthUin(),
 							Nickname: func() string {
@@ -304,16 +303,21 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 							Permission: Member,
 							Group:      group,
 						}
-						group.Update(func(info *GroupInfo) {
-							info.Members = append(info.Members, mem)
-						})
+
+						groupJoinLock.Lock()
+						if group.FindMember(message.Head.GetAuthUin()) == nil {
+							group.Update(func(info *GroupInfo) {
+								info.Members = append(info.Members, mem)
+							})
+						}
+						groupJoinLock.Unlock()
+
 						c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
 							Group:  group,
 							Member: mem,
 						})
 					}
 				}
-				groupJoinLock.Unlock()
 			case 84, 87:
 				c.exceptAndDispatchGroupSysMsg()
 			case 141: // 临时会话
