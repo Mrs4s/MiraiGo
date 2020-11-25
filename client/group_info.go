@@ -1,11 +1,11 @@
 package client
 
 import (
-	"errors"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -120,10 +120,10 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D88DRspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.RspGroupInfo) == 0 {
 		return nil, errors.New(string(rsp.StrErrorInfo))

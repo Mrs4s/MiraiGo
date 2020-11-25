@@ -2,11 +2,13 @@ package client
 
 import (
 	"encoding/hex"
-	"errors"
 	"fmt"
+	"runtime/debug"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 type (
@@ -48,7 +50,7 @@ type (
 func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err error) {
 	defer func() {
 		if pan := recover(); pan != nil {
-			c.Error("get group fs error: %v", pan)
+			c.Error("get group fs error: %v\n%s", pan, debug.Stack())
 			err = errors.New("fs error")
 		}
 	}()
@@ -264,10 +266,10 @@ func decodeOIDB6d81Response(c *QQClient, _ uint16, payload []byte) (interface{},
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D8RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return &rsp, nil
 }
@@ -277,10 +279,10 @@ func decodeOIDB6d62Response(_ *QQClient, _ uint16, payload []byte) (interface{},
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.DownloadFileRsp.DownloadUrl == nil {
 		return nil, errors.New(rsp.DownloadFileRsp.ClientWording)
@@ -294,10 +296,10 @@ func decodeOIDB6d63Response(_ *QQClient, _ uint16, payload []byte) (interface{},
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.DeleteFileRsp == nil {
 		return "", nil

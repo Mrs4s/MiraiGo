@@ -1,14 +1,15 @@
 package client
 
 import (
-	"errors"
 	"fmt"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -40,7 +41,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 func decodeMultiApplyUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	body := multimsg.MultiRspBody{}
 	if err := proto.Unmarshal(payload, &body); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(body.MultimsgApplyupRsp) == 0 {
 		return nil, errors.New("rsp is empty")
@@ -52,7 +53,7 @@ func decodeMultiApplyUpResponse(_ *QQClient, _ uint16, payload []byte) (interfac
 	case 193:
 		return nil, errors.New("too large")
 	}
-	return nil, errors.New("failed")
+	return nil, errors.Errorf("unexpected multimsg apply up response: %d", rsp.Result)
 }
 
 // MultiMsg.ApplyDown
@@ -82,7 +83,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
 func decodeMultiApplyDownResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	body := multimsg.MultiRspBody{}
 	if err := proto.Unmarshal(payload, &body); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(body.MultimsgApplydownRsp) == 0 {
 		return nil, errors.New("not found")
@@ -96,7 +97,7 @@ func decodeMultiApplyDownResponse(_ *QQClient, _ uint16, payload []byte) (interf
 	}()
 	b, err := utils.HttpGetBytes(fmt.Sprintf("%s%s", prefix, string(rsp.ThumbDownPara)), "")
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to download by multi apply down")
 	}
 	if b[0] != 40 {
 		return nil, errors.New("unexpected body data")
@@ -111,12 +112,12 @@ func decodeMultiApplyDownResponse(_ *QQClient, _ uint16, payload []byte) (interf
 	data := tea.Decrypt(r.ReadBytes(int(i2)))
 	lb := longmsg.LongRspBody{}
 	if err = proto.Unmarshal(data, &lb); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	uc := binary.GZipUncompress(lb.MsgDownRsp[0].MsgContent)
 	mt := msg.PbMultiMsgTransmit{}
 	if err = proto.Unmarshal(uc, &mt); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return &mt, nil
 }

@@ -1,11 +1,12 @@
 package client
 
 import (
-	"errors"
-	"github.com/Mrs4s/MiraiGo/binary/jce"
-	"github.com/Mrs4s/MiraiGo/message"
 	"strings"
 	"sync"
+
+	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/pkg/errors"
 )
 
 var (

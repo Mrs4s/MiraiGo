@@ -5,6 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"net"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
@@ -12,12 +18,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"math/rand"
-	"net"
-	"sort"
-	"strings"
-	"time"
 )
 
 type DeviceInfo struct {
@@ -232,7 +234,7 @@ func (info *DeviceInfo) ToJson() []byte {
 func (info *DeviceInfo) ReadJson(d []byte) error {
 	var f DeviceInfoFile
 	if err := json.Unmarshal(d, &f); err != nil {
-		return err
+		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	info.Display = []byte(f.Display)
 	if f.Product != "" {
@@ -287,7 +289,7 @@ func (info *DeviceInfo) GenDeviceInfoData() []byte {
 	}
 	data, err := proto.Marshal(m)
 	if err != nil {
-		panic(err)
+		panic(errors.Wrap(err, "failed to unmarshal protobuf message"))
 	}
 	return data
 }
@@ -317,7 +319,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 		})
 	})))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to fetch server list")
 	}
 	rspPkt := &jce.RequestPacket{}
 	data := &jce.RequestDataVersion2{}
@@ -344,7 +346,7 @@ func qualityTest(addr *net.TCPAddr) (int64, error) {
 	start := time.Now()
 	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*5)
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrap(err, "failed to connect to server during quality test")
 	}
 	_ = conn.Close()
 	end := time.Now()
@@ -418,7 +420,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
 		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
 		if err != nil {
-			c.Error("error to sync group %v : %v", m.Head.GroupInfo.GroupCode, err)
+			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GroupCode, err)
 			return nil
 		}
 		group = info
@@ -427,7 +429,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if len(group.Members) == 0 {
 		mem, err := c.GetGroupMembers(group)
 		if err != nil {
-			c.Error("error to sync group %v member : %v", m.Head.GroupInfo.GroupCode, err)
+			c.Error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
 			return nil
 		}
 		group.Members = mem
@@ -590,13 +592,6 @@ func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
 	}}
 }
 
-func (c *QQClient) Info(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "INFO",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
 func (c *QQClient) Error(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "ERROR",
@@ -604,9 +599,30 @@ func (c *QQClient) Error(msg string, args ...interface{}) {
 	})
 }
 
+func (c *QQClient) Warning(msg string, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "WARNING",
+		Message: fmt.Sprintf(msg, args...),
+	})
+}
+
+func (c *QQClient) Info(msg string, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "INFO",
+		Message: fmt.Sprintf(msg, args...),
+	})
+}
+
 func (c *QQClient) Debug(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "DEBUG",
+		Message: fmt.Sprintf(msg, args...),
+	})
+}
+
+func (c *QQClient) Trace(msg string, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "TRACE",
 		Message: fmt.Sprintf(msg, args...),
 	})
 }
