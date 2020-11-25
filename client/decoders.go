@@ -1009,6 +1009,9 @@ func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{},
 	if rsp.Wording != "" {
 		return nil, errors.New(rsp.Wording)
 	}
+	if rsp.RetCode != 0 {
+		return nil, errors.New(fmt.Sprintf("server error, code: %v msg: %v", rsp.RetCode, rsp.ErrMsg))
+	}
 	var texts []*TextDetection
 	for _, text := range rsp.OcrRspBody.TextDetections {
 		var points []*Coordinate
