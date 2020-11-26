@@ -79,7 +79,7 @@ func decodeMsgWithDrawResponse(_ *QQClient, _ uint16, payload []byte) (interface
 	}
 	if len(rsp.GroupWithDraw) > 0 {
 		if rsp.GroupWithDraw[0].GetResult() != 0 {
-			return nil, errors.New(fmt.Sprintf("recall error: %v msg: %v", rsp.C2CWithDraw[0].GetResult(), rsp.C2CWithDraw[0].GetErrMsg()))
+			return nil, errors.New(fmt.Sprintf("recall error: %v msg: %v", rsp.GroupWithDraw[0].GetResult(), rsp.GroupWithDraw[0].GetErrMsg()))
 		}
 	}
 	return nil, nil
