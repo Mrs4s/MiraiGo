@@ -1115,7 +1115,7 @@ func (c *QQClient) netLoop() {
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
-			if e := c.registerClient(); e != nil {
+			if e := c.registerClient(); e != nil && e.Error() != "Packet timed out" {
 				c.Disconnect()
 				c.lastLostMsg = "register client failed: " + e.Error()
 				c.Error("reconnect failed: " + e.Error())
