@@ -59,6 +59,21 @@ message GroupMsgWithDrawReq{
   optional bytes userDef = 5;
 }
 
+message MsgWithDrawResp {
+  repeated C2CMsgWithDrawResp c2cWithDraw = 1;
+  repeated GroupMsgWithDrawResp groupWithDraw = 2;
+}
+
+message C2CMsgWithDrawResp {
+  optional int32 result = 1;
+  optional string errMsg = 2;
+}
+
+message GroupMsgWithDrawResp {
+  optional int32 result = 1;
+  optional string errMsg = 2;
+}
+
 message GroupMsgInfo {
   optional int32 msgSeq = 1;
   optional int32 msgRandom = 2;
