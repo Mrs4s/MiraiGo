@@ -46,9 +46,6 @@ func init() {
 	ECDH.PublicKey = append(ECDH.PublicKey, 0x04)
 	ECDH.PublicKey = append(ECDH.PublicKey, sx.Bytes()...)
 	ECDH.PublicKey = append(ECDH.PublicKey, sy.Bytes()...)
-
-	// ECDH.InitialShareKey, _ = hex.DecodeString("62625d204dc51a2f6dff86fc6277bb35")
-	// ECDH.PublicKey, _ = hex.DecodeString("042b66bd2e00591b4b97c915daf8c0b89f862241563e6f0455976e483706a2ca7a823c10636ecb03826ecd76ba46f5702f66ea671a2e09204591104077ebdf3f03")
 }
 
 func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
