@@ -151,12 +151,12 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 	case AndroidPhone: // Dumped by mirai from qq android v8.2.7
 		return &versionInfo{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537062845,
-			SortVersionName: "8.2.7",
-			BuildTime:       1571193922,
+			AppId:           537066439,
+			SortVersionName: "8.4.18",
+			BuildTime:       1604580615,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2413",
-			SSOVersion:      5,
+			SdkVersion:      "6.0.0.2454",
+			SSOVersion:      13,
 			MiscBitmap:      184024956,
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
