@@ -1,10 +1,9 @@
 package client
 
 import (
-	"errors"
-	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -70,16 +69,16 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 func decodeMsgWithDrawResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := msg.MsgWithDrawResp{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.C2CWithDraw) > 0 {
 		if rsp.C2CWithDraw[0].GetResult() != 0 {
-			return nil, errors.New(fmt.Sprintf("recall error: %v msg: %v", rsp.C2CWithDraw[0].GetResult(), rsp.C2CWithDraw[0].GetErrMsg()))
+			return nil, errors.Errorf("recall error: %v msg: %v", rsp.C2CWithDraw[0].GetResult(), rsp.C2CWithDraw[0].GetErrMsg())
 		}
 	}
 	if len(rsp.GroupWithDraw) > 0 {
 		if rsp.GroupWithDraw[0].GetResult() != 0 {
-			return nil, errors.New(fmt.Sprintf("recall error: %v msg: %v", rsp.GroupWithDraw[0].GetResult(), rsp.GroupWithDraw[0].GetErrMsg()))
+			return nil, errors.Errorf("recall error: %v msg: %v", rsp.GroupWithDraw[0].GetResult(), rsp.GroupWithDraw[0].GetErrMsg())
 		}
 	}
 	return nil, nil
