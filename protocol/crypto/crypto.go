@@ -4,7 +4,6 @@ import (
 	"crypto/elliptic"
 	"crypto/md5"
 	"crypto/rand"
-	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"math/big"
 )
@@ -41,15 +40,15 @@ func init() {
 		panic("Can't Create ECDH key pair")
 	}
 	x, _ := p256.ScalarMult(tenKeyX, tenKeyY, key)
-	hash := md5.Sum(x.Bytes())
+	hash  := md5.Sum(x.Bytes()[:16])
 	ECDH.InitialShareKey = hash[:]
 	ECDH.PublicKey = make([]byte, 65)[:0]
 	ECDH.PublicKey = append(ECDH.PublicKey, 0x04)
 	ECDH.PublicKey = append(ECDH.PublicKey, sx.Bytes()...)
 	ECDH.PublicKey = append(ECDH.PublicKey, sy.Bytes()...)
 
-	ECDH.InitialShareKey, _ = hex.DecodeString("c129edba736f4909ecc4ab8e010f46a3")
-	ECDH.PublicKey, _ = hex.DecodeString("04edb8906046f5bfbe9abbc5a88b37d70a6006bfbabc1f0cd49dfb33505e63efc5d78ee4e0a4595033b93d02096dcd3190279211f7b4f6785079e19004aa0e03bc")
+	// ECDH.InitialShareKey, _ = hex.DecodeString("62625d204dc51a2f6dff86fc6277bb35")
+	// ECDH.PublicKey, _ = hex.DecodeString("042b66bd2e00591b4b97c915daf8c0b89f862241563e6f0455976e483706a2ca7a823c10636ecb03826ecd76ba46f5702f66ea671a2e09204591104077ebdf3f03")
 }
 
 func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
@@ -58,7 +57,7 @@ func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 	w.WriteByte(0x01)
 	w.Write(k)
 	w.WriteUInt16(0x01_31)
-	w.WriteUInt16(0x00_02)
+	w.WriteUInt16(0x00_01)
 	w.WriteUInt16(uint16(len(ECDH.PublicKey)))
 	w.Write(ECDH.PublicKey)
 	w.EncryptAndWrite(ECDH.InitialShareKey, d)
