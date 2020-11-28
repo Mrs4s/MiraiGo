@@ -293,17 +293,10 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 					}
 				} else {
 					if group != nil && group.FindMember(message.Head.GetAuthUin()) == nil {
-						mem := &GroupMemberInfo{
-							Uin: message.Head.GetAuthUin(),
-							Nickname: func() string {
-								if message.Head.GetAuthNick() == "" {
-									return message.Head.GetFromNick()
-								}
-								return message.Head.GetAuthNick()
-							}(),
-							JoinTime:   time.Now().Unix(),
-							Permission: Member,
-							Group:      group,
+						mem, err := c.getMemberInfo(group.Code, message.Head.GetAuthUin())
+						if err != nil {
+							c.Debug("error to fetch new member info: %v", err)
+							continue
 						}
 						group.Update(func(info *GroupInfo) {
 							info.Members = append(info.Members, mem)
