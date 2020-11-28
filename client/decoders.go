@@ -414,7 +414,7 @@ func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.GetResult() != 0 {
-		c.Error("send msg error: %v %v", rsp.Result, rsp.ErrMsg)
+		c.Error("send msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
 	}
 	return nil, nil
 }
