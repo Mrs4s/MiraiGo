@@ -798,7 +798,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					func() {
 						groupJoinLock.Lock()
 						defer groupJoinLock.Unlock()
-						if s44.GroupSyncMsg.GetMsgType() == 3 && s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
+						if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
 							c.Debug("syncing members.")
 							if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
 								var lastJoinTime int64 = 0
@@ -818,8 +818,8 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 										}
 									}
 								}
+								return
 							}
-							return
 						}
 						c.Debug("syncing groups.")
 						old := c.GroupList
