@@ -796,6 +796,8 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				}
 				if s44.GroupSyncMsg != nil {
 					func() {
+						groupJoinLock.Lock()
+						defer groupJoinLock.Unlock()
 						if s44.GroupSyncMsg.GetMsgType() == 3 && s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
 							c.Debug("syncing members.")
 							if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
@@ -819,8 +821,6 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 							}
 							return
 						}
-						groupJoinLock.Lock()
-						defer groupJoinLock.Unlock()
 						c.Debug("syncing groups.")
 						old := c.GroupList
 						any := func(code int64) bool {
