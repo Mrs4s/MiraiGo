@@ -285,29 +285,31 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 			c.msgSvcCache.Add(strKey, "", time.Minute)
 			switch message.Head.GetMsgType() {
 			case 33: // 加群同步
-				groupJoinLock.Lock()
-				group := c.FindGroupByUin(message.Head.GetFromUin())
-				if message.Head.GetAuthUin() == c.Uin {
-					if group == nil && c.ReloadGroupList() == nil {
-						c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.GetFromUin()))
-					}
-				} else {
-					if group != nil && group.FindMember(message.Head.GetAuthUin()) == nil {
-						mem, err := c.getMemberInfo(group.Code, message.Head.GetAuthUin())
-						if err != nil {
-							c.Debug("error to fetch new member info: %v", err)
-							continue
+				func() {
+					groupJoinLock.Lock()
+					defer groupJoinLock.Unlock()
+					group := c.FindGroupByUin(message.Head.GetFromUin())
+					if message.Head.GetAuthUin() == c.Uin {
+						if group == nil && c.ReloadGroupList() == nil {
+							c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.GetFromUin()))
 						}
-						group.Update(func(info *GroupInfo) {
-							info.Members = append(info.Members, mem)
-						})
-						c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-							Group:  group,
-							Member: mem,
-						})
+					} else {
+						if group != nil && group.FindMember(message.Head.GetAuthUin()) == nil {
+							mem, err := c.getMemberInfo(group.Code, message.Head.GetAuthUin())
+							if err != nil {
+								c.Debug("error to fetch new member info: %v", err)
+								return
+							}
+							group.Update(func(info *GroupInfo) {
+								info.Members = append(info.Members, mem)
+							})
+							c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+								Group:  group,
+								Member: mem,
+							})
+						}
 					}
-				}
-				groupJoinLock.Unlock()
+				}()
 			case 84, 87:
 				c.exceptAndDispatchGroupSysMsg()
 			case 141: // 临时会话
@@ -794,6 +796,29 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 				}
 				if s44.GroupSyncMsg != nil {
 					func() {
+						if s44.GroupSyncMsg.GetMsgType() == 3 && s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
+							c.Debug("syncing members.")
+							if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
+								var lastJoinTime int64 = 0
+								for _, m := range group.Members {
+									if lastJoinTime < m.JoinTime {
+										lastJoinTime = m.JoinTime
+									}
+								}
+								if newMem, err := c.GetGroupMembers(group); err == nil {
+									group.Members = newMem
+									for _, m := range newMem {
+										if lastJoinTime < m.JoinTime {
+											c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+												Group:  group,
+												Member: m,
+											})
+										}
+									}
+								}
+							}
+							return
+						}
 						groupJoinLock.Lock()
 						defer groupJoinLock.Unlock()
 						c.Debug("syncing groups.")
