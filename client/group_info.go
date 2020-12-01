@@ -44,6 +44,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 					GroupMemo:            EmptyBytes,
 					GroupFingerMemo:      EmptyBytes,
 					GroupLastMsgTime:     proto.Uint32(0),
+					GroupCurMsgSeq:       proto.Uint32(0),
 					GroupQuestion:        EmptyBytes,
 					GroupAnswer:          EmptyBytes,
 					GroupGrade:           proto.Uint32(0),
@@ -146,6 +147,7 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
 		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
 		Members:        []*GroupMemberInfo{},
+		lastMsgSeq:     int64(info.GroupInfo.GetGroupCurMsgSeq()),
 		client:         c,
 	}, nil
 }

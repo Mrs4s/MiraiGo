@@ -69,6 +69,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
+	defer close(ch)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
 		if e.Rand == mr {
 			ch <- e.Seq
@@ -107,7 +108,16 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	}
 	select {
 	case mid = <-ch:
-	case <-time.After(time.Second * 5):
+	case <-time.After(time.Second * 3):
+		if g, err := c.GetGroupInfo(groupCode); err == nil {
+			if history, err := c.GetGroupMessages(groupCode, g.lastMsgSeq-10, g.lastMsgSeq+1); err == nil {
+				for _, m := range history {
+					if m.InternalId == mr {
+						return m
+					}
+				}
+			}
+		}
 		return ret
 	}
 	ret.Id = mid

@@ -75,8 +75,9 @@ type (
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
 
-		client *QQClient
-		lock   sync.RWMutex
+		client     *QQClient
+		lastMsgSeq int64
+		lock       sync.RWMutex
 	}
 
 	GroupMemberInfo struct {
