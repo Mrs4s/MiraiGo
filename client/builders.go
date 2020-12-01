@@ -551,46 +551,6 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex, pkgDiv int32, forward bool, m []message.IMessageElement) (uint16, []byte) {
-	seq := c.nextSeq()
-	var ptt *message.GroupVoiceElement
-	if len(m) > 0 {
-		if p, ok := m[0].(*message.GroupVoiceElement); ok {
-			ptt = p
-			m = []message.IMessageElement{}
-		}
-	}
-	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: &groupCode}},
-		ContentHead: &msg.ContentHead{PkgNum: &pkgNum, PkgIndex: &pkgIndex, DivSeq: &pkgDiv},
-		MsgBody: &msg.MessageBody{
-			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m, true),
-				Ptt: func() *msg.Ptt {
-					if ptt != nil {
-						return ptt.Ptt
-					}
-					return nil
-				}(),
-			},
-		},
-		MsgSeq:     proto.Int32(c.nextGroupSeq()),
-		MsgRand:    &r,
-		SyncCookie: EmptyBytes,
-		MsgVia:     proto.Int32(1),
-		MsgCtrl: func() *msg.MsgCtrl {
-			if forward {
-				return &msg.MsgCtrl{MsgFlag: proto.Int32(4)}
-			}
-			return nil
-		}(),
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// MessageSvc.PbSendMsg
 func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
 	seq := c.nextSeq()
 	var ptt *msg.Ptt

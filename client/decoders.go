@@ -378,53 +378,6 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	return nil, err
 }
 
-// OnlinePush.PbPushGroupMsg
-func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkt := msg.PushMessagePacket{}
-	err := proto.Unmarshal(payload, &pkt)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if pkt.Message.Head.GetFromUin() == c.Uin {
-		c.dispatchGroupMessageReceiptEvent(&groupMessageReceiptEvent{
-			Rand: pkt.Message.Body.RichText.Attr.GetRandom(),
-			Seq:  pkt.Message.Head.GetMsgSeq(),
-			Msg:  c.parseGroupMessage(pkt.Message),
-		})
-		return nil, nil
-	}
-	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
-		var builder *groupMessageBuilder // TODO: 支持多SEQ
-		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
-		if !ok {
-			builder = &groupMessageBuilder{}
-			c.groupMsgBuilders.Store(pkt.Message.Content.DivSeq, builder)
-		} else {
-			builder = i.(*groupMessageBuilder)
-		}
-		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
-		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.GetPkgNum() {
-			c.groupMsgBuilders.Delete(pkt.Message.Content.DivSeq)
-			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
-		}
-		return nil, nil
-	}
-	c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message))
-	return nil, nil
-}
-
-// MessageSvc.PbSendMsg
-func decodeMsgSendResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := msg.SendMessageResponse{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if rsp.GetResult() != 0 {
-		c.Error("send msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
-	}
-	return nil, nil
-}
-
 // MessageSvc.PushNotify
 func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))

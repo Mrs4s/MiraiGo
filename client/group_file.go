@@ -47,6 +47,12 @@ type (
 	}
 )
 
+func init() {
+	decoders["OidbSvc.0x6d8_1"] = decodeOIDB6d81Response
+	decoders["OidbSvc.0x6d6_2"] = decodeOIDB6d62Response
+	decoders["OidbSvc.0x6d6_3"] = decodeOIDB6d63Response
+}
+
 func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err error) {
 	defer func() {
 		if pan := recover(); pan != nil {

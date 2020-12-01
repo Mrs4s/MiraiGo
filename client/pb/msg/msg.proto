@@ -749,3 +749,23 @@ message UinTypeUserDef {
   optional int64 fromGroupCode = 2;
   optional string fileUuid = 3;
 }
+
+message GetGroupMsgReq {
+  optional uint64 groupCode = 1;
+  optional uint64 beginSeq = 2;
+  optional uint64 endSeq = 3;
+  optional uint32 filter = 4;
+  optional uint64 memberSeq = 5;
+  optional bool publicGroup = 6;
+  optional uint32 shieldFlag = 7;
+  optional uint32 saveTrafficFlag = 8;
+}
+
+message GetGroupMsgResp {
+  optional uint32 result = 1;
+  optional string errmsg = 2;
+  optional uint64 groupCode = 3;
+  optional uint64 returnBeginSeq = 4;
+  optional uint64 returnEndSeq = 5;
+  repeated Message msg = 6;
+}

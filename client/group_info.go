@@ -9,6 +9,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func init() {
+	decoders["SummaryCard.ReqSearch"] = decodeGroupSearchResponse
+	decoders["OidbSvc.0x88d_0"] = decodeGroupInfoResponse
+}
+
 func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
 	i, err := c.sendAndWait(c.buildGroupInfoRequestPacket(groupCode))
 	if err != nil {
