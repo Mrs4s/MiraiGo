@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/hex"
 	"fmt"
 	"net"
 	"strconv"
@@ -161,7 +162,10 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			ErrorMessage: t146r.ReadStringShort(),
 		}, nil
 	}
-
+	c.Debug("unknown login response: %v", t)
+	for k, v := range m {
+		c.Debug("Type: %v Value: %v", strconv.FormatInt(int64(k), 16), hex.EncodeToString(v))
+	}
 	return nil, errors.Errorf("unknown login response: %v", t) // ?
 }
 
