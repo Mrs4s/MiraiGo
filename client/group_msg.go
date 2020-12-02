@@ -192,13 +192,6 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 			ptt = p
 			m = []message.IMessageElement{}
 		}
-		for _, elem := range m {
-			if i, ok := elem.(*message.ReplyElement); ok {
-				if h, err := c.GetGroupMessages(groupCode, int64(i.ReplySeq), int64(i.ReplySeq)); err == nil && len(h) > 0 {
-					i.Original = h[0].OriginalObject
-				}
-			}
-		}
 	}
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: &groupCode}},
