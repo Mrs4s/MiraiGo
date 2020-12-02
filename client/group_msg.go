@@ -69,7 +69,6 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
-	defer close(ch)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
 		if e.Rand == mr {
 			ch <- e.Seq
