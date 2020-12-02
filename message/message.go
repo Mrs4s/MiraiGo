@@ -426,8 +426,11 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			if content != "" {
 				if elem.RichMsg.GetServiceId() == 35 {
 					reg := regexp.MustCompile(`m_resid="(\w+?.*?)"`)
-					res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})
-					continue
+					sub := reg.FindAllStringSubmatch(content, -1)
+					if len(sub) > 0 && len(sub[0]) > 1 {
+						res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})
+						continue
+					}
 				}
 				if elem.RichMsg.GetServiceId() == 33 {
 					continue // 前面一个 elem 已经解析到链接
