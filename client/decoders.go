@@ -775,24 +775,6 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 										}
 									}
 								}
-								return
-							}
-						}
-						c.Debug("syncing groups.")
-						old := c.GroupList
-						any := func(code int64) bool {
-							for _, g := range old {
-								if g.Code == code {
-									return true
-								}
-							}
-							return false
-						}
-						if err := c.ReloadGroupList(); err == nil {
-							for _, g := range c.GroupList {
-								if !any(g.Code) {
-									c.dispatchJoinGroupEvent(g)
-								}
 							}
 						}
 					}()
