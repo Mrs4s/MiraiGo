@@ -81,7 +81,8 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	if (msgLen > 200 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
 		_, ok := e.(*message.GroupVoiceElement)
 		_, ok2 := e.(*message.ServiceElement)
-		return ok || ok2
+		_, ok3 := e.(*message.ReplyElement)
+		return ok || ok2 || ok3
 	}) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
@@ -190,6 +191,13 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 		if p, ok := m[0].(*message.GroupVoiceElement); ok {
 			ptt = p
 			m = []message.IMessageElement{}
+		}
+		for _, elem := range m {
+			if i, ok := elem.(*message.ReplyElement); ok {
+				if h, err := c.GetGroupMessages(groupCode, int64(i.ReplySeq), int64(i.ReplySeq)); err == nil && len(h) > 0 {
+					i.Original = h[0].OriginalObject
+				}
+			}
 		}
 	}
 	req := &msg.SendMessageRequest{
