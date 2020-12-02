@@ -5,6 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"net"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
@@ -12,11 +18,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"math/rand"
-	"net"
-	"sort"
-	"strings"
 )
 
 type DeviceInfo struct {
@@ -148,12 +151,12 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 	case AndroidPhone: // Dumped by mirai from qq android v8.2.7
 		return &versionInfo{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537062845,
-			SortVersionName: "8.2.7",
-			BuildTime:       1571193922,
+			AppId:           537066439,
+			SortVersionName: "8.4.18",
+			BuildTime:       1604580615,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2413",
-			SSOVersion:      5,
+			SdkVersion:      "6.0.0.2454",
+			SSOVersion:      13,
 			MiscBitmap:      184024956,
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
@@ -231,7 +234,7 @@ func (info *DeviceInfo) ToJson() []byte {
 func (info *DeviceInfo) ReadJson(d []byte) error {
 	var f DeviceInfoFile
 	if err := json.Unmarshal(d, &f); err != nil {
-		return err
+		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	info.Display = []byte(f.Display)
 	if f.Product != "" {
@@ -286,7 +289,7 @@ func (info *DeviceInfo) GenDeviceInfoData() []byte {
 	}
 	data, err := proto.Marshal(m)
 	if err != nil {
-		panic(err)
+		panic(errors.Wrap(err, "failed to unmarshal protobuf message"))
 	}
 	return data
 }
@@ -316,7 +319,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 		})
 	})))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to fetch server list")
 	}
 	rspPkt := &jce.RequestPacket{}
 	data := &jce.RequestDataVersion2{}
@@ -338,13 +341,25 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	return adds, nil
 }
 
+func qualityTest(addr *net.TCPAddr) (int64, error) {
+	// see QualityTestManager
+	start := time.Now()
+	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*5)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to connect to server during quality test")
+	}
+	_ = conn.Close()
+	end := time.Now()
+	return end.Sub(start).Milliseconds(), nil
+}
+
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
-	friend := c.FindFriend(msg.Head.FromUin)
+	friend := c.FindFriend(msg.Head.GetFromUin())
 	var sender *message.Sender
 	if friend == nil {
 		sender = &message.Sender{
-			Uin:      msg.Head.FromUin,
-			Nickname: msg.Head.FromNick,
+			Uin:      msg.Head.GetFromUin(),
+			Nickname: msg.Head.GetFromNick(),
 			IsFriend: false,
 		}
 	} else {
@@ -354,23 +369,35 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		}
 	}
 	ret := &message.PrivateMessage{
-		Id:       msg.Head.MsgSeq,
-		Target:   c.Uin,
-		Time:     msg.Head.MsgTime,
-		Sender:   sender,
-		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
+		Id:     msg.Head.GetMsgSeq(),
+		Target: c.Uin,
+		Time:   msg.Head.GetMsgTime(),
+		Sender: sender,
+		Elements: func() []message.IMessageElement {
+			if msg.Body.RichText.Ptt != nil {
+				return []message.IMessageElement{
+					&message.VoiceElement{
+						Name: msg.Body.RichText.Ptt.GetFileName(),
+						Md5:  msg.Body.RichText.Ptt.FileMd5,
+						Size: msg.Body.RichText.Ptt.GetFileSize(),
+						Url:  string(msg.Body.RichText.Ptt.DownPara),
+					},
+				}
+			}
+			return message.ParseMessageElems(msg.Body.RichText.Elems)
+		}(),
 	}
 	if msg.Body.RichText.Attr != nil {
-		ret.InternalId = msg.Body.RichText.Attr.Random
+		ret.InternalId = msg.Body.RichText.Attr.GetRandom()
 	}
 	return ret
 }
 
 func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
-	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GroupUin)
-	mem := group.FindMember(msg.Head.FromUin)
+	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GetGroupUin())
+	mem := group.FindMember(msg.Head.GetFromUin())
 	sender := &message.Sender{
-		Uin:      msg.Head.FromUin,
+		Uin:      msg.Head.GetFromUin(),
 		Nickname: "Unknown",
 		IsFriend: false,
 	}
@@ -379,7 +406,7 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 		sender.CardName = mem.CardName
 	}
 	return &message.TempMessage{
-		Id:        msg.Head.MsgSeq,
+		Id:        msg.Head.GetMsgSeq(),
 		GroupCode: group.Code,
 		GroupName: group.Name,
 		Sender:    sender,
@@ -388,12 +415,12 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 }
 
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
-	group := c.FindGroup(m.Head.GroupInfo.GroupCode)
+	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
 	if group == nil {
 		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
-		info, err := c.GetGroupInfo(m.Head.GroupInfo.GroupCode)
+		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
 		if err != nil {
-			c.Error("error to sync group %v : %v", m.Head.GroupInfo.GroupCode, err)
+			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GroupCode, err)
 			return nil
 		}
 		group = info
@@ -402,7 +429,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if len(group.Members) == 0 {
 		mem, err := c.GetGroupMembers(group)
 		if err != nil {
-			c.Error("error to sync group %v member : %v", m.Head.GroupInfo.GroupCode, err)
+			c.Error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
 			return nil
 		}
 		group.Members = mem
@@ -421,9 +448,9 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 			IsFriend: false,
 		}
 	} else {
-		mem := group.FindMember(m.Head.FromUin)
+		mem := group.FindMember(m.Head.GetFromUin())
 		if mem == nil {
-			info, _ := c.getMemberInfo(group.Code, m.Head.FromUin)
+			info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
 			if info == nil {
 				return nil
 			}
@@ -443,25 +470,26 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	var g *message.GroupMessage
 	g = &message.GroupMessage{
-		Id:        m.Head.MsgSeq,
-		GroupCode: group.Code,
-		GroupName: string(m.Head.GroupInfo.GroupName),
-		Sender:    sender,
-		Time:      m.Head.MsgTime,
-		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
+		Id:             m.Head.GetMsgSeq(),
+		GroupCode:      group.Code,
+		GroupName:      string(m.Head.GroupInfo.GroupName),
+		Sender:         sender,
+		Time:           m.Head.GetMsgTime(),
+		Elements:       message.ParseMessageElems(m.Body.RichText.Elems),
+		OriginalObject: m,
 	}
 	var extInfo *msg.ExtraInfo
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
 		// is rich long msg
-		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid != "" {
-			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid); f != nil && len(f.Nodes) == 1 {
+		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" {
+			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
-					Id:        m.Head.MsgSeq,
+					Id:        m.Head.GetMsgSeq(),
 					GroupCode: group.Code,
 					GroupName: string(m.Head.GroupInfo.GroupName),
 					Sender:    sender,
-					Time:      m.Head.MsgTime,
+					Time:      m.Head.GetMsgTime(),
 					Elements:  f.Nodes[0].Message,
 				}
 			}
@@ -471,8 +499,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		}
 	}
 	if !sender.IsAnonymous() {
-		mem := group.FindMember(m.Head.FromUin)
-		groupCard := m.Head.GroupInfo.GroupCard
+		mem := group.FindMember(m.Head.GetFromUin())
+		groupCard := m.Head.GroupInfo.GetGroupCard()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb.D8FCCommCardNameBuf{}
 			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
@@ -501,22 +529,22 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if m.Body.RichText.Ptt != nil {
 		g.Elements = []message.IMessageElement{
 			&message.VoiceElement{
-				Name: m.Body.RichText.Ptt.FileName,
+				Name: m.Body.RichText.Ptt.GetFileName(),
 				Md5:  m.Body.RichText.Ptt.FileMd5,
-				Size: m.Body.RichText.Ptt.FileSize,
+				Size: m.Body.RichText.Ptt.GetFileSize(),
 				Url:  "http://grouptalk.c2c.qq.com" + string(m.Body.RichText.Ptt.DownPara),
 			},
 		}
 	}
 	if m.Body.RichText.Attr != nil {
-		g.InternalId = m.Body.RichText.Attr.Random
+		g.InternalId = m.Body.RichText.Attr.GetRandom()
 	}
 	return g
 }
 
 func (b *groupMessageBuilder) build() *msg.Message {
 	sort.Slice(b.MessageSlices, func(i, j int) bool {
-		return b.MessageSlices[i].Content.PkgIndex < b.MessageSlices[j].Content.PkgIndex
+		return b.MessageSlices[i].Content.GetPkgIndex() < b.MessageSlices[j].Content.GetPkgIndex()
 	})
 	base := b.MessageSlices[0]
 	for _, m := range b.MessageSlices[1:] {
@@ -565,13 +593,6 @@ func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
 	}}
 }
 
-func (c *QQClient) Info(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "INFO",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
 func (c *QQClient) Error(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "ERROR",
@@ -579,9 +600,30 @@ func (c *QQClient) Error(msg string, args ...interface{}) {
 	})
 }
 
+func (c *QQClient) Warning(msg string, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "WARNING",
+		Message: fmt.Sprintf(msg, args...),
+	})
+}
+
+func (c *QQClient) Info(msg string, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "INFO",
+		Message: fmt.Sprintf(msg, args...),
+	})
+}
+
 func (c *QQClient) Debug(msg string, args ...interface{}) {
 	c.dispatchLogEvent(&LogEvent{
 		Type:    "DEBUG",
+		Message: fmt.Sprintf(msg, args...),
+	})
+}
+
+func (c *QQClient) Trace(msg string, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "TRACE",
 		Message: fmt.Sprintf(msg, args...),
 	})
 }

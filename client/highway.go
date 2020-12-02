@@ -5,15 +5,16 @@ import (
 	"crypto/md5"
 	binary2 "encoding/binary"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb"
-	"github.com/Mrs4s/MiraiGo/utils"
-	"google.golang.org/protobuf/proto"
 	"net"
 	"net/http"
 	"strconv"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 )
 
 func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {
@@ -24,7 +25,7 @@ func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId
 	binary2.LittleEndian.PutUint32(addr.IP, ip)
 	conn, err := net.DialTCP("tcp", nil, &addr)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to connect to highway server")
 	}
 	defer conn.Close()
 	h := md5.Sum(data)
@@ -33,11 +34,11 @@ func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId
 	for _, p := range pkt {
 		_, err = conn.Write(p)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to write")
 		}
 		_, err = r.ReadByte()
 		if err != nil {
-			return err
+			return errors.Wrap(err, "failed to read byte")
 		}
 		hl, _ := r.ReadInt32()
 		a2, _ := r.ReadInt32()
@@ -46,7 +47,7 @@ func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId
 		r.ReadByte()
 		rsp := new(pb.RspDataHighwayHead)
 		if err = proto.Unmarshal(payload, rsp); err != nil {
-			return err
+			return errors.Wrap(err, "failed to unmarshal protobuf message")
 		}
 		if rsp.ErrorCode != 0 {
 			return errors.New("upload failed")
@@ -79,7 +80,7 @@ func (c *QQClient) uploadPtt(ip string, port int32, updKey, fileKey, data, md5 [
 	hex.Encode(url[p:], md5)
 	url = append(url, "&mType=pttDu&voice_encodec=1"...)
 	_, err := utils.HttpPostBytes(string(url), data)
-	return err
+	return errors.Wrap(err, "failed to upload ptt")
 }
 
 func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
@@ -95,7 +96,7 @@ func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
 	req.Header["Content-Type"] = []string{"multipart/form-data;boundary=****"}
 	rsp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to upload group head portrait")
 	}
 	rsp.Body.Close()
 	return nil

@@ -204,7 +204,7 @@ message TryUpPttResp {
   repeated int32 uint32UpIp = 5;
   repeated int32 uint32UpPort = 6;
   bytes upUkey = 7;
-  //    int64 fileid = 8; //
+  int64 fileId2 = 8;
   int64 upOffset = 9;
   int64 blockSize = 10;
   bytes fileKey = 11;

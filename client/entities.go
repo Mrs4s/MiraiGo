@@ -1,11 +1,12 @@
 package client
 
 import (
-	"errors"
-	"github.com/Mrs4s/MiraiGo/binary/jce"
-	"github.com/Mrs4s/MiraiGo/message"
 	"strings"
 	"sync"
+
+	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -74,8 +75,9 @@ type (
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
 
-		client *QQClient
-		lock   sync.RWMutex
+		client     *QQClient
+		lastMsgSeq int64
+		lock       sync.RWMutex
 	}
 
 	GroupMemberInfo struct {
@@ -225,6 +227,7 @@ type (
 		UploadIp   []string
 		UploadPort []int32
 		FileKey    []byte
+		FileId     int64
 	}
 
 	groupMessageReceiptEvent struct {
@@ -330,7 +333,7 @@ func (m *GroupMemberInfo) DisplayName() string {
 }
 
 func (m *GroupMemberInfo) EditCard(card string) {
-	if m.Manageable() && len(card) <= 60 {
+	if m.CardChangable() && len(card) <= 60 {
 		m.Group.client.editMemberCard(m.Group.Code, m.Uin, card)
 		m.CardName = card
 	}
@@ -353,9 +356,9 @@ func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 	}
 }
 
-func (m *GroupMemberInfo) Kick(msg string) {
+func (m *GroupMemberInfo) Kick(msg string, block bool) {
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg)
+		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
 	}
 }
 
@@ -376,6 +379,17 @@ func (m *GroupMemberInfo) Manageable() bool {
 		return false
 	}
 	return m.Permission != Administrator || self == Owner
+}
+
+func (m *GroupMemberInfo) CardChangable() bool {
+	if m.Uin == m.Group.client.Uin {
+		return true
+	}
+	self := m.Group.SelfPermission()
+	if self == Member {
+		return false
+	}
+	return m.Permission != Owner
 }
 
 func (r *UserJoinGroupRequest) Accept() {

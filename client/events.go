@@ -2,8 +2,10 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/message"
+	"runtime/debug"
 	"sync"
+
+	"github.com/Mrs4s/MiraiGo/message"
 )
 
 type eventHandlers struct {
@@ -383,7 +385,7 @@ func (c *QQClient) dispatchLogEvent(e *LogEvent) {
 func cover(f func()) {
 	defer func() {
 		if pan := recover(); pan != nil {
-			fmt.Println("event error:", pan)
+			fmt.Printf("event error: %v\n%s", pan, debug.Stack())
 		}
 	}()
 	f()

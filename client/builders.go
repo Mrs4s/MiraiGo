@@ -483,22 +483,22 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 	cook := c.syncCookie
 	if cook == nil {
 		cook, _ = proto.Marshal(&msg.SyncCookie{
-			Time:   msgTime,
-			Ran1:   758330138,
-			Ran2:   2480149246,
-			Const1: 1167238020,
-			Const2: 3913056418,
-			Const3: 0x1D,
+			Time:   &msgTime,
+			Ran1:   proto.Int64(758330138),
+			Ran2:   proto.Int64(2480149246),
+			Const1: proto.Int64(1167238020),
+			Const2: proto.Int64(3913056418),
+			Const3: proto.Int64(0x1D),
 		})
 	}
 	req := &msg.GetMessageRequest{
-		SyncFlag:           flag,
+		SyncFlag:           &flag,
 		SyncCookie:         cook,
-		LatestRambleNumber: 20,
-		OtherRambleNumber:  3,
-		OnlineSyncFlag:     1,
-		ContextFlag:        1,
-		MsgReqType:         1,
+		LatestRambleNumber: proto.Int32(20),
+		OtherRambleNumber:  proto.Int32(3),
+		OnlineSyncFlag:     proto.Int32(1),
+		ContextFlag:        proto.Int32(1),
+		MsgReqType:         proto.Int32(1),
 		PubaccountCookie:   []byte{},
 		MsgCtrlBuf:         []byte{},
 		ServerBuf:          []byte{},
@@ -551,46 +551,6 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex, pkgDiv int32, forward bool, m []message.IMessageElement) (uint16, []byte) {
-	seq := c.nextSeq()
-	var ptt *message.GroupVoiceElement
-	if len(m) > 0 {
-		if p, ok := m[0].(*message.GroupVoiceElement); ok {
-			ptt = p
-			m = []message.IMessageElement{}
-		}
-	}
-	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
-		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
-		MsgBody: &msg.MessageBody{
-			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m, true),
-				Ptt: func() *msg.Ptt {
-					if ptt != nil {
-						return ptt.Ptt
-					}
-					return nil
-				}(),
-			},
-		},
-		MsgSeq:     c.nextGroupSeq(),
-		MsgRand:    r,
-		SyncCookie: EmptyBytes,
-		MsgVia:     1,
-		MsgCtrl: func() *msg.MsgCtrl {
-			if forward {
-				return &msg.MsgCtrl{MsgFlag: 4}
-			}
-			return nil
-		}(),
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// MessageSvc.PbSendMsg
 func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
 	seq := c.nextSeq()
 	var ptt *msg.Ptt
@@ -601,24 +561,24 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 		}
 	}
 	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: target}},
-		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
+		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: &target}},
+		ContentHead: &msg.ContentHead{PkgNum: &pkgNum, PkgIndex: &pkgIndex, DivSeq: &pkgDiv},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m, false),
 				Ptt:   ptt,
 			},
 		},
-		MsgSeq:  msgSeq,
-		MsgRand: r,
+		MsgSeq:  &msgSeq,
+		MsgRand: &r,
 		SyncCookie: func() []byte {
 			cookie := &msg.SyncCookie{
-				Time:   time,
-				Ran1:   rand.Int63(),
-				Ran2:   rand.Int63(),
-				Const1: syncConst1,
-				Const2: syncConst2,
-				Const3: 0x1d,
+				Time:   &time,
+				Ran1:   proto.Int64(rand.Int63()),
+				Ran2:   proto.Int64(rand.Int63()),
+				Const1: &syncConst1,
+				Const2: &syncConst2,
+				Const3: proto.Int64(0x1d),
 			}
 			b, _ := proto.Marshal(cookie)
 			return b
@@ -634,25 +594,25 @@ func (c *QQClient) buildTempSendingPacket(groupUin, target int64, msgSeq, r int3
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{GrpTmp: &msg.GrpTmp{
-			GroupUin: groupUin,
-			ToUin:    target,
+			GroupUin: &groupUin,
+			ToUin:    &target,
 		}},
-		ContentHead: &msg.ContentHead{PkgNum: 1},
+		ContentHead: &msg.ContentHead{PkgNum: proto.Int32(1)},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m.Elements, false),
 			},
 		},
-		MsgSeq:  msgSeq,
-		MsgRand: r,
+		MsgSeq:  &msgSeq,
+		MsgRand: &r,
 		SyncCookie: func() []byte {
 			cookie := &msg.SyncCookie{
-				Time:   time,
-				Ran1:   rand.Int63(),
-				Ran2:   rand.Int63(),
-				Const1: syncConst1,
-				Const2: syncConst2,
-				Const3: 0x1d,
+				Time:   &time,
+				Ran1:   proto.Int64(rand.Int63()),
+				Ran2:   proto.Int64(rand.Int63()),
+				Const1: &syncConst1,
+				Const2: &syncConst2,
+				Const3: proto.Int64(0x1d),
 			}
 			b, _ := proto.Marshal(cookie)
 			return b
@@ -959,15 +919,19 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 }
 
 // OidbSvc.0x8a0_0
-func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string) (uint16, []byte) {
+func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string, block bool) (uint16, []byte) {
 	seq := c.nextSeq()
+	flagBlock := 0
+	if block {
+		flagBlock = 1
+	}
 	body := &oidb.D8A0ReqBody{
 		OptUint64GroupCode: groupCode,
 		MsgKickList: []*oidb.D8A0KickMemberInfo{
 			{
 				OptUint32Operate:   5,
 				OptUint64MemberUin: memberUin,
-				OptUint32Flag:      1,
+				OptUint32Flag:      int32(flagBlock),
 			},
 		},
 		KickMsg: []byte(kickMsg),

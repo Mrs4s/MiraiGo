@@ -1,12 +1,15 @@
 package client
 
 import (
-	"errors"
-	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
+
+func init() {
+	decoders["OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200"] = decodeOfflineFileDownloadResponse
+}
 
 func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -33,7 +36,7 @@ func decodeOfflineFileDownloadResponse(c *QQClient, _ uint16, payload []byte) (i
 	rsp := cmd0x346.C346RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		c.Error("unmarshal cmd0x346 rsp body error: %v", err)
-		return nil, err
+		return nil, errors.Wrap(err, "unmarshal cmd0x346 rsp body error")
 	}
 	if rsp.ApplyDownloadRsp == nil {
 		c.Error("decode apply download 1200 error: apply rsp is nil.")
@@ -41,7 +44,7 @@ func decodeOfflineFileDownloadResponse(c *QQClient, _ uint16, payload []byte) (i
 	}
 	if rsp.ApplyDownloadRsp.RetCode != 0 {
 		c.Error("decode apply download 1200 error: %v", rsp.ApplyDownloadRsp.RetCode)
-		return nil, errors.New(fmt.Sprint(rsp.ApplyDownloadRsp.RetCode))
+		return nil, errors.Errorf("apply download rsp error: %d", rsp.ApplyDownloadRsp.RetCode)
 	}
 	return "http://" + rsp.ApplyDownloadRsp.DownloadInfo.DownloadDomain + rsp.ApplyDownloadRsp.DownloadInfo.DownloadUrl, nil
 }
