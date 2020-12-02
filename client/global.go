@@ -470,12 +470,13 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	var g *message.GroupMessage
 	g = &message.GroupMessage{
-		Id:        m.Head.GetMsgSeq(),
-		GroupCode: group.Code,
-		GroupName: string(m.Head.GroupInfo.GroupName),
-		Sender:    sender,
-		Time:      m.Head.GetMsgTime(),
-		Elements:  message.ParseMessageElems(m.Body.RichText.Elems),
+		Id:             m.Head.GetMsgSeq(),
+		GroupCode:      group.Code,
+		GroupName:      string(m.Head.GroupInfo.GroupName),
+		Sender:         sender,
+		Time:           m.Head.GetMsgTime(),
+		Elements:       message.ParseMessageElems(m.Body.RichText.Elems),
+		OriginalObject: m,
 	}
 	var extInfo *msg.ExtraInfo
 	// pre parse

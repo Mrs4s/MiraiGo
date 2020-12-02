@@ -2,6 +2,7 @@ package client
 
 import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -10,8 +11,30 @@ import (
 // 撤回相关处理逻辑
 
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgId, msgInternalId int32) error {
+	if m, _ := c.GetGroupMessages(groupCode, int64(msgId), int64(msgId)); len(m) > 0 {
+		content := m[0].OriginalObject.Content
+		if content.GetPkgNum() > 1 {
+			if m, err := c.GetGroupMessages(groupCode, int64(msgId-content.GetPkgIndex()-1), int64(msgId+(content.GetPkgNum()-content.GetPkgIndex()+1))); err == nil {
+				if flag, _ := c.internalGroupRecall(groupCode, msgInternalId, m); flag {
+					return nil
+				}
+			}
+		}
+	}
 	_, err := c.sendAndWait(c.buildGroupRecallPacket(groupCode, msgId, msgInternalId))
 	return err
+}
+
+func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalId int32, m []*message.GroupMessage) (flag bool, err error) {
+	for _, item := range m {
+		if item.InternalId == msgInternalId {
+			flag = true
+			if _, err := c.sendAndWait(c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId)); err != nil {
+				return false, err
+			}
+		}
+	}
+	return flag, nil
 }
 
 func (c *QQClient) RecallPrivateMessage(uin, ts int64, msgId, msgInternalId int32) error {
