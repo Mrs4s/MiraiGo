@@ -177,7 +177,7 @@ func decodeClientRegisterResponse(c *QQClient, _ uint16, payload []byte) (interf
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	svcRsp := &jce.SvcRespRegister{}
 	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
-	if svcRsp.Result != "" || svcRsp.Status != 11 {
+	if svcRsp.Result != "" || svcRsp.ReplyCode != 0 {
 		if svcRsp.Result != "" {
 			c.Error("reg error: %v", svcRsp.Result)
 		}

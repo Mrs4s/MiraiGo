@@ -417,10 +417,10 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
 	if group == nil {
-		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
+		c.Debug("sync group %v.", m.Head.GroupInfo.GetGroupCode())
 		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
 		if err != nil {
-			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GroupCode, err)
+			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GetGroupCode(), err)
 			return nil
 		}
 		group = info
