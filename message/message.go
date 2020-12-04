@@ -227,7 +227,7 @@ func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
 	for _, elem := range msg.Elements {
 		switch o := elem.(type) {
 		case *TextElement:
-			for _, text := range utils.ChunkString(o.Content, 150) {
+			for _, text := range utils.ChunkString(o.Content, 80) {
 				fragmented = append(fragmented, []IMessageElement{NewText(text)})
 			}
 		default:
