@@ -450,16 +450,24 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	} else {
 		mem := group.FindMember(m.Head.GetFromUin())
 		if mem == nil {
-			info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
-			if info == nil {
+			group.Update(func(_ *GroupInfo) {
+				if mem = group.FindMember(m.Head.GetFromUin()); mem != nil {
+					return
+				}
+				info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
+				if info == nil {
+					return
+				}
+				mem = info
+				group.Members = append(group.Members, mem)
+				go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+					Group:  group,
+					Member: info,
+				})
+			})
+			if mem == nil {
 				return nil
 			}
-			mem = info
-			group.Members = append(group.Members, mem)
-			go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-				Group:  group,
-				Member: info,
-			})
 		}
 		sender = &message.Sender{
 			Uin:      mem.Uin,

@@ -758,23 +758,25 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 						if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
 							c.Debug("syncing members.")
 							if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
-								var lastJoinTime int64 = 0
-								for _, m := range group.Members {
-									if lastJoinTime < m.JoinTime {
-										lastJoinTime = m.JoinTime
-									}
-								}
-								if newMem, err := c.GetGroupMembers(group); err == nil {
-									group.Members = newMem
-									for _, m := range newMem {
+								group.Update(func(_ *GroupInfo) {
+									var lastJoinTime int64 = 0
+									for _, m := range group.Members {
 										if lastJoinTime < m.JoinTime {
-											c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-												Group:  group,
-												Member: m,
-											})
+											lastJoinTime = m.JoinTime
 										}
 									}
-								}
+									if newMem, err := c.GetGroupMembers(group); err == nil {
+										group.Members = newMem
+										for _, m := range newMem {
+											if lastJoinTime < m.JoinTime {
+												go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+													Group:  group,
+													Member: m,
+												})
+											}
+										}
+									}
+								})
 							}
 						}
 					}()
@@ -782,7 +784,6 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 			}
 		}
 	}
-
 	return nil, nil
 }
 
