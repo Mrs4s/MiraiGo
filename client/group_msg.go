@@ -77,7 +77,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	defer c.onGroupMessageReceipt(eid)
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
 	msgLen := message.EstimateLength(m.Elements, 703)
-	if (msgLen > 200 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
+	if (msgLen > 100 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
 		_, ok := e.(*message.GroupVoiceElement)
 		_, ok2 := e.(*message.ServiceElement)
 		_, ok3 := e.(*message.ReplyElement)
