@@ -2,8 +2,9 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"strconv"
+
+	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 )
 
 type (
