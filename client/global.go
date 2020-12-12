@@ -493,12 +493,13 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" {
 			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
-					Id:        m.Head.GetMsgSeq(),
-					GroupCode: group.Code,
-					GroupName: string(m.Head.GroupInfo.GroupName),
-					Sender:    sender,
-					Time:      m.Head.GetMsgTime(),
-					Elements:  f.Nodes[0].Message,
+					Id:             m.Head.GetMsgSeq(),
+					GroupCode:      group.Code,
+					GroupName:      string(m.Head.GroupInfo.GroupName),
+					Sender:         sender,
+					Time:           m.Head.GetMsgTime(),
+					Elements:       f.Nodes[0].Message,
+					OriginalObject: m,
 				}
 			}
 		}
