@@ -1016,13 +1016,11 @@ func (c *QQClient) netLoop() {
 				if err != nil {
 					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
 				}
-				if f, ok := c.handlers.Load(pkt.SequenceId); ok {
-					c.handlers.Delete(pkt.SequenceId)
+				if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 					f.(func(i interface{}, err error))(rsp, err)
 				}
-			} else if f, ok := c.handlers.Load(pkt.SequenceId); ok {
+			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder
-				c.handlers.Delete(pkt.SequenceId)
 				f.(func(i interface{}, err error))(nil, nil)
 			} else {
 				c.Debug("\nUnhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
