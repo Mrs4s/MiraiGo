@@ -299,18 +299,22 @@ func (g *GroupInfo) AdministratorOrOwner() bool {
 
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	r := g.Read(func(info *GroupInfo) interface{} {
-		for _, m := range info.Members {
-			f := m
-			if f.Uin == uin {
-				return f
-			}
-		}
-		return nil
+		return info.FindMemberWithoutLock(uin)
 	})
 	if r == nil {
 		return nil
 	}
 	return r.(*GroupMemberInfo)
+}
+
+func (g *GroupInfo) FindMemberWithoutLock(uin int64) *GroupMemberInfo {
+	for _, m := range g.Members {
+		f := m
+		if f.Uin == uin {
+			return f
+		}
+	}
+	return nil
 }
 
 func (g *GroupInfo) Update(f func(*GroupInfo)) {
