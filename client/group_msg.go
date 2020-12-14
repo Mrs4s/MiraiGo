@@ -70,11 +70,12 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	mr := int32(rand.Uint32())
 	ch := make(chan int32)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
-		if e.Rand == mr {
+		if e.Rand == mr && !utils.IsChanClosed(ch) {
 			ch <- e.Seq
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
+	defer close(ch)
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
 	msgLen := message.EstimateLength(m.Elements, 703)
 	if (msgLen > 100 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
@@ -108,7 +109,9 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	}
 	select {
 	case mid = <-ch:
-	case <-time.After(time.Second * 3):
+		ret.Id = mid
+		return ret
+	case <-time.After(time.Second * 5):
 		if g, err := c.GetGroupInfo(groupCode); err == nil {
 			if history, err := c.GetGroupMessages(groupCode, g.lastMsgSeq-10, g.lastMsgSeq+1); err == nil {
 				for _, m := range history {
@@ -120,8 +123,6 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		}
 		return ret
 	}
-	ret.Id = mid
-	return ret
 }
 
 func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m *message.ForwardMessage) *message.GroupMessage {
