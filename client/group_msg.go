@@ -5,6 +5,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -19,6 +20,7 @@ func init() {
 	decoders["OnlinePush.PbPushGroupMsg"] = decodeGroupMessagePacket
 	decoders["MessageSvc.PbSendMsg"] = decodeMsgSendResponse
 	decoders["MessageSvc.PbGetGroupMsg"] = decodeGetGroupMsgResponse
+	decoders["OidbSvc.0x8a7_0"] = decodeAtAllRemainResponse
 }
 
 // SendGroupMessage 发送群消息
@@ -63,6 +65,14 @@ func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*messa
 		return nil, err
 	}
 	return i.([]*message.GroupMessage), nil
+}
+
+func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
+	i, err := c.sendAndWait(c.buildAtAllRemainRequestPacket(groupCode))
+	if err != nil {
+		return nil, err
+	}
+	return i.(*AtAllRemainInfo), nil
 }
 
 func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
@@ -236,6 +246,25 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 	return seq, packet
 }
 
+func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	body := &oidb.D8A7ReqBody{
+		SubCmd:                    proto.Uint32(1),
+		LimitIntervalTypeForUin:   proto.Uint32(2),
+		LimitIntervalTypeForGroup: proto.Uint32(1),
+		Uin:                       proto.Uint64(uint64(c.Uin)),
+		GroupCode:                 proto.Uint64(uint64(groupCode)),
+	}
+	b, _ := proto.Marshal(body)
+	req := &oidb.OIDBSSOPkg{
+		Command:    2215,
+		Bodybuffer: b,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a7_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // OnlinePush.PbPushGroupMsg
 func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
@@ -299,4 +328,20 @@ func decodeGetGroupMsgResponse(c *QQClient, _ uint16, payload []byte) (interface
 		ret = append(ret, c.parseGroupMessage(m))
 	}
 	return ret, nil
+}
+
+func decodeAtAllRemainResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := oidb.D8A7RspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return &AtAllRemainInfo{
+		CanAtAll:                 rsp.GetCanAtAll(),
+		RemainAtAllCountForGroup: rsp.GetRemainAtAllCountForGroup(),
+		RemainAtAllCountForUin:   rsp.GetRemainAtAllCountForUin(),
+	}, nil
 }

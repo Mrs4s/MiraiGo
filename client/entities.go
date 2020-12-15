@@ -198,6 +198,12 @@ type (
 		Y int32 `json:"y"`
 	}
 
+	AtAllRemainInfo struct {
+		CanAtAll                 bool   `json:"can_at_all"`
+		RemainAtAllCountForGroup uint32 `json:"remain_at_all_count_for_group"`
+		RemainAtAllCountForUin   uint32 `json:"remain_at_all_count_for_uin"`
+	}
+
 	groupMemberListResponse struct {
 		NextUin int64
 		list    []*GroupMemberInfo
