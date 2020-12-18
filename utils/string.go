@@ -26,7 +26,7 @@ func ChunkString(s string, chunkSize int) []string {
 	var chunks []string
 	runes := []rune(s)
 
-	if len(runes) == 0 {
+	if len(runes) == 0 || len(runes) <= chunkSize {
 		return []string{s}
 	}
 
