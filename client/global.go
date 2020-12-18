@@ -223,6 +223,8 @@ func (info *DeviceInfo) ToJson() []byte {
 				return 1
 			case AndroidWatch:
 				return 2
+			case MacOS:
+				return 3
 			}
 			return 0
 		}(),
