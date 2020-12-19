@@ -27,6 +27,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
+//go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]func(i interface{}, err error)"
+
 type QQClient struct {
 	Uin         int64
 	PasswordMd5 [16]byte
@@ -46,7 +48,7 @@ type QQClient struct {
 	Conn                    net.Conn
 	ConnectTime             time.Time
 
-	handlers        sync.Map
+	handlers        HandlerMap
 	servers         []*net.TCPAddr
 	currServerIndex int
 	retryTimes      int
@@ -1017,11 +1019,11 @@ func (c *QQClient) netLoop() {
 					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
 				}
 				if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
-					f.(func(i interface{}, err error))(rsp, err)
+					f(rsp, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder
-				f.(func(i interface{}, err error))(nil, nil)
+				f(nil, nil)
 			} else {
 				c.Debug("\nUnhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}
