@@ -36,9 +36,9 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		if c.AllowSlider {
-			w.WriteUInt16(0x17)
+			w.WriteUInt16(0x18)
 		} else {
-			w.WriteUInt16(0x16)
+			w.WriteUInt16(0x17)
 		}
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
@@ -47,6 +47,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, c.version.AppId, c.version.MainSigMap))
 		w.Write(tlv.T107(0))
+		w.Write(tlv.T108(SystemDeviceInfo.IMEI))
 		w.Write(tlv.T142(c.version.ApkId))
 		w.Write(tlv.T144(
 			[]byte(SystemDeviceInfo.IMEI),
@@ -74,10 +75,11 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
-			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
-			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
+			"qzone.qq.com", "vip.qq.com", "gamecenter.qq.com", "qun.qq.com", "game.qq.com",
+			"qqweb.qq.com", "office.qq.com", "ti.qq.com", "mail.qq.com", "mma.qq.com",
 		}))
 
+		//todo: tlv 400
 		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
 		w.Write(tlv.T188(SystemDeviceInfo.AndroidId))
 		if len(SystemDeviceInfo.IMSIMd5) != 0 {

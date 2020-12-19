@@ -5,6 +5,7 @@ import (
 	binary2 "encoding/binary"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -38,9 +39,7 @@ func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable b
 			}
 			w.WriteUInt32(appId)
 			w.WriteUInt32(1) // password login
-			b := make([]byte, 8)
-			binary2.BigEndian.PutUint64(b, uint64(uin))
-			w.WriteTlv(b)
+			w.WriteTlv([]byte(strconv.FormatInt(int64(uin), 10)))
 			w.WriteUInt16(0)
 		})
 		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
