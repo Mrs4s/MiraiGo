@@ -490,7 +490,20 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	}
 	multiMsg := i.(*msg.PbMultiMsgTransmit)
 	ret := &message.ForwardMessage{}
-	for _, m := range multiMsg.Msg {
+	if multiMsg.GetPbItemList() == nil {
+		return nil
+	}
+	var msg *msg.PbMultiMsgItem
+	for _, m := range multiMsg.GetPbItemList() {
+		if m.GetFileName() == "MultiMsg" {
+			msg = m
+			break
+		}
+	}
+	if msg == nil || msg.GetBuffer() == nil || msg.GetBuffer().GetMsg() == nil {
+		return nil
+	}
+	for _, m := range msg.GetBuffer().GetMsg() {
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
 			SenderId: m.Head.GetFromUin(),
 			SenderName: func() string {
