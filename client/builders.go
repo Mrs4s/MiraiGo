@@ -74,8 +74,8 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
-			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
-			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
+			"qzone.qq.com", "vip.qq.com", "gamecenter.qq.com", "qun.qq.com", "game.qq.com",
+			"qqweb.qq.com", "office.qq.com", "ti.qq.com", "mail.qq.com", "mma.qq.com",
 		}))
 
 		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))

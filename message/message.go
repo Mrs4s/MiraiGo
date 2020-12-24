@@ -563,11 +563,10 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 			},
 		})
 	}
-	buf, _ := proto.Marshal(&msg.PbMultiMsgNew{Msg: msgs})
 	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
 		{
 			FileName: proto.String("MultiMsg"),
-			Buffer:   buf,
+			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
 		},
 	}}
 	b, _ := proto.Marshal(trans)

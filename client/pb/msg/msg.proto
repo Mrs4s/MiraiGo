@@ -700,7 +700,7 @@ message GeneralFlags {
 
 message PbMultiMsgItem {
   optional string fileName = 1;
-  optional bytes buffer = 2;
+  optional PbMultiMsgNew buffer = 2;
 }
 message PbMultiMsgNew {
   repeated Message msg = 1;
