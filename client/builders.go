@@ -170,6 +170,22 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	return seq, packet
 }
 
+func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+		w.WriteUInt16(2)
+		w.WriteUInt16(4)
+
+		w.Write(tlv.T193(ticket))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+	})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	return seq, packet
+}
+
 func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.NewEncryptSession(c.sigInfo.t133), c.sigInfo.wtSessionTicketKey, func(w *binary.Writer) {

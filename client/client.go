@@ -260,6 +260,20 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	return &l, nil
 }
 
+func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
+	seq, packet := c.buildTicketSubmitPacket(ticket)
+	rsp, err := c.sendAndWait(seq, packet)
+	if err != nil {
+		c.Disconnect()
+		return nil, err
+	}
+	l := rsp.(LoginResponse)
+	if l.Success {
+		c.init()
+	}
+	return &l, nil
+}
+
 func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
 	if err != nil {
