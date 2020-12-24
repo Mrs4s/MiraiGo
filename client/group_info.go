@@ -1,12 +1,16 @@
 package client
 
 import (
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
+	"github.com/tidwall/gjson"
 	"google.golang.org/protobuf/proto"
+	"net/url"
 	"strings"
 	"sync"
 )
@@ -209,6 +213,28 @@ func (g *GroupInfo) MuteAll(mute bool) {
 	if g.AdministratorOrOwner() {
 		g.client.groupMuteAll(g.Code, mute)
 	}
+}
+
+func (g *GroupInfo) MuteAnonymous(id, nick string, seconds int32) error {
+	payload := fmt.Sprintf("anony_id=%v&group_code=%v&seconds=%v&anony_nick=%v&bkn=%v", url.QueryEscape(id), g.Code, seconds, nick, g.client.getCSRFToken())
+	rsp, err := utils.HttpPostBytesWithCookie("https://qqweb.qq.com/c/anonymoustalk/blacklist", []byte(payload), g.client.getCookies(), "application/x-www-form-urlencoded")
+	if err != nil {
+		return errors.Wrap(err, "failed to request blacklist")
+	}
+	j := gjson.ParseBytes(rsp)
+	if r := j.Get("retcode"); r.Exists() {
+		if r.Int() != 0 {
+			return errors.Errorf("retcode %v", r.Int())
+		}
+		return nil
+	}
+	if r := j.Get("cgicode"); r.Exists() {
+		if r.Int() != 0 {
+			return errors.Errorf("retcode %v", r.Int())
+		}
+		return nil
+	}
+	return nil
 }
 
 func (g *GroupInfo) Quit() {

@@ -70,10 +70,16 @@ type (
 	}
 
 	Sender struct {
-		Uin      int64
-		Nickname string
-		CardName string
-		IsFriend bool
+		Uin           int64
+		Nickname      string
+		CardName      string
+		AnonymousInfo *AnonymousInfo
+		IsFriend      bool
+	}
+
+	AnonymousInfo struct {
+		AnonymousId   string
+		AnonymousNick string
 	}
 
 	IMessageElement interface {

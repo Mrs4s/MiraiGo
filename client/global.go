@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -447,6 +448,10 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		sender = &message.Sender{
 			Uin:      80000000,
 			Nickname: string(anonInfo.AnonNick),
+			AnonymousInfo: &message.AnonymousInfo{
+				AnonymousId:   base64.StdEncoding.EncodeToString(anonInfo.AnonId),
+				AnonymousNick: string(anonInfo.AnonNick),
+			},
 			IsFriend: false,
 		}
 	} else {
