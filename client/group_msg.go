@@ -40,14 +40,20 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 		return nil
 	}
 	if (msgLen > 200 || imgCount > 1) && !useFram {
-		ret := c.sendGroupLongOrForwardMessage(groupCode, true, &message.ForwardMessage{Nodes: []*message.ForwardNode{
-			{
-				SenderId:   c.Uin,
-				SenderName: c.Nickname,
-				Time:       int32(time.Now().Unix()),
-				Message:    m.Elements,
-			},
-		}})
+		ret := c.sendGroupMessage(groupCode, true,
+			&message.SendingMessage{Elements: []message.IMessageElement{
+				c.uploadGroupLongMessage(groupCode,
+					&message.ForwardMessage{Nodes: []*message.ForwardNode{
+						{
+							SenderId:   c.Uin,
+							SenderName: c.Nickname,
+							Time:       int32(time.Now().Unix()),
+							Message:    m.Elements,
+						},
+					}},
+				),
+			}},
+		)
 		return ret
 	}
 	return c.sendGroupMessage(groupCode, false, m)
@@ -55,7 +61,12 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 
 // SendGroupForwardMessage 发送群合并转发消息
 func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
-	return c.sendGroupLongOrForwardMessage(groupCode, false, m)
+	mg := c.UploadGroupForwardMessage(groupCode, m)
+	return c.sendGroupMessage(groupCode, true,
+		&message.SendingMessage{Elements: []message.IMessageElement{
+			&mg.ServiceElement,
+		}},
+	)
 }
 
 // GetGroupMessages 从服务器获取历史信息
@@ -134,20 +145,14 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	}
 }
 
-func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m *message.ForwardMessage) *message.GroupMessage {
+func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMessage) *message.ServiceElement {
 	if len(m.Nodes) >= 200 {
 		return nil
 	}
-	ts := time.Now().Unix()
+	ts := time.Now().UnixNano()
 	seq := c.nextGroupSeq()
 	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
-	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, func() int32 {
-		if isLong {
-			return 1
-		} else {
-			return 2
-		}
-	}(), utils.ToGroupUin(groupCode)))
+	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, 1, utils.ToGroupUin(groupCode)))
 	if err != nil {
 		return nil
 	}
@@ -169,13 +174,6 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 	for i, ip := range rsp.Uint32UpIp {
 		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
 		if err == nil {
-			if !isLong {
-				var pv string
-				for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
-					pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
-				}
-				return c.sendGroupMessage(groupCode, true, genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts))
-			}
 			bri := func() string {
 				var r string
 				for _, n := range m.Nodes {
@@ -186,7 +184,46 @@ func (c *QQClient) sendGroupLongOrForwardMessage(groupCode int64, isLong bool, m
 				}
 				return r
 			}()
-			return c.sendGroupMessage(groupCode, false, genLongTemplate(rsp.MsgResid, bri, ts))
+			return genLongTemplate(rsp.MsgResid, bri, ts)
+		}
+	}
+	return nil
+}
+
+func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.ForwardElement {
+	if len(m.Nodes) >= 200 {
+		return nil
+	}
+	ts := time.Now().UnixNano()
+	seq := c.nextGroupSeq()
+	data, hash, items := m.CalculateValidationDataForward(seq, rand.Int31(), groupCode)
+	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, 2, utils.ToGroupUin(groupCode)))
+	if err != nil {
+		return nil
+	}
+	rsp := i.(*multimsg.MultiMsgApplyUpRsp)
+	body, _ := proto.Marshal(&longmsg.LongReqBody{
+		Subcmd:       1,
+		TermType:     5,
+		PlatformType: 9,
+		MsgUpReq: []*longmsg.LongMsgUpReq{
+			{
+				MsgType:    3,
+				DstUin:     utils.ToGroupUin(groupCode),
+				MsgContent: data,
+				StoreType:  2,
+				MsgUkey:    rsp.MsgUkey,
+			},
+		},
+	})
+	for i, ip := range rsp.Uint32UpIp {
+		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
+		if err == nil {
+			var pv string
+			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
+				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
+			}
+			return genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts, items)
 		}
 	}
 	return nil
