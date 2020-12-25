@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -575,21 +576,27 @@ func packUniRequestData(data []byte) (r []byte) {
 	return
 }
 
-func genForwardTemplate(resId, preview, title, brief, source, summary string, ts int64) *message.SendingMessage {
+func genForwardTemplate(resId, preview, title, brief, source, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`,
 		brief, resId, ts, title, preview, summary, source,
 	)
-	return &message.SendingMessage{Elements: []message.IMessageElement{
-		&message.ServiceElement{
+	for index, item := range items {
+		if item.GetFileName() == "MultiMsg" {
+			items[index].FileName = proto.String(strconv.FormatInt(ts, 10))
+		}
+	}
+	return &message.ForwardElement{
+		ServiceElement: message.ServiceElement{
 			Id:      35,
 			Content: template,
 			ResId:   resId,
 			SubType: "Forward",
 		},
-	}}
+		Items: items,
+	}
 }
 
-func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
+func genLongTemplate(resId, brief string, ts int64) *message.ServiceElement {
 	limited := func() string {
 		if len(brief) > 30 {
 			return brief[:30] + "…"
@@ -599,14 +606,12 @@ func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="1"> <item layout="1"> <title>%s</title> <hr hidden="false" style="0"/> <summary>点击查看完整消息</summary> </item> <source name="聊天记录" icon="" action="" appid="-1"/> </msg>`,
 		limited, resId, ts, limited,
 	)
-	return &message.SendingMessage{Elements: []message.IMessageElement{
-		&message.ServiceElement{
-			Id:      35,
-			Content: template,
-			ResId:   resId,
-			SubType: "Long",
-		},
-	}}
+	return &message.ServiceElement{
+		Id:      35,
+		Content: template,
+		ResId:   resId,
+		SubType: "Long",
+	}
 }
 
 func (c *QQClient) Error(msg string, args ...interface{}) {

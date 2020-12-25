@@ -434,7 +434,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					reg := regexp.MustCompile(`m_resid="(\w+?.*?)"`)
 					sub := reg.FindAllStringSubmatch(content, -1)
 					if len(sub) > 0 && len(sub[0]) > 1 {
-						res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})
+						res = append(res, &ForwardElement{ServiceElement: ServiceElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]}})
 						continue
 					}
 				}
@@ -575,6 +575,55 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 	return data, hash[:]
 }
 
+// CalculateValidationDataForward 屎代码
+func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, groupCode int64) ([]byte, []byte, []*msg.PbMultiMsgItem) {
+	var msgs []*msg.Message
+	for _, node := range forMsg.Nodes {
+		msgs = append(msgs, &msg.Message{
+			Head: &msg.MessageHead{
+				FromUin: &node.SenderId,
+				MsgSeq:  &seq,
+				MsgTime: &node.Time,
+				MsgUid:  proto.Int64(0x01000000000000000 | (int64(random) & 0xFFFFFFFF)),
+				MutiltransHead: &msg.MutilTransHead{
+					MsgId: proto.Int32(1),
+				},
+				MsgType: proto.Int32(82),
+				GroupInfo: &msg.GroupInfo{
+					GroupCode: &groupCode,
+					GroupRank: []byte{},
+					GroupName: []byte{},
+					GroupCard: &node.SenderName,
+				},
+			},
+			Body: &msg.MessageBody{
+				RichText: &msg.RichText{
+					Elems: func() []*msg.Elem {
+						return ToProtoElems(node.Message, false)
+					}(),
+				},
+			},
+		})
+	}
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
+		{
+			FileName: proto.String("MultiMsg"),
+			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
+		},
+	}}
+	for _, item1 := range forMsg.Nodes {
+		for _, item2 := range item1.Message {
+			if item3, ok := item2.(*ForwardElement); ok {
+				trans.PbItemList = append(trans.PbItemList, item3.Items...)
+			}
+		}
+	}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	return data, hash[:], trans.PbItemList
+}
+
 func ToReadableString(m []IMessageElement) (r string) {
 	for _, elem := range m {
 		switch e := elem.(type) {
@@ -586,6 +635,12 @@ func ToReadableString(m []IMessageElement) (r string) {
 			r += "/" + e.Name
 		case *GroupImageElement:
 			r += "[图片]"
+		case *ServiceElement:
+			if e.SubType == "Forward" {
+				r += "[聊天记录]"
+			}
+		case *ForwardElement:
+			r += "[聊天记录]"
 		// NOTE: flash pic is singular
 		// To be clarified
 		// case *GroupFlashImgElement:

@@ -103,7 +103,8 @@ type ServiceElement struct {
 }
 
 type ForwardElement struct {
-	ResId string
+	ServiceElement
+	Items []*msg.PbMultiMsgItem
 }
 
 type LightAppElement struct {
