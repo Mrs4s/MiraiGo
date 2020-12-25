@@ -51,7 +51,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	}
 	if t == 2 {
 		c.t104, _ = m[0x104]
-		if m.Exists(0x192) { // slider, not supported yet
+		if m.Exists(0x192) {
 			return LoginResponse{
 				Success:   false,
 				VerifyUrl: string(m[0x192]),

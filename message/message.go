@@ -230,11 +230,34 @@ func (msg *SendingMessage) Count(filter func(e IMessageElement) bool) (c int) {
 
 func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
 	var fragmented [][]IMessageElement
+	reg := regexp.MustCompile(`https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)`)
 	for _, elem := range msg.Elements {
 		switch o := elem.(type) {
 		case *TextElement:
-			for _, text := range utils.ChunkString(o.Content, 80) {
-				fragmented = append(fragmented, []IMessageElement{NewText(text)})
+			idx := reg.FindAllStringIndex(o.Content, -1)
+			var preChunked []string
+			if len(idx) == 0 {
+				preChunked = append(preChunked, o.Content)
+			} else {
+				last := idx[0][0]
+				preChunked = append(preChunked, o.Content[:idx[0][0]])
+				for i := 0; i < len(idx); i++ {
+					if len(idx[i]) != 2 {
+						continue
+					}
+					preChunked = append(preChunked, o.Content[last:idx[i][1]])
+					last = idx[i][1]
+				}
+				preChunked = append(preChunked, o.Content[last:])
+			}
+			for _, content := range preChunked {
+				if strings.HasPrefix(content, "http") {
+					fragmented = append(fragmented, []IMessageElement{NewText(content)})
+					continue
+				}
+				for _, text := range utils.ChunkString(content, 80) {
+					fragmented = append(fragmented, []IMessageElement{NewText(text)})
+				}
 			}
 		default:
 			fragmented = append(fragmented, []IMessageElement{o})
