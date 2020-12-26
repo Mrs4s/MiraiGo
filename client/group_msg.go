@@ -61,11 +61,8 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 
 // SendGroupForwardMessage 发送群合并转发消息
 func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
-	mg := c.UploadGroupForwardMessage(groupCode, m)
 	return c.sendGroupMessage(groupCode, true,
-		&message.SendingMessage{Elements: []message.IMessageElement{
-			&mg.ServiceElement,
-		}},
+		&message.SendingMessage{Elements: []message.IMessageElement{c.UploadGroupForwardMessage(groupCode, m)}},
 	)
 }
 
@@ -152,25 +149,10 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 	ts := time.Now().UnixNano()
 	seq := c.nextGroupSeq()
 	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
-	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, 1, utils.ToGroupUin(groupCode)))
+	rsp, body, err := c.multiMsgApplyUp(groupCode, data, hash, 1)
 	if err != nil {
 		return nil
 	}
-	rsp := i.(*multimsg.MultiMsgApplyUpRsp)
-	body, _ := proto.Marshal(&longmsg.LongReqBody{
-		Subcmd:       1,
-		TermType:     5,
-		PlatformType: 9,
-		MsgUpReq: []*longmsg.LongMsgUpReq{
-			{
-				MsgType:    3,
-				DstUin:     utils.ToGroupUin(groupCode),
-				MsgContent: data,
-				StoreType:  2,
-				MsgUkey:    rsp.MsgUkey,
-			},
-		},
-	})
 	for i, ip := range rsp.Uint32UpIp {
 		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
 		if err == nil {
@@ -197,9 +179,28 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 	ts := time.Now().UnixNano()
 	seq := c.nextGroupSeq()
 	data, hash, items := m.CalculateValidationDataForward(seq, rand.Int31(), groupCode)
-	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, 2, utils.ToGroupUin(groupCode)))
+
+	rsp, body, err := c.multiMsgApplyUp(groupCode, data, hash, 2)
 	if err != nil {
 		return nil
+	}
+	for i, ip := range rsp.Uint32UpIp {
+		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
+		if err == nil {
+			var pv string
+			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
+				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
+			}
+			return genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts, items)
+		}
+	}
+	return nil
+}
+
+func (c *QQClient) multiMsgApplyUp(groupCode int64, data []byte, hash []byte, buType int32) (*multimsg.MultiMsgApplyUpRsp, []byte, error) {
+	i, err := c.sendAndWait(c.buildMultiApplyUpPacket(data, hash, buType, utils.ToGroupUin(groupCode)))
+	if err != nil {
+		return nil, nil, err
 	}
 	rsp := i.(*multimsg.MultiMsgApplyUpRsp)
 	body, _ := proto.Marshal(&longmsg.LongReqBody{
@@ -216,17 +217,7 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 			},
 		},
 	})
-	for i, ip := range rsp.Uint32UpIp {
-		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
-		if err == nil {
-			var pv string
-			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
-				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
-			}
-			return genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts, items)
-		}
-	}
-	return nil
+	return rsp, body, nil
 }
 
 // MessageSvc.PbSendMsg

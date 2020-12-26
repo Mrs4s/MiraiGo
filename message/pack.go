@@ -125,21 +125,7 @@ func (e *FriendImageElement) Pack() (r []*msg.Elem) {
 
 func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
-	if e.Id == 35 {
-		r = append(r, &msg.Elem{
-			RichMsg: &msg.RichMsg{
-				Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-				ServiceId: &e.Id,
-				MsgResId:  []byte{},
-			},
-		})
-		r = append(r, &msg.Elem{
-			Text: &msg.Text{
-				Str: proto.String("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。"),
-			},
-		})
-		return
-	}
+	// id =35 已移至 ForwardElement
 	if e.Id == 33 {
 		r = append(r, &msg.Elem{
 			Text: &msg.Text{Str: &e.ResId},
