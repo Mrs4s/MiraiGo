@@ -179,7 +179,6 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 	ts := time.Now().UnixNano()
 	seq := c.nextGroupSeq()
 	data, hash, items := m.CalculateValidationDataForward(seq, rand.Int31(), groupCode)
-
 	rsp, body, err := c.multiMsgApplyUp(groupCode, data, hash, 2)
 	if err != nil {
 		return nil
