@@ -507,17 +507,17 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	if multiMsg.GetPbItemList() == nil {
 		return nil
 	}
-	var msg *msg.PbMultiMsgItem
+	var item *msg.PbMultiMsgItem
 	for _, m := range multiMsg.GetPbItemList() {
 		if m.GetFileName() == "MultiMsg" {
-			msg = m
+			item = m
 			break
 		}
 	}
-	if msg == nil || msg.GetBuffer() == nil || msg.GetBuffer().GetMsg() == nil {
+	if item == nil || item.GetBuffer() == nil || item.GetBuffer().GetMsg() == nil {
 		return nil
 	}
-	for _, m := range msg.GetBuffer().GetMsg() {
+	for _, m := range item.GetBuffer().GetMsg() {
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
 			SenderId: m.Head.GetFromUin(),
 			SenderName: func() string {

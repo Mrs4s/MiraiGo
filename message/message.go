@@ -560,6 +560,42 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 }
 
 func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCode int64) ([]byte, []byte) {
+	msgs := forMsg.packForwardMsg(seq, random, groupCode)
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
+		{
+			FileName: proto.String("MultiMsg"),
+			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
+		},
+	}}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	return data, hash[:]
+}
+
+// CalculateValidationDataForward 屎代码
+func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, groupCode int64) ([]byte, []byte, []*msg.PbMultiMsgItem) {
+	msgs := forMsg.packForwardMsg(seq, random, groupCode)
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
+		{
+			FileName: proto.String("MultiMsg"),
+			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
+		},
+	}}
+	for _, node := range forMsg.Nodes {
+		for _, message := range node.Message {
+			if forwardElement, ok := message.(*ForwardElement); ok {
+				trans.PbItemList = append(trans.PbItemList, forwardElement.Items...)
+			}
+		}
+	}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	return data, hash[:], trans.PbItemList
+}
+
+func (forMsg *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
 	var msgs []*msg.Message
 	for _, node := range forMsg.Nodes {
 		msgs = append(msgs, &msg.Message{
@@ -586,65 +622,7 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 			},
 		})
 	}
-	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
-		{
-			FileName: proto.String("MultiMsg"),
-			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
-		},
-	}}
-	b, _ := proto.Marshal(trans)
-	data := binary.GZipCompress(b)
-	hash := md5.Sum(data)
-	return data, hash[:]
-}
-
-// CalculateValidationDataForward 屎代码
-func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, groupCode int64) ([]byte, []byte, []*msg.PbMultiMsgItem) {
-	var msgs []*msg.Message
-	for _, node := range forMsg.Nodes {
-		msgs = append(msgs, &msg.Message{
-			Head: &msg.MessageHead{
-				FromUin: &node.SenderId,
-				MsgSeq:  &seq,
-				MsgTime: &node.Time,
-				MsgUid:  proto.Int64(0x01000000000000000 | (int64(random) & 0xFFFFFFFF)),
-				MutiltransHead: &msg.MutilTransHead{
-					MsgId: proto.Int32(1),
-				},
-				MsgType: proto.Int32(82),
-				GroupInfo: &msg.GroupInfo{
-					GroupCode: &groupCode,
-					GroupRank: []byte{},
-					GroupName: []byte{},
-					GroupCard: &node.SenderName,
-				},
-			},
-			Body: &msg.MessageBody{
-				RichText: &msg.RichText{
-					Elems: func() []*msg.Elem {
-						return ToProtoElems(node.Message, false)
-					}(),
-				},
-			},
-		})
-	}
-	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
-		{
-			FileName: proto.String("MultiMsg"),
-			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
-		},
-	}}
-	for _, item1 := range forMsg.Nodes {
-		for _, item2 := range item1.Message {
-			if item3, ok := item2.(*ForwardElement); ok {
-				trans.PbItemList = append(trans.PbItemList, item3.Items...)
-			}
-		}
-	}
-	b, _ := proto.Marshal(trans)
-	data := binary.GZipCompress(b)
-	hash := md5.Sum(data)
-	return data, hash[:], trans.PbItemList
+	return msgs
 }
 
 func ToReadableString(m []IMessageElement) (r string) {
@@ -658,10 +636,6 @@ func ToReadableString(m []IMessageElement) (r string) {
 			r += "/" + e.Name
 		case *GroupImageElement:
 			r += "[图片]"
-		case *ServiceElement:
-			if e.SubType == "Forward" {
-				r += "[聊天记录]"
-			}
 		case *ForwardElement:
 			r += "[聊天记录]"
 		// NOTE: flash pic is singular
