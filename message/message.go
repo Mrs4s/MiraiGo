@@ -384,7 +384,6 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				}
 				res = append(res, r)
 			}
-			continue
 		}
 		if elem.TransElemInfo != nil {
 			if elem.TransElemInfo.GetElemType() == 24 { // QFile
