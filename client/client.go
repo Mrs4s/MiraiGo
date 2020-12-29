@@ -957,7 +957,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 		select {
 		case rsp := <-ch:
 			return rsp.Response, rsp.Error
-		case <-time.After(time.Second * 30):
+		case <-time.After(time.Second * 15):
 			retry++
 			if retry < 2 {
 				_ = c.send(pkt)
@@ -991,12 +991,14 @@ func (c *QQClient) netLoop() {
 				break
 			}
 			reader = binary.NewNetworkReader(c.Conn)
-			if e := c.registerClient(); e != nil && e.Error() != "Packet timed out" { // 掉线在心跳已经有判断了, 只需要处理返回值
-				c.Disconnect()
-				c.lastLostMsg = "register client failed: " + e.Error()
-				c.Error("reconnect failed: " + e.Error())
-				break
-			}
+			go func() {
+				if e := c.registerClient(); e != nil && e.Error() != "Packet timed out" { // 掉线在心跳已经有判断了, 只需要处理返回值
+					c.lastLostMsg = "register client failed: " + e.Error()
+					c.Disconnect()
+					c.Error("reconnect failed: " + e.Error())
+					//break
+				}
+			}()
 		}
 		if l <= 0 {
 			retry++
