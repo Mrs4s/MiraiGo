@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/gogo/protobuf/proto"
 	"net"
 	"strconv"
 	"strings"
@@ -22,7 +23,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/golang/protobuf/proto"
 )
 
 var (
