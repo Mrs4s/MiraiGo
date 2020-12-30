@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"image"
 	"io"
 	"math/rand"
@@ -68,6 +69,7 @@ type QQClient struct {
 	rollbackSig      []byte
 	timeDiff         int64
 	sigInfo          *loginSigInfo
+	fileStorageInfo  *jce.FileStoragePushFSSvcList
 	pwdFlag          bool
 
 	lastMessageSeq int32

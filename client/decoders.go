@@ -210,39 +210,48 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["PushReq"]["ConfigPush.PushReq"][1:])
-	jceBuf := []byte{}
 	t := r.ReadInt32(1)
-	r.ReadSlice(&jceBuf, 2)
-	if t == 1 && len(jceBuf) > 0 {
-		ssoPkt := jce.NewJceReader(jceBuf)
-		servers := []jce.SsoServerInfo{}
-		ssoPkt.ReadSlice(&servers, 1)
-		if len(servers) > 0 {
-			var adds []*net.TCPAddr
-			for _, s := range servers {
-				if strings.Contains(s.Server, "com") {
-					continue
-				}
-				c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
-				adds = append(adds, &net.TCPAddr{
-					IP:   net.ParseIP(s.Server),
-					Port: int(s.Port),
-				})
-			}
-			f := true
-			for _, e := range c.eventHandlers.serverUpdatedHandlers {
-				cover(func() {
-					if !e(c, &ServerUpdatedEvent{Servers: servers}) {
-						f = false
+	jceBuf := r.ReadAny(2).([]byte)
+	if len(jceBuf) > 0 {
+		switch t {
+		case 1:
+			ssoPkt := jce.NewJceReader(jceBuf)
+			servers := []jce.SsoServerInfo{}
+			ssoPkt.ReadSlice(&servers, 1)
+			if len(servers) > 0 {
+				var adds []*net.TCPAddr
+				for _, s := range servers {
+					if strings.Contains(s.Server, "com") {
+						continue
 					}
-				})
+					c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
+					adds = append(adds, &net.TCPAddr{
+						IP:   net.ParseIP(s.Server),
+						Port: int(s.Port),
+					})
+				}
+				f := true
+				for _, e := range c.eventHandlers.serverUpdatedHandlers {
+					cover(func() {
+						if !e(c, &ServerUpdatedEvent{Servers: servers}) {
+							f = false
+						}
+					})
+				}
+				if f {
+					c.SetCustomServer(adds)
+				}
+				return nil, nil
 			}
-			if f {
-				c.SetCustomServer(adds)
-			}
-			return nil, nil
+		case 2:
+			fmtPkt := jce.NewJceReader(jceBuf)
+			list := &jce.FileStoragePushFSSvcList{}
+			list.ReadFrom(fmtPkt)
+			c.Debug("got file storage svc push.")
+			c.fileStorageInfo = list
 		}
 	}
+
 	seq := r.ReadInt64(3)
 	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
 	return nil, c.send(pkt)
