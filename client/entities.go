@@ -209,6 +209,11 @@ type (
 		Seq  int32
 		Msg  *message.GroupMessage
 	}
+
+	highwaySessionInfo struct {
+		SigSession []byte
+		SessionKey []byte
+	}
 )
 
 const (

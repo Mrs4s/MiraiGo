@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"net"
 	"strconv"
 	"strings"
@@ -249,6 +250,14 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			list.ReadFrom(fmtPkt)
 			c.Debug("got file storage svc push.")
 			c.fileStorageInfo = list
+			rsp := cmd0x6ff.C501RspBody{}
+			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {
+				c.highwaySession = &highwaySessionInfo{
+					SigSession: rsp.RspBody.SigSession,
+					SessionKey: rsp.RspBody.SessionKey,
+				}
+				c.Debug("highway session updated.")
+			}
 		}
 	}
 

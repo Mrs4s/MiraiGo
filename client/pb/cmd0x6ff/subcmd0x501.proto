@@ -1,0 +1,37 @@
+syntax = "proto2";
+option go_package = ".;cmd0x6ff";
+
+message C501ReqBody {
+  optional SubCmd0x501ReqBody ReqBody = 1281;
+}
+message C501RspBody {
+  optional SubCmd0x501RspBody RspBody = 1281;
+}
+message SubCmd0x501ReqBody {
+  optional uint64 uin = 1;
+  optional uint32 idcId = 2;
+  optional uint32 appid = 3;
+  optional uint32 loginSigType = 4;
+  optional bytes loginSigTicket = 5;
+  optional uint32 requestFlag = 6;
+  repeated uint32 serviceTypes = 7;
+  optional uint32 bid = 8;
+}
+message SubCmd0x501RspBody {
+  optional bytes sigSession = 1;
+  optional bytes sessionKey = 2;
+  repeated SrvAddrs addrs = 3;
+}
+
+message SrvAddrs {
+  optional uint32 serviceType = 1;
+  repeated IpAddr addrs = 2;
+}
+
+message IpAddr {
+  optional uint32 type = 1;
+  optional fixed32 ip = 2;
+  optional uint32 port = 3;
+  optional uint32 area = 4;
+}
+

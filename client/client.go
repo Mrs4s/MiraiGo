@@ -69,6 +69,7 @@ type QQClient struct {
 	rollbackSig      []byte
 	timeDiff         int64
 	sigInfo          *loginSigInfo
+	highwaySession   *highwaySessionInfo
 	fileStorageInfo  *jce.FileStoragePushFSSvcList
 	pwdFlag          bool
 
