@@ -4,7 +4,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 func init() {

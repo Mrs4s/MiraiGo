@@ -13,7 +13,7 @@ var imgOld = []byte{0x15, 0x36, 0x20, 0x39, 0x32, 0x6B, 0x41, 0x31, 0x00, 0x38, 
 func (e *TextElement) Pack() (r []*msg.Elem) {
 	r = append(r, &msg.Elem{
 		Text: &msg.Text{
-			Str: &e.Content,
+			Str: e.Content,
 		},
 	})
 	return
@@ -23,22 +23,22 @@ func (e *FaceElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	if e.NewSysFace {
 		elem := &msg.MsgElemInfoServtype33{
-			Index:  proto.Uint32(uint32(e.Index)),
+			Index:  uint32(e.Index),
 			Text:   []byte("/" + e.Name),
 			Compat: []byte("/" + e.Name),
 		}
 		b, _ := proto.Marshal(elem)
 		r = append(r, &msg.Elem{
 			CommonElem: &msg.CommonElem{
-				ServiceType:  proto.Int32(33),
+				ServiceType:  33,
 				PbElem:       b,
-				BusinessType: proto.Int32(1),
+				BusinessType: 1,
 			},
 		})
 	} else {
 		r = append(r, &msg.Elem{
 			Face: &msg.Face{
-				Index: &e.Index,
+				Index: e.Index,
 				Old:   binary.ToBytes(int16(0x1445 - 4 + e.Index)),
 				Buf:   []byte{0x00, 0x01, 0x00, 0x04, 0x52, 0xCC, 0xF5, 0xD0},
 			},
@@ -51,7 +51,7 @@ func (e *AtElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{
 		Text: &msg.Text{
-			Str: &e.Display,
+			Str: e.Display,
 			Attr6Buf: binary.NewWriterF(func(w *binary.Writer) {
 				w.WriteUInt16(1)
 				w.WriteUInt16(0)
@@ -67,7 +67,7 @@ func (e *AtElement) Pack() (r []*msg.Elem) {
 			}),
 		},
 	})
-	r = append(r, &msg.Elem{Text: &msg.Text{Str: proto.String(" ")}})
+	r = append(r, &msg.Elem{Text: &msg.Text{Str: " "}})
 	return
 }
 
@@ -75,9 +75,9 @@ func (e *ImageElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{
 		CustomFace: &msg.CustomFace{
-			FilePath: &e.Filename,
+			FilePath: e.Filename,
 			Md5:      e.Md5,
-			Size:     &e.Size,
+			Size_:    e.Size,
 			Flag:     make([]byte, 4),
 			OldData:  imgOld,
 		},
@@ -89,16 +89,16 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{
 		CustomFace: &msg.CustomFace{
-			FileType: proto.Int32(66),
-			Useful:   proto.Int32(1),
+			FileType: 66,
+			Useful:   1,
 			//Origin:    1,
-			BizType:   proto.Int32(5),
-			Width:     &e.Width,
-			Height:    &e.Height,
-			FileId:    proto.Int32(int32(e.FileId)),
-			FilePath:  &e.ImageId,
-			ImageType: &e.ImageType,
-			Size:      &e.Size,
+			BizType:   5,
+			Width:     e.Width,
+			Height:    e.Height,
+			FileId:    int32(e.FileId),
+			FilePath:  e.ImageId,
+			ImageType: e.ImageType,
+			Size_:     e.Size,
 			Md5:       e.Md5[:],
 			Flag:      make([]byte, 4),
 			//OldData:  imgOld,
@@ -111,12 +111,12 @@ func (e *FriendImageElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{
 		NotOnlineImage: &msg.NotOnlineImage{
-			FilePath:     &e.ImageId,
-			ResId:        &e.ImageId,
-			OldPicMd5:    proto.Bool(false),
+			FilePath:     e.ImageId,
+			ResId:        e.ImageId,
+			OldPicMd5:    false,
 			PicMd5:       e.Md5,
-			DownloadPath: &e.ImageId,
-			Original:     proto.Int32(1),
+			DownloadPath: e.ImageId,
+			Original:     (1),
 			PbReserve:    []byte{0x78, 0x02},
 		},
 	})
@@ -128,12 +128,12 @@ func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	// id =35 已移至 ForwardElement
 	if e.Id == 33 {
 		r = append(r, &msg.Elem{
-			Text: &msg.Text{Str: &e.ResId},
+			Text: &msg.Text{Str: e.ResId},
 		})
 		r = append(r, &msg.Elem{
 			RichMsg: &msg.RichMsg{
 				Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-				ServiceId: &e.Id,
+				ServiceId: e.Id,
 				MsgResId:  []byte{},
 			},
 		})
@@ -142,7 +142,7 @@ func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	r = append(r, &msg.Elem{
 		RichMsg: &msg.RichMsg{
 			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			ServiceId: &e.Id,
+			ServiceId: e.Id,
 		},
 	})
 	return
@@ -153,13 +153,13 @@ func (e *ForwardElement) Pack() (r []*msg.Elem) {
 	r = append(r, &msg.Elem{
 		RichMsg: &msg.RichMsg{
 			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			ServiceId: &e.Id,
+			ServiceId: e.Id,
 			MsgResId:  []byte{},
 		},
 	})
 	r = append(r, &msg.Elem{
 		Text: &msg.Text{
-			Str: proto.String("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。"),
+			Str: "你的QQ暂不支持查看[转发多条消息]，请期待后续版本。",
 		},
 	})
 	return
@@ -180,25 +180,25 @@ func (e *FriendFlashPicElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	flash := &msg.MsgElemInfoServtype3{
 		FlashC2CPic: &msg.NotOnlineImage{
-			FilePath:     &e.ImageId,
-			ResId:        &e.ImageId,
-			OldPicMd5:    proto.Bool(false),
+			FilePath:     e.ImageId,
+			ResId:        e.ImageId,
+			OldPicMd5:    false,
 			PicMd5:       e.Md5,
-			DownloadPath: &e.ImageId,
-			Original:     proto.Int32(1),
+			DownloadPath: e.ImageId,
+			Original:     (1),
 			PbReserve:    []byte{0x78, 0x02},
 		},
 	}
 	data, _ := proto.Marshal(flash)
 	r = append(r, &msg.Elem{
 		CommonElem: &msg.CommonElem{
-			ServiceType: proto.Int32(3),
+			ServiceType: (3),
 			PbElem:      data,
 		},
 	})
 	r = append(r, &msg.Elem{
 		Text: &msg.Text{
-			Str: proto.String("[闪照]请使用新版手机QQ查看闪照。"),
+			Str: "[闪照]请使用新版手机QQ查看闪照。",
 		},
 	})
 	return
@@ -208,12 +208,12 @@ func (e *GroupFlashPicElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	flash := &msg.MsgElemInfoServtype3{
 		FlashTroopPic: &msg.CustomFace{
-			FileType: proto.Int32(66),
-			Useful:   proto.Int32(1),
-			Origin:   proto.Int32(1),
-			FileId:   proto.Int32(int32(e.FileId)),
-			FilePath: &e.ImageId,
-			Size:     &e.Size,
+			FileType: (66),
+			Useful:   (1),
+			Origin:   (1),
+			FileId:   (int32(e.FileId)),
+			FilePath: e.ImageId,
+			Size_:    e.Size,
 			Md5:      e.Md5[:],
 			Flag:     make([]byte, 4),
 		},
@@ -221,13 +221,13 @@ func (e *GroupFlashPicElement) Pack() (r []*msg.Elem) {
 	data, _ := proto.Marshal(flash)
 	r = append(r, &msg.Elem{
 		CommonElem: &msg.CommonElem{
-			ServiceType: proto.Int32(3),
+			ServiceType: (3),
 			PbElem:      data,
 		},
 	})
 	r = append(r, &msg.Elem{
 		Text: &msg.Text{
-			Str: proto.String("[闪照]请使用新版手机QQ查看闪照。"),
+			Str: "[闪照]请使用新版手机QQ查看闪照。",
 		},
 	})
 	return
@@ -236,18 +236,18 @@ func (e *GroupFlashPicElement) Pack() (r []*msg.Elem) {
 func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	res := &msg.ResvAttr{ImageShow: &msg.AnimationImageShow{
-		EffectId:       &e.EffectId,
+		EffectId:       e.EffectId,
 		AnimationParam: []byte("{}"),
 	}}
 	reserve, _ := proto.Marshal(res)
 	r = append(r, &msg.Elem{
 		CustomFace: &msg.CustomFace{
-			FileType:  proto.Int32(0),
-			Useful:    proto.Int32(1),
-			ImageType: proto.Int32(1001),
-			FileId:    proto.Int32(int32(e.FileId)),
-			FilePath:  &e.ImageId,
-			Size:      &e.Size,
+			FileType:  (0),
+			Useful:    (1),
+			ImageType: (1001),
+			FileId:    (int32(e.FileId)),
+			FilePath:  e.ImageId,
+			Size_:     e.Size,
 			Md5:       e.Md5[:],
 			Flag:      []byte{0x11, 0x00, 0x00, 0x00},
 			//OldData:  imgOld,

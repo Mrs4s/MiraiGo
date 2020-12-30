@@ -499,25 +499,25 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 	cook := c.syncCookie
 	if cook == nil {
 		cook, _ = proto.Marshal(&msg.SyncCookie{
-			Time:   &msgTime,
-			Ran1:   proto.Int64(758330138),
-			Ran2:   proto.Int64(2480149246),
-			Const1: proto.Int64(1167238020),
-			Const2: proto.Int64(3913056418),
-			Const3: proto.Int64(0x1D),
+			Time:   msgTime,
+			Ran1:   758330138,
+			Ran2:   2480149246,
+			Const1: 1167238020,
+			Const2: 3913056418,
+			Const3: 0x1D,
 		})
 	}
 	req := &msg.GetMessageRequest{
-		SyncFlag:           &flag,
+		SyncFlag:           flag,
 		SyncCookie:         cook,
-		LatestRambleNumber: proto.Int32(20),
-		OtherRambleNumber:  proto.Int32(3),
-		OnlineSyncFlag:     proto.Int32(1),
-		ContextFlag:        proto.Int32(1),
-		MsgReqType:         proto.Int32(1),
-		PubaccountCookie:   []byte{},
-		MsgCtrlBuf:         []byte{},
-		ServerBuf:          []byte{},
+		LatestRambleNumber: 20,
+		OtherRambleNumber:  3,
+		OnlineSyncFlag:     1,
+		ContextFlag:        1,
+		MsgReqType:         1,
+		PubaccountCookie:   EmptyBytes,
+		MsgCtrlBuf:         EmptyBytes,
+		ServerBuf:          EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetMsg", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
@@ -577,24 +577,24 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 		}
 	}
 	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: &target}},
-		ContentHead: &msg.ContentHead{PkgNum: &pkgNum, PkgIndex: &pkgIndex, DivSeq: &pkgDiv},
+		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: target}},
+		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m, false),
 				Ptt:   ptt,
 			},
 		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
+		MsgSeq:  msgSeq,
+		MsgRand: r,
 		SyncCookie: func() []byte {
 			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
+				Time:   time,
+				Ran1:   rand.Int63(),
+				Ran2:   rand.Int63(),
+				Const1: syncConst1,
+				Const2: syncConst2,
+				Const3: 0x1d,
 			}
 			b, _ := proto.Marshal(cookie)
 			return b
@@ -610,25 +610,25 @@ func (c *QQClient) buildTempSendingPacket(groupUin, target int64, msgSeq, r int3
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{GrpTmp: &msg.GrpTmp{
-			GroupUin: &groupUin,
-			ToUin:    &target,
+			GroupUin: groupUin,
+			ToUin:    target,
 		}},
-		ContentHead: &msg.ContentHead{PkgNum: proto.Int32(1)},
+		ContentHead: &msg.ContentHead{PkgNum: 1},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m.Elements, false),
 			},
 		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
+		MsgSeq:  msgSeq,
+		MsgRand: r,
 		SyncCookie: func() []byte {
 			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
+				Time:   time,
+				Ran1:   rand.Int63(),
+				Ran2:   rand.Int63(),
+				Const1: syncConst1,
+				Const2: syncConst2,
+				Const3: 0x1d,
 			}
 			b, _ := proto.Marshal(cookie)
 			return b
@@ -863,13 +863,13 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D8FCReqBody{
-		GroupCode: &groupCode,
+		GroupCode: groupCode,
 		MemLevelInfo: []*oidb.D8FCMemberInfo{
 			{
-				Uin:                    &memberUin,
+				Uin:                    memberUin,
 				UinName:                []byte(newTitle),
 				SpecialTitle:           []byte(newTitle),
-				SpecialTitleExpireTime: proto.Int32(-1),
+				SpecialTitleExpireTime: -1,
 			},
 		},
 	}

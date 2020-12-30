@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 type (

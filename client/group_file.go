@@ -164,16 +164,16 @@ func (fs *GroupFileSystem) DeleteFile(parentFolderId, fileId string, busId int32
 func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderId string, startIndex uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{FileListInfoReq: &oidb.GetFileListReqBody{
-		GroupCode:    proto.Uint64(uint64(groupCode)),
-		AppId:        proto.Uint32(3),
-		FolderId:     &folderId,
-		FileCount:    proto.Uint32(20),
-		AllFileCount: proto.Uint32(0),
-		ReqFrom:      proto.Uint32(3),
-		SortBy:       proto.Uint32(1),
-		FilterCode:   proto.Uint32(0),
-		Uin:          proto.Uint64(0),
-		StartIndex:   &startIndex,
+		GroupCode:    uint64(groupCode),
+		AppId:        3,
+		FolderId:     folderId,
+		FileCount:    20,
+		AllFileCount: 0,
+		ReqFrom:      3,
+		SortBy:       1,
+		FilterCode:   0,
+		Uin:          0,
+		StartIndex:   startIndex,
 		Context:      EmptyBytes,
 	}}
 	b, _ := proto.Marshal(body)
@@ -191,9 +191,9 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderId str
 func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{GroupFileCountReq: &oidb.GetFileCountReqBody{
-		GroupCode: proto.Uint64(uint64(groupCode)),
-		AppId:     proto.Uint32(3),
-		BusId:     proto.Uint32(0),
+		GroupCode: uint64(groupCode),
+		AppId:     3,
+		BusId:     0,
 	}}
 	b, _ := proto.Marshal(body)
 	req := &oidb.OIDBSSOPkg{
@@ -210,8 +210,8 @@ func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []
 func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{GroupSpaceReq: &oidb.GetSpaceReqBody{
-		GroupCode: proto.Uint64(uint64(groupCode)),
-		AppId:     proto.Uint32(3),
+		GroupCode: uint64(groupCode),
+		AppId:     3,
 	}}
 	b, _ := proto.Marshal(body)
 	req := &oidb.OIDBSSOPkg{

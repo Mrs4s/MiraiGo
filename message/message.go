@@ -305,9 +305,9 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 			r = append(r, &msg.Elem{
 				SrcMsg: &msg.SourceMsg{
 					OrigSeqs:  []int32{reply.ReplySeq},
-					SenderUin: &reply.Sender,
-					Time:      &reply.Time,
-					Flag:      proto.Int32(1),
+					SenderUin: reply.Sender,
+					Time:      reply.Time,
+					Flag:     1,
 					Elems:     ToSrcProtoElems(reply.Elements),
 					RichMsg:   []byte{},
 					PbReserve: []byte{},
@@ -330,8 +330,8 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 				if e.SubType == "Long" {
 					r = append(r, &msg.Elem{
 						GeneralFlags: &msg.GeneralFlags{
-							LongTextFlag:  proto.Int32(1),
-							LongTextResid: &e.ResId,
+							LongTextFlag:  1,
+							LongTextResid: e.ResId,
 							PbReserve:     []byte{0x78, 0x00, 0xF8, 0x01, 0x00, 0xC8, 0x02, 0x00},
 						},
 					})
@@ -361,7 +361,7 @@ func ToSrcProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 		case *ImageElement, *GroupImageElement, *FriendImageElement:
 			r = append(r, &msg.Elem{
 				Text: &msg.Text{
-					Str: proto.String("[图片]"),
+					Str: "[图片]",
 				},
 			})
 		default:
@@ -481,7 +481,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 			res = append(res, &ImageElement{
 				Filename: elem.CustomFace.GetFilePath(),
-				Size:     elem.CustomFace.GetSize(),
+				Size:     elem.CustomFace.GetSize_(), // different from google.protobuf
 				Width:    elem.CustomFace.GetWidth(),
 				Height:   elem.CustomFace.GetHeight(),
 				Url: func() string {
@@ -530,7 +530,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					res = append(res, &GroupFlashImgElement{
 						ImageElement{
 							Filename: flash.FlashTroopPic.GetFilePath(),
-							Size:     flash.FlashTroopPic.GetSize(),
+							Size:     flash.FlashTroopPic.GetSize_(),
 							Width:    flash.FlashTroopPic.GetWidth(),
 							Height:   flash.FlashTroopPic.GetHeight(),
 							Md5:      flash.FlashTroopPic.Md5,
@@ -562,7 +562,7 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 	msgs := forMsg.packForwardMsg(seq, random, groupCode)
 	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
 		{
-			FileName: proto.String("MultiMsg"),
+			FileName: "MultiMsg",
 			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
 		},
 	}}
@@ -577,7 +577,7 @@ func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, 
 	msgs := forMsg.packForwardMsg(seq, random, groupCode)
 	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
 		{
-			FileName: proto.String("MultiMsg"),
+			FileName: "MultiMsg",
 			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
 		},
 	}}
@@ -599,19 +599,19 @@ func (forMsg *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode 
 	for _, node := range forMsg.Nodes {
 		msgs = append(msgs, &msg.Message{
 			Head: &msg.MessageHead{
-				FromUin: &node.SenderId,
-				MsgSeq:  &seq,
-				MsgTime: &node.Time,
-				MsgUid:  proto.Int64(0x01000000000000000 | (int64(random) & 0xFFFFFFFF)),
+				FromUin: node.SenderId,
+				MsgSeq:  seq,
+				MsgTime: node.Time,
+				MsgUid:  0x01000000000000000 | (int64(random) & 0xFFFFFFFF),
 				MutiltransHead: &msg.MutilTransHead{
-					MsgId: proto.Int32(1),
+					MsgId: 1,
 				},
-				MsgType: proto.Int32(82),
+				MsgType: 82,
 				GroupInfo: &msg.GroupInfo{
-					GroupCode: &groupCode,
+					GroupCode: groupCode,
 					GroupRank: []byte{},
 					GroupName: []byte{},
-					GroupCard: &node.SenderName,
+					GroupCard: node.SenderName,
 				},
 			},
 			Body: &msg.MessageBody{

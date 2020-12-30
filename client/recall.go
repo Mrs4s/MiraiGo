@@ -5,7 +5,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 // 撤回相关处理逻辑
@@ -48,13 +48,13 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 	req := &msg.MsgWithDrawReq{
 		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
 			{
-				SubCmd:    proto.Int32(1),
-				GroupCode: &groupCode,
+				SubCmd:    1,
+				GroupCode: groupCode,
 				MsgList: []*msg.GroupMsgInfo{
 					{
-						MsgSeq:    &msgSeq,
-						MsgRandom: &msgRan,
-						MsgType:   proto.Int32(0),
+						MsgSeq:    msgSeq,
+						MsgRandom: msgRan,
+						MsgType:   0,
 					},
 				},
 				UserDef: []byte{0x08, 0x00},
@@ -72,16 +72,16 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		{
 			MsgInfo: []*msg.C2CMsgInfo{
 				{
-					FromUin:   &c.Uin,
-					ToUin:     &uin,
-					MsgTime:   &ts,
-					MsgUid:    proto.Int64(int64(random)),
-					MsgSeq:    &msgSeq,
-					MsgRandom: &random,
+					FromUin:   c.Uin,
+					ToUin:     uin,
+					MsgTime:   ts,
+					MsgUid:    int64(random),
+					MsgSeq:    msgSeq,
+					MsgRandom: random,
 				},
 			},
 			Reserved: []byte{0x08, 0x00},
-			SubCmd:   proto.Int32(1),
+			SubCmd:   1,
 		},
 	}}
 	payload, _ := proto.Marshal(req)

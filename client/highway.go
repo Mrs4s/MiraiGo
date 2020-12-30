@@ -14,7 +14,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {

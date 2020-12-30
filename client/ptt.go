@@ -11,7 +11,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 // 语音相关处理逻辑
@@ -42,13 +42,13 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.Group
 ok:
 	return &message.GroupVoiceElement{
 		Ptt: &msg.Ptt{
-			FileType:     proto.Int32(4),
-			SrcUin:       &c.Uin,
+			FileType:     4,
+			SrcUin:       c.Uin,
 			FileMd5:      h[:],
-			FileName:     proto.String(hex.EncodeToString(h[:]) + ".amr"),
-			FileSize:     proto.Int32(int32(len(voice))),
+			FileName:     hex.EncodeToString(h[:]) + ".amr",
+			FileSize:     int32(len(voice)),
 			GroupFileKey: rsp.FileKey,
-			BoolValid:    proto.Bool(true),
+			BoolValid:    true,
 			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
 }
@@ -75,13 +75,13 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice []byte) (*message.Privat
 ok:
 	return &message.PrivateVoiceElement{
 		Ptt: &msg.Ptt{
-			FileType:  proto.Int32(4),
-			SrcUin:    &c.Uin,
+			FileType:  4,
+			SrcUin:    c.Uin,
 			FileMd5:   h[:],
-			FileName:  proto.String(hex.EncodeToString(h[:]) + ".amr"),
-			FileSize:  proto.Int32(int32(len(voice))),
+			FileName:  hex.EncodeToString(h[:]) + ".amr",
+			FileSize:  int32(len(voice)),
 			FileKey:   rsp.FileKey,
-			BoolValid: proto.Bool(true),
+			BoolValid: true,
 			PbReserve: []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
 }

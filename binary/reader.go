@@ -2,6 +2,7 @@ package binary
 
 import (
 	"bytes"
+	"encoding/binary"
 	"io"
 	"net"
 )
@@ -111,7 +112,9 @@ func (r *Reader) Len() int {
 	return r.buf.Len()
 }
 
-func (tlv TlvMap) Exists(key uint16) bool {
+func (tlv TlvMap) Exists(key uint16) (exist bool) {
+	_, exist = tlv[key]
+	return
 	if _, ok := tlv[key]; ok {
 		return true
 	}
@@ -126,13 +129,13 @@ func NewNetworkReader(conn net.Conn) *NetworkReader {
 
 func (r *NetworkReader) ReadByte() (byte, error) {
 	buf := make([]byte, 1)
-	n, err := r.conn.Read(buf)
+	_, err := r.conn.Read(buf)
 	if err != nil {
 		return 0, err
 	}
-	if n != 1 {
-		return r.ReadByte()
-	}
+	//if n != 1 {
+	//	return r.ReadByte()
+	//}
 	return buf[0], nil
 }
 
@@ -154,5 +157,5 @@ func (r *NetworkReader) ReadInt32() (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	return (int32(b[0]) << 24) | (int32(b[1]) << 16) | (int32(b[2]) << 8) | int32(b[3]), nil
+	return int32(binary.BigEndian.Uint32(b)), nil
 }

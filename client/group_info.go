@@ -9,7 +9,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 	"net/url"
 	"strings"
 	"sync"
@@ -63,40 +63,40 @@ func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D88DReqBody{
-		AppId: proto.Uint32(c.version.AppId),
+		AppId: c.version.AppId,
 		ReqGroupInfo: []*oidb.ReqGroupInfo{
 			{
-				GroupCode: proto.Uint64(uint64(groupCode)),
+				GroupCode: (uint64(groupCode)),
 				Stgroupinfo: &oidb.D88DGroupInfo{
-					GroupOwner:           proto.Uint64(0),
-					GroupUin:             proto.Uint64(0),
-					GroupCreateTime:      proto.Uint32(0),
-					GroupFlag:            proto.Uint32(0),
-					GroupMemberMaxNum:    proto.Uint32(0),
-					GroupMemberNum:       proto.Uint32(0),
-					GroupOption:          proto.Uint32(0),
-					GroupLevel:           proto.Uint32(0),
-					GroupFace:            proto.Uint32(0),
+					GroupOwner:           0,
+					GroupUin:             0,
+					GroupCreateTime:      0,
+					GroupFlag:            0,
+					GroupMemberMaxNum:    0,
+					GroupMemberNum:       0,
+					GroupOption:          0,
+					GroupLevel:           0,
+					GroupFace:            0,
 					GroupName:            EmptyBytes,
 					GroupMemo:            EmptyBytes,
 					GroupFingerMemo:      EmptyBytes,
-					GroupLastMsgTime:     proto.Uint32(0),
-					GroupCurMsgSeq:       proto.Uint32(0),
+					GroupLastMsgTime:     0,
+					GroupCurMsgSeq:       0,
 					GroupQuestion:        EmptyBytes,
 					GroupAnswer:          EmptyBytes,
-					GroupGrade:           proto.Uint32(0),
-					ActiveMemberNum:      proto.Uint32(0),
-					HeadPortraitSeq:      proto.Uint32(0),
+					GroupGrade:           0,
+					ActiveMemberNum:      0,
+					HeadPortraitSeq:      0,
 					MsgHeadPortrait:      &oidb.D88DGroupHeadPortrait{},
 					StGroupExInfo:        &oidb.D88DGroupExInfoOnly{},
-					GroupSecLevel:        proto.Uint32(0),
-					CmduinPrivilege:      proto.Uint32(0),
-					NoFingerOpenFlag:     proto.Uint32(0),
-					NoCodeFingerOpenFlag: proto.Uint32(0),
+					GroupSecLevel:        0,
+					CmduinPrivilege:      0,
+					NoFingerOpenFlag:     0,
+					NoCodeFingerOpenFlag: 0,
 				},
 			},
 		},
-		PcClientVersion: proto.Uint32(0),
+		PcClientVersion: 0,
 	}
 	b, _ := proto.Marshal(body)
 	req := &oidb.OIDBSSOPkg{
@@ -176,13 +176,13 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		return nil, errors.New("group info not found")
 	}
 	return &GroupInfo{
-		Uin:            int64(*info.GroupInfo.GroupUin),
-		Code:           int64(*info.GroupCode),
+		Uin:            int64(info.GroupInfo.GroupUin),
+		Code:           int64(info.GroupCode),
 		Name:           string(info.GroupInfo.GroupName),
 		Memo:           string(info.GroupInfo.GroupMemo),
-		OwnerUin:       int64(*info.GroupInfo.GroupOwner),
-		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
+		OwnerUin:       int64(info.GroupInfo.GroupOwner),
+		MemberCount:    uint16(info.GroupInfo.GroupMemberNum),
+		MaxMemberCount: uint16(info.GroupInfo.GroupMemberMaxNum),
 		Members:        []*GroupMemberInfo{},
 		lastMsgSeq:     int64(info.GroupInfo.GetGroupCurMsgSeq()),
 		client:         c,

@@ -10,7 +10,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 	"math"
 	"math/rand"
 	"time"
@@ -230,8 +230,8 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 		}
 	}
 	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: &groupCode}},
-		ContentHead: &msg.ContentHead{PkgNum: &pkgNum, PkgIndex: &pkgIndex, DivSeq: &pkgDiv},
+		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: groupCode}},
+		ContentHead: &msg.ContentHead{PkgNum: pkgNum, PkgIndex: pkgIndex, DivSeq: pkgDiv},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m, true),
@@ -243,13 +243,13 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 				}(),
 			},
 		},
-		MsgSeq:     proto.Int32(c.nextGroupSeq()),
-		MsgRand:    &r,
+		MsgSeq:     c.nextGroupSeq(),
+		MsgRand:    r,
 		SyncCookie: EmptyBytes,
-		MsgVia:     proto.Int32(1),
+		MsgVia:     1,
 		MsgCtrl: func() *msg.MsgCtrl {
 			if forward {
-				return &msg.MsgCtrl{MsgFlag: proto.Int32(4)}
+				return &msg.MsgCtrl{MsgFlag: 4}
 			}
 			return nil
 		}(),
@@ -262,10 +262,10 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.GetGroupMsgReq{
-		GroupCode:   proto.Uint64(uint64(groupCode)),
-		BeginSeq:    proto.Uint64(uint64(beginSeq)),
-		EndSeq:      proto.Uint64(uint64(endSeq)),
-		PublicGroup: proto.Bool(false),
+		GroupCode:   uint64(groupCode),
+		BeginSeq:    uint64(beginSeq),
+		EndSeq:      uint64(endSeq),
+		PublicGroup: false,
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetGroupMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
@@ -275,11 +275,11 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D8A7ReqBody{
-		SubCmd:                    proto.Uint32(1),
-		LimitIntervalTypeForUin:   proto.Uint32(2),
-		LimitIntervalTypeForGroup: proto.Uint32(1),
-		Uin:                       proto.Uint64(uint64(c.Uin)),
-		GroupCode:                 proto.Uint64(uint64(groupCode)),
+		SubCmd:                    1,
+		LimitIntervalTypeForUin:   2,
+		LimitIntervalTypeForGroup: 1,
+		Uin:                       uint64(c.Uin),
+		GroupCode:                 uint64(groupCode),
 	}
 	b, _ := proto.Marshal(body)
 	req := &oidb.OIDBSSOPkg{
@@ -348,7 +348,7 @@ func decodeGetGroupMsgResponse(c *QQClient, _ uint16, payload []byte) (interface
 	}
 	var ret []*message.GroupMessage
 	for _, m := range rsp.Msg {
-		if m.Head.FromUin == nil {
+		if m.Head.FromUin == 0 { // TODO Check needed Changed from nil {
 			continue
 		}
 		ret = append(ret, c.parseGroupMessage(m))
