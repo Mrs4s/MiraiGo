@@ -153,7 +153,7 @@ func (e *ForwardElement) Pack() (r []*msg.Elem) {
 	r = append(r, &msg.Elem{
 		RichMsg: &msg.RichMsg{
 			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			ServiceId: &e.Id,
+			ServiceId: proto.Int32(35),
 			MsgResId:  []byte{},
 		},
 	})

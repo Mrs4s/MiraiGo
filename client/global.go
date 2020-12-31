@@ -580,19 +580,15 @@ func genForwardTemplate(resId, preview, title, brief, source, summary string, ts
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`,
 		brief, resId, ts, title, preview, summary, source,
 	)
-	for index, item := range items {
+	for _, item := range items {
 		if item.GetFileName() == "MultiMsg" {
-			items[index].FileName = proto.String(strconv.FormatInt(ts, 10))
+			*item.FileName = strconv.FormatInt(ts, 10)
 		}
 	}
 	return &message.ForwardElement{
-		ServiceElement: message.ServiceElement{
-			Id:      35,
-			Content: template,
-			ResId:   resId,
-			SubType: "Forward",
-		},
-		Items: items,
+		Content: template,
+		ResId:   resId,
+		Items:   items,
 	}
 }
 

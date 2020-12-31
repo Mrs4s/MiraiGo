@@ -9,6 +9,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"image"
 	"io"
+	"math"
 	"math/rand"
 	"net"
 	"runtime/debug"
@@ -137,8 +138,6 @@ var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 	"LongConn.OffPicUp":                                  decodeOffPicUpResponse,
 	"ProfileService.Pb.ReqSystemMsgNew.Group":            decodeSystemMsgGroupPacket,
 	"ProfileService.Pb.ReqSystemMsgNew.Friend":           decodeSystemMsgFriendPacket,
-	"MultiMsg.ApplyUp":                                   decodeMultiApplyUpResponse,
-	"MultiMsg.ApplyDown":                                 decodeMultiApplyDownResponse,
 	"OidbSvc.0xe07_0":                                    decodeImageOcrResponse,
 	"OidbSvc.0xd79":                                      decodeWordSegmentation,
 	"OidbSvc.0x990":                                      decodeTranslateResponse,
@@ -503,23 +502,20 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 }
 
 func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
-	i, err := c.sendAndWait(c.buildMultiApplyDownPacket(resId))
-	if err != nil {
+	m := c.DownloadForwardMessage(resId)
+	if m == nil {
 		return nil
 	}
-	multiMsg := i.(*msg.PbMultiMsgTransmit)
-	ret := &message.ForwardMessage{}
-	if multiMsg.GetPbItemList() == nil {
-		return nil
-	}
-	var item *msg.PbMultiMsgItem
-	for _, m := range multiMsg.GetPbItemList() {
-		if m.GetFileName() == "MultiMsg" {
-			item = m
-			break
+	var (
+		item *msg.PbMultiMsgItem
+		ret  = &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
+	)
+	for _, iter := range m.Items {
+		if iter.GetFileName() == "MultiMsg" {
+			item = iter
 		}
 	}
-	if item == nil || item.GetBuffer() == nil || item.GetBuffer().GetMsg() == nil {
+	if item == nil {
 		return nil
 	}
 	for _, m := range item.GetBuffer().GetMsg() {
@@ -536,6 +532,38 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 		})
 	}
 	return ret
+}
+
+func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement {
+	i, err := c.sendAndWait(c.buildMultiApplyDownPacket(resId))
+	if err != nil {
+		return nil
+	}
+	multiMsg := i.(*msg.PbMultiMsgTransmit)
+	if multiMsg.GetPbItemList() == nil {
+		return nil
+	}
+	var pv string
+	for i := 0; i < int(math.Min(4, float64(len(multiMsg.GetMsg())))); i++ {
+		m := multiMsg.Msg[i]
+		pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`,
+			func() string {
+				if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
+					return m.Head.GroupInfo.GetGroupCard()
+				}
+				return m.Head.GetFromNick()
+			}(),
+			message.ToReadableString(
+				message.ParseMessageElems(multiMsg.Msg[i].GetBody().GetRichText().Elems),
+			),
+		)
+	}
+	return genForwardTemplate(
+		resId, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录",
+		fmt.Sprintf("查看 %d 条转发消息", len(multiMsg.GetMsg())),
+		time.Now().UnixNano(),
+		multiMsg.GetPbItemList(),
+	)
 }
 
 func (c *QQClient) sendGroupPoke(groupCode, target int64) {

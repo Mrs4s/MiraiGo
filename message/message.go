@@ -456,7 +456,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					reg := regexp.MustCompile(`m_resid="(\w+?.*?)"`)
 					sub := reg.FindAllStringSubmatch(content, -1)
 					if len(sub) > 0 && len(sub[0]) > 1 {
-						res = append(res, &ForwardElement{ServiceElement: ServiceElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]}})
+						res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})
 						continue
 					}
 				}
