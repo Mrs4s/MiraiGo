@@ -70,6 +70,8 @@ type QQClient struct {
 	timeDiff         int64
 	sigInfo          *loginSigInfo
 	highwaySession   *highwaySessionInfo
+	srvSsoAddrs      []string
+	otherSrvAddrs    []string
 	fileStorageInfo  *jce.FileStoragePushFSSvcList
 	pwdFlag          bool
 

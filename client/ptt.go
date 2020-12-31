@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 
@@ -19,27 +20,44 @@ import (
 // UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
 func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {
 	h := md5.Sum(voice)
-	seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
-	r, err := c.sendAndWait(seq, pkt)
+	ext := c.buildGroupPttStoreBDHExt(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
+	rsp, err := c.highwayUploadByBDH(bytes.NewReader(voice), 29, ext)
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(pttUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
+	if len(rsp) == 0 {
+		return nil, errors.New("miss rsp")
 	}
-	if rsp.IsExists {
-		goto ok
+	pkt := pb.D388RespBody{}
+	if err = proto.Unmarshal(rsp, &pkt); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	for i, ip := range rsp.UploadIp {
-		err := c.uploadPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:])
-		if err != nil {
-			continue
-		}
-		goto ok
+	if len(pkt.MsgTryUpPttRsp) == 0 {
+		return nil, errors.New("miss try up rsp")
 	}
-	return nil, errors.New("upload failed")
-ok:
+	/*
+			seq, pkt := c.buildGroupPttStorePacket(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
+			r, err := c.sendAndWait(seq, pkt)
+			if err != nil {
+				return nil, err
+			}
+			rsp := r.(pttUploadResponse)
+			if rsp.ResultCode != 0 {
+				return nil, errors.New(rsp.Message)
+			}
+			if rsp.IsExists {
+				goto ok
+			}
+			for i, ip := range rsp.UploadIp {
+				err := c.uploadPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:])
+				if err != nil {
+					continue
+				}
+				goto ok
+			}
+			return nil, errors.New("upload failed")
+		ok:
+	*/
 	return &message.GroupVoiceElement{
 		Ptt: &msg.Ptt{
 			FileType:     proto.Int32(4),
@@ -47,7 +65,7 @@ ok:
 			FileMd5:      h[:],
 			FileName:     proto.String(hex.EncodeToString(h[:]) + ".amr"),
 			FileSize:     proto.Int32(int32(len(voice))),
-			GroupFileKey: rsp.FileKey,
+			GroupFileKey: pkt.MsgTryUpPttRsp[0].FileKey,
 			BoolValid:    proto.Bool(true),
 			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
@@ -89,6 +107,12 @@ ok:
 // PttStore.GroupPttUp
 func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, codec, voiceLength int32) (uint16, []byte) {
 	seq := c.nextSeq()
+	packet := packets.BuildUniPacket(c.Uin, seq, "PttStore.GroupPttUp", 1, c.OutGoingPacketSessionId,
+		EmptyBytes, c.sigInfo.d2Key, c.buildGroupPttStoreBDHExt(groupCode, md5, size, codec, voiceLength))
+	return seq, packet
+}
+
+func (c *QQClient) buildGroupPttStoreBDHExt(groupCode int64, md5 []byte, size, codec, voiceLength int32) []byte {
 	req := &pb.D388ReqBody{
 		NetType: 3,
 		Subcmd:  3,
@@ -110,11 +134,9 @@ func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, c
 				BoolNewUpChan: true,
 			},
 		},
-		Extension: EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PttStore.GroupPttUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
+	return payload
 }
 
 // PttStore.GroupPttUp

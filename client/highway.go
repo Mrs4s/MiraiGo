@@ -6,15 +6,16 @@ import (
 	binary2 "encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"net"
-	"net/http"
-	"strconv"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
+	"io"
+	"net"
+	"net/http"
+	"strconv"
+	"time"
 )
 
 func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {
@@ -55,6 +56,133 @@ func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId
 	}
 
 	return nil
+}
+
+func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ext []byte) ([]byte, error) {
+	// TODO: encrypted upload support.
+	if len(c.srvSsoAddrs) == 0 {
+		return nil, errors.New("srv addrs not found. maybe miss some packet?")
+	}
+	if c.highwaySession == nil {
+		return nil, errors.New("highway session not found. maybe miss some packet?")
+	}
+	h := md5.New()
+	length, _ := io.Copy(h, stream)
+	chunkSize := 8192 * 8
+	fh := h.Sum(nil)
+	_, _ = stream.Seek(0, io.SeekStart)
+	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
+	if err != nil {
+		return nil, errors.Wrap(err, "connect error")
+	}
+	offset := 0
+	reader := binary.NewNetworkReader(conn)
+	ticket := c.highwaySession.SigSession
+	if err = c.highwaySendHeartbreak(conn); err != nil {
+		return nil, errors.Wrap(err, "echo error")
+	}
+	if _, _, err = highwayReadResponse(reader); err != nil {
+		return nil, errors.Wrap(err, "echo error")
+	}
+	var rspExt []byte
+	for {
+		chunk := make([]byte, chunkSize)
+		rl, err := io.ReadFull(stream, chunk)
+		if err == io.EOF {
+			break
+		}
+		if err == io.ErrUnexpectedEOF {
+			chunk = chunk[:rl]
+		}
+		ch := md5.Sum(chunk)
+		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
+			MsgBasehead: &pb.DataHighwayHead{
+				Version:   1,
+				Uin:       strconv.FormatInt(c.Uin, 10),
+				Command:   "PicUp.DataUp",
+				Seq:       c.nextGroupDataTransSeq(),
+				Appid:     int32(c.version.AppId),
+				Dataflag:  4096,
+				CommandId: cmdId,
+				LocaleId:  2052,
+			},
+			MsgSeghead: &pb.SegHead{
+				Filesize:      length,
+				Dataoffset:    int64(offset),
+				Datalength:    int32(rl),
+				Serviceticket: ticket,
+				Md5:           ch[:],
+				FileMd5:       fh[:],
+			},
+			ReqExtendinfo: ext,
+		})
+		offset += rl
+		_, err = conn.Write(binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteByte(40)
+			w.WriteUInt32(uint32(len(head)))
+			w.WriteUInt32(uint32(len(chunk)))
+			w.Write(head)
+			w.Write(chunk)
+			w.WriteByte(41)
+		}))
+		if err != nil {
+			return nil, errors.Wrap(err, "write conn error")
+		}
+		rspHead, _, err := highwayReadResponse(reader)
+		if err != nil {
+			return nil, errors.Wrap(err, "highway upload error")
+		}
+		if rspHead.ErrorCode != 0 {
+			return nil, errors.New("upload failed")
+		}
+		if rspHead.RspExtendinfo != nil {
+			rspExt = rspHead.RspExtendinfo
+		}
+		if rspHead.MsgSeghead != nil && rspHead.MsgSeghead.Serviceticket != nil {
+			ticket = rspHead.MsgSeghead.Serviceticket
+		}
+	}
+	return rspExt, nil
+}
+
+func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {
+	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
+		MsgBasehead: &pb.DataHighwayHead{
+			Version:   1,
+			Uin:       strconv.FormatInt(c.Uin, 10),
+			Command:   "PicUp.Echo",
+			Seq:       c.nextGroupDataTransSeq(),
+			Appid:     int32(c.version.AppId),
+			Dataflag:  4096,
+			CommandId: 0,
+			LocaleId:  2052,
+		},
+	})
+	_, err := conn.Write(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteByte(40)
+		w.WriteUInt32(uint32(len(head)))
+		w.WriteUInt32(0)
+		w.Write(head)
+		w.WriteByte(41)
+	}))
+	return err
+}
+
+func highwayReadResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, []byte, error) {
+	_, err := r.ReadByte()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to read byte")
+	}
+	hl, _ := r.ReadInt32()
+	a2, _ := r.ReadInt32()
+	head, _ := r.ReadBytes(int(hl))
+	payload, _ := r.ReadBytes(int(a2))
+	_, _ = r.ReadByte()
+	rsp := new(pb.RspDataHighwayHead)
+	if err = proto.Unmarshal(head, rsp); err != nil {
+		return nil, nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return rsp, payload, nil
 }
 
 // 只是为了写的跟上面一样长(bushi，当然也应该是最快的玩法

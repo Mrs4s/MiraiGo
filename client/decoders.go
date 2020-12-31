@@ -256,7 +256,18 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 					SigSession: rsp.RspBody.SigSession,
 					SessionKey: rsp.RspBody.SessionKey,
 				}
-				c.Debug("highway session updated.")
+				for _, srv := range rsp.RspBody.Addrs {
+					if srv.GetServiceType() == 10 {
+						for _, addr := range srv.Addrs {
+							c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+						}
+					}
+					if srv.GetServiceType() == 21 {
+						for _, addr := range srv.Addrs {
+							c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+						}
+					}
+				}
 			}
 		}
 	}
