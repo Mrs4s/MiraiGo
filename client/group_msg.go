@@ -99,6 +99,10 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		_, ok := e.(*message.GroupVoiceElement)
 		_, ok2 := e.(*message.ServiceElement)
 		_, ok3 := e.(*message.ReplyElement)
+		if _, ok4 := e.(*message.ForwardElement); ok4 {
+			forward = true
+			return true
+		}
 		return ok || ok2 || ok3
 	}) {
 		div := int32(rand.Uint32())

@@ -13,6 +13,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func init() {
+	decoders["MultiMsg.ApplyUp"] = decodeMultiApplyUpResponse
+	decoders["MultiMsg.ApplyDown"] = decodeMultiApplyDownResponse
+}
+
 // MultiMsg.ApplyUp
 func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
 	seq := c.nextSeq()
