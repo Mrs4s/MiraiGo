@@ -19,65 +19,98 @@ import (
 )
 
 func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {
+	return c.highwayUploadStream(ip, port, updKey, bytes.NewReader(data), cmdId)
+}
+
+func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, stream io.ReadSeeker, cmdId int32) error {
 	addr := net.TCPAddr{
 		IP:   make([]byte, 4),
 		Port: port,
 	}
 	binary2.LittleEndian.PutUint32(addr.IP, ip)
+	h := md5.New()
+	length, _ := io.Copy(h, stream)
+	fh := h.Sum(nil)
+	chunkSize := 8192 * 8
+	_, _ = stream.Seek(0, io.SeekStart)
 	conn, err := net.DialTCP("tcp", nil, &addr)
 	if err != nil {
-		return errors.Wrap(err, "failed to connect to highway server")
+		return errors.Wrap(err, "connect error")
 	}
 	defer conn.Close()
-	h := md5.Sum(data)
-	pkt := c.buildImageUploadPacket(data, updKey, cmdId, h)
-	r := binary.NewNetworkReader(conn)
-	for _, p := range pkt {
-		_, err = conn.Write(p)
+	offset := 0
+	reader := binary.NewNetworkReader(conn)
+	for {
+		chunk := make([]byte, chunkSize)
+		rl, err := io.ReadFull(stream, chunk)
+		if err == io.EOF {
+			break
+		}
+		if err == io.ErrUnexpectedEOF {
+			chunk = chunk[:rl]
+		}
+		ch := md5.Sum(chunk)
+		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
+			MsgBasehead: &pb.DataHighwayHead{
+				Version:   1,
+				Uin:       strconv.FormatInt(c.Uin, 10),
+				Command:   "PicUp.DataUp",
+				Seq:       c.nextGroupDataTransSeq(),
+				Appid:     int32(c.version.AppId),
+				Dataflag:  4096,
+				CommandId: cmdId,
+				LocaleId:  2052,
+			},
+			MsgSeghead: &pb.SegHead{
+				Filesize:      length,
+				Dataoffset:    int64(offset),
+				Datalength:    int32(rl),
+				Serviceticket: updKey,
+				Md5:           ch[:],
+				FileMd5:       fh[:],
+			},
+			ReqExtendinfo: EmptyBytes,
+		})
+		offset += rl
+		_, err = conn.Write(binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteByte(40)
+			w.WriteUInt32(uint32(len(head)))
+			w.WriteUInt32(uint32(len(chunk)))
+			w.Write(head)
+			w.Write(chunk)
+			w.WriteByte(41)
+		}))
 		if err != nil {
-			return errors.Wrap(err, "failed to write")
+			return errors.Wrap(err, "write conn error")
 		}
-		_, err = r.ReadByte()
+		rspHead, _, err := highwayReadResponse(reader)
 		if err != nil {
-			return errors.Wrap(err, "failed to read byte")
+			return errors.Wrap(err, "highway upload error")
 		}
-		hl, _ := r.ReadInt32()
-		a2, _ := r.ReadInt32()
-		payload, _ := r.ReadBytes(int(hl))
-		_, _ = r.ReadBytes(int(a2))
-		r.ReadByte()
-		rsp := new(pb.RspDataHighwayHead)
-		if err = proto.Unmarshal(payload, rsp); err != nil {
-			return errors.Wrap(err, "failed to unmarshal protobuf message")
-		}
-		if rsp.ErrorCode != 0 {
+		if rspHead.ErrorCode != 0 {
 			return errors.New("upload failed")
 		}
 	}
-
 	return nil
 }
 
-func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ext []byte) ([]byte, error) {
+func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket, ext []byte) ([]byte, error) {
 	// TODO: encrypted upload support.
 	if len(c.srvSsoAddrs) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
-	if c.highwaySession == nil {
-		return nil, errors.New("highway session not found. maybe miss some packet?")
-	}
 	h := md5.New()
 	length, _ := io.Copy(h, stream)
-	chunkSize := 8192 * 8
+	chunkSize := 8192 * 16
 	fh := h.Sum(nil)
 	_, _ = stream.Seek(0, io.SeekStart)
 	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 	if err != nil {
 		return nil, errors.Wrap(err, "connect error")
 	}
+	defer conn.Close()
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	ticket := c.highwaySession.SigSession
 	if err = c.highwaySendHeartbreak(conn); err != nil {
 		return nil, errors.Wrap(err, "echo error")
 	}

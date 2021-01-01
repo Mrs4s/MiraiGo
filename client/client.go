@@ -574,9 +574,11 @@ func (c *QQClient) SendFriendPoke(target int64) {
 	_, _ = c.sendAndWait(c.buildFriendPokePacket(target))
 }
 
-func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.GroupImageElement, error) {
-	h := md5.Sum(img)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, h[:], int32(len(img)))
+func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
+	h := md5.New()
+	length, _ := io.Copy(h, img)
+	fh := h.Sum(nil)
+	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
@@ -588,21 +590,32 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img []byte) (*message.Group
 	if rsp.IsExists {
 		goto ok
 	}
-	for i, ip := range rsp.UploadIp {
-		err := c.highwayUpload(uint32(ip), int(rsp.UploadPort[i]), rsp.UploadKey, img, 2)
-		if err != nil {
-			continue
-		}
+	_, _ = img.Seek(0, io.SeekStart)
+	if _, err = c.highwayUploadByBDH(img, 2, rsp.UploadKey, EmptyBytes); err == nil {
 		goto ok
 	}
+
+	/*
+		for i, ip := range rsp.UploadIp {
+			err := c.highwayUpload(uint32(ip), int(rsp.UploadPort[i]), rsp.UploadKey, img, 2)
+			if err != nil {
+				continue
+			}
+			goto ok
+		}
+	*/
 	return nil, errors.New("upload failed")
 ok:
-	i, _, _ := image.DecodeConfig(bytes.NewReader(img))
+	_, _ = img.Seek(0, io.SeekStart)
+	i, _, _ := image.DecodeConfig(img)
 	var imageType int32 = 1000
-	if bytes.HasPrefix(img, []byte{0x47, 0x49, 0x46, 0x38}) {
+	_, _ = img.Seek(0, io.SeekStart)
+	tmp := make([]byte, 4)
+	_, _ = img.Read(tmp)
+	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(h[:]), h[:], rsp.FileId, int32(len(img)), int32(i.Width), int32(i.Height), imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
@@ -615,7 +628,7 @@ func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*mes
 	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
 	if errors.Is(err, ErrNotExists) {
 		// use group highway upload and query again for image id.
-		if _, err = c.UploadGroupImage(target, img); err != nil {
+		if _, err = c.UploadGroupImage(target, bytes.NewReader(img)); err != nil {
 			return nil, err
 		}
 		if count >= 5 {

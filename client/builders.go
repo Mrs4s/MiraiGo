@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -697,52 +696,6 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
-}
-
-func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, fmd5 [16]byte) (r [][]byte) {
-	offset := 0
-	binary.ToChunkedBytesF(data, 8192*8, func(chunked []byte) {
-		w := binary.NewWriter()
-		cmd5 := md5.Sum(chunked)
-		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: &pb.DataHighwayHead{
-				Version: 1,
-				Uin:     strconv.FormatInt(c.Uin, 10),
-				Command: "PicUp.DataUp",
-				Seq: func() int32 {
-					if commandId == 2 {
-						return c.nextGroupDataTransSeq()
-					}
-					if commandId == 27 {
-						return c.nextHighwayApplySeq()
-					}
-					return c.nextGroupDataTransSeq()
-				}(),
-				Appid:     int32(c.version.AppId),
-				Dataflag:  4096,
-				CommandId: commandId,
-				LocaleId:  2052,
-			},
-			MsgSeghead: &pb.SegHead{
-				Filesize:      int64(len(data)),
-				Dataoffset:    int64(offset),
-				Datalength:    int32(len(chunked)),
-				Serviceticket: updKey,
-				Md5:           cmd5[:],
-				FileMd5:       fmd5[:],
-			},
-			ReqExtendinfo: EmptyBytes,
-		})
-		offset += len(chunked)
-		w.WriteByte(40)
-		w.WriteUInt32(uint32(len(head)))
-		w.WriteUInt32(uint32(len(chunked)))
-		w.Write(head)
-		w.Write(chunked)
-		w.WriteByte(41)
-		r = append(r, w.Bytes())
-	})
-	return
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Friend

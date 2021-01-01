@@ -1,9 +1,9 @@
 package client
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"io"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -18,10 +18,13 @@ import (
 // 语音相关处理逻辑
 
 // UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
-func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.GroupVoiceElement, error) {
-	h := md5.Sum(voice)
-	ext := c.buildGroupPttStoreBDHExt(groupCode, h[:], int32(len(voice)), 0, int32(len(voice)))
-	rsp, err := c.highwayUploadByBDH(bytes.NewReader(voice), 29, ext)
+func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*message.GroupVoiceElement, error) {
+	h := md5.New()
+	length, _ := io.Copy(h, voice)
+	fh := h.Sum(nil)
+	_, _ = voice.Seek(0, io.SeekStart)
+	ext := c.buildGroupPttStoreBDHExt(groupCode, fh[:], int32(length), 0, int32(length))
+	rsp, err := c.highwayUploadByBDH(voice, 29, c.highwaySession.SigSession, ext)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +65,9 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice []byte) (*message.Group
 		Ptt: &msg.Ptt{
 			FileType:     proto.Int32(4),
 			SrcUin:       &c.Uin,
-			FileMd5:      h[:],
-			FileName:     proto.String(hex.EncodeToString(h[:]) + ".amr"),
-			FileSize:     proto.Int32(int32(len(voice))),
+			FileMd5:      fh[:],
+			FileName:     proto.String(hex.EncodeToString(fh[:]) + ".amr"),
+			FileSize:     proto.Int32(int32(length)),
 			GroupFileKey: pkt.MsgTryUpPttRsp[0].FileKey,
 			BoolValid:    proto.Bool(true),
 			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
