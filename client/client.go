@@ -613,17 +613,19 @@ ok:
 	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
 }
 
-func (c *QQClient) UploadPrivateImage(target int64, img []byte) (*message.FriendImageElement, error) {
+func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
 	return c.uploadPrivateImage(target, img, 0)
 }
 
-func (c *QQClient) uploadPrivateImage(target int64, img []byte, count int) (*message.FriendImageElement, error) {
+func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int) (*message.FriendImageElement, error) {
 	count++
-	h := md5.Sum(img)
-	e, err := c.QueryFriendImage(target, h[:], int32(len(img)))
+	h := md5.New()
+	length, _ := io.Copy(h, img)
+	fh := h.Sum(nil)
+	e, err := c.QueryFriendImage(target, fh[:], int32(length))
 	if errors.Is(err, ErrNotExists) {
 		// use group highway upload and query again for image id.
-		if _, err = c.UploadGroupImage(target, bytes.NewReader(img)); err != nil {
+		if _, err = c.UploadGroupImage(target, img); err != nil {
 			return nil, err
 		}
 		if count >= 5 {
