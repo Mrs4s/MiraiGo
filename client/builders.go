@@ -124,7 +124,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 		w.Write(tlv.T2(result, sign))
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.t104))
-		w.Write(tlv.T116(150470524, 66560))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
