@@ -3,16 +3,13 @@ package client
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
-	"image"
 	"io"
 	"math"
 	"math/rand"
 	"net"
-	"os"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -134,7 +131,6 @@ var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 	"friendlist.GetTroopListReqV2":                       decodeGroupListResponse,
 	"friendlist.GetTroopMemberListReq":                   decodeGroupMemberListResponse,
 	"group_member_card.get_group_member_card_info":       decodeGroupMemberInfoResponse,
-	"ImgStore.GroupPicUp":                                decodeGroupImageStoreResponse,
 	"PttStore.GroupPttUp":                                decodeGroupPttStoreResponse,
 	"LongConn.OffPicUp":                                  decodeOffPicUpResponse,
 	"ProfileService.Pb.ReqSystemMsgNew.Group":            decodeSystemMsgGroupPacket,
@@ -573,167 +569,6 @@ func (c *QQClient) sendGroupPoke(groupCode, target int64) {
 
 func (c *QQClient) SendFriendPoke(target int64) {
 	_, _ = c.sendAndWait(c.buildFriendPokePacket(target))
-}
-
-func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
-	h := md5.New()
-	length, _ := io.Copy(h, img)
-	fh := h.Sum(nil)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
-	r, err := c.sendAndWait(seq, pkt)
-	if err != nil {
-		return nil, err
-	}
-	rsp := r.(imageUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if rsp.IsExists {
-		goto ok
-	}
-	_, _ = img.Seek(0, io.SeekStart)
-	if len(c.srvSsoAddrs) == 0 {
-		for i, addr := range rsp.UploadIp {
-			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
-		}
-	}
-	if _, err = c.highwayUploadByBDH(img, 2, rsp.UploadKey, EmptyBytes); err == nil {
-		goto ok
-	}
-	return nil, errors.New("upload failed")
-ok:
-	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
-	var imageType int32 = 1000
-	_, _ = img.Seek(0, io.SeekStart)
-	tmp := make([]byte, 4)
-	_, _ = img.Read(tmp)
-	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
-		imageType = 2000
-	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
-}
-
-func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*message.GroupImageElement, error) {
-	img, err := os.OpenFile(path, os.O_RDONLY, 0666)
-	if err != nil {
-		return nil, err
-	}
-	h := md5.New()
-	length, _ := io.Copy(h, img)
-	fh := h.Sum(nil)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
-	r, err := c.sendAndWait(seq, pkt)
-	if err != nil {
-		return nil, err
-	}
-	rsp := r.(imageUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if rsp.IsExists {
-		goto ok
-	}
-	if len(c.srvSsoAddrs) == 0 {
-		for i, addr := range rsp.UploadIp {
-			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
-		}
-	}
-	if _, err = c.highwayUploadFileMultiThreadingByBDH(path, 2, 4, rsp.UploadKey, EmptyBytes); err == nil {
-		goto ok
-	}
-	return nil, errors.New("upload failed")
-ok:
-	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
-	var imageType int32 = 1000
-	_, _ = img.Seek(0, io.SeekStart)
-	tmp := make([]byte, 4)
-	_, _ = img.Read(tmp)
-	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
-		imageType = 2000
-	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
-}
-
-func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
-	return c.uploadPrivateImage(target, img, 0)
-}
-
-func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int) (*message.FriendImageElement, error) {
-	count++
-	h := md5.New()
-	length, _ := io.Copy(h, img)
-	fh := h.Sum(nil)
-	e, err := c.QueryFriendImage(target, fh[:], int32(length))
-	if errors.Is(err, ErrNotExists) {
-		// use group highway upload and query again for image id.
-		if _, err = c.UploadGroupImage(target, img); err != nil {
-			return nil, err
-		}
-		if count >= 5 {
-			return e, nil
-		}
-		return c.uploadPrivateImage(target, img, count)
-	}
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
-}
-
-func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
-	switch e := img.(type) {
-	case *message.GroupImageElement:
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(e.Url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
-		if err != nil {
-			return nil, err
-		}
-		return rsp.(*OcrResponse), nil
-	case *message.ImageElement:
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(e.Url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
-		if err != nil {
-			return nil, err
-		}
-		return rsp.(*OcrResponse), nil
-	}
-	return nil, errors.New("image error")
-}
-
-func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
-	r, err := c.sendAndWait(c.buildGroupImageStorePacket(groupCode, hash, size))
-	if err != nil {
-		return nil, err
-	}
-	rsp := r.(imageUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if rsp.IsExists {
-		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash, rsp.FileId, size, rsp.Width, rsp.Height, 1000), nil
-	}
-	return nil, errors.New("image does not exist")
-}
-
-func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*message.FriendImageElement, error) {
-	i, err := c.sendAndWait(c.buildOffPicUpPacket(target, hash, size))
-	if err != nil {
-		return nil, err
-	}
-	rsp := i.(imageUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if !rsp.IsExists {
-		return &message.FriendImageElement{
-			ImageId: rsp.ResourceId,
-			Md5:     hash,
-		}, errors.WithStack(ErrNotExists)
-	}
-	return &message.FriendImageElement{
-		ImageId: rsp.ResourceId,
-		Md5:     hash,
-	}, nil
 }
 
 func (c *QQClient) ReloadGroupList() error {

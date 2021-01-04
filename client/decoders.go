@@ -580,34 +580,6 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (inter
 	}, nil
 }
 
-// ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkt := pb.D388RespBody{}
-	err := proto.Unmarshal(payload, &pkt)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	rsp := pkt.MsgTryUpImgRsp[0]
-	if rsp.Result != 0 {
-		return imageUploadResponse{
-			ResultCode: rsp.Result,
-			Message:    rsp.FailMsg,
-		}, nil
-	}
-	if rsp.BoolFileExit {
-		if rsp.MsgImgInfo != nil {
-			return imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
-		}
-		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
-	}
-	return imageUploadResponse{
-		FileId:     rsp.Fid,
-		UploadKey:  rsp.UpUkey,
-		UploadIp:   rsp.Uint32UpIp,
-		UploadPort: rsp.Uint32UpPort,
-	}, nil
-}
-
 // LongConn.OffPicUp
 func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := cmd0x352.RspBody{}

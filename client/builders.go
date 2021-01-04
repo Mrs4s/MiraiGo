@@ -22,7 +22,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
-	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 var (
@@ -664,37 +663,6 @@ func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (ui
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "LongConn.OffPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// ImgStore.GroupPicUp
-func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	name := utils.RandomString(16) + ".gif"
-	req := &pb.D388ReqBody{
-		NetType: 3,
-		Subcmd:  1,
-		MsgTryUpImgReq: []*pb.TryUpImgReq{
-			{
-				GroupCode:    groupCode,
-				SrcUin:       c.Uin,
-				FileMd5:      md5,
-				FileSize:     int64(size),
-				FileName:     name,
-				SrcTerm:      5,
-				PlatformType: 9,
-				BuType:       1,
-				PicType:      1000,
-				BuildVer:     "8.2.7.4410",
-				AppPicType:   1006,
-				FileIndex:    EmptyBytes,
-				TransferUrl:  EmptyBytes,
-			},
-		},
-		Extension: EmptyBytes,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
