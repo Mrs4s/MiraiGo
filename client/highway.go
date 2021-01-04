@@ -205,7 +205,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 	h := md5.New()
 	_, _ = io.Copy(h, file)
 	fh := h.Sum(nil)
-	var blockSize int64 = 8192 * 8
+	var blockSize int64 = 1024 * 512
 	var blocks []*BlockMetaData
 	var rspExt []byte
 	// Init Blocks
