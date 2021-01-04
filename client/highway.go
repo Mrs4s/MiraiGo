@@ -14,7 +14,9 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -101,8 +103,8 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 	}
 	h := md5.New()
 	length, _ := io.Copy(h, stream)
-	chunkSize := 8192 * 16
 	fh := h.Sum(nil)
+	chunkSize := 8192 * 16
 	_, _ = stream.Seek(0, io.SeekStart)
 	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 	if err != nil {
@@ -176,6 +178,158 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 		}
 	}
 	return rspExt, nil
+}
+
+func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32, threadCount int, ticket, ext []byte) ([]byte, error) {
+	if len(c.srvSsoAddrs) == 0 {
+		return nil, errors.New("srv addrs not found. maybe miss some packet?")
+	}
+	stat, err := os.Stat(path)
+	if err != nil {
+		return nil, errors.Wrap(err, "get stat error")
+	}
+	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, errors.Wrap(err, "open file error")
+	}
+	if stat.Size() < 1024*1024*5 {
+		return c.highwayUploadByBDH(file, cmdId, ticket, ext)
+	}
+	type BlockMetaData struct {
+		Id          int
+		BeginOffset int64
+		EndOffset   int64
+		Uploaded    bool
+		Uploading   bool
+	}
+	h := md5.New()
+	_, _ = io.Copy(h, file)
+	fh := h.Sum(nil)
+	var blockSize int64 = 1024 * 1024
+	var blocks []*BlockMetaData
+	var rspExt []byte
+	// Init Blocks
+	{
+		var temp int64 = 0
+		for temp+blockSize < stat.Size() {
+			blocks = append(blocks, &BlockMetaData{
+				Id:          len(blocks),
+				BeginOffset: temp,
+				EndOffset:   temp + blockSize,
+			})
+			temp += blockSize
+		}
+		blocks = append(blocks, &BlockMetaData{
+			Id:          len(blocks),
+			BeginOffset: temp,
+			EndOffset:   stat.Size(),
+		})
+	}
+	var nextLock sync.Mutex
+	nextBlockId := func() int {
+		nextLock.Lock()
+		defer nextLock.Unlock()
+		for i, block := range blocks {
+			if !block.Uploading && !block.Uploaded {
+				block.Uploading = true
+				return i
+			}
+		}
+		return -1
+	}
+	doUpload := func() error {
+		conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
+		if err != nil {
+			return errors.Wrap(err, "connect error")
+		}
+		defer conn.Close()
+		chunk, _ := os.OpenFile(path, os.O_RDONLY, 0666)
+		reader := binary.NewNetworkReader(conn)
+		if err = c.highwaySendHeartbreak(conn); err != nil {
+			return errors.Wrap(err, "echo error")
+		}
+		if _, _, err = highwayReadResponse(reader); err != nil {
+			return errors.Wrap(err, "echo error")
+		}
+		for {
+			nextId := nextBlockId()
+			if nextId == -1 {
+				break
+			}
+			block := blocks[nextId]
+			buffer := make([]byte, blockSize)
+			_, _ = chunk.Seek(block.BeginOffset, io.SeekStart)
+			ri, err := io.ReadFull(chunk, buffer)
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				if err == io.ErrUnexpectedEOF {
+					buffer = buffer[:ri]
+				} else {
+					return err
+				}
+			}
+			ch := md5.Sum(buffer)
+			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
+				MsgBasehead: &pb.DataHighwayHead{
+					Version:   1,
+					Uin:       strconv.FormatInt(c.Uin, 10),
+					Command:   "PicUp.DataUp",
+					Seq:       c.nextGroupDataTransSeq(),
+					Appid:     int32(c.version.AppId),
+					Dataflag:  4096,
+					CommandId: cmdId,
+					LocaleId:  2052,
+				},
+				MsgSeghead: &pb.SegHead{
+					Filesize:      stat.Size(),
+					Dataoffset:    block.BeginOffset,
+					Datalength:    int32(ri),
+					Serviceticket: ticket,
+					Md5:           ch[:],
+					FileMd5:       fh[:],
+				},
+				ReqExtendinfo: ext,
+			})
+			_, err = conn.Write(binary.NewWriterF(func(w *binary.Writer) {
+				w.WriteByte(40)
+				w.WriteUInt32(uint32(len(head)))
+				w.WriteUInt32(uint32(len(buffer)))
+				w.Write(head)
+				w.Write(buffer)
+				w.WriteByte(41)
+			}))
+			if err != nil {
+				return errors.Wrap(err, "write conn error")
+			}
+			rspHead, _, err := highwayReadResponse(reader)
+			if err != nil {
+				return errors.Wrap(err, "highway upload error")
+			}
+			if rspHead.ErrorCode != 0 {
+				return errors.New("upload failed")
+			}
+			if rspHead.RspExtendinfo != nil {
+				rspExt = rspHead.RspExtendinfo
+			}
+			block.Uploaded = true
+		}
+		return nil
+	}
+	wg := sync.WaitGroup{}
+	wg.Add(threadCount)
+	var lastErr error
+	for i := 0; i < threadCount; i++ {
+		go func() {
+			defer wg.Done()
+			if err := doUpload(); err != nil {
+				lastErr = err
+			}
+		}()
+	}
+	wg.Wait()
+	return rspExt, err
 }
 
 func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {

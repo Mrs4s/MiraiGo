@@ -12,6 +12,7 @@ import (
 	"math"
 	"math/rand"
 	"net"
+	"os"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -597,6 +598,48 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 		}
 	}
 	if _, err = c.highwayUploadByBDH(img, 2, rsp.UploadKey, EmptyBytes); err == nil {
+		goto ok
+	}
+	return nil, errors.New("upload failed")
+ok:
+	_, _ = img.Seek(0, io.SeekStart)
+	i, _, _ := image.DecodeConfig(img)
+	var imageType int32 = 1000
+	_, _ = img.Seek(0, io.SeekStart)
+	tmp := make([]byte, 4)
+	_, _ = img.Read(tmp)
+	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
+		imageType = 2000
+	}
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+}
+
+func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*message.GroupImageElement, error) {
+	img, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, err
+	}
+	h := md5.New()
+	length, _ := io.Copy(h, img)
+	fh := h.Sum(nil)
+	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
+	r, err := c.sendAndWait(seq, pkt)
+	if err != nil {
+		return nil, err
+	}
+	rsp := r.(imageUploadResponse)
+	if rsp.ResultCode != 0 {
+		return nil, errors.New(rsp.Message)
+	}
+	if rsp.IsExists {
+		goto ok
+	}
+	if len(c.srvSsoAddrs) == 0 {
+		for i, addr := range rsp.UploadIp {
+			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
+		}
+	}
+	if _, err = c.highwayUploadFileMultiThreadingByBDH(path, 2, 2, rsp.UploadKey, EmptyBytes); err == nil {
 		goto ok
 	}
 	return nil, errors.New("upload failed")
