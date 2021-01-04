@@ -267,7 +267,8 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			}
 			block := blocks[nextId]
 			if block.Id == len(blocks)-1 {
-				for uploadedCount() != len(blocks)-1 && lastErr == nil {
+				t := time.Now()
+				for uploadedCount() != len(blocks)-1 && lastErr == nil && time.Now().Sub(t).Seconds() < 5 {
 					time.Sleep(time.Millisecond * 10)
 				}
 				if lastErr != nil {
