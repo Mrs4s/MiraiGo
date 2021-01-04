@@ -226,6 +226,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		})
 	}
 	var nextLock sync.Mutex
+	var lastErr error
 	nextBlockId := func() int {
 		nextLock.Lock()
 		defer nextLock.Unlock()
@@ -236,6 +237,14 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			}
 		}
 		return -1
+	}
+	uploadedCount := func() (c int) {
+		for _, block := range blocks {
+			if block.Uploaded {
+				c++
+			}
+		}
+		return
 	}
 	doUpload := func() error {
 		conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
@@ -257,6 +266,14 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 				break
 			}
 			block := blocks[nextId]
+			if block.Id == len(blocks)-1 {
+				for uploadedCount() != len(blocks)-1 && lastErr == nil {
+					time.Sleep(time.Millisecond * 10)
+				}
+				if lastErr != nil {
+					break
+				}
+			}
 			buffer := make([]byte, blockSize)
 			_, _ = chunk.Seek(block.BeginOffset, io.SeekStart)
 			ri, err := io.ReadFull(chunk, buffer)
@@ -319,7 +336,6 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 	}
 	wg := sync.WaitGroup{}
 	wg.Add(threadCount)
-	var lastErr error
 	for i := 0; i < threadCount; i++ {
 		go func() {
 			defer wg.Done()
