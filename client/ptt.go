@@ -123,6 +123,7 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 		if err != nil || cp() != nil {
 			hwRsp, err = c.highwayUploadByBDH(utils.MultiReadSeeker(thumb, video), 25, c.highwaySession.SigSession, ext, true)
 		} else {
+			_ = file.Close()
 			hwRsp, err = c.highwayUploadFileMultiThreadingByBDH(cache, 25, 8, c.highwaySession.SigSession, ext, true)
 			_ = os.Remove(cache)
 		}

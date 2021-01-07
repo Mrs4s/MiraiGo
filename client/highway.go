@@ -249,6 +249,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		}
 		defer conn.Close()
 		chunk, _ := os.OpenFile(path, os.O_RDONLY, 0666)
+		defer chunk.Close()
 		reader := binary.NewNetworkReader(conn)
 		if err = c.highwaySendHeartbreak(conn); err != nil {
 			return errors.Wrap(err, "echo error")
