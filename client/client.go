@@ -508,7 +508,7 @@ func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 		ret  = &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
 	)
 	for _, iter := range m.Items {
-		if iter.GetFileName() == "MultiMsg" {
+		if iter.GetFileName() == m.FileName {
 			item = iter
 		}
 	}

@@ -586,6 +586,7 @@ func genForwardTemplate(resId, preview, title, brief, source, summary string, ts
 		}
 	}
 	return &message.ForwardElement{
+		FileName: strconv.FormatInt(ts, 10),
 		Content: template,
 		ResId:   resId,
 		Items:   items,

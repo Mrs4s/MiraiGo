@@ -103,9 +103,10 @@ type ServiceElement struct {
 }
 
 type ForwardElement struct {
-	Content string
-	ResId   string
-	Items   []*msg.PbMultiMsgItem
+	FileName string
+	Content  string
+	ResId    string
+	Items    []*msg.PbMultiMsgItem
 }
 
 type LightAppElement struct {
