@@ -186,9 +186,15 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 	return rspExt, nil
 }
 
-func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32, threadCount int, ticket, ext []byte) ([]byte, error) {
+func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32, threadCount int, ticket, ext []byte, encrypt bool) ([]byte, error) {
 	if len(c.srvSsoAddrs) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
+	}
+	if encrypt {
+		if c.highwaySession == nil || len(c.highwaySession.SessionKey) == 0 {
+			return nil, errors.New("session key not found. maybe miss some packet?")
+		}
+		ext = binary.NewTeaCipher(c.highwaySession.SessionKey).Encrypt(ext)
 	}
 	stat, err := os.Stat(path)
 	if err != nil {

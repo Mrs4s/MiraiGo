@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"io"
+	"os"
 )
 
 func init() {
@@ -88,9 +89,15 @@ ok:
 		}}, nil
 }
 
-func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSeeker) (*message.ShortVideoElement, error) {
+// UploadGroupShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送
+// combinedCache 本地文件缓存, 设置后可多线程上传
+func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSeeker, combinedCache ...string) (*message.ShortVideoElement, error) {
 	videoHash, videoLen := utils.GetMd5AndLength(video)
 	thumbHash, thumbLen := utils.GetMd5AndLength(thumb)
+	cache := ""
+	if len(combinedCache) > 0 {
+		cache = combinedCache[0]
+	}
 	i, err := c.sendAndWait(c.buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash, groupCode, videoLen, thumbLen))
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
@@ -106,7 +113,22 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 		}, nil
 	}
 	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen).PttShortVideoUploadReq)
-	hwRsp, err := c.highwayUploadByBDH(utils.MultiReadSeeker(thumb, video), 25, c.highwaySession.SigSession, ext, true)
+	var hwRsp []byte
+	if cache != "" {
+		file, err := os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0666)
+		cp := func() error {
+			_, err := io.Copy(file, utils.MultiReadSeeker(thumb, video))
+			return err
+		}
+		if err != nil || cp() != nil {
+			hwRsp, err = c.highwayUploadByBDH(utils.MultiReadSeeker(thumb, video), 25, c.highwaySession.SigSession, ext, true)
+		} else {
+			hwRsp, err = c.highwayUploadFileMultiThreadingByBDH(cache, 25, 8, c.highwaySession.SigSession, ext, true)
+			_ = os.Remove(cache)
+		}
+	} else {
+		hwRsp, err = c.highwayUploadByBDH(utils.MultiReadSeeker(thumb, video), 25, c.highwaySession.SigSession, ext, true)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "upload video file error")
 	}
