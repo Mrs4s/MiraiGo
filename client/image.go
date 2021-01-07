@@ -44,7 +44,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
 		}
 	}
-	if _, err = c.highwayUploadByBDH(img, 2, rsp.UploadKey, EmptyBytes); err == nil {
+	if _, err = c.highwayUploadByBDH(img, 2, rsp.UploadKey, EmptyBytes, true); err == nil {
 		goto ok
 	}
 	return nil, errors.New("upload failed")

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
-	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/pkg/errors"
 
@@ -990,18 +989,6 @@ func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{},
 		Texts:    texts,
 		Language: rsp.OcrRspBody.Language,
 	}, nil
-}
-
-// PttCenterSvr.ShortVideoDownReq
-func decodePttShortVideoDownResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := pttcenter.ShortVideoRspBody{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if rsp.PttShortVideoDownloadRsp == nil || rsp.PttShortVideoDownloadRsp.DownloadAddr == nil {
-		return nil, errors.New("resp error")
-	}
-	return rsp.PttShortVideoDownloadRsp.DownloadAddr.Host[0] + rsp.PttShortVideoDownloadRsp.DownloadAddr.UrlArgs, nil
 }
 
 // LightAppSvc.mini_app_info.GetAppInfoById

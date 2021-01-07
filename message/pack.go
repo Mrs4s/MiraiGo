@@ -1,6 +1,7 @@
 package message
 
 import (
+	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/golang/protobuf/proto"
@@ -252,6 +253,35 @@ func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
 			Flag:      []byte{0x11, 0x00, 0x00, 0x00},
 			//OldData:  imgOld,
 			PbReserve: reserve,
+		},
+	})
+	return
+}
+
+func (e *ShortVideoElement) Pack() (r []*msg.Elem) {
+	r = append(r, &msg.Elem{
+		Text: &msg.Text{
+			Str: proto.String("你的QQ暂不支持查看视频短片，请期待后续版本。"),
+		},
+	})
+	r = append(r, &msg.Elem{
+		VideoFile: &msg.VideoFile{
+			FileUuid:               e.Uuid,
+			FileMd5:                e.Md5,
+			FileName:               []byte(hex.EncodeToString(e.Md5) + ".mp4"),
+			FileFormat:             proto.Int32(3),
+			FileTime:               proto.Int32(10),
+			FileSize:               proto.Int32(e.Size),
+			ThumbWidth:             proto.Int32(1280),
+			ThumbHeight:            proto.Int32(720),
+			ThumbFileMd5:           e.ThumbMd5,
+			ThumbFileSize:          proto.Int32(e.ThumbSize),
+			BusiType:               proto.Int32(0),
+			FromChatType:           proto.Int32(-1),
+			ToChatType:             proto.Int32(-1),
+			BoolSupportProgressive: proto.Bool(true),
+			FileWidth:              proto.Int32(1280),
+			FileHeight:             proto.Int32(720),
 		},
 	})
 	return

@@ -88,11 +88,13 @@ type ReplyElement struct {
 }
 
 type ShortVideoElement struct {
-	Name string
-	Uuid []byte
-	Size int32
-	Md5  []byte
-	Url  string
+	Name      string
+	Uuid      []byte
+	Size      int32
+	ThumbSize int32
+	Md5       []byte
+	ThumbMd5  []byte
+	Url       string
 }
 
 type ServiceElement struct {

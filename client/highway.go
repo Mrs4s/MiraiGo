@@ -97,10 +97,15 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	return nil
 }
 
-func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket, ext []byte) ([]byte, error) {
-	// TODO: encrypted upload support.
+func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket, ext []byte, encrypt bool) ([]byte, error) {
 	if len(c.srvSsoAddrs) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
+	}
+	if encrypt {
+		if c.highwaySession == nil || len(c.highwaySession.SessionKey) == 0 {
+			return nil, errors.New("session key not found. maybe miss some packet?")
+		}
+		ext = binary.NewTeaCipher(c.highwaySession.SessionKey).Encrypt(ext)
 	}
 	h := md5.New()
 	length, _ := io.Copy(h, stream)
@@ -194,7 +199,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		return nil, errors.Wrap(err, "open file error")
 	}
 	if stat.Size() < 1024*1024*3 {
-		return c.highwayUploadByBDH(file, cmdId, ticket, ext)
+		return c.highwayUploadByBDH(file, cmdId, ticket, ext, false)
 	}
 	type BlockMetaData struct {
 		Id          int

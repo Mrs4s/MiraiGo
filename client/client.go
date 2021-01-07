@@ -139,7 +139,6 @@ var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 	"OidbSvc.0xd79":                                      decodeWordSegmentation,
 	"OidbSvc.0x990":                                      decodeTranslateResponse,
 	"SummaryCard.ReqSummaryCard":                         decodeSummaryCardResponse,
-	"PttCenterSvr.ShortVideoDownReq":                     decodePttShortVideoDownResponse,
 	"LightAppSvc.mini_app_info.GetAppInfoById":           decodeAppInfoResponse,
 	"PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500": decodePrivatePttStoreResponse,
 }
@@ -419,14 +418,6 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		}
 	}
 	return r, nil
-}
-
-func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
-	i, err := c.sendAndWait(c.buildPttShortVideoDownReqPacket(uuid, md5))
-	if err != nil {
-		return ""
-	}
-	return i.(string)
 }
 
 func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *message.PrivateMessage {
