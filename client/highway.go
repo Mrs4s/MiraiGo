@@ -205,7 +205,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		return nil, errors.Wrap(err, "open file error")
 	}
 	if stat.Size() < 1024*1024*3 {
-		return c.highwayUploadByBDH(file, cmdId, ticket, ext, false)
+		return c.highwayUploadByBDH(file, cmdId, ticket, ext, encrypt)
 	}
 	type BlockMetaData struct {
 		Id          int
