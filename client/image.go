@@ -64,6 +64,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	if err != nil {
 		return nil, err
 	}
+	defer img.Close()
 	fh, length := utils.ComputeMd5AndLength(img)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
 	r, err := c.sendAndWait(seq, pkt)
@@ -104,6 +105,7 @@ func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message
 }
 
 func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int) (*message.FriendImageElement, error) {
+	_, _ = img.Seek(0, io.SeekStart)
 	count++
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)

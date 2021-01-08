@@ -204,6 +204,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 	if err != nil {
 		return nil, errors.Wrap(err, "open file error")
 	}
+	defer file.Close()
 	if stat.Size() < 1024*1024*3 {
 		return c.highwayUploadByBDH(file, cmdId, ticket, ext, encrypt)
 	}
