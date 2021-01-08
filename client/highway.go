@@ -174,7 +174,7 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 			return nil, errors.Wrap(err, "highway upload error")
 		}
 		if rspHead.ErrorCode != 0 {
-			return nil, errors.New("upload failed")
+			return nil, errors.Errorf("upload failed: %d", rspHead.ErrorCode)
 		}
 		if rspHead.RspExtendinfo != nil {
 			rspExt = rspHead.RspExtendinfo
@@ -324,7 +324,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 				return errors.Wrap(err, "highway upload error")
 			}
 			if rspHead.ErrorCode != 0 {
-				return errors.New("upload failed")
+				return errors.Errorf("upload failed: %d", rspHead.ErrorCode)
 			}
 			if rspHead.RspExtendinfo != nil {
 				rspExt = rspHead.RspExtendinfo
