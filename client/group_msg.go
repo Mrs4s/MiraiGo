@@ -192,7 +192,7 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 		if err == nil {
 			var pv string
 			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
-				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, m.Nodes[i].SenderName, message.ToReadableString(m.Nodes[i].Message))
+				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, XmlEscape(m.Nodes[i].SenderName), XmlEscape(message.ToReadableString(m.Nodes[i].Message)))
 			}
 			return genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts, items)
 		}
