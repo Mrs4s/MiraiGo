@@ -91,7 +91,7 @@ func (c *QQClient) decodeT119(data []byte) {
 		userStKey:          m[0x10e],
 		userStWebSig:       m[0x103],
 		sKey:               m[0x120],
-		sKeyExpiredTime:    time.Now().Unix() + 43200, // 86400 / 2
+		sKeyExpiredTime:    time.Now().Unix() + 21600,
 		d2:                 m[0x143],
 		d2Key:              m[0x305],
 		wtSessionTicketKey: m[0x134],
@@ -113,7 +113,7 @@ func (c *QQClient) decodeT119R(data []byte) {
 	m := reader.ReadTlvMap(2)
 	if t120, ok := m[0x120]; ok {
 		c.sigInfo.sKey = t120
-		c.sigInfo.sKeyExpiredTime = time.Now().Unix() + 43200 // 86400 / 2
+		c.sigInfo.sKeyExpiredTime = time.Now().Unix() + 21600
 		c.Debug("skey updated: %v", c.sigInfo.sKey)
 	}
 	if t11a, ok := m[0x11a]; ok {

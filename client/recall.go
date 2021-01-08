@@ -95,12 +95,12 @@ func decodeMsgWithDrawResponse(_ *QQClient, _ uint16, payload []byte) (interface
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.C2CWithDraw) > 0 {
-		if rsp.C2CWithDraw[0].GetResult() != 0 {
+		if rsp.C2CWithDraw[0].GetErrMsg() != "" && rsp.C2CWithDraw[0].GetErrMsg() != "Success" {
 			return nil, errors.Errorf("recall error: %v msg: %v", rsp.C2CWithDraw[0].GetResult(), rsp.C2CWithDraw[0].GetErrMsg())
 		}
 	}
 	if len(rsp.GroupWithDraw) > 0 {
-		if rsp.GroupWithDraw[0].GetResult() != 0 {
+		if rsp.GroupWithDraw[0].GetErrMsg() != "" && rsp.GroupWithDraw[0].GetErrMsg() != "Success" {
 			return nil, errors.Errorf("recall error: %v msg: %v", rsp.GroupWithDraw[0].GetResult(), rsp.GroupWithDraw[0].GetErrMsg())
 		}
 	}

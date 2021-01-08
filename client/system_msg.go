@@ -156,6 +156,18 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interfac
 					Actor:       st.Msg.ActorUin,
 					client:      c,
 				})
+			case 22: // 群员邀请其他人
+				ret.JoinRequests = append(ret.JoinRequests, &UserJoinGroupRequest{
+					RequestId:     st.MsgSeq,
+					Message:       st.Msg.MsgAdditional,
+					RequesterUin:  st.ReqUin,
+					RequesterNick: st.Msg.ReqUinNick,
+					GroupCode:     st.Msg.GroupCode,
+					GroupName:     st.Msg.GroupName,
+					Checked:       st.Msg.SubType == 2,
+					Actor:         st.Msg.ActorUin,
+					client:        c,
+				})
 			default:
 				c.Error("unknown group message type: %v", st.Msg.GroupMsgType)
 			}

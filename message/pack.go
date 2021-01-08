@@ -1,6 +1,7 @@
 package message
 
 import (
+	"encoding/hex"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/golang/protobuf/proto"
@@ -125,21 +126,7 @@ func (e *FriendImageElement) Pack() (r []*msg.Elem) {
 
 func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
-	if e.Id == 35 {
-		r = append(r, &msg.Elem{
-			RichMsg: &msg.RichMsg{
-				Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-				ServiceId: &e.Id,
-				MsgResId:  []byte{},
-			},
-		})
-		r = append(r, &msg.Elem{
-			Text: &msg.Text{
-				Str: proto.String("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。"),
-			},
-		})
-		return
-	}
+	// id =35 已移至 ForwardElement
 	if e.Id == 33 {
 		r = append(r, &msg.Elem{
 			Text: &msg.Text{Str: &e.ResId},
@@ -157,6 +144,23 @@ func (e *ServiceElement) Pack() (r []*msg.Elem) {
 		RichMsg: &msg.RichMsg{
 			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
 			ServiceId: &e.Id,
+		},
+	})
+	return
+}
+
+func (e *ForwardElement) Pack() (r []*msg.Elem) {
+	r = []*msg.Elem{}
+	r = append(r, &msg.Elem{
+		RichMsg: &msg.RichMsg{
+			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+			ServiceId: proto.Int32(35),
+			MsgResId:  []byte{},
+		},
+	})
+	r = append(r, &msg.Elem{
+		Text: &msg.Text{
+			Str: proto.String("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。"),
 		},
 	})
 	return
@@ -249,6 +253,35 @@ func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
 			Flag:      []byte{0x11, 0x00, 0x00, 0x00},
 			//OldData:  imgOld,
 			PbReserve: reserve,
+		},
+	})
+	return
+}
+
+func (e *ShortVideoElement) Pack() (r []*msg.Elem) {
+	r = append(r, &msg.Elem{
+		Text: &msg.Text{
+			Str: proto.String("你的QQ暂不支持查看视频短片，请期待后续版本。"),
+		},
+	})
+	r = append(r, &msg.Elem{
+		VideoFile: &msg.VideoFile{
+			FileUuid:               e.Uuid,
+			FileMd5:                e.Md5,
+			FileName:               []byte(hex.EncodeToString(e.Md5) + ".mp4"),
+			FileFormat:             proto.Int32(3),
+			FileTime:               proto.Int32(10),
+			FileSize:               proto.Int32(e.Size),
+			ThumbWidth:             proto.Int32(1280),
+			ThumbHeight:            proto.Int32(720),
+			ThumbFileMd5:           e.ThumbMd5,
+			ThumbFileSize:          proto.Int32(e.ThumbSize),
+			BusiType:               proto.Int32(0),
+			FromChatType:           proto.Int32(-1),
+			ToChatType:             proto.Int32(-1),
+			BoolSupportProgressive: proto.Bool(true),
+			FileWidth:              proto.Int32(1280),
+			FileHeight:             proto.Int32(720),
 		},
 	})
 	return

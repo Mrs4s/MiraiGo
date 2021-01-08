@@ -33,6 +33,46 @@ type (
 		Location string `jceId:"8"`
 	}
 
+	FileStoragePushFSSvcList struct {
+		UploadList            []FileStorageServerInfo `jceId:"0"`
+		PicDownloadList       []FileStorageServerInfo `jceId:"1"`
+		GPicDownloadList      []FileStorageServerInfo `jceId:"2"`
+		QZoneProxyServiceList []FileStorageServerInfo `jceId:"3"`
+		UrlEncodeServiceList  []FileStorageServerInfo `jceId:"4"`
+		BigDataChannel        *BigDataChannel         `jceId:"5"`
+		VipEmotionList        []FileStorageServerInfo `jceId:"6"`
+		C2CPicDownList        []FileStorageServerInfo `jceId:"7"`
+		//FmtIPInfo             *FmtIPInfo `jceId:"8"`
+		//DomainIPChannel       *DomainIPChannel `jceId:"9"`
+		PttList []byte `jceId:"10"`
+	}
+
+	FileStorageServerInfo struct {
+		Server string `jceId:"1"`
+		Port   int32  `jceId:"2"`
+	}
+
+	BigDataChannel struct {
+		IPLists     []BigDataIPList `jceId:"0"`
+		SigSession  []byte          `jceId:"1"`
+		KeySession  []byte          `jceId:"2"`
+		SigUin      int64           `jceId:"3"`
+		ConnectFlag int32           `jceId:"4"`
+		PbBuf       []byte          `jceId:"5"`
+	}
+
+	BigDataIPList struct {
+		ServiceType  int64           `jceId:"0"`
+		IPList       []BigDataIPInfo `jceId:"1"`
+		FragmentSize int64           `jceId:"3"`
+	}
+
+	BigDataIPInfo struct {
+		Type   int64  `jceId:"0"`
+		Server string `jceId:"1"`
+		Port   int64  `jceId:"2"`
+	}
+
 	SvcReqRegister struct {
 		IJceStruct
 		Uin                int64  `jceId:"0"`
@@ -450,6 +490,54 @@ func (pkt *SsoServerInfo) ReadFrom(r *JceReader) {
 	pkt.Server = r.ReadString(1)
 	pkt.Port = r.ReadInt32(2)
 	pkt.Location = r.ReadString(8)
+}
+
+func (pkt *FileStoragePushFSSvcList) ReadFrom(r *JceReader) {
+	pkt.UploadList = []FileStorageServerInfo{}
+	pkt.PicDownloadList = []FileStorageServerInfo{}
+	pkt.GPicDownloadList = []FileStorageServerInfo{}
+	pkt.QZoneProxyServiceList = []FileStorageServerInfo{}
+	pkt.UrlEncodeServiceList = []FileStorageServerInfo{}
+	pkt.BigDataChannel = &BigDataChannel{}
+	pkt.VipEmotionList = []FileStorageServerInfo{}
+	pkt.C2CPicDownList = []FileStorageServerInfo{}
+	r.ReadSlice(&pkt.UploadList, 0)
+	r.ReadSlice(&pkt.PicDownloadList, 1)
+	r.ReadSlice(&pkt.GPicDownloadList, 2)
+	r.ReadSlice(&pkt.QZoneProxyServiceList, 3)
+	r.ReadSlice(&pkt.UrlEncodeServiceList, 4)
+	r.ReadJceStruct(pkt.BigDataChannel, 5)
+	r.ReadSlice(&pkt.VipEmotionList, 6)
+	r.ReadSlice(&pkt.C2CPicDownList, 7)
+	pkt.PttList = r.ReadAny(10).([]byte)
+}
+
+func (pkt *FileStorageServerInfo) ReadFrom(r *JceReader) {
+	pkt.Server = r.ReadString(1)
+	pkt.Port = r.ReadInt32(2)
+}
+
+func (pkt *BigDataChannel) ReadFrom(r *JceReader) {
+	pkt.IPLists = []BigDataIPList{}
+	r.ReadSlice(&pkt.IPLists, 0)
+	pkt.SigSession = r.ReadAny(1).([]byte)
+	pkt.KeySession = r.ReadAny(2).([]byte)
+	pkt.SigUin = r.ReadInt64(3)
+	pkt.ConnectFlag = r.ReadInt32(4)
+	pkt.PbBuf = r.ReadAny(5).([]byte)
+}
+
+func (pkt *BigDataIPList) ReadFrom(r *JceReader) {
+	pkt.IPList = []BigDataIPInfo{}
+	pkt.ServiceType = r.ReadInt64(0)
+	r.ReadSlice(&pkt.IPList, 1)
+	pkt.FragmentSize = r.ReadInt64(3)
+}
+
+func (pkt *BigDataIPInfo) ReadFrom(r *JceReader) {
+	pkt.Type = r.ReadInt64(0)
+	pkt.Server = r.ReadString(1)
+	pkt.Port = r.ReadInt64(2)
 }
 
 func (pkt *SvcReqRegister) ToBytes() []byte {

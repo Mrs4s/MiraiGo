@@ -70,10 +70,16 @@ type (
 	}
 
 	Sender struct {
-		Uin      int64
-		Nickname string
-		CardName string
-		IsFriend bool
+		Uin           int64
+		Nickname      string
+		CardName      string
+		AnonymousInfo *AnonymousInfo
+		IsFriend      bool
+	}
+
+	AnonymousInfo struct {
+		AnonymousId   string
+		AnonymousNick string
 	}
 
 	IMessageElement interface {
@@ -227,7 +233,7 @@ func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
 	for _, elem := range msg.Elements {
 		switch o := elem.(type) {
 		case *TextElement:
-			for _, text := range utils.ChunkString(o.Content, 220) {
+			for _, text := range utils.ChunkString(o.Content, 80) {
 				fragmented = append(fragmented, []IMessageElement{NewText(text)})
 			}
 		default:
@@ -355,7 +361,6 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				}
 				res = append(res, r)
 			}
-			continue
 		}
 		if elem.TransElemInfo != nil {
 			if elem.TransElemInfo.GetElemType() == 24 { // QFile
@@ -393,10 +398,12 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.VideoFile != nil {
 			return append(res, &ShortVideoElement{
-				Name: string(elem.VideoFile.FileName),
-				Uuid: elem.VideoFile.FileUuid,
-				Size: elem.VideoFile.GetFileSize(),
-				Md5:  elem.VideoFile.FileMd5,
+				Name:      string(elem.VideoFile.FileName),
+				Uuid:      elem.VideoFile.FileUuid,
+				Size:      elem.VideoFile.GetFileSize(),
+				ThumbSize: elem.VideoFile.GetThumbFileSize(),
+				Md5:       elem.VideoFile.FileMd5,
+				ThumbMd5:  elem.VideoFile.GetThumbFileMd5(),
 			})
 		}
 		if elem.Text != nil {
@@ -531,6 +538,42 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 }
 
 func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCode int64) ([]byte, []byte) {
+	msgs := forMsg.packForwardMsg(seq, random, groupCode)
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
+		{
+			FileName: proto.String("MultiMsg"),
+			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
+		},
+	}}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	return data, hash[:]
+}
+
+// CalculateValidationDataForward 屎代码
+func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, groupCode int64) ([]byte, []byte, []*msg.PbMultiMsgItem) {
+	msgs := forMsg.packForwardMsg(seq, random, groupCode)
+	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
+		{
+			FileName: proto.String("MultiMsg"),
+			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
+		},
+	}}
+	for _, node := range forMsg.Nodes {
+		for _, message := range node.Message {
+			if forwardElement, ok := message.(*ForwardElement); ok {
+				trans.PbItemList = append(trans.PbItemList, forwardElement.Items...)
+			}
+		}
+	}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	return data, hash[:], trans.PbItemList
+}
+
+func (forMsg *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
 	var msgs []*msg.Message
 	for _, node := range forMsg.Nodes {
 		msgs = append(msgs, &msg.Message{
@@ -557,17 +600,7 @@ func (forMsg *ForwardMessage) CalculateValidationData(seq, random int32, groupCo
 			},
 		})
 	}
-	buf, _ := proto.Marshal(&msg.PbMultiMsgNew{Msg: msgs})
-	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
-		{
-			FileName: proto.String("MultiMsg"),
-			Buffer:   buf,
-		},
-	}}
-	b, _ := proto.Marshal(trans)
-	data := binary.GZipCompress(b)
-	hash := md5.Sum(data)
-	return data, hash[:]
+	return msgs
 }
 
 func ToReadableString(m []IMessageElement) (r string) {
@@ -581,6 +614,8 @@ func ToReadableString(m []IMessageElement) (r string) {
 			r += "/" + e.Name
 		case *GroupImageElement:
 			r += "[图片]"
+		case *ForwardElement:
+			r += "[聊天记录]"
 		// NOTE: flash pic is singular
 		// To be clarified
 		// case *GroupFlashImgElement:

@@ -88,11 +88,13 @@ type ReplyElement struct {
 }
 
 type ShortVideoElement struct {
-	Name string
-	Uuid []byte
-	Size int32
-	Md5  []byte
-	Url  string
+	Name      string
+	Uuid      []byte
+	Size      int32
+	ThumbSize int32
+	Md5       []byte
+	ThumbMd5  []byte
+	Url       string
 }
 
 type ServiceElement struct {
@@ -103,7 +105,10 @@ type ServiceElement struct {
 }
 
 type ForwardElement struct {
-	ResId string
+	FileName string
+	Content  string
+	ResId    string
+	Items    []*msg.PbMultiMsgItem
 }
 
 type LightAppElement struct {
@@ -495,5 +500,19 @@ var newSysFaceMap = map[int]string{
 	271: "吃瓜",
 	272: "呵呵哒",
 	273: "我酸了",
+	274: "太南了",
+	276: "辣椒酱",
 	277: "汪汪",
+	278: "汗",
+	279: "打脸",
+	280: "击掌",
+	281: "无眼笑",
+	282: "敬礼",
+	283: "狂笑",
+	284: "面无表情",
+	285: "摸鱼",
+	286: "魔鬼笑",
+	287: "哦",
+	288: "请",
+	289: "睁眼",
 }

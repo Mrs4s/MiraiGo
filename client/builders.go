@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -17,13 +16,11 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
-	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 var (
@@ -74,8 +71,8 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
-			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
-			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
+			"qzone.qq.com", "vip.qq.com", "gamecenter.qq.com", "qun.qq.com", "game.qq.com",
+			"qqweb.qq.com", "office.qq.com", "ti.qq.com", "mail.qq.com", "mma.qq.com",
 		}))
 
 		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
@@ -125,7 +122,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 		w.Write(tlv.T2(result, sign))
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.t104))
-		w.Write(tlv.T116(150470524, 66560))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
@@ -164,6 +161,22 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 		h := md5.Sum(append(append(SystemDeviceInfo.Guid, []byte("12 34567890123456")...), c.t402...))
 		w.Write(tlv.T401(h[:]))
 		w.Write(tlv.T198())
+	})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	return seq, packet
+}
+
+func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+		w.WriteUInt16(2)
+		w.WriteUInt16(4)
+
+		w.Write(tlv.T193(ticket))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
@@ -652,83 +665,6 @@ func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (ui
 	return seq, packet
 }
 
-// ImgStore.GroupPicUp
-func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	name := utils.RandomString(16) + ".gif"
-	req := &pb.D388ReqBody{
-		NetType: 3,
-		Subcmd:  1,
-		MsgTryUpImgReq: []*pb.TryUpImgReq{
-			{
-				GroupCode:    groupCode,
-				SrcUin:       c.Uin,
-				FileMd5:      md5,
-				FileSize:     int64(size),
-				FileName:     name,
-				SrcTerm:      5,
-				PlatformType: 9,
-				BuType:       1,
-				PicType:      1000,
-				BuildVer:     "8.2.7.4410",
-				AppPicType:   1006,
-				FileIndex:    EmptyBytes,
-				TransferUrl:  EmptyBytes,
-			},
-		},
-		Extension: EmptyBytes,
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-func (c *QQClient) buildImageUploadPacket(data, updKey []byte, commandId int32, fmd5 [16]byte) (r [][]byte) {
-	offset := 0
-	binary.ToChunkedBytesF(data, 8192*8, func(chunked []byte) {
-		w := binary.NewWriter()
-		cmd5 := md5.Sum(chunked)
-		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: &pb.DataHighwayHead{
-				Version: 1,
-				Uin:     strconv.FormatInt(c.Uin, 10),
-				Command: "PicUp.DataUp",
-				Seq: func() int32 {
-					if commandId == 2 {
-						return c.nextGroupDataTransSeq()
-					}
-					if commandId == 27 {
-						return c.nextHighwayApplySeq()
-					}
-					return c.nextGroupDataTransSeq()
-				}(),
-				Appid:     int32(c.version.AppId),
-				Dataflag:  4096,
-				CommandId: commandId,
-				LocaleId:  2052,
-			},
-			MsgSeghead: &pb.SegHead{
-				Filesize:      int64(len(data)),
-				Dataoffset:    int64(offset),
-				Datalength:    int32(len(chunked)),
-				Serviceticket: updKey,
-				Md5:           cmd5[:],
-				FileMd5:       fmd5[:],
-			},
-			ReqExtendinfo: EmptyBytes,
-		})
-		offset += len(chunked)
-		w.WriteByte(40)
-		w.WriteUInt32(uint32(len(head)))
-		w.WriteUInt32(uint32(len(chunked)))
-		w.Write(head)
-		w.Write(chunked)
-		w.WriteByte(41)
-		r = append(r, w.Bytes())
-	})
-	return
-}
-
 // ProfileService.Pb.ReqSystemMsgNew.Friend
 func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
 	seq := c.nextSeq()
@@ -1070,31 +1006,6 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 	}
 	payload, _ := proto.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// PttCenterSvr.ShortVideoDownReq
-func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []byte) {
-	seq := c.nextSeq()
-	body := &pttcenter.ShortVideoReqBody{
-		Cmd: 400,
-		Seq: int32(seq),
-		PttShortVideoDownloadReq: &pttcenter.ShortVideoDownloadReq{
-			FromUin:      c.Uin,
-			ToUin:        c.Uin,
-			ChatType:     1,
-			ClientType:   7,
-			FileId:       string(uuid),
-			GroupCode:    1,
-			FileMd5:      md5,
-			BusinessType: 1,
-			FileType:     2,
-			DownType:     2,
-			SceneType:    2,
-		},
-	}
-	payload, _ := proto.Marshal(body)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.ShortVideoDownReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 

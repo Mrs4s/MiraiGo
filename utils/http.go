@@ -63,13 +63,17 @@ func HttpPostBytes(url string, data []byte) ([]byte, error) {
 	return body, nil
 }
 
-func HttpPostBytesWithCookie(url string, data []byte, cookie string) ([]byte, error) {
+func HttpPostBytesWithCookie(url string, data []byte, cookie string, contentType ...string) ([]byte, error) {
+	t := "application/json"
+	if len(contentType) > 0 {
+		t = contentType[0]
+	}
 	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 	req.Header["User-Agent"] = []string{"Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)"}
-	req.Header["Content-Type"] = []string{"application/json"}
+	req.Header["Content-Type"] = []string{t}
 	if cookie != "" {
 		req.Header["Cookie"] = []string{cookie}
 	}

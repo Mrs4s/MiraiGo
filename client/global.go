@@ -1,13 +1,17 @@
 package client
 
 import (
+	"bytes"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"math/rand"
 	"net"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -151,12 +155,12 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 	case AndroidPhone: // Dumped by mirai from qq android v8.2.7
 		return &versionInfo{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537066439,
-			SortVersionName: "8.4.18",
-			BuildTime:       1604580615,
+			AppId:           537066738,
+			SortVersionName: "8.5.0",
+			BuildTime:       1607689988,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
 			SdkVersion:      "6.0.0.2454",
-			SSOVersion:      13,
+			SSOVersion:      15,
 			MiscBitmap:      184024956,
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
@@ -223,6 +227,8 @@ func (info *DeviceInfo) ToJson() []byte {
 				return 1
 			case AndroidWatch:
 				return 2
+			case MacOS:
+				return 3
 			}
 			return 0
 		}(),
@@ -417,10 +423,10 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
 	if group == nil {
-		c.Debug("sync group %v.", m.Head.GroupInfo.GroupCode)
+		c.Debug("sync group %v.", m.Head.GroupInfo.GetGroupCode())
 		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
 		if err != nil {
-			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GroupCode, err)
+			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GetGroupCode(), err)
 			return nil
 		}
 		group = info
@@ -445,21 +451,33 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		sender = &message.Sender{
 			Uin:      80000000,
 			Nickname: string(anonInfo.AnonNick),
+			AnonymousInfo: &message.AnonymousInfo{
+				AnonymousId:   base64.StdEncoding.EncodeToString(anonInfo.AnonId),
+				AnonymousNick: string(anonInfo.AnonNick),
+			},
 			IsFriend: false,
 		}
 	} else {
 		mem := group.FindMember(m.Head.GetFromUin())
 		if mem == nil {
-			info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
-			if info == nil {
+			group.Update(func(_ *GroupInfo) {
+				if mem = group.FindMemberWithoutLock(m.Head.GetFromUin()); mem != nil {
+					return
+				}
+				info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
+				if info == nil {
+					return
+				}
+				mem = info
+				group.Members = append(group.Members, mem)
+				go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+					Group:  group,
+					Member: info,
+				})
+			})
+			if mem == nil {
 				return nil
 			}
-			mem = info
-			group.Members = append(group.Members, mem)
-			go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-				Group:  group,
-				Member: info,
-			})
 		}
 		sender = &message.Sender{
 			Uin:      mem.Uin,
@@ -485,12 +503,13 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" {
 			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
-					Id:        m.Head.GetMsgSeq(),
-					GroupCode: group.Code,
-					GroupName: string(m.Head.GroupInfo.GroupName),
-					Sender:    sender,
-					Time:      m.Head.GetMsgTime(),
-					Elements:  f.Nodes[0].Message,
+					Id:             m.Head.GetMsgSeq(),
+					GroupCode:      group.Code,
+					GroupName:      string(m.Head.GroupInfo.GroupName),
+					Sender:         sender,
+					Time:           m.Head.GetMsgTime(),
+					Elements:       f.Nodes[0].Message,
+					OriginalObject: m,
 				}
 			}
 		}
@@ -559,21 +578,30 @@ func packUniRequestData(data []byte) (r []byte) {
 	return
 }
 
-func genForwardTemplate(resId, preview, title, brief, source, summary string, ts int64) *message.SendingMessage {
+func XmlEscape(c string) string {
+	buf := new(bytes.Buffer)
+	_ = xml.EscapeText(buf, []byte(c))
+	return buf.String()
+}
+
+func genForwardTemplate(resId, preview, title, brief, source, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`,
 		brief, resId, ts, title, preview, summary, source,
 	)
-	return &message.SendingMessage{Elements: []message.IMessageElement{
-		&message.ServiceElement{
-			Id:      35,
-			Content: template,
-			ResId:   resId,
-			SubType: "Forward",
-		},
-	}}
+	for _, item := range items {
+		if item.GetFileName() == "MultiMsg" {
+			*item.FileName = strconv.FormatInt(ts, 10)
+		}
+	}
+	return &message.ForwardElement{
+		FileName: strconv.FormatInt(ts, 10),
+		Content:  template,
+		ResId:    resId,
+		Items:    items,
+	}
 }
 
-func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
+func genLongTemplate(resId, brief string, ts int64) *message.ServiceElement {
 	limited := func() string {
 		if len(brief) > 30 {
 			return brief[:30] + "…"
@@ -581,16 +609,14 @@ func genLongTemplate(resId, brief string, ts int64) *message.SendingMessage {
 		return brief
 	}()
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="1"> <item layout="1"> <title>%s</title> <hr hidden="false" style="0"/> <summary>点击查看完整消息</summary> </item> <source name="聊天记录" icon="" action="" appid="-1"/> </msg>`,
-		limited, resId, ts, limited,
+		XmlEscape(limited), resId, ts, XmlEscape(limited),
 	)
-	return &message.SendingMessage{Elements: []message.IMessageElement{
-		&message.ServiceElement{
-			Id:      35,
-			Content: template,
-			ResId:   resId,
-			SubType: "Long",
-		},
-	}}
+	return &message.ServiceElement{
+		Id:      35,
+		Content: template,
+		ResId:   resId,
+		SubType: "Long",
+	}
 }
 
 func (c *QQClient) Error(msg string, args ...interface{}) {

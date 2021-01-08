@@ -322,6 +322,18 @@ func (r *JceReader) ReadAny(tag int) interface{} {
 	}
 }
 
+func (r *JceReader) ReadJceStruct(obj IJceStruct, tag int) {
+	if !r.skipToTag(tag) {
+		return
+	}
+	hd, _ := r.readHead()
+	if hd.Type != 10 {
+		return
+	}
+	obj.ReadFrom(r)
+	r.skipToStructEnd()
+}
+
 func (r *JceReader) ReadMapF(tag int, f func(interface{}, interface{})) {
 	if !r.skipToTag(tag) {
 		return

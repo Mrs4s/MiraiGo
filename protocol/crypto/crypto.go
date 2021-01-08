@@ -40,7 +40,7 @@ func init() {
 		panic("Can't Create ECDH key pair")
 	}
 	x, _ := p256.ScalarMult(tenKeyX, tenKeyY, key)
-	hash  := md5.Sum(x.Bytes()[:16])
+	hash := md5.Sum(x.Bytes()[:16])
 	ECDH.InitialShareKey = hash[:]
 	ECDH.PublicKey = make([]byte, 65)[:0]
 	ECDH.PublicKey = append(ECDH.PublicKey, 0x04)

@@ -5,15 +5,29 @@ option go_package = ".;pttcenter";
 message ShortVideoReqBody {
   int32 cmd = 1;
   int32 seq = 2;
+  ShortVideoUploadReq pttShortVideoUploadReq = 3;
   ShortVideoDownloadReq pttShortVideoDownloadReq = 4;
+  repeated ShortVideoExtensionReq extensionReq = 100;
 }
 
 message ShortVideoRspBody {
   int32 cmd = 1;
   int32 seq = 2;
+  ShortVideoUploadRsp pttShortVideoUploadRsp = 3;
   ShortVideoDownloadRsp pttShortVideoDownloadRsp = 4;
 }
 
+message ShortVideoUploadReq {
+  int64 fromUin = 1;
+  int64 toUin = 2;
+  int32 chatType = 3;
+  int32 clientType = 4;
+  ShortVideoFileInfo info = 5;
+  int64 groupCode = 6;
+  int32 agentType = 7;
+  int32 businessType = 8;
+  int32 supportLargeSize = 20;
+}
 message ShortVideoDownloadReq {
   int64 fromUin = 1;
   int64 toUin = 2;
@@ -42,6 +56,36 @@ message ShortVideoDownloadRsp {
   bytes encryptKey = 10;
 }
 
+message ShortVideoUploadRsp {
+  int32 retCode = 1;
+  string retMsg = 2;
+  repeated ShortVideoIpList sameAreaOutAddr = 3;
+  repeated ShortVideoIpList diffAreaOutAddr = 4;
+  string fileId = 5;
+  bytes uKey = 6;
+  int32 fileExists = 7;
+  repeated ShortVideoIpList sameAreaInnerAddr = 8;
+  repeated ShortVideoIpList diffAreaInnerAddr = 9;
+  repeated DataHole dataHole = 10;
+}
+
+message ShortVideoFileInfo {
+  string fileName = 1;
+  bytes fileMd5 = 2;
+  bytes thumbFileMd5 = 3;
+  int64 fileSize = 4;
+  int32 fileResLength = 5;
+  int32 fileResWidth = 6;
+  int32 fileFormat = 7;
+  int32 fileTime = 8;
+  int64 thumbFileSize = 9;
+}
+
+message DataHole {
+  int64 begin = 1;
+  int64 end = 2;
+}
+
 message ShortVideoIpList {
   int32 ip = 1;
   int32 port = 2;
@@ -51,4 +95,9 @@ message ShortVideoAddr {
   repeated string host = 10;
   string urlArgs = 11;
   //repeated string domain = 13;
+}
+
+message ShortVideoExtensionReq {
+  int32 subBusiType = 1;
+  int32 userCnt = 2;
 }

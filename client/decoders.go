@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"net"
 	"strconv"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
-	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/pkg/errors"
 
@@ -51,7 +51,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	}
 	if t == 2 {
 		c.t104, _ = m[0x104]
-		if m.Exists(0x192) { // slider, not supported yet
+		if m.Exists(0x192) {
 			return LoginResponse{
 				Success:   false,
 				VerifyUrl: string(m[0x192]),
@@ -177,7 +177,7 @@ func decodeClientRegisterResponse(c *QQClient, _ uint16, payload []byte) (interf
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	svcRsp := &jce.SvcRespRegister{}
 	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
-	if svcRsp.Result != "" || svcRsp.Status != 11 {
+	if svcRsp.Result != "" || svcRsp.ReplyCode != 0 {
 		if svcRsp.Result != "" {
 			c.Error("reg error: %v", svcRsp.Result)
 		}
@@ -210,39 +210,67 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["PushReq"]["ConfigPush.PushReq"][1:])
-	jceBuf := []byte{}
 	t := r.ReadInt32(1)
-	r.ReadSlice(&jceBuf, 2)
-	if t == 1 && len(jceBuf) > 0 {
-		ssoPkt := jce.NewJceReader(jceBuf)
-		servers := []jce.SsoServerInfo{}
-		ssoPkt.ReadSlice(&servers, 1)
-		if len(servers) > 0 {
-			var adds []*net.TCPAddr
-			for _, s := range servers {
-				if strings.Contains(s.Server, "com") {
-					continue
-				}
-				c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
-				adds = append(adds, &net.TCPAddr{
-					IP:   net.ParseIP(s.Server),
-					Port: int(s.Port),
-				})
-			}
-			f := true
-			for _, e := range c.eventHandlers.serverUpdatedHandlers {
-				cover(func() {
-					if !e(c, &ServerUpdatedEvent{Servers: servers}) {
-						f = false
+	jceBuf := r.ReadAny(2).([]byte)
+	if len(jceBuf) > 0 {
+		switch t {
+		case 1:
+			ssoPkt := jce.NewJceReader(jceBuf)
+			servers := []jce.SsoServerInfo{}
+			ssoPkt.ReadSlice(&servers, 1)
+			if len(servers) > 0 {
+				var adds []*net.TCPAddr
+				for _, s := range servers {
+					if strings.Contains(s.Server, "com") {
+						continue
 					}
-				})
+					c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
+					adds = append(adds, &net.TCPAddr{
+						IP:   net.ParseIP(s.Server),
+						Port: int(s.Port),
+					})
+				}
+				f := true
+				for _, e := range c.eventHandlers.serverUpdatedHandlers {
+					cover(func() {
+						if !e(c, &ServerUpdatedEvent{Servers: servers}) {
+							f = false
+						}
+					})
+				}
+				if f {
+					c.SetCustomServer(adds)
+				}
+				return nil, nil
 			}
-			if f {
-				c.SetCustomServer(adds)
+		case 2:
+			fmtPkt := jce.NewJceReader(jceBuf)
+			list := &jce.FileStoragePushFSSvcList{}
+			list.ReadFrom(fmtPkt)
+			c.Debug("got file storage svc push.")
+			c.fileStorageInfo = list
+			rsp := cmd0x6ff.C501RspBody{}
+			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {
+				c.highwaySession = &highwaySessionInfo{
+					SigSession: rsp.RspBody.SigSession,
+					SessionKey: rsp.RspBody.SessionKey,
+				}
+				for _, srv := range rsp.RspBody.Addrs {
+					if srv.GetServiceType() == 10 {
+						for _, addr := range srv.Addrs {
+							c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+						}
+					}
+					if srv.GetServiceType() == 21 {
+						for _, addr := range srv.Addrs {
+							c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+						}
+					}
+				}
 			}
-			return nil, nil
 		}
 	}
+
 	seq := r.ReadInt64(3)
 	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
 	return nil, c.send(pkt)
@@ -551,34 +579,6 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (inter
 	}, nil
 }
 
-// ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	pkt := pb.D388RespBody{}
-	err := proto.Unmarshal(payload, &pkt)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	rsp := pkt.MsgTryUpImgRsp[0]
-	if rsp.Result != 0 {
-		return imageUploadResponse{
-			ResultCode: rsp.Result,
-			Message:    rsp.FailMsg,
-		}, nil
-	}
-	if rsp.BoolFileExit {
-		if rsp.MsgImgInfo != nil {
-			return imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
-		}
-		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
-	}
-	return imageUploadResponse{
-		FileId:     rsp.Fid,
-		UploadKey:  rsp.UpUkey,
-		UploadIp:   rsp.Uint32UpIp,
-		UploadPort: rsp.Uint32UpPort,
-	}, nil
-}
-
 // LongConn.OffPicUp
 func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := cmd0x352.RspBody{}
@@ -758,23 +758,25 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 						if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
 							c.Debug("syncing members.")
 							if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
-								var lastJoinTime int64 = 0
-								for _, m := range group.Members {
-									if lastJoinTime < m.JoinTime {
-										lastJoinTime = m.JoinTime
-									}
-								}
-								if newMem, err := c.GetGroupMembers(group); err == nil {
-									group.Members = newMem
-									for _, m := range newMem {
+								group.Update(func(_ *GroupInfo) {
+									var lastJoinTime int64 = 0
+									for _, m := range group.Members {
 										if lastJoinTime < m.JoinTime {
-											c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-												Group:  group,
-												Member: m,
-											})
+											lastJoinTime = m.JoinTime
 										}
 									}
-								}
+									if newMem, err := c.GetGroupMembers(group); err == nil {
+										group.Members = newMem
+										for _, m := range newMem {
+											if lastJoinTime < m.JoinTime {
+												go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+													Group:  group,
+													Member: m,
+												})
+											}
+										}
+									}
+								})
 							}
 						}
 					}()
@@ -782,7 +784,6 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 			}
 		}
 	}
-
 	return nil, nil
 }
 
@@ -988,18 +989,6 @@ func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{},
 		Texts:    texts,
 		Language: rsp.OcrRspBody.Language,
 	}, nil
-}
-
-// PttCenterSvr.ShortVideoDownReq
-func decodePttShortVideoDownResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := pttcenter.ShortVideoRspBody{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if rsp.PttShortVideoDownloadRsp == nil || rsp.PttShortVideoDownloadRsp.DownloadAddr == nil {
-		return nil, errors.New("resp error")
-	}
-	return rsp.PttShortVideoDownloadRsp.DownloadAddr.Host[0] + rsp.PttShortVideoDownloadRsp.DownloadAddr.UrlArgs, nil
 }
 
 // LightAppSvc.mini_app_info.GetAppInfoById
