@@ -92,8 +92,8 @@ ok:
 // UploadGroupShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送
 // combinedCache 本地文件缓存, 设置后可多线程上传
 func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSeeker, combinedCache ...string) (*message.ShortVideoElement, error) {
-	videoHash, videoLen := utils.GetMd5AndLength(video)
-	thumbHash, thumbLen := utils.GetMd5AndLength(thumb)
+	videoHash, videoLen := utils.ComputeMd5AndLength(video)
+	thumbHash, thumbLen := utils.ComputeMd5AndLength(thumb)
 	cache := ""
 	if len(combinedCache) > 0 {
 		cache = combinedCache[0]

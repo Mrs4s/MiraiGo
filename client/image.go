@@ -2,7 +2,6 @@ package client
 
 import (
 	"bytes"
-	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -23,9 +22,9 @@ func init() {
 }
 
 func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
-	h := md5.New()
-	length, _ := io.Copy(h, img)
-	fh := h.Sum(nil)
+	_, _ = img.Seek(0, io.SeekStart) // safe
+	fh, length := utils.ComputeMd5AndLength(img)
+	_, _ = img.Seek(0, io.SeekStart)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
@@ -38,7 +37,6 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	if rsp.IsExists {
 		goto ok
 	}
-	_, _ = img.Seek(0, io.SeekStart)
 	if len(c.srvSsoAddrs) == 0 {
 		for i, addr := range rsp.UploadIp {
 			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
@@ -66,9 +64,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	if err != nil {
 		return nil, err
 	}
-	h := md5.New()
-	length, _ := io.Copy(h, img)
-	fh := h.Sum(nil)
+	fh, length := utils.ComputeMd5AndLength(img)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
@@ -109,9 +105,8 @@ func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message
 
 func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int) (*message.FriendImageElement, error) {
 	count++
-	h := md5.New()
-	length, _ := io.Copy(h, img)
-	fh := h.Sum(nil)
+	fh, length := utils.ComputeMd5AndLength(img)
+	_, _ = img.Seek(0, io.SeekStart)
 	e, err := c.QueryFriendImage(target, fh[:], int32(length))
 	if errors.Is(err, ErrNotExists) {
 		// use group highway upload and query again for image id.
