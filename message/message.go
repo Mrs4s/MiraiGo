@@ -295,6 +295,15 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 		}
 	}
 	for _, elem := range elems {
+		if e, ok := elem.(*ShortVideoElement); ok {
+			packed := e.Pack()
+			if len(elems) > 1 {
+				r = append(r, packed[1])
+			} else {
+				r = append(r, packed...)
+			}
+			continue
+		}
 		if e, ok := elem.(IRichMessageElement); ok {
 			r = append(r, e.Pack()...)
 		}
