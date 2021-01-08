@@ -1,10 +1,12 @@
 package client
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"math/rand"
 	"net"
@@ -576,6 +578,12 @@ func packUniRequestData(data []byte) (r []byte) {
 	return
 }
 
+func XmlEscape(c string) string {
+	buf := new(bytes.Buffer)
+	_ = xml.EscapeText(buf, []byte(c))
+	return buf.String()
+}
+
 func genForwardTemplate(resId, preview, title, brief, source, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`,
 		brief, resId, ts, title, preview, summary, source,
@@ -587,9 +595,9 @@ func genForwardTemplate(resId, preview, title, brief, source, summary string, ts
 	}
 	return &message.ForwardElement{
 		FileName: strconv.FormatInt(ts, 10),
-		Content: template,
-		ResId:   resId,
-		Items:   items,
+		Content:  template,
+		ResId:    resId,
+		Items:    items,
 	}
 }
 
@@ -601,7 +609,7 @@ func genLongTemplate(resId, brief string, ts int64) *message.ServiceElement {
 		return brief
 	}()
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="1"> <item layout="1"> <title>%s</title> <hr hidden="false" style="0"/> <summary>点击查看完整消息</summary> </item> <source name="聊天记录" icon="" action="" appid="-1"/> </msg>`,
-		limited, resId, ts, limited,
+		XmlEscape(limited), resId, ts, XmlEscape(limited),
 	)
 	return &message.ServiceElement{
 		Id:      35,
