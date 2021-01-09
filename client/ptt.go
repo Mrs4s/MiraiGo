@@ -115,7 +115,8 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen).PttShortVideoUploadReq)
 	var hwRsp []byte
 	if cache != "" {
-		file, err := os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0666)
+		var file *os.File
+		file, err = os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0666)
 		cp := func() error {
 			_, err := io.Copy(file, utils.MultiReadSeeker(thumb, video))
 			return err

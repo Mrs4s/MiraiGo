@@ -243,7 +243,6 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		})
 	}
 	doUpload := func() error {
-		defer cond.Signal() // 成功和失败都得提醒一次
 		conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 		if err != nil {
 			return errors.Wrap(err, "connect error")
@@ -339,13 +338,14 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 	for i := 0; i < threadCount; i++ {
 		go func() {
 			defer wg.Done()
+			defer cond.Signal()
 			if err := doUpload(); err != nil {
 				lastErr = err
 			}
 		}()
 	}
 	wg.Wait()
-	return rspExt, err
+	return rspExt, lastErr
 }
 
 func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {
