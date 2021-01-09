@@ -2,6 +2,7 @@ package binary
 
 import (
 	"bytes"
+	"io"
 	"net"
 )
 
@@ -137,14 +138,15 @@ func (r *NetworkReader) ReadByte() (byte, error) {
 
 func (r *NetworkReader) ReadBytes(len int) ([]byte, error) {
 	buf := make([]byte, len)
-	for i := 0; i < len; i++ {
-		b, err := r.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		buf[i] = b
-	}
-	return buf, nil
+	_, err := io.ReadFull(r.conn, buf)
+	//for i := 0; i < len; i++ {
+	//	b, err := r.ReadByte()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	buf[i] = b
+	//}
+	return buf, err
 }
 
 func (r *NetworkReader) ReadInt32() (int32, error) {
