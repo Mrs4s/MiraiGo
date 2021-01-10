@@ -312,16 +312,16 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
 		var builder *groupMessageBuilder // TODO: 支持多SEQ
-		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.DivSeq)
+		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.GetDivSeq())
 		if !ok {
 			builder = &groupMessageBuilder{}
-			c.groupMsgBuilders.Store(pkt.Message.Content.DivSeq, builder)
+			c.groupMsgBuilders.Store(pkt.Message.Content.GetDivSeq(), builder)
 		} else {
 			builder = i.(*groupMessageBuilder)
 		}
 		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
 		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.GetPkgNum() {
-			c.groupMsgBuilders.Delete(pkt.Message.Content.DivSeq)
+			c.groupMsgBuilders.Delete(pkt.Message.Content.GetDivSeq())
 			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
 		}
 		return nil, nil
