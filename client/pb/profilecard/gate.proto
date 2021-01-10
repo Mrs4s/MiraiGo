@@ -1,0 +1,74 @@
+syntax = "proto2";
+option go_package = ".;profilecard";
+
+message GateCommTaskInfo {
+  optional int32 appid = 1;
+  optional bytes taskData = 2;
+}
+message GateGetGiftListReq {
+  optional int32 uin = 1;
+}
+message GateGetGiftListRsp {
+  repeated string giftUrl = 1;
+  optional string customUrl = 2;
+  optional string desc = 3;
+  optional bool isOn = 4;
+}
+message GateGetVipCareReq {
+  optional int64 uin = 1;
+}
+message GateGetVipCareRsp {
+  optional int32 buss = 1;
+  optional int32 notice = 2;
+}
+message GateOidbFlagInfo {
+  optional int32 fieled = 1;
+  optional bytes byetsValue = 2;
+}
+message GatePrivilegeBaseInfoReq {
+  optional int64 uReqUin = 1;
+}
+message GatePrivilegeBaseInfoRsp {
+  optional bytes msg = 1;
+  optional bytes jumpUrl = 2;
+  repeated GatePrivilegeInfo vOpenPriv = 3;
+  repeated GatePrivilegeInfo vClosePriv = 4;
+  optional int32 uIsGrayUsr = 5;
+}
+message GatePrivilegeInfo {
+  optional int32 iType = 1;
+  optional int32 iSort = 2;
+  optional int32 iFeeType = 3;
+  optional int32 iLevel = 4;
+  optional int32 iFlag = 5;
+  optional bytes iconUrl = 6;
+  optional bytes deluxeIconUrl = 7;
+  optional bytes jumpUrl = 8;
+  optional int32 iIsBig = 9;
+}
+message GateVaProfileGateReq {
+  optional int32 uCmd = 1;
+  optional GatePrivilegeBaseInfoReq stPrivilegeReq = 2;
+  optional GateGetGiftListReq stGiftReq = 3;
+  repeated GateCommTaskInfo taskItem = 4;
+  repeated GateOidbFlagInfo oidbFlag = 5;
+  optional GateGetVipCareReq stVipCare = 6;
+}
+
+message GateQidInfoItem {
+  optional string qid = 1;
+  optional string url = 2;
+  optional string color = 3;
+  optional string logoUrl = 4;
+}
+
+message GateVaProfileGateRsp {
+  optional int32 iRetCode = 1;
+  optional bytes sRetMsg = 2;
+  optional GatePrivilegeBaseInfoRsp stPrivilegeRsp = 3;
+  optional GateGetGiftListRsp stGiftRsp = 4;
+  repeated GateCommTaskInfo taskItem = 5;
+  repeated GateOidbFlagInfo oidbFlag = 6;
+  optional GateGetVipCareRsp stVipCare = 7;
+  optional GateQidInfoItem qidInfo = 9;
+}

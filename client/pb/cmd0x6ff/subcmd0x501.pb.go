@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.25.0
 // 	protoc        v3.11.4
-// source: subcmd0x501.proto
+// source: busi.proto
 
 package cmd0x6ff
 

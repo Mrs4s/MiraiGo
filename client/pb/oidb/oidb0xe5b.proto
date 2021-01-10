@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+message LifeAchievementItem {
+  optional uint32 achievementId = 1;
+  optional string achievementTitle = 2;
+  optional string achievementIcon = 3;
+  optional bool hasPraised = 4;
+  optional uint32 praiseNum = 5;
+  optional bytes achievementContent = 6;
+}
+
+message DE5BReqBody {
+  optional uint64 uin = 1;
+  repeated uint32 achievementId = 2;
+  optional uint32 maxCount = 3;
+  optional bool reqAchievementContent = 4;
+}
+
+message DE5BRspBody {
+  optional uint32 achievementTotalCount = 1;
+  repeated LifeAchievementItem lifeAchItem = 2;
+  optional string achievementOpenid = 3;
+}

@@ -1,0 +1,89 @@
+syntax = "proto2";
+option go_package = ".;profilecard";
+
+message BusiColor {
+  optional int32 r = 1;
+  optional int32 g = 2;
+  optional int32 b = 3;
+}
+
+message BusiComm {
+  optional int32 ver = 1;
+  optional int32 seq = 2;
+  optional int64 fromuin = 3;
+  optional int64 touin = 4;
+  optional int32 service = 5;
+  optional int32 sessionType = 6;
+  optional bytes sessionKey = 7;
+  optional int32 clientIp = 8;
+  optional BusiUi display = 9;
+  optional int32 result = 10;
+  optional string errMsg = 11;
+  optional int32 platform = 12;
+  optional string qqver = 13;
+  optional int32 build = 14;
+  optional BusiLoginSig msgLoginSig = 15;
+  optional int32 version = 17;
+  optional BusiUinInfo msgUinInfo = 18;
+  optional BusiRichUi msgRichDisplay = 19;
+}
+message BusiCommonReq {
+  optional string serviceCmd = 1;
+  optional BusiVisitorCountReq vcReq = 2;
+  optional BusiHideRecordsReq hrReq = 3;
+}
+message BusiDetailRecord {
+  optional int32 fuin = 1;
+  optional int32 source = 2;
+  optional int32 vtime = 3;
+  optional int32 mod = 4;
+  optional int32 hideFlag = 5;
+}
+message BusiHideRecordsReq {
+  optional int32 huin = 1;
+  optional int32 fuin = 2;
+  repeated BusiDetailRecord records = 3;
+}
+message BusiLabel {
+  optional bytes name = 1;
+  optional int32 enumType = 2;
+  optional BusiColor textColor = 3;
+  optional BusiColor edgingColor = 4;
+  optional int32 labelAttr = 5;
+  optional int32 labelType = 6;
+}
+message BusiLoginSig {
+  optional int32 type = 1;
+  optional bytes sig = 2;
+  optional int32 appid = 3;
+}
+message BusiRichUi {
+  optional string name = 1;
+  optional string serviceUrl = 2;
+  //repeated UiInfo uiList = 3;
+}
+message BusiUi {
+  optional string url = 1;
+  optional string title = 2;
+  optional string content = 3;
+  optional string jumpUrl = 4;
+}
+
+message BusiUinInfo {
+  optional int64 int64Longitude = 1;
+  optional int64 int64Latitude = 2;
+}
+message BusiVisitorCountReq {
+  optional int32 requireuin = 1;
+  optional int32 operuin = 2;
+  optional int32 mod = 3;
+  optional int32 reportFlag = 4;
+}
+message BusiVisitorCountRsp {
+  optional int32 requireuin = 1;
+  optional int32 totalLike = 2;
+  optional int32 totalView = 3;
+  optional int32 hotValue = 4;
+  optional int32 redValue = 5;
+  optional int32 hotDiff = 6;
+}

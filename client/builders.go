@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"math/rand"
 	"time"
@@ -385,6 +386,58 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 // SummaryCard.ReqSummaryCard
 func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) {
 	seq := c.nextSeq()
+	packBusinessBuf := func(t int32, buf []byte) []byte {
+		return binary.NewWriterF(func(w *binary.Writer) {
+			comm, _ := proto.Marshal(&profilecard.BusiComm{
+				Ver:      proto.Int32(1),
+				Seq:      proto.Int32(int32(seq)),
+				Fromuin:  &c.Uin,
+				Touin:    &target,
+				Service:  &t,
+				Platform: proto.Int32(2),
+				Qqver:    proto.String("8.4.18.4945"),
+				Build:    proto.Int32(4945),
+			})
+			w.WriteByte(40)
+			w.WriteUInt32(uint32(len(comm)))
+			w.WriteUInt32(uint32(len(buf)))
+			w.Write(comm)
+			w.Write(buf)
+			w.WriteByte(41)
+		})
+	}
+	gate, _ := proto.Marshal(&profilecard.GateVaProfileGateReq{
+		UCmd:           proto.Int32(3),
+		StPrivilegeReq: &profilecard.GatePrivilegeBaseInfoReq{UReqUin: &target},
+		StGiftReq:      &profilecard.GateGetGiftListReq{Uin: proto.Int32(int32(target))},
+		StVipCare:      &profilecard.GateGetVipCareReq{Uin: &target},
+		OidbFlag: []*profilecard.GateOidbFlagInfo{
+			{
+				Fieled: proto.Int32(42334),
+			},
+			{
+				Fieled: proto.Int32(42340),
+			},
+			{
+				Fieled: proto.Int32(42344),
+			},
+			{
+				Fieled: proto.Int32(42354),
+			},
+		},
+	})
+	/*
+		e5b, _ := proto.Marshal(&oidb.DE5BReqBody{
+			Uin:                   proto.Uint64(uint64(target)),
+			MaxCount:              proto.Uint32(10),
+			ReqAchievementContent: proto.Bool(false),
+		})
+		ec4, _ := proto.Marshal(&oidb.DEC4ReqBody{
+			Uin:       proto.Uint64(uint64(target)),
+			QuestNum:  proto.Uint64(10),
+			FetchType: proto.Uint32(1),
+		})
+	*/
 	req := &jce.SummaryCardReq{
 		Uin:              target,
 		ComeFrom:         31,
@@ -392,7 +445,8 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 		AddFriendSource:  3001,
 		SecureSig:        []byte{0x00},
 		ReqMedalWallInfo: 0,
-		Req0x5ebFieldId:  []int64{27225, 27224, 42122, 42121, 27236, 27238, 42167, 42172, 40324, 42284, 42326, 42325, 42356, 42363, 42361, 42367, 42377, 42425},
+		Req0x5ebFieldId:  []int64{27225, 27224, 42122, 42121, 27236, 27238, 42167, 42172, 40324, 42284, 42326, 42325, 42356, 42363, 42361, 42367, 42377, 42425, 42505, 42488},
+		ReqServices:      [][]byte{packBusinessBuf(16, gate)},
 		ReqNearbyGodInfo: 1,
 		ReqExtendCard:    1,
 	}

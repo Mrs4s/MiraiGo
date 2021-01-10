@@ -360,6 +360,11 @@ func (r *JceReader) readObject(t reflect.Type, tag int) reflect.Value {
 		r.ReadObject(&s, tag)
 		return reflect.ValueOf(s)
 	case reflect.Slice:
+		if _, ok := reflect.New(t.Elem()).Interface().(*[]byte); ok {
+			arr := &[]byte{}
+			r.ReadSlice(arr, tag)
+			return reflect.ValueOf(arr).Elem()
+		}
 		s := reflect.New(t.Elem()).Interface().(IJceStruct)
 		r.readHead()
 		s.ReadFrom(r)

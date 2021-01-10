@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
+	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"net"
 	"strconv"
 	"strings"
@@ -437,7 +438,7 @@ func decodeSummaryCardResponse(_ *QQClient, _ uint16, payload []byte) (interface
 		}
 		return jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard_Old.RespSummaryCard"][1:])
 	}()
-	return &SummaryCardInfo{
+	info := &SummaryCardInfo{
 		Sex:       rsp.ReadByte(1),
 		Age:       rsp.ReadByte(2),
 		Nickname:  rsp.ReadString(3),
@@ -447,7 +448,31 @@ func decodeSummaryCardResponse(_ *QQClient, _ uint16, payload []byte) (interface
 		Mobile:    rsp.ReadString(11),
 		Uin:       rsp.ReadInt64(23),
 		LoginDays: rsp.ReadInt64(36),
-	}, nil
+	}
+	services := [][]byte{}
+	rsp.ReadSlice(&services, 46)
+	readService := func(buf []byte) (*profilecard.BusiComm, []byte) {
+		r := binary.NewReader(buf)
+		r.ReadByte()
+		l1 := r.ReadInt32()
+		l2 := r.ReadInt32()
+		comm := r.ReadBytes(int(l1))
+		d := r.ReadBytes(int(l2))
+		c := &profilecard.BusiComm{}
+		_ = proto.Unmarshal(comm, c)
+		return c, d
+	}
+	for _, buf := range services {
+		comm, payload := readService(buf)
+		if comm.GetService() == 16 {
+			rsp := profilecard.GateVaProfileGateRsp{}
+			_ = proto.Unmarshal(payload, &rsp)
+			if rsp.QidInfo != nil {
+				info.Qid = rsp.QidInfo.GetQid()
+			}
+		}
+	}
+	return info, nil
 }
 
 // friendlist.getFriendGroupList

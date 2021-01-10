@@ -1,0 +1,56 @@
+syntax = "proto2";
+option go_package = ".;oidb";
+
+message Comment {
+  optional string id = 1;
+  optional string comment = 2;
+  optional uint64 time = 3;
+  optional uint64 fromUin = 4;
+  optional uint64 toUin = 5;
+  optional string replyId = 6;
+  optional string fromNick = 7;
+}
+
+message Praise {
+  optional uint64 fromUin = 1;
+  optional uint64 toUin = 2;
+  optional uint64 time = 3;
+  optional string fromNick = 4;
+}
+
+message Quest {
+  optional string id = 1;
+  optional string quest = 2;
+  optional uint64 questUin = 3;
+  optional uint64 time = 4;
+  optional string ans = 5;
+  optional uint64 ansTime = 6;
+  repeated Comment comment = 7;
+  repeated Praise praise = 8;
+  optional uint64 praiseNum = 9;
+  optional string likeKey = 10;
+  optional uint64 systemId = 11;
+  optional uint64 commentNum = 12;
+  optional uint64 showType = 13;
+  optional uint64 showTimes = 14;
+  optional uint64 beenPraised = 15;
+  optional bool questRead = 16;
+  optional uint64 ansShowType = 17;
+}
+
+message DEC4ReqBody {
+  optional uint64 uin = 1;
+  optional uint64 questNum = 2;
+  optional uint64 commentNum = 3;
+  optional bytes cookie = 4;
+  optional uint32 fetchType = 5;
+}
+
+message DEC4RspBody {
+  repeated Quest quest = 1;
+  optional bool isFetchOver = 2;
+  optional uint32 totalQuestNum = 3;
+  optional bytes cookie = 4;
+  optional uint32 ret = 5;
+  optional uint32 answeredQuestNum = 6;
+}

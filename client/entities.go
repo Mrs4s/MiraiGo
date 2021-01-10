@@ -55,6 +55,7 @@ type (
 		Sign      string
 		Mobile    string
 		LoginDays int64
+		Qid       string
 	}
 
 	FriendListResponse struct {
