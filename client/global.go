@@ -62,16 +62,36 @@ type Version struct {
 }
 
 type DeviceInfoFile struct {
-	Display     string `json:"display"`
-	Product     string `json:"product"`
-	Device      string `json:"device"`
-	Board       string `json:"board"`
-	Model       string `json:"model"`
-	FingerPrint string `json:"finger_print"`
-	BootId      string `json:"boot_id"`
-	ProcVersion string `json:"proc_version"`
-	Protocol    int    `json:"protocol"` // 0: Pad 1: Phone 2: Watch
-	IMEI        string `json:"imei"`
+	Display     string       `json:"display"`
+	Product     string       `json:"product"`
+	Device      string       `json:"device"`
+	Board       string       `json:"board"`
+	Model       string       `json:"model"`
+	FingerPrint string       `json:"finger_print"`
+	BootId      string       `json:"boot_id"`
+	ProcVersion string       `json:"proc_version"`
+	Protocol    int          `json:"protocol"` // 0: Pad 1: Phone 2: Watch
+	IMEI        string       `json:"imei"`
+	Brand       string       `json:"brand"`
+	Bootloader  string       `json:"bootloader"`
+	BaseBand    string       `json:"base_band"`
+	Version     *VersionFile `json:"version"`
+	SimInfo     string       `json:"sim_info"`
+	OsType      string       `json:"os_type"`
+	MacAddress  string       `json:"mac_address"`
+	IpAddress   []int32      `json:"ip_address"`
+	WifiBSSID   string       `json:"wifiBSSID"`
+	WifiSSID    string       `json:"wifiSSID"`
+	ImsiMd5     string       `json:"imsiMd5"`
+	AndroidId   string       `json:"android_id"`
+	Apn         string       `json:"apn"`
+}
+
+type VersionFile struct {
+	Incremental string `json:"incremental"`
+	Release     string `json:"release"`
+	Codename    string `json:"codename"`
+	Sdk         uint32 `json:"sdk"`
 }
 
 type groupMessageBuilder struct {
@@ -219,6 +239,24 @@ func (info *DeviceInfo) ToJson() []byte {
 		BootId:      string(info.BootId),
 		ProcVersion: string(info.ProcVersion),
 		IMEI:        info.IMEI,
+		Brand:       string(info.Brand),
+		Bootloader:  string(info.Bootloader),
+		BaseBand:    string(info.BaseBand),
+		AndroidId:   string(info.AndroidId),
+		Version: &VersionFile{
+			Incremental: string(info.Version.Incremental),
+			Release:     string(info.Version.Release),
+			Codename:    string(info.Version.CodeName),
+			Sdk:         info.Version.Sdk,
+		},
+		SimInfo:    string(info.SimInfo),
+		OsType:     string(info.OSType),
+		MacAddress: string(info.MacAddress),
+		IpAddress:  []int32{int32(info.IpAddress[0]), int32(info.IpAddress[1]), int32(info.IpAddress[2]), int32(info.IpAddress[3])},
+		WifiBSSID:  string(info.WifiBSSID),
+		WifiSSID:   string(info.WifiSSID),
+		ImsiMd5:    hex.EncodeToString(info.IMSIMd5),
+		Apn:        string(info.APN),
 		Protocol: func() int {
 			switch info.Protocol {
 			case IPad:
@@ -240,20 +278,47 @@ func (info *DeviceInfo) ToJson() []byte {
 func (info *DeviceInfo) ReadJson(d []byte) error {
 	var f DeviceInfoFile
 	if err := json.Unmarshal(d, &f); err != nil {
-		return errors.Wrap(err, "failed to unmarshal protobuf message")
+		return errors.Wrap(err, "failed to unmarshal json message")
 	}
-	info.Display = []byte(f.Display)
-	if f.Product != "" {
-		info.Product = []byte(f.Product)
-		info.Device = []byte(f.Device)
-		info.Board = []byte(f.Board)
-		info.Model = []byte(f.Model)
+	SetIfNotEmpty := func(trg []byte, str string) {
+		if str != "" {
+			trg = []byte(str)
+		}
 	}
-	info.FingerPrint = []byte(f.FingerPrint)
-	info.BootId = []byte(f.BootId)
-	info.ProcVersion = []byte(f.ProcVersion)
-	info.IMEI = f.IMEI
-	info.AndroidId = SystemDeviceInfo.Display
+	SetIfNotEmpty(info.Display, f.Display)
+	SetIfNotEmpty(info.Product, f.Product)
+	SetIfNotEmpty(info.Device, f.Device)
+	SetIfNotEmpty(info.Board, f.Board)
+	SetIfNotEmpty(info.Brand, f.Brand)
+	SetIfNotEmpty(info.Model, f.Model)
+	SetIfNotEmpty(info.Bootloader, f.Bootloader)
+	SetIfNotEmpty(info.FingerPrint, f.FingerPrint)
+	SetIfNotEmpty(info.BootId, f.BootId)
+	SetIfNotEmpty(info.ProcVersion, f.ProcVersion)
+	SetIfNotEmpty(info.BaseBand, f.BaseBand)
+	SetIfNotEmpty(info.SimInfo, f.SimInfo)
+	SetIfNotEmpty(info.OSType, f.OsType)
+	SetIfNotEmpty(info.MacAddress, f.MacAddress)
+	if len(f.IpAddress) == 4 {
+		info.IpAddress = []byte{byte(f.IpAddress[0]), byte(f.IpAddress[1]), byte(f.IpAddress[2]), byte(f.IpAddress[3])}
+	}
+	SetIfNotEmpty(info.WifiBSSID, f.WifiBSSID)
+	SetIfNotEmpty(info.WifiSSID, f.WifiSSID)
+	if len(f.ImsiMd5) != 0 {
+		imsiMd5, err := hex.DecodeString(f.ImsiMd5)
+		if err != nil {
+			info.IMSIMd5 = imsiMd5
+		}
+	}
+	if f.IMEI != "" {
+		info.IMEI = f.IMEI
+	}
+	SetIfNotEmpty(info.AndroidId, f.AndroidId)
+	SetIfNotEmpty(info.APN, f.Apn)
+
+	info.AndroidId = info.Display // 兼容旧的
+	SetIfNotEmpty(info.AndroidId, f.Display)
+
 	switch f.Protocol {
 	case 1:
 		info.Protocol = AndroidPhone
