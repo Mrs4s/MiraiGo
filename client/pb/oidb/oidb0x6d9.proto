@@ -1,0 +1,93 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+message CopyFromReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 srcBusId = 3;
+  optional bytes srcParentFolder = 4;
+  optional bytes srcFilePath = 5;
+  optional uint32 dstBusId = 6;
+  optional bytes dstFolderId = 7;
+  optional uint64 fileSize = 8;
+  optional string localPath = 9;
+  optional string fileName = 10;
+  optional uint64 srcUin = 11;
+  optional bytes md5 = 12;
+}
+
+message CopyFromRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional bytes saveFilePath = 4;
+  optional uint32 busId = 5;
+}
+
+message CopyToReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 srcBusId = 3;
+  optional string srcFileId = 4;
+  optional uint32 dstBusId = 5;
+  optional uint64 dstUin = 6;
+  optional string newFileName = 40;
+  optional bytes timCloudPdirKey = 100;
+  optional bytes timCloudPpdirKey = 101;
+  optional bytes timCloudExtensionInfo = 102;
+  optional uint32 timFileExistOption = 103;
+}
+
+message CopyToRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional string saveFilePath = 4;
+  optional uint32 busId = 5;
+  optional string fileName = 40;
+}
+
+message FeedsReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  //repeated C8639group_file_common.FeedsInfo feedsInfoList = 3;
+  optional uint32 multiSendSeq = 4;
+}
+
+message FeedsRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  //repeated C8639group_file_common.FeedsResult feedsResultList = 4;
+  optional uint32 svrbusyWaitTime = 5;
+}
+
+message D6D9ReqBody {
+  optional TransFileReqBody transFileReq = 1;
+  optional CopyFromReqBody copyFromReq = 2;
+  optional CopyToReqBody copyToReq = 3;
+  optional FeedsReqBody feedsInfoReq = 5;
+}
+
+message D6D9RspBody {
+  optional TransFileRspBody transFileRsp = 1;
+  optional CopyFromRspBody copyFromRsp = 2;
+  optional CopyToRspBody copyToRsp = 3;
+  optional FeedsRspBody feedsInfoRsp = 5;
+}
+
+message TransFileReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+}
+
+message TransFileRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional uint32 saveBusId = 4;
+  optional string saveFilePath = 5;
+}
