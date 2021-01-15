@@ -355,7 +355,9 @@ func decodeGetGroupMsgResponse(c *QQClient, _ uint16, payload []byte) (interface
 		if m.Head.FromUin == nil {
 			continue
 		}
-		ret = append(ret, c.parseGroupMessage(m))
+		if elem := c.parseGroupMessage(m); elem != nil {
+			ret = append(ret, elem)
+		}
 	}
 	return ret, nil
 }

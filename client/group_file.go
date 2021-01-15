@@ -7,7 +7,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"io"
 	"os"
-	"path"
 	"runtime/debug"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
@@ -152,7 +151,7 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderId string) ([]*GroupFile, []*G
 	return files, folders, nil
 }
 
-func (fs *GroupFileSystem) UploadFile(p, folderId string) error {
+func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	file, err := os.OpenFile(p, os.O_RDONLY, 0666)
 	if err != nil {
 		return err
@@ -163,7 +162,7 @@ func (fs *GroupFileSystem) UploadFile(p, folderId string) error {
 	sha1H := sha1.New()
 	_, _ = io.Copy(sha1H, file)
 	sha1Hash := sha1H.Sum(nil)
-	fs.client.sendAndWait(fs.client.buildGroupFileUploadReqPacket(folderId, path.Ext(p), fs.GroupCode, size, md5Hash, sha1Hash))
+	fs.client.sendAndWait(fs.client.buildGroupFileUploadReqPacket(folderId, name, fs.GroupCode, size, md5Hash, sha1Hash))
 	return nil
 }
 
