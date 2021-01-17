@@ -8,7 +8,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
-	"github.com/tidwall/gjson"
 	"google.golang.org/protobuf/proto"
 	"net/url"
 	"strings"
@@ -221,18 +220,19 @@ func (g *GroupInfo) MuteAnonymous(id, nick string, seconds int32) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to request blacklist")
 	}
-	j := gjson.ParseBytes(rsp)
-	if r := j.Get("retcode"); r.Exists() {
-		if r.Int() != 0 {
-			return errors.Errorf("retcode %v", r.Int())
-		}
-		return nil
+	var muteResp struct {
+		RetCode int `json:"retcode"`
+		CGICode int `json:"cgicode"`
 	}
-	if r := j.Get("cgicode"); r.Exists() {
-		if r.Int() != 0 {
-			return errors.Errorf("retcode %v", r.Int())
-		}
-		return nil
+	err = json.Unmarshal(rsp, &muteResp)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse muteResp")
+	}
+	if muteResp.RetCode != 0 {
+		return errors.Errorf("retcode %v", muteResp.RetCode)
+	}
+	if muteResp.CGICode != 0 {
+		return errors.Errorf("retcode %v", muteResp.CGICode)
 	}
 	return nil
 }

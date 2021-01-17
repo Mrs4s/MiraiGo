@@ -12,8 +12,10 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
-	"github.com/tidwall/gjson"
+	jsoniter "github.com/json-iterator/go"
 )
+
+var json = jsoniter.ConfigFastest
 
 type (
 	PrivateMessage struct {
@@ -452,7 +454,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					res = append(res, NewRichXml(content, int64(elem.RichMsg.GetServiceId())))
 					continue
 				} else {
-					if gjson.Valid(content) {
+					if json.Valid(utils.S2B(content)) {
 						res = append(res, NewRichJson(content))
 						continue
 					}
