@@ -163,7 +163,7 @@ func GenRandomDevice() {
 	rand.Read(r)
 	t := md5.Sum(r)
 	SystemDeviceInfo.IMSIMd5 = t[:]
-	SystemDeviceInfo.IMEI = utils.RandomStringRange(15, NumberRange)
+	SystemDeviceInfo.IMEI = GenIMEI()
 	SystemDeviceInfo.AndroidId = SystemDeviceInfo.Display
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
@@ -362,6 +362,29 @@ func (info *DeviceInfo) GenDeviceInfoData() []byte {
 		panic(errors.Wrap(err, "failed to unmarshal protobuf message"))
 	}
 	return data
+}
+
+func GenIMEI() string {
+	sum := 0 // the control sum of digits
+	var final strings.Builder
+
+	randSrc := rand.NewSource(time.Now().UnixNano())
+	randGen := rand.New(randSrc)
+
+	for i := 0; i < 14; i++ { // generating all the base digits
+		toAdd := randGen.Intn(10)
+		if (i+1)%2 == 0 { // special proc for every 2nd one
+			toAdd *= 2
+			if toAdd >= 10 {
+				toAdd = (toAdd % 10) + 1
+			}
+		}
+		sum += toAdd
+		final.WriteString(fmt.Sprintf("%d", toAdd)) // and even printing them here!
+	}
+	var ctrlDigit int = (sum * 9) % 10 // calculating the control digit
+	final.WriteString(fmt.Sprintf("%d", ctrlDigit))
+	return final.String()
 }
 
 func getSSOAddress() ([]*net.TCPAddr, error) {
