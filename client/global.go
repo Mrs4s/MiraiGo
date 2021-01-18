@@ -279,30 +279,30 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	if err := json.Unmarshal(d, &f); err != nil {
 		return errors.Wrap(err, "failed to unmarshal json message")
 	}
-	SetIfNotEmpty := func(trg []byte, str string) {
+	SetIfNotEmpty := func(trg *[]byte, str string) {
 		if str != "" {
-			trg = []byte(str)
+			*trg = []byte(str)
 		}
 	}
-	SetIfNotEmpty(info.Display, f.Display)
-	SetIfNotEmpty(info.Product, f.Product)
-	SetIfNotEmpty(info.Device, f.Device)
-	SetIfNotEmpty(info.Board, f.Board)
-	SetIfNotEmpty(info.Brand, f.Brand)
-	SetIfNotEmpty(info.Model, f.Model)
-	SetIfNotEmpty(info.Bootloader, f.Bootloader)
-	SetIfNotEmpty(info.FingerPrint, f.FingerPrint)
-	SetIfNotEmpty(info.BootId, f.BootId)
-	SetIfNotEmpty(info.ProcVersion, f.ProcVersion)
-	SetIfNotEmpty(info.BaseBand, f.BaseBand)
-	SetIfNotEmpty(info.SimInfo, f.SimInfo)
-	SetIfNotEmpty(info.OSType, f.OsType)
-	SetIfNotEmpty(info.MacAddress, f.MacAddress)
+	SetIfNotEmpty(&info.Display, f.Display)
+	SetIfNotEmpty(&info.Product, f.Product)
+	SetIfNotEmpty(&info.Device, f.Device)
+	SetIfNotEmpty(&info.Board, f.Board)
+	SetIfNotEmpty(&info.Brand, f.Brand)
+	SetIfNotEmpty(&info.Model, f.Model)
+	SetIfNotEmpty(&info.Bootloader, f.Bootloader)
+	SetIfNotEmpty(&info.FingerPrint, f.FingerPrint)
+	SetIfNotEmpty(&info.BootId, f.BootId)
+	SetIfNotEmpty(&info.ProcVersion, f.ProcVersion)
+	SetIfNotEmpty(&info.BaseBand, f.BaseBand)
+	SetIfNotEmpty(&info.SimInfo, f.SimInfo)
+	SetIfNotEmpty(&info.OSType, f.OsType)
+	SetIfNotEmpty(&info.MacAddress, f.MacAddress)
 	if len(f.IpAddress) == 4 {
 		info.IpAddress = []byte{byte(f.IpAddress[0]), byte(f.IpAddress[1]), byte(f.IpAddress[2]), byte(f.IpAddress[3])}
 	}
-	SetIfNotEmpty(info.WifiBSSID, f.WifiBSSID)
-	SetIfNotEmpty(info.WifiSSID, f.WifiSSID)
+	SetIfNotEmpty(&info.WifiBSSID, f.WifiBSSID)
+	SetIfNotEmpty(&info.WifiSSID, f.WifiSSID)
 	if len(f.ImsiMd5) != 0 {
 		imsiMd5, err := hex.DecodeString(f.ImsiMd5)
 		if err != nil {
@@ -312,11 +312,11 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	if f.IMEI != "" {
 		info.IMEI = f.IMEI
 	}
-	SetIfNotEmpty(info.AndroidId, f.AndroidId)
-	SetIfNotEmpty(info.APN, f.Apn)
+	SetIfNotEmpty(&info.AndroidId, f.AndroidId)
+	SetIfNotEmpty(&info.APN, f.Apn)
 
 	info.AndroidId = info.Display // 兼容旧的
-	SetIfNotEmpty(info.AndroidId, f.Display)
+	SetIfNotEmpty(&info.AndroidId, f.Display)
 
 	switch f.Protocol {
 	case 1:
