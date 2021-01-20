@@ -1018,3 +1018,7 @@ func decodeAppInfoResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, 
 	}
 	return rsp.AppInfo, nil
 }
+
+func ignoreDecoder(_ *QQClient, _ uint16, _ []byte) (interface{}, error) {
+	return nil, nil
+}

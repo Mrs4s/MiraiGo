@@ -13,7 +13,10 @@ import (
 func init() {
 	decoders["StatSvc.GetDevLoginInfo"] = decodeDevListResponse
 	decoders["StatSvc.SvcReqMSFLoginNotify"] = decodeLoginNotifyPacket
-	decoders["RegPrxySvc.getOffMsg"] = decodeOfflineMsgResponse
+	decoders["RegPrxySvc.getOffMsg"] = ignoreDecoder
+	decoders["RegPrxySvc.GetMsgV2"] = ignoreDecoder
+	decoders["RegPrxySvc.PbGetMsg"] = ignoreDecoder
+	decoders["RegPrxySvc.NoticeEnd"] = ignoreDecoder
 	decoders["RegPrxySvc.PushParam"] = decodePushParamPacket
 }
 
@@ -37,9 +40,8 @@ func (c *QQClient) GetAllowedClients() ([]*OtherClientInfo, error) {
 
 // RefreshClientStatus 刷新客户端状态
 func (c *QQClient) RefreshStatus() error {
-	_, pkt := c.buildGetOfflineMsgRequest()
-	c.send(pkt)
-	return nil
+	_, err := c.sendAndWait(c.buildGetOfflineMsgRequest())
+	return err
 }
 
 // StatSvc.GetDevLoginInfo
@@ -141,15 +143,6 @@ func decodeDevListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, 
 		return d, nil
 	}
 	return nil, errors.New("not any device")
-}
-
-// RegPrxySvc.getOffMsg
-func decodeOfflineMsgResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	/*
-		request := &jce.RequestPacket{}
-		request.ReadFrom(jce.NewJceReader(payload))
-	*/
-	return nil, nil
 }
 
 // RegPrxySvc.PushParam
