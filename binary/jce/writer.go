@@ -96,11 +96,12 @@ func (w *JceWriter) WriteString(s string, tag int) *JceWriter {
 	return w
 }
 
-func (w *JceWriter) WriteBytes(l []byte, tag int) {
+func (w *JceWriter) WriteBytes(l []byte, tag int) *JceWriter {
 	w.writeHead(13, tag)
 	w.writeHead(0, 0)
 	w.WriteInt32(int32(len(l)), 0)
 	w.buf.Write(l)
+	return w
 }
 
 func (w *JceWriter) WriteInt64Slice(l []int64, tag int) {

@@ -136,6 +136,65 @@ type (
 		ClientAutoStatusInterval int64  `jceId:"19"`
 	}
 
+	SvcReqRegisterNew struct {
+		IJceStruct
+		RequestOptional int64      `jceId:"0"`
+		C2CMsg          IJceStruct `jceId:"1"` // SvcReqGetMsgV2
+		GroupMsg        IJceStruct `jceId:"2"` // SvcReqPullGroupMsgSeq
+		GroupMask       byte       `jceId:"15"`
+		EndSeq          int64      `jceId:"16"`
+	}
+
+	SvcReqGetMsgV2 struct {
+		IJceStruct
+		Uin              int64  `jceId:"0"`
+		DateTime         int32  `jceId:"1"`
+		RecivePic        byte   `jceId:"4"`
+		Ability          int16  `jceId:"6"`
+		Channel          byte   `jceId:"9"`
+		Inst             byte   `jceId:"16"`
+		ChannelEx        byte   `jceId:"17"`
+		SyncCookie       []byte `jceId:"18"`
+		SyncFlag         int    `jceId:"19"`
+		RambleFlag       byte   `jceId:"20"`
+		GeneralAbi       int64  `jceId:"26"`
+		PubAccountCookie []byte `jceId:"27"`
+	}
+
+	SvcReqPullGroupMsgSeq struct {
+		IJceStruct
+		GroupInfo  []IJceStruct `jceId:"0"` // PullGroupSeqParam
+		VerifyType byte         `jceId:"1"`
+		Filter     int32        `jceId:"2"`
+	}
+
+	PullGroupSeqParam struct {
+		IJceStruct
+		GroupCode int64 `jceId:"0"`
+		LastSeqId int64 `jceId:"1"`
+	}
+
+	SvcRespParam struct {
+		PCStat              int32        `jceId:"0"`
+		IsSupportC2CRoamMsg int32        `jceId:"1"`
+		IsSupportDataLine   int32        `jceId:"2"`
+		IsSupportPrintable  int32        `jceId:"3"`
+		IsSupportViewPCFile int32        `jceId:"4"`
+		PcVersion           int32        `jceId:"5"`
+		RoamFlag            int64        `jceId:"6"`
+		OnlineInfos         []OnlineInfo `jceId:"7"`
+		PCClientType        int32        `jceId:"8"`
+	}
+
+	OnlineInfo struct {
+		InstanceId   int32  `jceId:"0"`
+		ClientType   int32  `jceId:"1"`
+		OnlineStatus int32  `jceId:"2"`
+		PlatformId   int32  `jceId:"3"`
+		SubPlatform  string `jceId:"4"`
+		UClientType  int64  `jceId:"5"`
+	}
+
 	PushMessageInfo struct {
 		FromUin        int64  `jceId:"0"`
 		MsgTime        int64  `jceId:"1"`
@@ -665,6 +724,28 @@ func (pkt *SvcDevLoginInfo) ReadFrom(r *JceReader) {
 	pkt.CanBeKicked = r.ReadInt64(10)
 }
 
+func (pkt *SvcRespParam) ReadFrom(r *JceReader) {
+	pkt.OnlineInfos = []OnlineInfo{}
+	pkt.PCStat = r.ReadInt32(0)
+	pkt.IsSupportC2CRoamMsg = r.ReadInt32(1)
+	pkt.IsSupportDataLine = r.ReadInt32(2)
+	pkt.IsSupportPrintable = r.ReadInt32(3)
+	pkt.IsSupportViewPCFile = r.ReadInt32(4)
+	pkt.PcVersion = r.ReadInt32(5)
+	pkt.RoamFlag = r.ReadInt64(6)
+	r.ReadSlice(&pkt.OnlineInfos, 7)
+	pkt.PCClientType = r.ReadInt32(8)
+}
+
+func (pkt *OnlineInfo) ReadFrom(r *JceReader) {
+	pkt.InstanceId = r.ReadInt32(0)
+	pkt.ClientType = r.ReadInt32(1)
+	pkt.OnlineStatus = r.ReadInt32(2)
+	pkt.PlatformId = r.ReadInt32(3)
+	pkt.SubPlatform = string(r.ReadAny(4).([]byte))
+	pkt.UClientType = r.ReadInt64(5)
+}
+
 func (pkt *SvcRespPushMsg) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
@@ -678,6 +759,12 @@ func (pkt *ModifyGroupCardRequest) ToBytes() []byte {
 }
 
 func (pkt *SvcReqGetDevLoginInfo) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *SvcReqRegisterNew) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()

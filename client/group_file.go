@@ -151,7 +151,7 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderId string) ([]*GroupFile, []*G
 	return files, folders, nil
 }
 
-func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
+func (fs *GroupFileSystem) uploadFile(p, name, folderId string) error {
 	file, err := os.OpenFile(p, os.O_RDONLY, 0666)
 	if err != nil {
 		return err

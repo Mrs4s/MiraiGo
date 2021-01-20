@@ -311,7 +311,7 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		return nil, nil
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
-		var builder *groupMessageBuilder // TODO: 支持多SEQ
+		var builder *groupMessageBuilder
 		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.GetDivSeq())
 		if !ok {
 			builder = &groupMessageBuilder{}

@@ -1,8 +1,8 @@
 package binary
 
 import (
-	"crypto/rand"
 	"encoding/binary"
+	"math/rand"
 	"reflect"
 	"unsafe"
 )

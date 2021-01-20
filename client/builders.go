@@ -302,29 +302,6 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 	return seq, packet
 }
 
-// StatSvc.GetDevLoginInfo
-func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &jce.SvcReqGetDevLoginInfo{
-		Guid:           SystemDeviceInfo.Guid,
-		LoginType:      1,
-		AppName:        "com.tencent.mobileqq",
-		RequireMax:     20,
-		GetDevListType: 2,
-	}
-	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"SvcReqGetDevLoginInfo": packUniRequestData(req.ToBytes())}}
-	pkt := &jce.RequestPacket{
-		IVersion:     3,
-		SServantName: "StatSvc",
-		SFuncName:    "SvcReqGetDevLoginInfo",
-		SBuffer:      buf.ToBytes(),
-		Context:      make(map[string]string),
-		Status:       make(map[string]string),
-	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "StatSvc.GetDevLoginInfo", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
-	return seq, packet
-}
-
 // friendlist.getFriendGroupList
 func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendListCount, groupStartIndex, groupListCount int16) (uint16, []byte) {
 	seq := c.nextSeq()

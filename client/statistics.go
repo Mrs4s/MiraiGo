@@ -10,6 +10,7 @@ type Statistics struct {
 	MessageSent     uint64 `json:"message_sent"`
 	DisconnectTimes uint32 `json:"disconnect_times"`
 	LostTimes       uint32 `json:"lost_times"`
+	LastMessageTime int64  `json:"last_message_time"`
 
 	once sync.Once
 }

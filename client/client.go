@@ -36,13 +36,14 @@ type QQClient struct {
 	PasswordMd5 [16]byte
 	AllowSlider bool
 
-	Nickname   string
-	Age        uint16
-	Gender     uint16
-	FriendList []*FriendInfo
-	GroupList  []*GroupInfo
-	Online     bool
-	NetLooping bool
+	Nickname      string
+	Age           uint16
+	Gender        uint16
+	FriendList    []*FriendInfo
+	GroupList     []*GroupInfo
+	OnlineClients []*OtherClientInfo
+	Online        bool
+	NetLooping    bool
 
 	SequenceId              int32
 	OutGoingPacketSessionId []byte
@@ -121,7 +122,6 @@ var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 	"wtlogin.exchange_emp":                               decodeExchangeEmpResponse,
 	"StatSvc.register":                                   decodeClientRegisterResponse,
 	"StatSvc.ReqMSFOffline":                              decodeMSFOfflinePacket,
-	"StatSvc.GetDevLoginInfo":                            decodeDevListResponse,
 	"MessageSvc.PushNotify":                              decodeSvcNotify,
 	"OnlinePush.ReqPush":                                 decodeOnlinePushReqPacket,
 	"OnlinePush.PbPushTransMsg":                          decodeOnlinePushTransPacket,
@@ -289,29 +289,6 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	return &l, nil
 }
 
-func (c *QQClient) init() {
-	c.Online = true
-	_ = c.registerClient()
-	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
-	if !c.heartbeatEnabled {
-		go c.doHeartbeat()
-	}
-	c.stat.once.Do(func() {
-		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
-			c.stat.MessageReceived++
-		})
-		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
-			c.stat.MessageReceived++
-		})
-		c.OnTempMessage(func(_ *QQClient, _ *message.TempMessage) {
-			c.stat.MessageReceived++
-		})
-		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
-			c.stat.MessageSent++
-		})
-	})
-}
-
 func (c *QQClient) RequestSMS() bool {
 	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
 	if err != nil {
@@ -319,6 +296,33 @@ func (c *QQClient) RequestSMS() bool {
 		return false
 	}
 	return rsp.(LoginResponse).Error == SMSNeededError
+}
+
+func (c *QQClient) init() {
+	c.Online = true
+	_ = c.registerClient()
+	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
+	if !c.heartbeatEnabled {
+		go c.doHeartbeat()
+	}
+	_ = c.RefreshStatus()
+	c.stat.once.Do(func() {
+		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
+			c.stat.MessageReceived++
+			c.stat.LastMessageTime = time.Now().Unix()
+		})
+		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
+			c.stat.MessageReceived++
+			c.stat.LastMessageTime = time.Now().Unix()
+		})
+		c.OnTempMessage(func(_ *QQClient, _ *message.TempMessage) {
+			c.stat.MessageReceived++
+			c.stat.LastMessageTime = time.Now().Unix()
+		})
+		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
+			c.stat.MessageSent++
+		})
+	})
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
