@@ -86,7 +86,7 @@ func (w *JceWriter) WriteString(s string, tag int) *JceWriter {
 	by := []byte(s)
 	if len(by) > 255 {
 		w.writeHead(7, tag)
-		_ = goBinary.Write(w.buf, goBinary.BigEndian, len(by))
+		_ = goBinary.Write(w.buf, goBinary.BigEndian, int32(len(by)))
 		w.buf.Write(by)
 		return w
 	}
