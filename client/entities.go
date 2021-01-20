@@ -69,6 +69,11 @@ type (
 		List       []*FriendInfo
 	}
 
+	OtherClientStatusChangedEvent struct {
+		Client *OtherClientInfo
+		Online bool
+	}
+
 	GroupMuteEvent struct {
 		GroupCode   int64
 		OperatorUin int64

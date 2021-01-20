@@ -11,6 +11,7 @@ import (
 
 func init() {
 	decoders["StatSvc.GetDevLoginInfo"] = decodeDevListResponse
+	decoders["StatSvc.SvcReqMSFLoginNotify"] = decodeLoginNotifyPacket
 	decoders["RegPrxySvc.getOffMsg"] = decodeOfflineMsgResponse
 	decoders["RegPrxySvc.PushParam"] = decodePushParamPacket
 }
@@ -191,6 +192,56 @@ func decodePushParamPacket(c *QQClient, _ uint16, payload []byte) (interface{}, 
 				}
 			}(),
 		})
+	}
+	return nil, nil
+}
+
+// StatSvc.SvcReqMSFLoginNotify
+func decodeLoginNotifyPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	reader := jce.NewJceReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])
+	notify := &jce.SvcReqMSFLoginNotify{}
+	notify.ReadFrom(reader)
+	if notify.Status == 1 {
+		found := false
+		for _, oc := range c.OnlineClients {
+			if oc.AppId == notify.AppId {
+				found = true
+			}
+		}
+		if !found {
+			allowedClients, _ := c.GetAllowedClients()
+			for _, ac := range allowedClients {
+				t := ac
+				if ac.AppId == notify.AppId {
+					c.OnlineClients = append(c.OnlineClients, t)
+					c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+						Client: t,
+						Online: true,
+					})
+					break
+				}
+			}
+		}
+	}
+	if notify.Status == 2 {
+		rmi := -1
+		for i, oc := range c.OnlineClients {
+			if oc.AppId == notify.AppId {
+				rmi = i
+			}
+		}
+		if rmi != -1 {
+			rmc := c.OnlineClients[rmi]
+			c.OnlineClients = append(c.OnlineClients[:rmi], c.OnlineClients[rmi+1:]...)
+			c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+				Client: rmc,
+				Online: false,
+			})
+		}
 	}
 	return nil, nil
 }

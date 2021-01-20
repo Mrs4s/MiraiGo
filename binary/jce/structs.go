@@ -195,6 +195,26 @@ type (
 		UClientType  int64  `jceId:"5"`
 	}
 
+	SvcReqMSFLoginNotify struct {
+		AppId        int64          `jceId:"0"`
+		Status       byte           `jceId:"1"`
+		Tablet       byte           `jceId:"2"`
+		Platform     int64          `jceId:"3"`
+		Title        string         `jceId:"4"`
+		Info         string         `jceId:"5"`
+		ProductType  int64          `jceId:"6"`
+		ClientType   int64          `jceId:"7"`
+		InstanceList []InstanceInfo `jceId:"8"`
+	}
+
+	InstanceInfo struct {
+		AppId       int32 `jceId:"0"`
+		Tablet      byte  `jceId:"1"`
+		Platform    int64 `jceId:"2"`
+		ProductType int64 `jceId:"3"`
+		ClientType  int64 `jceId:"4"`
+	}
+
 	PushMessageInfo struct {
 		FromUin        int64  `jceId:"0"`
 		MsgTime        int64  `jceId:"1"`
@@ -744,6 +764,27 @@ func (pkt *OnlineInfo) ReadFrom(r *JceReader) {
 	pkt.PlatformId = r.ReadInt32(3)
 	pkt.SubPlatform = string(r.ReadAny(4).([]byte))
 	pkt.UClientType = r.ReadInt64(5)
+}
+
+func (pkt *SvcReqMSFLoginNotify) ReadFrom(r *JceReader) {
+	pkt.InstanceList = []InstanceInfo{}
+	pkt.AppId = r.ReadInt64(0)
+	pkt.Status = r.ReadByte(1)
+	pkt.Tablet = r.ReadByte(2)
+	pkt.Platform = r.ReadInt64(3)
+	pkt.Title = r.ReadString(4)
+	pkt.Info = r.ReadString(5)
+	pkt.ProductType = r.ReadInt64(6)
+	pkt.ClientType = r.ReadInt64(7)
+	r.ReadSlice(&pkt.InstanceList, 8)
+}
+
+func (pkt *InstanceInfo) ReadFrom(r *JceReader) {
+	pkt.AppId = r.ReadInt32(0)
+	pkt.Tablet = r.ReadByte(1)
+	pkt.Platform = r.ReadInt64(2)
+	pkt.ProductType = r.ReadInt64(3)
+	pkt.ClientType = r.ReadInt64(4)
 }
 
 func (pkt *SvcRespPushMsg) ToBytes() []byte {

@@ -9,29 +9,30 @@ import (
 )
 
 type eventHandlers struct {
-	privateMessageHandlers      []func(*QQClient, *message.PrivateMessage)
-	tempMessageHandlers         []func(*QQClient, *message.TempMessage)
-	groupMessageHandlers        []func(*QQClient, *message.GroupMessage)
-	groupMuteEventHandlers      []func(*QQClient, *GroupMuteEvent)
-	groupRecalledHandlers       []func(*QQClient, *GroupMessageRecalledEvent)
-	friendRecalledHandlers      []func(*QQClient, *FriendMessageRecalledEvent)
-	joinGroupHandlers           []func(*QQClient, *GroupInfo)
-	leaveGroupHandlers          []func(*QQClient, *GroupLeaveEvent)
-	memberJoinedHandlers        []func(*QQClient, *MemberJoinGroupEvent)
-	memberLeavedHandlers        []func(*QQClient, *MemberLeaveGroupEvent)
-	memberCardUpdatedHandlers   []func(*QQClient, *MemberCardUpdatedEvent)
-	permissionChangedHandlers   []func(*QQClient, *MemberPermissionChangedEvent)
-	groupInvitedHandlers        []func(*QQClient, *GroupInvitedRequest)
-	joinRequestHandlers         []func(*QQClient, *UserJoinGroupRequest)
-	friendRequestHandlers       []func(*QQClient, *NewFriendRequest)
-	newFriendHandlers           []func(*QQClient, *NewFriendEvent)
-	disconnectHandlers          []func(*QQClient, *ClientDisconnectedEvent)
-	logHandlers                 []func(*QQClient, *LogEvent)
-	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent) bool
-	groupNotifyHandlers         []func(*QQClient, INotifyEvent)
-	friendNotifyHandlers        []func(*QQClient, INotifyEvent)
-	offlineFileHandlers         []func(*QQClient, *OfflineFileEvent)
-	groupMessageReceiptHandlers sync.Map
+	privateMessageHandlers           []func(*QQClient, *message.PrivateMessage)
+	tempMessageHandlers              []func(*QQClient, *message.TempMessage)
+	groupMessageHandlers             []func(*QQClient, *message.GroupMessage)
+	groupMuteEventHandlers           []func(*QQClient, *GroupMuteEvent)
+	groupRecalledHandlers            []func(*QQClient, *GroupMessageRecalledEvent)
+	friendRecalledHandlers           []func(*QQClient, *FriendMessageRecalledEvent)
+	joinGroupHandlers                []func(*QQClient, *GroupInfo)
+	leaveGroupHandlers               []func(*QQClient, *GroupLeaveEvent)
+	memberJoinedHandlers             []func(*QQClient, *MemberJoinGroupEvent)
+	memberLeavedHandlers             []func(*QQClient, *MemberLeaveGroupEvent)
+	memberCardUpdatedHandlers        []func(*QQClient, *MemberCardUpdatedEvent)
+	permissionChangedHandlers        []func(*QQClient, *MemberPermissionChangedEvent)
+	groupInvitedHandlers             []func(*QQClient, *GroupInvitedRequest)
+	joinRequestHandlers              []func(*QQClient, *UserJoinGroupRequest)
+	friendRequestHandlers            []func(*QQClient, *NewFriendRequest)
+	newFriendHandlers                []func(*QQClient, *NewFriendEvent)
+	disconnectHandlers               []func(*QQClient, *ClientDisconnectedEvent)
+	logHandlers                      []func(*QQClient, *LogEvent)
+	serverUpdatedHandlers            []func(*QQClient, *ServerUpdatedEvent) bool
+	groupNotifyHandlers              []func(*QQClient, INotifyEvent)
+	friendNotifyHandlers             []func(*QQClient, INotifyEvent)
+	offlineFileHandlers              []func(*QQClient, *OfflineFileEvent)
+	otherClientStatusChangedHandlers []func(*QQClient, *OtherClientStatusChangedEvent)
+	groupMessageReceiptHandlers      sync.Map
 }
 
 func (c *QQClient) OnPrivateMessage(f func(*QQClient, *message.PrivateMessage)) {
@@ -116,6 +117,10 @@ func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent) bool) 
 
 func (c *QQClient) OnReceivedOfflineFile(f func(*QQClient, *OfflineFileEvent)) {
 	c.eventHandlers.offlineFileHandlers = append(c.eventHandlers.offlineFileHandlers, f)
+}
+
+func (c *QQClient) OnOtherClientStatusChanged(f func(*QQClient, *OtherClientStatusChangedEvent)) {
+	c.eventHandlers.otherClientStatusChangedHandlers = append(c.eventHandlers.otherClientStatusChangedHandlers, f)
 }
 
 func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
@@ -365,6 +370,17 @@ func (c *QQClient) dispatchOfflineFileEvent(e *OfflineFileEvent) {
 		return
 	}
 	for _, f := range c.eventHandlers.offlineFileHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchOtherClientStatusChangedEvent(e *OtherClientStatusChangedEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.otherClientStatusChangedHandlers {
 		cover(func() {
 			f(c, e)
 		})
