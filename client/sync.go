@@ -6,6 +6,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"sync"
 	"time"
 )
 
@@ -196,6 +197,8 @@ func decodePushParamPacket(c *QQClient, _ uint16, payload []byte) (interface{}, 
 	return nil, nil
 }
 
+var loginNotifyLock sync.Mutex
+
 // StatSvc.SvcReqMSFLoginNotify
 func decodeLoginNotifyPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
@@ -205,6 +208,8 @@ func decodeLoginNotifyPacket(c *QQClient, _ uint16, payload []byte) (interface{}
 	reader := jce.NewJceReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])
 	notify := &jce.SvcReqMSFLoginNotify{}
 	notify.ReadFrom(reader)
+	loginNotifyLock.Lock()
+	defer loginNotifyLock.Unlock()
 	if notify.Status == 1 {
 		found := false
 		for _, oc := range c.OnlineClients {
