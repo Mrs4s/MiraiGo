@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
@@ -12,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 	"math"
-	"math/rand"
 	"time"
 )
 
@@ -85,7 +85,7 @@ func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
 
 func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
 	eid := utils.RandomString(6)
-	mr := int32(rand.Uint32())
+	mr := rand.Int31()
 	ch := make(chan int32)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
 		if e.Rand == mr && !utils.IsChanClosed(ch) {
@@ -105,7 +105,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		}
 		return ok || ok2 || ok3
 	}) {
-		div := int32(rand.Uint32())
+		div := rand.Int31()
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
 			_, pkt := c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)

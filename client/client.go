@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
+	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"math"
-	"math/rand"
 	"net"
 	"runtime/debug"
 	"sort"
@@ -145,9 +145,9 @@ var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 	"PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500": decodePrivatePttStoreResponse,
 }
 
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
+//func init() {
+//	rand.Seed(time.Now().UTC().UnixNano())
+//}
 
 // NewClient create new qq client
 func NewClient(uin int64, password string) *QQClient {
@@ -163,7 +163,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		sigInfo:                 &loginSigInfo{},
 		requestPacketRequestId:  1921334513,
-		groupSeq:                int32(rand.Intn(20000)),
+		groupSeq:                rand.Int31n(20000),
 		friendSeq:               22911,
 		highwayApplyUpSeq:       77918,
 		ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
@@ -427,7 +427,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 }
 
 func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *message.PrivateMessage {
-	mr := int32(rand.Uint32())
+	mr := rand.Int31()
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
@@ -436,7 +436,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		return nil
 	}
 	if msgLen > 300 || imgCount > 2 {
-		div := int32(rand.Uint32())
+		div := rand.Int31()
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
 			_, pkt := c.buildFriendSendingPacket(target, c.nextFriendSeq(), mr, int32(len(fragmented)), int32(i), div, t, elems)
@@ -476,7 +476,7 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 			Elements:  m.Elements,
 		}
 	}
-	mr := int32(rand.Uint32())
+	mr := rand.Int31()
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
 	_, pkt := c.buildTempSendingPacket(group.Uin, target, seq, mr, t, m)

@@ -99,6 +99,58 @@ func BenchmarkTEAde16(b *testing.B) {
 	}
 }
 
+func BenchmarkTEAen200(b *testing.B) {
+	data := make([]byte, 200)
+	_, err := rand.Read(data)
+	if err != nil {
+		panic(err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		testTEA.Encrypt(data)
+	}
+}
+
+func BenchmarkTEAde200(b *testing.B) {
+	data := make([]byte, 200)
+	_, err := rand.Read(data)
+	if err != nil {
+		panic(err)
+	}
+	data = testTEA.Encrypt(data)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		testTEA.Decrypt(data)
+	}
+}
+
+func BenchmarkTEAen200M(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		data := make([]byte, 200)
+		_, err := rand.Read(data)
+		if err != nil {
+			panic(err)
+		}
+		for pb.Next() {
+			testTEA.Encrypt(data)
+		}
+	})
+}
+
+func BenchmarkTEAde200M(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		data := make([]byte, 200)
+		_, err := rand.Read(data)
+		if err != nil {
+			panic(err)
+		}
+		data = testTEA.Encrypt(data)
+		for pb.Next() {
+			testTEA.Decrypt(data)
+		}
+	})
+}
+
 func BenchmarkTEAen256(b *testing.B) {
 	data := make([]byte, 256)
 	_, err := rand.Read(data)

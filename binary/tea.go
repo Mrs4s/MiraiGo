@@ -2,9 +2,11 @@ package binary
 
 import (
 	"encoding/binary"
-	"math/rand"
+	//"math/rand"
 	"reflect"
 	"unsafe"
+
+	rand "github.com/LXY1226/fastrand"
 )
 
 func xorQ(a, b []byte, c []byte) { // MAGIC

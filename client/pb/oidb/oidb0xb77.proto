@@ -34,7 +34,7 @@ message DB77ExtInfo {
 
 message DB77RichMsgBody {
   string title = 10;
-  string summary  = 11;
+  string summary = 11;
   string brief = 12;
   string url = 13;
   string pictureUrl = 14;

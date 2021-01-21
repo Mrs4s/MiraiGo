@@ -1,9 +1,9 @@
 package client
 
 import (
-	"math/rand"
 	"time"
 
+	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
