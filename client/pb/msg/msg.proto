@@ -769,3 +769,20 @@ message GetGroupMsgResp {
   optional uint64 returnEndSeq = 5;
   repeated Message msg = 6;
 }
+
+message PbGetOneDayRoamMsgReq {
+  optional uint64 peerUin = 1;
+  optional uint64 lastMsgTime = 2;
+  optional uint64 random = 3;
+  optional uint32 readCnt = 4;
+}
+
+message PbGetOneDayRoamMsgResp {
+  optional uint32 result = 1;
+  optional string errMsg = 2;
+  optional uint64 peerUin = 3;
+  optional uint64 lastMsgTime = 4;
+  optional uint64 random = 5;
+  repeated Message msg = 6;
+  optional uint32 isComplete = 7;
+}

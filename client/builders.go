@@ -594,79 +594,6 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 	return packets.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 }
 
-// MessageSvc.PbSendMsg
-func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
-	seq := c.nextSeq()
-	var ptt *msg.Ptt
-	if len(m) > 0 {
-		if p, ok := m[0].(*message.PrivateVoiceElement); ok {
-			ptt = p.Ptt
-			m = []message.IMessageElement{}
-		}
-	}
-	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{C2C: &msg.C2C{ToUin: &target}},
-		ContentHead: &msg.ContentHead{PkgNum: &pkgNum, PkgIndex: &pkgIndex, DivSeq: &pkgDiv},
-		MsgBody: &msg.MessageBody{
-			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m, false),
-				Ptt:   ptt,
-			},
-		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
-		SyncCookie: func() []byte {
-			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
-			}
-			b, _ := proto.Marshal(cookie)
-			return b
-		}(),
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// MessageSvc.PbSendMsg
-func (c *QQClient) buildTempSendingPacket(groupUin, target int64, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
-	seq := c.nextSeq()
-	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{GrpTmp: &msg.GrpTmp{
-			GroupUin: &groupUin,
-			ToUin:    &target,
-		}},
-		ContentHead: &msg.ContentHead{PkgNum: proto.Int32(1)},
-		MsgBody: &msg.MessageBody{
-			RichText: &msg.RichText{
-				Elems: message.ToProtoElems(m.Elements, false),
-			},
-		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
-		SyncCookie: func() []byte {
-			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
-			}
-			b, _ := proto.Marshal(cookie)
-			return b
-		}(),
-	}
-	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // LongConn.OffPicUp
 func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -825,12 +752,7 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 		},
 	}
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     2300,
-		ServiceType: 2,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(2300, 2, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8fc_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -839,11 +761,7 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) (uint16, []byte) {
 	seq := c.nextSeq()
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2202,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(2202, 0, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x89a_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -904,11 +822,7 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 		KickMsg: []byte(kickMsg),
 	}
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2208,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(2208, 0, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -916,18 +830,13 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 // OidbSvc.0x570_8
 func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := &oidb.OIDBSSOPkg{
-		Command:     1392,
-		ServiceType: 8,
-		Bodybuffer: binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUInt32(uint32(groupCode))
-			w.WriteByte(32)
-			w.WriteUInt16(1)
-			w.WriteUInt32(uint32(memberUin))
-			w.WriteUInt32(time)
-		}),
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(1392, 8, binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteUInt32(uint32(groupCode))
+		w.WriteByte(32)
+		w.WriteUInt16(1)
+		w.WriteUInt32(uint32(memberUin))
+		w.WriteUInt32(time)
+	}))
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -940,12 +849,7 @@ func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte
 		GroupCode: groupCode,
 	}
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     3795,
-		ServiceType: 1,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(3795, 1, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -958,12 +862,7 @@ func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
 		AioUin: target,
 	}
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     3795,
-		ServiceType: 1,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(3795, 1, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -971,21 +870,16 @@ func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
 // OidbSvc.0x55c_1
 func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := &oidb.OIDBSSOPkg{
-		Command:     1372,
-		ServiceType: 1,
-		Bodybuffer: binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUInt32(uint32(groupCode))
-			w.WriteUInt32(uint32(member))
-			w.WriteByte(func() byte {
-				if flag {
-					return 1
-				}
-				return 0
-			}())
-		}),
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(1372, 1, binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteUInt32(uint32(groupCode))
+		w.WriteUInt32(uint32(member))
+		w.WriteByte(func() byte {
+			if flag {
+				return 1
+			}
+			return 0
+		}())
+	}))
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -1031,11 +925,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 		},
 	}
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    3591,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(3591, 0, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -1062,18 +952,11 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 
 func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D79ReqBody{
+	payload := c.packOIDBPackageProto(3449, 1, &oidb.D79ReqBody{
 		Uin:     uint64(c.Uin),
 		Content: data,
 		Qua:     []byte("and_537065262_8.4.5"),
-	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     3449,
-		ServiceType: 1,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -1081,7 +964,7 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 // OidbSvc.0xdad_1
 func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.GroupGift) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.DADReqBody{
+	payload := c.packOIDBPackageProto(3501, 1, &oidb.DADReqBody{
 		Client:    1,
 		ProductId: uint64(productId),
 		ToUin:     uin,
@@ -1091,14 +974,7 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.
 			Type: 1,
 			Sig:  []byte(c.getSKey()),
 		},
-	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     3501,
-		ServiceType: 1,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
