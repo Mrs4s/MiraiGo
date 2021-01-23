@@ -40,7 +40,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if (msgLen > 200 || imgCount > 1) && !useFram {
+	if (msgLen > 200 || imgCount > 2) && !useFram {
 		ret := c.sendGroupMessage(groupCode, false,
 			&message.SendingMessage{Elements: []message.IMessageElement{
 				c.uploadGroupLongMessage(groupCode,

@@ -260,7 +260,7 @@ func EstimateLength(elems []IMessageElement, limit int) int {
 		case *ReplyElement:
 			sum += 444 + EstimateLength(e.Elements, left)
 		case *ImageElement, *GroupImageElement, *FriendImageElement:
-			sum += 260
+			sum += 100
 		default:
 			sum += utils.ChineseLength(ToReadableString([]IMessageElement{elem}), left)
 		}
