@@ -55,7 +55,14 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				),
 			}},
 		)
-		return ret
+		return &message.GroupMessage{
+			Id:         ret.Id,
+			InternalId: ret.InternalId,
+			GroupCode:  ret.GroupCode,
+			Sender:     ret.Sender,
+			Time:       ret.Time,
+			Elements:   m.Elements,
+		}
 	}
 	return c.sendGroupMessage(groupCode, false, m)
 }
