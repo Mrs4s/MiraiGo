@@ -316,17 +316,24 @@ func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 	}
 }
 
-func (m *GroupMemberInfo) Kick(msg string, block bool) {
+func (m *GroupMemberInfo) Kick(msg string, block bool) error {
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
 		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
+		return nil
+	} else {
+		return errors.New("not manageable")
 	}
 }
 
-func (m *GroupMemberInfo) Mute(time uint32) {
+func (m *GroupMemberInfo) Mute(time uint32) error {
+	if time >= 2592000 {
+		return errors.New("time is not in range")
+	}
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		if time < 2592000 {
-			m.Group.client.groupMute(m.Group.Code, m.Uin, time)
-		}
+		m.Group.client.groupMute(m.Group.Code, m.Uin, time)
+		return nil
+	} else {
+		return errors.New("not manageable")
 	}
 }
 
