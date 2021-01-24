@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/base64"
 	"fmt"
 	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
@@ -39,7 +40,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if (msgLen > 200 || imgCount > 1) && !useFram {
+	if (msgLen > 200 || imgCount > 2) && !useFram {
 		ret := c.sendGroupMessage(groupCode, false,
 			&message.SendingMessage{Elements: []message.IMessageElement{
 				c.uploadGroupLongMessage(groupCode,
@@ -54,7 +55,14 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				),
 			}},
 		)
-		return ret
+		return &message.GroupMessage{
+			Id:         ret.Id,
+			InternalId: ret.InternalId,
+			GroupCode:  ret.GroupCode,
+			Sender:     ret.Sender,
+			Time:       ret.Time,
+			Elements:   m.Elements,
+		}
 	}
 	return c.sendGroupMessage(groupCode, false, m)
 }
@@ -134,7 +142,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		return ret
 	case <-time.After(time.Second * 5):
 		if g, err := c.GetGroupInfo(groupCode); err == nil {
-			if history, err := c.GetGroupMessages(groupCode, g.lastMsgSeq-10, g.lastMsgSeq+1); err == nil {
+			if history, err := c.GetGroupMessages(groupCode, g.LastMsgSeq-10, g.LastMsgSeq+1); err == nil {
 				for _, m := range history {
 					if m.InternalId == mr {
 						return m
@@ -278,19 +286,13 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 
 func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D8A7ReqBody{
+	payload := c.packOIDBPackageProto(2215, 0, &oidb.D8A7ReqBody{
 		SubCmd:                    proto.Uint32(1),
 		LimitIntervalTypeForUin:   proto.Uint32(2),
 		LimitIntervalTypeForGroup: proto.Uint32(1),
 		Uin:                       proto.Uint64(uint64(c.Uin)),
 		GroupCode:                 proto.Uint64(uint64(groupCode)),
-	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2215,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a7_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -376,4 +378,145 @@ func decodeAtAllRemainResponse(_ *QQClient, _ uint16, payload []byte) (interface
 		RemainAtAllCountForGroup: rsp.GetRemainAtAllCountForGroup(),
 		RemainAtAllCountForUin:   rsp.GetRemainAtAllCountForUin(),
 	}, nil
+}
+
+func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
+	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
+	if group == nil {
+		c.Debug("sync group %v.", m.Head.GroupInfo.GetGroupCode())
+		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
+		if err != nil {
+			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GetGroupCode(), err)
+			return nil
+		}
+		group = info
+		c.GroupList = append(c.GroupList, info)
+	}
+	if len(group.Members) == 0 {
+		mem, err := c.GetGroupMembers(group)
+		if err != nil {
+			c.Error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
+			return nil
+		}
+		group.Members = mem
+	}
+	var anonInfo *msg.AnonymousGroupMessage
+	for _, e := range m.Body.RichText.Elems {
+		if e.AnonGroupMsg != nil {
+			anonInfo = e.AnonGroupMsg
+		}
+	}
+	var sender *message.Sender
+	if anonInfo != nil {
+		sender = &message.Sender{
+			Uin:      80000000,
+			Nickname: string(anonInfo.AnonNick),
+			AnonymousInfo: &message.AnonymousInfo{
+				AnonymousId:   base64.StdEncoding.EncodeToString(anonInfo.AnonId),
+				AnonymousNick: string(anonInfo.AnonNick),
+			},
+			IsFriend: false,
+		}
+	} else {
+		mem := group.FindMember(m.Head.GetFromUin())
+		if mem == nil {
+			group.Update(func(_ *GroupInfo) {
+				if mem = group.FindMemberWithoutLock(m.Head.GetFromUin()); mem != nil {
+					return
+				}
+				info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
+				if info == nil {
+					return
+				}
+				mem = info
+				group.Members = append(group.Members, mem)
+				go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+					Group:  group,
+					Member: info,
+				})
+			})
+			if mem == nil {
+				return nil
+			}
+		}
+		sender = &message.Sender{
+			Uin:      mem.Uin,
+			Nickname: mem.Nickname,
+			CardName: mem.CardName,
+			IsFriend: c.FindFriend(mem.Uin) != nil,
+		}
+	}
+	var g *message.GroupMessage
+	g = &message.GroupMessage{
+		Id:             m.Head.GetMsgSeq(),
+		GroupCode:      group.Code,
+		GroupName:      string(m.Head.GroupInfo.GroupName),
+		Sender:         sender,
+		Time:           m.Head.GetMsgTime(),
+		Elements:       message.ParseMessageElems(m.Body.RichText.Elems),
+		OriginalObject: m,
+	}
+	var extInfo *msg.ExtraInfo
+	// pre parse
+	for _, elem := range m.Body.RichText.Elems {
+		// is rich long msg
+		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" {
+			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
+				g = &message.GroupMessage{
+					Id:             m.Head.GetMsgSeq(),
+					GroupCode:      group.Code,
+					GroupName:      string(m.Head.GroupInfo.GroupName),
+					Sender:         sender,
+					Time:           m.Head.GetMsgTime(),
+					Elements:       f.Nodes[0].Message,
+					OriginalObject: m,
+				}
+			}
+		}
+		if elem.ExtraInfo != nil {
+			extInfo = elem.ExtraInfo
+		}
+	}
+	if !sender.IsAnonymous() {
+		mem := group.FindMember(m.Head.GetFromUin())
+		groupCard := m.Head.GroupInfo.GetGroupCard()
+		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
+			buf := oidb.D8FCCommCardNameBuf{}
+			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
+				groupCard = ""
+				for _, e := range buf.RichCardName {
+					groupCard += string(e.Text)
+				}
+			}
+		}
+		if m.Head.GroupInfo != nil && groupCard != "" && mem.CardName != groupCard {
+			old := mem.CardName
+			if mem.Nickname == groupCard {
+				mem.CardName = ""
+			} else {
+				mem.CardName = groupCard
+			}
+			if old != mem.CardName {
+				go c.dispatchMemberCardUpdatedEvent(&MemberCardUpdatedEvent{
+					Group:   group,
+					OldCard: old,
+					Member:  mem,
+				})
+			}
+		}
+	}
+	if m.Body.RichText.Ptt != nil {
+		g.Elements = []message.IMessageElement{
+			&message.VoiceElement{
+				Name: m.Body.RichText.Ptt.GetFileName(),
+				Md5:  m.Body.RichText.Ptt.FileMd5,
+				Size: m.Body.RichText.Ptt.GetFileSize(),
+				Url:  "http://grouptalk.c2c.qq.com" + string(m.Body.RichText.Ptt.DownPara),
+			},
+		}
+	}
+	if m.Body.RichText.Attr != nil {
+		g.InternalId = m.Body.RichText.Attr.GetRandom()
+	}
+	return g
 }

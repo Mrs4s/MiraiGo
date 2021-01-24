@@ -426,75 +426,6 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	return r, nil
 }
 
-func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *message.PrivateMessage {
-	mr := rand.Int31()
-	seq := c.nextFriendSeq()
-	t := time.Now().Unix()
-	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
-	msgLen := message.EstimateLength(m.Elements, 703)
-	if msgLen > 5000 || imgCount > 50 {
-		return nil
-	}
-	if msgLen > 300 || imgCount > 2 {
-		div := rand.Int31()
-		fragmented := m.ToFragmented()
-		for i, elems := range fragmented {
-			_, pkt := c.buildFriendSendingPacket(target, c.nextFriendSeq(), mr, int32(len(fragmented)), int32(i), div, t, elems)
-			_ = c.send(pkt)
-		}
-	} else {
-		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
-		_ = c.send(pkt)
-	}
-	c.stat.MessageSent++
-	return &message.PrivateMessage{
-		Id:         seq,
-		InternalId: mr,
-		Target:     target,
-		Time:       int32(t),
-		Sender: &message.Sender{
-			Uin:      c.Uin,
-			Nickname: c.Nickname,
-			IsFriend: true,
-		},
-		Elements: m.Elements,
-	}
-}
-
-func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMessage) *message.TempMessage {
-	group := c.FindGroup(groupCode)
-	if group == nil {
-		return nil
-	}
-	if c.FindFriend(target) != nil {
-		pm := c.SendPrivateMessage(target, m)
-		return &message.TempMessage{
-			Id:        pm.Id,
-			GroupCode: group.Code,
-			GroupName: group.Name,
-			Sender:    pm.Sender,
-			Elements:  m.Elements,
-		}
-	}
-	mr := rand.Int31()
-	seq := c.nextFriendSeq()
-	t := time.Now().Unix()
-	_, pkt := c.buildTempSendingPacket(group.Uin, target, seq, mr, t, m)
-	_ = c.send(pkt)
-	c.stat.MessageSent++
-	return &message.TempMessage{
-		Id:        seq,
-		GroupCode: group.Code,
-		GroupName: group.Name,
-		Sender: &message.Sender{
-			Uin:      c.Uin,
-			Nickname: c.Nickname,
-			IsFriend: true,
-		},
-		Elements: m.Elements,
-	}
-}
-
 func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
 	m := c.DownloadForwardMessage(resId)
 	if m == nil {
@@ -972,7 +903,7 @@ func (c *QQClient) netLoop() {
 				// does not need decoder
 				f(nil, nil)
 			} else {
-				c.Debug("\nUnhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
+				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}
 		}()
 	}

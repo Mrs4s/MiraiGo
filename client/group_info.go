@@ -24,10 +24,12 @@ type (
 		MemberCount    uint16
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
+		// 最后一条信息的SEQ,只有通过 GetGroupInfo 函数获取的 GroupInfo 才会有
+		LastMsgSeq int64
 
-		client     *QQClient
-		lastMsgSeq int64
-		lock       sync.RWMutex
+		client *QQClient
+
+		lock sync.RWMutex
 	}
 
 	GroupMemberInfo struct {
@@ -183,7 +185,7 @@ func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 		MemberCount:    uint16(*info.GroupInfo.GroupMemberNum),
 		MaxMemberCount: uint16(*info.GroupInfo.GroupMemberMaxNum),
 		Members:        []*GroupMemberInfo{},
-		lastMsgSeq:     int64(info.GroupInfo.GetGroupCurMsgSeq()),
+		LastMsgSeq:     int64(info.GroupInfo.GetGroupCurMsgSeq()),
 		client:         c,
 	}, nil
 }
