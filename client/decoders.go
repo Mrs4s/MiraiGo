@@ -54,7 +54,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 			c.decodeT161(t161)
 		}
 		if m.Exists(0x403) {
-			c.t403 = m[0x403]
+			c.randSeed = m[0x403]
 		}
 		c.decodeT119(m[0x119])
 		return LoginResponse{
@@ -101,7 +101,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		if t174, ok := m[0x174]; ok { // 短信验证
 			c.t104 = m[0x104]
 			c.t174 = t174
-			c.t403 = m[0x403]
+			c.randSeed = m[0x403]
 			phone := func() string {
 				r := binary.NewReader(m[0x178])
 				return r.ReadStringLimit(int(r.ReadInt32()))
@@ -150,7 +150,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 
 	if t == 204 {
 		c.t104 = m[0x104]
-		c.t403 = m[0x403]
+		c.randSeed = m[0x403]
 		return c.sendAndWait(c.buildDeviceLockLoginPacket())
 	} // drive lock
 

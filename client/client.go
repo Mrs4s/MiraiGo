@@ -66,12 +66,12 @@ type QQClient struct {
 	t174             []byte
 	g                []byte
 	t402             []byte
-	t403             []byte
 	t150             []byte
 	t149             []byte
 	t528             []byte
 	t530             []byte
 	rollbackSig      []byte
+	randSeed         []byte // t403
 	timeDiff         int64
 	sigInfo          *loginSigInfo
 	highwaySession   *highwaySessionInfo
@@ -107,7 +107,6 @@ type loginSigInfo struct {
 
 	srmToken           []byte // study room manager | 0x16a
 	t133               []byte
-	randSeed           []byte
 	encryptedA1        []byte
 	userStKey          []byte
 	userStWebSig       []byte

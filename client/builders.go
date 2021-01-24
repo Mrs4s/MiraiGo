@@ -222,7 +222,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		}))
 		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
 		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
-		w.Write(tlv.T400(c.g, c.Uin, SystemDeviceInfo.Guid, c.dpwd, 1, 16, c.t403))
+		w.Write(tlv.T400(c.g, c.Uin, SystemDeviceInfo.Guid, c.dpwd, 1, 16, c.randSeed))
 		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
 		w.Write(tlv.T188(SystemDeviceInfo.AndroidId))
 		w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
