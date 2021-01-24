@@ -1,8 +1,8 @@
 package tlv
 
 import (
+	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/binary"
-	"math/rand"
 	"time"
 )
 

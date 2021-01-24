@@ -3,8 +3,8 @@ package tlv
 import (
 	"crypto/md5"
 	binary2 "encoding/binary"
+	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/binary"
-	"math/rand"
 	"strconv"
 	"time"
 )
