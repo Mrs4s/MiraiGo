@@ -142,7 +142,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		return ret
 	case <-time.After(time.Second * 5):
 		if g, err := c.GetGroupInfo(groupCode); err == nil {
-			if history, err := c.GetGroupMessages(groupCode, g.lastMsgSeq-10, g.lastMsgSeq+1); err == nil {
+			if history, err := c.GetGroupMessages(groupCode, g.LastMsgSeq-10, g.LastMsgSeq+1); err == nil {
 				for _, m := range history {
 					if m.InternalId == mr {
 						return m
