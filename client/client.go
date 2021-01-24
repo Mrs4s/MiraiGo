@@ -57,6 +57,7 @@ type QQClient struct {
 	retryTimes      int
 	version         *versionInfo
 
+	dpwd             []byte
 	syncCookie       []byte
 	pubAccountCookie []byte
 	msgCtrlBuf       []byte

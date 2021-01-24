@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"net"
 	"strconv"
 	"strings"
@@ -40,8 +41,9 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	reader.ReadUInt16()
 	m := reader.ReadTlvMap(2)
 	if m.Exists(0x402) {
+		c.dpwd = []byte(utils.RandomString(16))
 		c.t402 = m[0x402]
-		h := md5.Sum(append(append(SystemDeviceInfo.Guid, []byte("stMNokHgxZUGhsYp")...), c.t402...))
+		h := md5.Sum(append(append(SystemDeviceInfo.Guid, c.dpwd...), c.t402...))
 		c.g = h[:]
 	}
 	if t == 0 { // login success
