@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
@@ -38,12 +39,20 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 	t := reader.ReadByte()
 	reader.ReadUInt16()
 	m := reader.ReadTlvMap(2)
+	if m.Exists(0x402) {
+		c.t402 = m[0x402]
+		h := md5.Sum(append(append(SystemDeviceInfo.Guid, []byte("stMNokHgxZUGhsYp")...), c.t402...))
+		c.g = h[:]
+	}
 	if t == 0 { // login success
 		if t150, ok := m[0x150]; ok {
 			c.t150 = t150
 		}
 		if t161, ok := m[0x161]; ok {
 			c.decodeT161(t161)
+		}
+		if m.Exists(0x403) {
+			c.t403 = m[0x403]
 		}
 		c.decodeT119(m[0x119])
 		return LoginResponse{
@@ -90,7 +99,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 		if t174, ok := m[0x174]; ok { // 短信验证
 			c.t104 = m[0x104]
 			c.t174 = t174
-			c.t402 = m[0x402]
+			c.t403 = m[0x403]
 			phone := func() string {
 				r := binary.NewReader(m[0x178])
 				return r.ReadStringLimit(int(r.ReadInt32()))
@@ -139,7 +148,8 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 
 	if t == 204 {
 		c.t104 = m[0x104]
-		return c.sendAndWait(c.buildDeviceLockLoginPacket(m[0x402]))
+		c.t403 = m[0x403]
+		return c.sendAndWait(c.buildDeviceLockLoginPacket())
 	} // drive lock
 
 	if t149, ok := m[0x149]; ok {

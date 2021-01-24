@@ -1,7 +1,6 @@
 package client
 
 import (
-	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
@@ -97,7 +96,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	return seq, packet
 }
 
-func (c *QQClient) buildDeviceLockLoginPacket(t402 []byte) (uint16, []byte) {
+func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(20)
@@ -106,8 +105,7 @@ func (c *QQClient) buildDeviceLockLoginPacket(t402 []byte) (uint16, []byte) {
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.t104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		h := md5.Sum(append(append(SystemDeviceInfo.Guid, []byte("stMNokHgxZUGhsYp")...), t402...))
-		w.Write(tlv.T401(h[:]))
+		w.Write(tlv.T401(c.g))
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
@@ -159,8 +157,7 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T174(c.t174))
 		w.Write(tlv.T17C(code))
-		h := md5.Sum(append(append(SystemDeviceInfo.Guid, []byte("12 34567890123456")...), c.t402...))
-		w.Write(tlv.T401(h[:]))
+		w.Write(tlv.T401(c.g))
 		w.Write(tlv.T198())
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
@@ -188,11 +185,14 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.NewEncryptSession(c.sigInfo.t133), c.sigInfo.wtSessionTicketKey, func(w *binary.Writer) {
 		w.WriteUInt16(15)
-		w.WriteUInt16(21)
+		w.WriteUInt16(24)
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
-		w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 1))
+		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt16(0x106)
+			w.WriteTlv(c.sigInfo.encryptedA1)
+		}))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
 		w.Write(tlv.T107(0))
@@ -222,11 +222,15 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		}))
 		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
 		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T400(c.g, c.Uin, SystemDeviceInfo.Guid, []byte("stMNokHgxZUGhsYp"), 1, 16, c.t403))
 		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
 		w.Write(tlv.T188(SystemDeviceInfo.AndroidId))
 		w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
 		w.Write(tlv.T202(SystemDeviceInfo.WifiBSSID, SystemDeviceInfo.WifiSSID))
 		w.Write(tlv.T516())
+		w.Write(tlv.T521())
+		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
+
 	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
 	return seq, packet

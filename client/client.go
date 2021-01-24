@@ -63,7 +63,9 @@ type QQClient struct {
 	ksid             []byte
 	t104             []byte
 	t174             []byte
-	t402             []byte // only for sms
+	g                []byte
+	t402             []byte
+	t403             []byte
 	t150             []byte
 	t149             []byte
 	t528             []byte
@@ -104,6 +106,8 @@ type loginSigInfo struct {
 
 	srmToken           []byte // study room manager | 0x16a
 	t133               []byte
+	randSeed           []byte
+	encryptedA1        []byte
 	userStKey          []byte
 	userStWebSig       []byte
 	sKey               []byte
