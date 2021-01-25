@@ -3,9 +3,10 @@ package client
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
+	"math/rand"
 	"time"
-
-	rand "github.com/LXY1226/fastrand"
 
 	"github.com/golang/protobuf/proto"
 
@@ -15,8 +16,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
-	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"

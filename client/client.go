@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"math"
+	"math/rand"
 	"net"
 	"runtime/debug"
 	"sort"
@@ -149,9 +149,9 @@ var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
 	"PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500": decodePrivatePttStoreResponse,
 }
 
-//func init() {
-//	rand.Seed(time.Now().UTC().UnixNano())
-//}
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 // NewClient create new qq client
 func NewClient(uin int64, password string) *QQClient {
@@ -167,7 +167,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		sigInfo:                 &loginSigInfo{},
 		requestPacketRequestId:  1921334513,
-		groupSeq:                rand.Int31n(20000),
+		groupSeq:                int32(rand.Intn(20000)),
 		friendSeq:               22911,
 		highwayApplyUpSeq:       77918,
 		ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
