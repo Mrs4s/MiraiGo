@@ -6,13 +6,14 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
+	"math/rand"
 	"net"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	rand "github.com/LXY1226/fastrand"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
@@ -367,11 +368,11 @@ func GenIMEI() string {
 	sum := 0 // the control sum of digits
 	var final strings.Builder
 
-	//randSrc := rand.NewSource(time.Now().UnixNano())
-	//randGen := rand.New(randSrc)
+	randSrc := rand.NewSource(time.Now().UnixNano())
+	randGen := rand.New(randSrc)
 
 	for i := 0; i < 14; i++ { // generating all the base digits
-		toAdd := rand.Intn(10)
+		toAdd := randGen.Intn(10)
 		if (i+1)%2 == 0 { // special proc for every 2nd one
 			toAdd *= 2
 			if toAdd >= 10 {
