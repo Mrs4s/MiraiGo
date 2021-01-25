@@ -12,14 +12,60 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type RichClientInfo struct {
-	Platform    uint32
-	SdkVersion  string
-	PackageName string
-	Signature   string
+type musicTypeInfo struct {
+	appID       uint64
+	appType     uint32
+	platform    uint32
+	sdkVersion  string
+	packageName string
+	signature   string
 }
 
-func (c *QQClient) SendGroupRichMessage(target, appId int64, appType, msgStyle uint32, client RichClientInfo, msg *message.RichMessage) (*message.GroupMessage, error) {
+var musicType = [...]musicTypeInfo{
+	{ // QQMusic
+		appID:       100497308,
+		appType:     1,
+		platform:    1,
+		sdkVersion:  "0.0.0",
+		packageName: "com.tencent.qqmusic",
+		signature:   "cbd27cd7c861227d013a25b2d10f0799",
+	},
+	{ // NeteaseMusic
+		appID:       100495085,
+		appType:     1,
+		platform:    1,
+		sdkVersion:  "0.0.0",
+		packageName: "com.netease.cloudmusic",
+		signature:   "da6b069da1e2982db3e386233f68d76d",
+	},
+	{ // MiguMusic
+		appID:       1101053067,
+		appType:     1,
+		platform:    1,
+		sdkVersion:  "0.0.0",
+		packageName: "cmccwm.mobilemusic",
+		signature:   "6cdc72a439cef99a3418d2a78aa28c73",
+	},
+	{ // KugouMusic
+		appID:       205141,
+		appType:     1,
+		platform:    1,
+		sdkVersion:  "0.0.0",
+		packageName: "com.kugou.android",
+		signature:   "fe4a24d80fcf253a00676a808f62c2c6",
+	},
+	{ // KuwoMusic
+		appID:       100243533,
+		appType:     1,
+		platform:    1,
+		sdkVersion:  "0.0.0",
+		packageName: "cn.kuwo.player",
+		signature:   "bf9ff4ffb4c558a34ee3fd52c223ebf5",
+	},
+}
+
+// SendGroupMusicShare 发送群聊音乐卡片
+func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElement) (*message.GroupMessage, error) {
 	ch := make(chan *message.GroupMessage)
 	eid := utils.RandomString(6)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
@@ -30,7 +76,7 @@ func (c *QQClient) SendGroupRichMessage(target, appId int64, appType, msgStyle u
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, appId, appType, msgStyle, 1, client, msg)) // rsp is empty chunk
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, msg, 1)) // rsp is empty chunk
 	select {
 	case ret := <-ch:
 		return ret, nil
@@ -39,22 +85,29 @@ func (c *QQClient) SendGroupRichMessage(target, appId int64, appType, msgStyle u
 	}
 }
 
-func (c *QQClient) SendFriendRichMessage(target, appId int64, appType, msgStyle uint32, client RichClientInfo, msg *message.RichMessage) {
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, appId, appType, msgStyle, 0, client, msg))
+// SendFriendMusicShare 发送好友音乐卡片
+func (c *QQClient) SendFriendMusicShare(target int64, msg *message.MusicShareElement) {
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, msg, 0))
 }
 
 // OidbSvc.0xb77_9
-func (c *QQClient) buildRichMsgSendingPacket(target, appId int64, appType, msgStyle, sendType uint32, client RichClientInfo, msg *message.RichMessage) (uint16, []byte) {
+func (c *QQClient) buildRichMsgSendingPacket(target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
 	seq := c.nextSeq()
+	tp := musicType[msg.MusicType] // MusicType
 	body := &oidb.DB77ReqBody{
-		AppId:    uint64(appId),
-		AppType:  appType,
-		MsgStyle: msgStyle,
+		AppId:   tp.appID,
+		AppType: tp.appType,
+		MsgStyle: func() uint32 {
+			if msg.MusicUrl == "" {
+				return 0
+			}
+			return 4
+		}(),
 		ClientInfo: &oidb.DB77ClientInfo{
-			Platform:           client.Platform,
-			SdkVersion:         client.SdkVersion,
-			AndroidPackageName: client.PackageName,
-			AndroidSignature:   client.Signature,
+			Platform:           tp.platform,
+			SdkVersion:         tp.sdkVersion,
+			AndroidPackageName: tp.packageName,
+			AndroidSignature:   tp.signature,
 		},
 		ExtInfo:  &oidb.DB77ExtInfo{MsgSeq: rand.Uint64()},
 		SendType: sendType,
@@ -69,13 +122,7 @@ func (c *QQClient) buildRichMsgSendingPacket(target, appId int64, appType, msgSt
 		},
 	}
 	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:       2935,
-		ServiceType:   9,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackage(2935, 9, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xb77_9", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }

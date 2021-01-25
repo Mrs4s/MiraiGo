@@ -62,15 +62,6 @@ type (
 		Message    []IMessageElement
 	}
 
-	RichMessage struct {
-		Title      string
-		Summary    string
-		Brief      string
-		Url        string
-		PictureUrl string
-		MusicUrl   string
-	}
-
 	Sender struct {
 		Uin           int64
 		Nickname      string
@@ -95,6 +86,15 @@ type (
 	ElementType int
 
 	GroupGift int
+)
+
+// MusicType values.
+const (
+	QQMusic    = iota // QQ音乐
+	CloudMusic        // 网易云音乐
+	MiguMusic         // 咪咕音乐
+	KugouMusic        // 酷狗音乐
+	KuwoMusic         // 酷我音乐
 )
 
 const (
