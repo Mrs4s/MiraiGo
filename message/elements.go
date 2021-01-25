@@ -120,6 +120,19 @@ type RedBagElement struct {
 	Title   string
 }
 
+// MusicShareElement 音乐分享卡片
+//
+// 请使用 SendGroupMusicShare 或者 SendFriendMusicShare 发送
+type MusicShareElement struct {
+	MusicType  int    // 音乐类型,请使用 QQMusic 等常量
+	Title      string // 标题(歌曲名)
+	Brief      string
+	Summary    string // 简介(歌手名)
+	Url        string // 点击跳转链接
+	PictureUrl string // 显示图片链接
+	MusicUrl   string // 音乐播放链接
+}
+
 // TODO: 总之就是非常傻逼
 
 type GroupFlashImgElement struct {
@@ -320,6 +333,11 @@ func (e *ShortVideoElement) Type() ElementType {
 }
 
 func (e *LightAppElement) Type() ElementType {
+	return LightApp
+}
+
+// Type implement message.IMessageElement
+func (e *MusicShareElement) Type() ElementType {
 	return LightApp
 }
 
