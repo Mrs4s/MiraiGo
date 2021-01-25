@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"math/rand"
 	"net"
 	"sort"
