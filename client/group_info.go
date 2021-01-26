@@ -10,10 +10,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"io/ioutil"
 	"math/rand"
 	"net/url"
-	"os"
 	"strings"
 	"sync"
 )
@@ -189,7 +187,6 @@ func decodeGroupSearchResponse(_ *QQClient, _ uint16, payload []byte) (interface
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	_ = ioutil.WriteFile("payload", payload, os.ModePerm)
 	if len(data.Map["RespHead"]["SummaryCard.RespHead"]) > 20 {
 		return nil, errors.New("not found")
 	}
