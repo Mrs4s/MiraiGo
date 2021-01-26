@@ -5,10 +5,12 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
+	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
+	"math/rand"
 	"net/url"
 	"strings"
 	"sync"
@@ -44,6 +46,12 @@ type (
 		SpecialTitle           string
 		SpecialTitleExpireTime int64
 		Permission             MemberPermission
+	}
+
+	// GroupSearchInfo 通过搜索得到的群信息
+	GroupSearchInfo struct {
+		Code int64  // 群号
+		Name string // 群名
 	}
 )
 
@@ -109,14 +117,51 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 	return seq, packet
 }
 
+// SearchGroupByKeyword 通过关键词搜索陌生群组
+func (c *QQClient) SearchGroupByKeyword(keyword string) ([]GroupSearchInfo, error) {
+	rsp, err := c.sendAndWait(c.buildGroupSearchPacket(keyword))
+	if err != nil {
+		return nil, errors.Wrap(err, "group search failed")
+	}
+	return rsp.([]GroupSearchInfo), nil
+}
+
 // SummaryCard.ReqSearch
 func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 	seq := c.nextSeq()
+	comm, _ := proto.Marshal(&profilecard.BusiComm{
+		Ver:      proto.Int32(1),
+		Seq:      proto.Int32(rand.Int31()),
+		Service:  proto.Int32(80000001),
+		Platform: proto.Int32(2),
+		Qqver:    proto.String("8.5.0.5025"),
+		Build:    proto.Int32(5025),
+	})
+	search, _ := proto.Marshal(&profilecard.AccountSearch{
+		Start:     proto.Int32(0),
+		End:       proto.Uint32(4),
+		Keyword:   &keyword,
+		Highlight: []string{keyword},
+		UserLocation: &profilecard.Location{
+			Latitude:  proto.Float64(0),
+			Longitude: proto.Float64(0),
+		},
+		Filtertype: proto.Int32(0),
+	})
 	req := &jce.SummaryCardReqSearch{
 		Keyword:     keyword,
 		CountryCode: "+86",
 		Version:     3,
-		ReqServices: [][]byte{},
+		ReqServices: [][]byte{
+			binary.NewWriterF(func(w *binary.Writer) {
+				w.WriteByte(0x28)
+				w.WriteUInt32(uint32(len(comm)))
+				w.WriteUInt32(uint32(len(search)))
+				w.Write(comm)
+				w.Write(search)
+				w.WriteByte(0x29)
+			}),
+		},
 	}
 	head := jce.NewJceWriter()
 	head.WriteInt32(2, 0)
@@ -137,7 +182,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 }
 
 // SummaryCard.ReqSearch
-func decodeGroupSearchResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupSearchResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -154,7 +199,20 @@ func decodeGroupSearchResponse(c *QQClient, _ uint16, payload []byte) (interface
 	ld2 := sr.ReadInt32()
 	if ld1 > 0 && ld2+9 < int32(len(rspService)) {
 		sr.ReadBytes(int(ld1)) // busi comm
-		//searchPb := sr.ReadBytes(int(ld2)) //TODO: search pb decode
+		searchPb := sr.ReadBytes(int(ld2))
+		searchRsp := profilecard.AccountSearch{}
+		err := proto.Unmarshal(searchPb, &searchRsp)
+		if err != nil {
+			return nil, errors.Wrap(err, "get search result failed")
+		}
+		var ret []GroupSearchInfo
+		for _, g := range searchRsp.GetList() {
+			ret = append(ret, GroupSearchInfo{
+				Code: int64(g.GetCode()),
+				Name: g.GetName(),
+			})
+		}
+		return ret, nil
 	}
 	return nil, nil
 }

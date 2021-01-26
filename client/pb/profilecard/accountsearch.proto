@@ -1,0 +1,105 @@
+syntax = "proto2";
+
+option go_package = ".;profilecard";
+
+/*
+message Color {
+  optional uint32 r = 1;
+  optional uint32 g = 2;
+  optional uint32 b = 3;
+}
+
+message Label {
+  optional bytes name = 1;
+  optional Color textColor = 3;
+  optional Color edgingColor = 4;
+  optional uint32 labelAttr = 5;
+  optional uint32 labelType = 6;
+}
+*/
+
+message Location {
+  optional double latitude = 1;
+  optional double longitude = 2;
+}
+
+message ResultItem {
+  optional bytes feedId = 1;
+  optional bytes name = 2;
+  optional bytes picUrl = 3;
+  optional bytes jmpUrl = 4;
+  optional bytes feedType = 5;
+  optional bytes summary = 6;
+  optional bytes hasVideo = 7;
+  optional bytes phtotUpdate = 8;
+  optional uint64 uin = 9;
+  optional bytes resultId = 10;
+  optional uint32 ftime = 11;
+  optional bytes nickName = 12;
+  repeated bytes picUrlList = 13;
+  optional uint32 totalPicNum = 14;
+}
+
+message hotwordrecord {
+  optional string hotword = 1;
+  optional uint32 hotwordType = 2;
+  optional string hotwordCoverUrl = 3;
+  optional string hotwordTitle = 4;
+  optional string hotwordDescription = 5;
+}
+
+message AccountSearchRecord {
+  optional uint64 uin = 1;
+  optional uint64 code = 2;
+  optional uint32 source = 3;
+  optional string name = 4;
+  optional uint32 sex = 5;
+  optional uint32 age = 6;
+  optional string accout = 7;
+  optional string brief = 8;
+  optional uint32 number = 9;
+  optional uint64 flag = 10;
+  optional uint64 relation = 11;
+  optional string mobile = 12;
+  optional bytes sign = 13;
+  optional uint32 country = 14;
+  optional uint32 province = 15;
+  optional uint32 city = 16;
+  optional uint32 classIndex = 17;
+  optional string className = 18;
+  optional string countryName = 19;
+  optional string provinceName = 20;
+  optional string cityName = 21;
+  optional uint32 accountFlag = 22;
+  optional string titleImage = 23;
+  optional string articleShortUrl = 24;
+  optional string articleCreateTime = 25;
+  optional string articleAuthor = 26;
+  optional uint64 accountId = 27;
+  //repeated Label groupLabels = 30;
+  optional uint32 videoAccount = 31;
+  optional uint32 videoArticle = 32;
+  optional int32 uinPrivilege = 33;
+  optional bytes joinGroupAuth = 34;
+  optional bytes token = 500;
+  optional uint32 richflag1_59 = 40603;
+  optional uint32 richflag4_409 = 42409;
+}
+
+message AccountSearch {
+  optional int32 start = 1;
+  optional uint32 count = 2;
+  optional uint32 end = 3;
+  optional string keyword = 4;
+  repeated AccountSearchRecord list = 5;
+  repeated string highlight = 6;
+  optional Location userLocation = 10;
+  optional bool locationGroup = 11;
+  optional int32 filtertype = 12;
+  //repeated C33304record recommendList = 13;
+  optional hotwordrecord hotwordRecord = 14;
+  optional string articleMoreUrl = 15;
+  repeated ResultItem resultItems = 16;
+  optional bool keywordSuicide = 17;
+  optional bool exactSearch = 18;
+}

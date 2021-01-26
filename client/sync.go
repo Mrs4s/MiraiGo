@@ -38,7 +38,7 @@ func (c *QQClient) GetAllowedClients() ([]*OtherClientInfo, error) {
 	return ret, nil
 }
 
-// RefreshClientStatus 刷新客户端状态
+// RefreshStatus 刷新客户端状态
 func (c *QQClient) RefreshStatus() error {
 	_, err := c.sendAndWait(c.buildGetOfflineMsgRequest())
 	return err
