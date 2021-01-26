@@ -212,9 +212,6 @@ func decodeGroupSearchResponse(_ *QQClient, _ uint16, payload []byte) (interface
 				Name: g.GetName(),
 			})
 		}
-		for _, fp := range ret {
-			fmt.Println(fp.Name, ":", fp.Code)
-		}
 		return ret, nil
 	}
 	return nil, nil
