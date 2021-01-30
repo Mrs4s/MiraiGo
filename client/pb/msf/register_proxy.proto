@@ -1,0 +1,59 @@
+syntax = "proto2";
+
+option go_package = ".;msf";
+
+message DiscussList {
+  optional uint64 discussCode = 1;
+  optional uint64 discussSeq = 2;
+  optional uint64 memberSeq = 3;
+  optional uint64 infoSeq = 4;
+  optional bool bHotGroup = 5;
+  optional uint64 redpackTime = 6;
+  optional bool hasMsg = 7;
+  optional int64 dicussFlag = 8;
+}
+
+message GroupList {
+  optional uint64 groupCode = 1;
+  optional uint64 groupSeq = 2;
+  optional uint64 memberSeq = 3;
+  optional uint64 mask = 4;
+  optional uint64 redpackTime = 5;
+  optional bool hasMsg = 6;
+  optional int64 groupFlag = 7;
+  optional uint64 groupType = 8;
+  optional uint32 groupNameSeq = 9;
+  optional uint32 groupMemberSeq = 10;
+  optional uint32 uinFlagEx2 = 11;
+  optional uint32 importantMsgLatestSeq = 12;
+}
+
+message SvcPbResponsePullDisMsgProxy {
+  optional uint64 memberSeq = 1;
+  optional bytes content = 2;
+}
+
+message SvcRegisterProxyMsgResp {
+  optional uint32 result = 1;
+  optional bytes errMsg = 2;
+  optional uint32 flag = 3;
+  optional uint32 seq = 4;
+  optional SvcResponseMsgInfo info = 5;
+  repeated GroupList groupList = 6;
+  repeated DiscussList discussList = 7;
+  repeated SvcResponsePbPullGroupMsgProxy groupMsg = 8;
+  repeated SvcPbResponsePullDisMsgProxy discussMsg = 9;
+  optional bytes c2CMsg = 10;
+  optional bytes pubAccountMsg = 11;
+  optional uint32 discussListFlag = 12;
+}
+
+message SvcResponseMsgInfo {
+  optional uint32 groupNum = 1;
+  optional uint32 discussNum = 2;
+}
+
+message SvcResponsePbPullGroupMsgProxy {
+  optional uint64 memberSeq = 1;
+  optional bytes content = 2;
+}

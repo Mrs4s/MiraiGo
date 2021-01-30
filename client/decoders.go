@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
@@ -296,127 +295,8 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.GetResult() != 0 {
-		return nil, errors.New("message svc result unsuccessful")
-	}
-	c.syncCookie = rsp.SyncCookie
-	c.pubAccountCookie = rsp.PubAccountCookie
-	c.msgCtrlBuf = rsp.MsgCtrlBuf
-	if rsp.UinPairMsgs == nil {
-		return nil, nil
-	}
-	var delItems []*pb.MessageItem
-	for _, pairMsg := range rsp.UinPairMsgs {
-		for _, message := range pairMsg.Messages {
-			// delete message
-			delItem := &pb.MessageItem{
-				FromUin: message.Head.GetFromUin(),
-				ToUin:   message.Head.GetToUin(),
-				MsgType: 187,
-				MsgSeq:  message.Head.GetMsgSeq(),
-				MsgUid:  message.Head.GetMsgUid(),
-			}
-			delItems = append(delItems, delItem)
-			if message.Head.GetToUin() != c.Uin {
-				continue
-			}
-			if (int64(pairMsg.GetLastReadTime()) & 4294967295) > int64(message.Head.GetMsgTime()) {
-				continue
-			}
-			strKey := fmt.Sprintf("%d%d%d%d", message.Head.FromUin, message.Head.ToUin, message.Head.MsgSeq, message.Head.MsgUid)
-			if _, ok := c.msgSvcCache.Get(strKey); ok {
-				continue
-			}
-			c.msgSvcCache.Add(strKey, "", time.Minute)
-			switch message.Head.GetMsgType() {
-			case 33: // 加群同步
-				func() {
-					groupJoinLock.Lock()
-					defer groupJoinLock.Unlock()
-					group := c.FindGroupByUin(message.Head.GetFromUin())
-					if message.Head.GetAuthUin() == c.Uin {
-						if group == nil && c.ReloadGroupList() == nil {
-							c.dispatchJoinGroupEvent(c.FindGroupByUin(message.Head.GetFromUin()))
-						}
-					} else {
-						if group != nil && group.FindMember(message.Head.GetAuthUin()) == nil {
-							mem, err := c.getMemberInfo(group.Code, message.Head.GetAuthUin())
-							if err != nil {
-								c.Debug("error to fetch new member info: %v", err)
-								return
-							}
-							group.Update(func(info *GroupInfo) {
-								info.Members = append(info.Members, mem)
-							})
-							c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-								Group:  group,
-								Member: mem,
-							})
-						}
-					}
-				}()
-			case 84, 87:
-				c.exceptAndDispatchGroupSysMsg()
-			case 141: // 临时会话
-				if message.Head.C2CTmpMsgHead == nil {
-					continue
-				}
-				group := c.FindGroupByUin(message.Head.C2CTmpMsgHead.GetGroupUin())
-				if group == nil {
-					continue
-				}
-				if message.Head.GetFromUin() == c.Uin {
-					continue
-				}
-				c.dispatchTempMessage(c.parseTempMessage(message))
-			case 166, 208: // 好友消息
-				if message.Head.GetFromUin() == c.Uin {
-					for {
-						frdSeq := atomic.LoadInt32(&c.friendSeq)
-						if frdSeq < message.Head.GetMsgSeq() {
-							if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, message.Head.GetMsgSeq()) {
-								break
-							}
-						} else {
-							break
-						}
-					}
-				}
-				if message.Body.RichText == nil || message.Body.RichText.Elems == nil {
-					continue
-				}
-				c.dispatchFriendMessage(c.parsePrivateMessage(message))
-			case 187:
-				_, pkt := c.buildSystemMsgNewFriendPacket()
-				_ = c.send(pkt)
-			case 529:
-				sub4 := msg.SubMsgType0X4Body{}
-				if err := proto.Unmarshal(message.Body.MsgContent, &sub4); err != nil {
-					err = errors.Wrap(err, "unmarshal sub msg 0x4 error")
-					c.Error("unmarshal sub msg 0x4 error: %v", err)
-					continue
-				}
-				if sub4.NotOnlineFile != nil {
-					rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
-					if err != nil {
-						continue
-					}
-					c.dispatchOfflineFileEvent(&OfflineFileEvent{
-						FileName:    string(sub4.NotOnlineFile.FileName),
-						FileSize:    sub4.NotOnlineFile.GetFileSize(),
-						Sender:      message.Head.GetFromUin(),
-						DownloadUrl: rsp.(string),
-					})
-				}
-			}
-		}
-	}
-	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
-	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
-		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
-		_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix()))
-	}
-	return nil, err
+	c.c2cMessageSyncProcessor(&rsp)
+	return nil, nil
 }
 
 // MessageSvc.PushNotify
@@ -576,7 +456,7 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (inter
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.MemInfo.Nick == nil && rsp.MemInfo.Age == 0 {
+	if rsp.MemInfo == nil || (rsp.MemInfo.Nick == nil && rsp.MemInfo.Age == 0) {
 		return nil, errors.WithStack(ErrMemberNotFound)
 	}
 	group := c.FindGroup(rsp.GroupCode)

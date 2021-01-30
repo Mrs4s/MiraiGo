@@ -138,11 +138,13 @@ type (
 
 	SvcReqRegisterNew struct {
 		IJceStruct
-		RequestOptional int64      `jceId:"0"`
-		C2CMsg          IJceStruct `jceId:"1"` // SvcReqGetMsgV2
-		GroupMsg        IJceStruct `jceId:"2"` // SvcReqPullGroupMsgSeq
-		GroupMask       byte       `jceId:"15"`
-		EndSeq          int64      `jceId:"16"`
+		RequestOptional   int64      `jceId:"0"`
+		C2CMsg            IJceStruct `jceId:"1"` // SvcReqGetMsgV2
+		GroupMsg          IJceStruct `jceId:"2"` // SvcReqPullGroupMsgSeq
+		DisGroupMsgFilter byte       `jceId:"14"`
+		GroupMask         byte       `jceId:"15"`
+		EndSeq            int64      `jceId:"16"`
+		O769Body          []byte     `jceId:"20"`
 	}
 
 	SvcReqGetMsgV2 struct {

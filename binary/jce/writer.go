@@ -214,7 +214,10 @@ func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 		if err != nil {
 			continue
 		}
-		w.WriteObject(v.Field(i).Interface(), id)
+		obj := v.Field(i).Interface()
+		if obj != nil {
+			w.WriteObject(v.Field(i).Interface(), id)
+		}
 	}
 }
 

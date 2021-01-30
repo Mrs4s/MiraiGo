@@ -52,6 +52,7 @@ type QQClient struct {
 	ConnectTime             time.Time
 
 	handlers        HandlerMap
+	waiters         sync.Map
 	servers         []*net.TCPAddr
 	currServerIndex int
 	retryTimes      int
@@ -825,6 +826,15 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 	return nil, nil
 }
 
+// 等待一个或多个数据包解析, 优先级低于 sendAndWait
+// 返回终止解析函数
+func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
+	c.waiters.Store(cmd, f)
+	return func() {
+		c.waiters.Delete(cmd)
+	}
+}
+
 func (c *QQClient) netLoop() {
 	if c.NetLooping {
 		return
@@ -902,6 +912,8 @@ func (c *QQClient) netLoop() {
 				}
 				if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 					f(rsp, err)
+				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
+					f.(func(interface{}, error))(rsp, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder
