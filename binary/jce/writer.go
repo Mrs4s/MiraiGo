@@ -3,8 +3,10 @@ package jce
 import (
 	"bytes"
 	goBinary "encoding/binary"
+	"github.com/modern-go/reflect2"
 	"reflect"
 	"strconv"
+	"sync"
 )
 
 type JceWriter struct {
@@ -200,24 +202,44 @@ func (w *JceWriter) WriteObject(i interface{}, tag int) {
 	}
 }
 
+type decoder []struct {
+	fieldID int
+	id      int
+}
+
+var decoderCache = sync.Map{}
+
+// WriteJceStructRaw 写入 Jce 结构体
 func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 	var (
-		t = reflect.TypeOf(s).Elem()
-		v = reflect.ValueOf(s).Elem()
+		v      = reflect.ValueOf(s).Elem()
+		ty2    = reflect2.TypeOf(s)
+		jceDec decoder
 	)
-	for i := 0; i < t.NumField(); i++ {
-		strId := t.Field(i).Tag.Get("jceId")
-		if strId == "" {
-			continue
+	dec, ok := decoderCache.Load(ty2)
+	if ok { // 从缓存中加载
+		jceDec = dec.(decoder)
+	} else { // 初次反射
+		jceDec = decoder{}
+		t := reflect.TypeOf(s).Elem()
+		for i := 0; i < t.NumField(); i++ {
+			strId := t.Field(i).Tag.Get("jceId")
+			if strId == "" {
+				continue
+			}
+			id, err := strconv.Atoi(strId)
+			if err != nil {
+				continue
+			}
+			jceDec = append(jceDec, struct {
+				fieldID int
+				id      int
+			}{fieldID: i, id: id})
 		}
-		id, err := strconv.Atoi(strId)
-		if err != nil {
-			continue
-		}
-		obj := v.Field(i).Interface()
-		if obj != nil {
-			w.WriteObject(v.Field(i).Interface(), id)
-		}
+		decoderCache.Store(ty2, jceDec) // 存入缓存
+	}
+	for _, dec := range jceDec {
+		w.WriteObject(v.Field(dec.fieldID).Interface(), dec.id)
 	}
 }
 
