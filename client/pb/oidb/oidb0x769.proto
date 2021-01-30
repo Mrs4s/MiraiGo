@@ -1,0 +1,99 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+message CPU {
+  optional string model = 1;
+  optional uint32 cores = 2;
+  optional uint32 frequency = 3;
+}
+
+message Camera {
+  optional uint64 primary = 1;
+  optional uint64 secondary = 2;
+  optional bool flash = 3;
+}
+
+message D769ConfigSeq {
+  optional uint32 type = 1;
+  optional uint32 version = 2;
+}
+
+message Content {
+  optional uint32 taskId = 1;
+  optional uint32 compress = 2;
+  optional bytes content = 10;
+}
+
+message D769DeviceInfo {
+  optional string brand = 1;
+  optional string model = 2;
+  optional C41219OS os = 3;
+  optional CPU cpu = 4;
+  optional Memory memory = 5;
+  optional Storage storage = 6;
+  optional Screen screen = 7;
+  optional Camera camera = 8;
+}
+
+message Memory {
+  optional uint64 total = 1;
+  optional uint64 process = 2;
+}
+
+message C41219OS {
+  optional uint32 type = 1;
+  optional string version = 2;
+  optional string sdk = 3;
+  optional string kernel = 4;
+  optional string rom = 5;
+}
+
+message QueryUinPackageUsageReq {
+  optional uint32 type = 1;
+  optional uint64 uinFileSize = 2;
+}
+
+message QueryUinPackageUsageRsp {
+  optional uint32 status = 1;
+  optional uint64 leftUinNum = 2;
+  optional uint64 maxUinNum = 3;
+  optional uint32 proportion = 4;
+  repeated UinPackageUsedInfo uinPackageUsedList = 10;
+}
+
+message D769ReqBody {
+  repeated D769ConfigSeq configList = 1;
+  optional D769DeviceInfo deviceInfo = 2;
+  optional string info = 3;
+  optional string province = 4;
+  optional string city = 5;
+  optional int32 reqDebugMsg = 6;
+  optional QueryUinPackageUsageReq queryUinPackageUsageReq = 101;
+}
+
+message D769RspBody {
+  optional uint32 result = 1;
+  repeated D769ConfigSeq configList = 2;
+  optional QueryUinPackageUsageRsp queryUinPackageUsageRsp = 101;
+}
+
+message Screen {
+  optional string model = 1;
+  optional uint32 width = 2;
+  optional uint32 height = 3;
+  optional uint32 dpi = 4;
+  optional bool multiTouch = 5;
+}
+
+message Storage {
+  optional uint64 builtin = 1;
+  optional uint64 external = 2;
+}
+
+message UinPackageUsedInfo {
+  optional uint32 ruleId = 1;
+  optional string author = 2;
+  optional string url = 3;
+  optional uint64 uinNum = 4;
+}
