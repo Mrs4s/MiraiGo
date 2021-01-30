@@ -475,7 +475,7 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (inter
 			if rsp.MemInfo.Uin == group.OwnerUin {
 				return Owner
 			}
-			if rsp.MemInfo.Role == 1 {
+			if rsp.MemInfo.Role == 2 {
 				return Administrator
 			}
 			return Member

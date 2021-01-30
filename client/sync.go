@@ -27,6 +27,7 @@ func init() {
 	decoders["RegPrxySvc.PushParam"] = decodePushParamPacket
 	decoders["RegPrxySvc.PbSyncMsg"] = decodeMsgSyncResponse
 	decoders["PbMessageSvc.PbMsgReadedReport"] = decodeMsgReadedResponse
+	decoders["MessageSvc.PushReaded"] = ignoreDecoder
 }
 
 type (
