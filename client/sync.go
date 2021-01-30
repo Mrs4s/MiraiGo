@@ -26,6 +26,7 @@ func init() {
 	decoders["RegPrxySvc.NoticeEnd"] = ignoreDecoder
 	decoders["RegPrxySvc.PushParam"] = decodePushParamPacket
 	decoders["RegPrxySvc.PbSyncMsg"] = decodeMsgSyncResponse
+	decoders["PbMessageSvc.PbMsgReadedReport"] = decodeMsgReadedResponse
 }
 
 type (
@@ -104,6 +105,11 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		stop()
 	}
 	return ret, nil
+}
+
+// MarkGroupMessageReaded 标记群消息已读, 适当调用应该能减少风控
+func (c *QQClient) MarkGroupMessageReaded(groupCode, seq int64) {
+	_, _ = c.sendAndWait(c.buildGroupMsgReadedPacket(groupCode, seq))
 }
 
 // StatSvc.GetDevLoginInfo
@@ -256,6 +262,17 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 	return seq, packet
 }
 
+// PbMessageSvc.PbMsgReadedReport
+func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{GrpReadReport: []*msg.PbGroupReadedReportReq{{
+		GroupCode:   proto.Uint64(uint64(groupCode)),
+		LastReadSeq: proto.Uint64(uint64(msgSeq)),
+	}}})
+	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgReadedReport", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, req)
+	return seq, packet
+}
+
 // StatSvc.GetDevLoginInfo
 func decodeDevListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
@@ -359,6 +376,17 @@ func decodeMsgSyncResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 		}
 	}
 	return ret, nil
+}
+
+func decodeMsgReadedResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	rsp := msg.PbMsgReadedReportResp{}
+	if err := proto.Unmarshal(payload, &rsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if len(rsp.GrpReadReport) > 0 {
+		return rsp.GrpReadReport[0].GetResult() == 0, nil
+	}
+	return nil, nil
 }
 
 var loginNotifyLock sync.Mutex

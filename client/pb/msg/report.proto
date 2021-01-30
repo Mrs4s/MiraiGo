@@ -1,0 +1,65 @@
+syntax = "proto2";
+
+option go_package = ".;msg";
+
+message PbMsgReadedReportReq {
+  repeated PbGroupReadedReportReq grpReadReport = 1;
+  repeated PbDiscussReadedReportReq disReadReport = 2;
+  optional PbC2CReadedReportReq c2CReadReport = 3;
+  //optional PbBindUinMsgReadedConfirmReq bindUinReadReport = 4;
+}
+
+message PbMsgReadedReportResp {
+  repeated PbGroupReadedReportResp grpReadReport = 1;
+  repeated PbDiscussReadedReportResp disReadReport = 2;
+  optional PbC2CReadedReportResp c2CReadReport = 3;
+  //optional PbBindUinMsgReadedConfirmResp bindUinReadReport = 4;
+}
+
+message PbGroupReadedReportReq {
+  optional uint64 groupCode = 1;
+  optional uint64 lastReadSeq = 2;
+}
+
+message PbDiscussReadedReportReq {
+  optional uint64 confUin = 1;
+  optional uint64 lastReadSeq = 2;
+}
+
+message PbC2CReadedReportReq {
+  optional bytes syncCookie = 1;
+  repeated UinPairReadInfo pairInfo = 2;
+}
+
+message UinPairReadInfo {
+  optional uint64 peerUin = 1;
+  optional uint32 lastReadTime = 2;
+  optional bytes crmSig = 3;
+  optional uint32 peerType = 4;
+  optional uint32 chatType = 5;
+  optional uint64 cpid = 6;
+  optional uint32 aioType = 7;
+  optional uint64 toTinyId = 9;
+}
+
+message PbGroupReadedReportResp {
+  optional uint32 result = 1;
+  optional string errmsg = 2;
+  optional uint64 groupCode = 3;
+  optional uint64 memberSeq = 4;
+  optional uint64 groupMsgSeq = 5;
+}
+
+message PbDiscussReadedReportResp {
+  optional uint32 result = 1;
+  optional string errmsg = 2;
+  optional uint64 confUin = 3;
+  optional uint64 memberSeq = 4;
+  optional uint64 confSeq = 5;
+}
+
+message PbC2CReadedReportResp {
+  optional uint32 result = 1;
+  optional string errmsg = 2;
+  optional bytes syncCookie = 3;
+}
