@@ -365,7 +365,7 @@ func decodeMsgSyncResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 			}
 			ret.GroupSessions = append(ret.GroupSessions, &GroupSessionInfo{
 				GroupCode:      int64(gmRsp.GetGroupCode()),
-				UnreadCount:    uint32(gmRsp.GetReturnEndSeq() - gmRsp.GetReturnBeginSeq()), // todo fix this
+				UnreadCount:    uint32(gmRsp.GetReturnEndSeq() - gm.GetMemberSeq()),
 				LatestMessages: latest,
 			})
 		}
