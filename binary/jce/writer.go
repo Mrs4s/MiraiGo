@@ -239,7 +239,10 @@ func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 		decoderCache.Store(ty2, jceDec) // 存入缓存
 	}
 	for _, dec := range jceDec {
-		w.WriteObject(v.Field(dec.fieldID).Interface(), dec.id)
+		obj := v.Field(dec.fieldID).Interface()
+		if obj != nil {
+			w.WriteObject(obj, dec.id)
+		}
 	}
 }
 
