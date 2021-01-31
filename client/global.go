@@ -395,11 +395,11 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
 					WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
 					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).WriteByte(1, 14).Bytes()
-	buf := &jce.RequestDataVersion2{
-		Map: map[string]map[string][]byte{"HttpServerListReq": {"ConfigHttp.HttpServerListReq": packUniRequestData(payload)}},
+	buf := &jce.RequestDataVersion3{
+		Map: map[string][]byte{"HttpServerListReq": packUniRequestData(payload)},
 	}
 	pkt := &jce.RequestPacket{
-		IVersion:     2,
+		IVersion:     3,
 		SServantName: "ConfigHttp",
 		SFuncName:    "HttpServerListReq",
 		SBuffer:      buf.ToBytes(),
@@ -414,10 +414,10 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 		return nil, errors.Wrap(err, "unable to fetch server list")
 	}
 	rspPkt := &jce.RequestPacket{}
-	data := &jce.RequestDataVersion2{}
+	data := &jce.RequestDataVersion3{}
 	rspPkt.ReadFrom(jce.NewJceReader(tea.Decrypt(rsp)[4:]))
 	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
-	reader := jce.NewJceReader(data.Map["HttpServerListRes"]["ConfigHttp.HttpServerListRes"][1:])
+	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
 	servers := []jce.SsoServerInfo{}
 	reader.ReadSlice(&servers, 2)
 	var adds []*net.TCPAddr
