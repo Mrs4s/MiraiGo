@@ -294,6 +294,11 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					TroopName: []byte{},
 				},
 			})
+			if len(elems) > 1 {
+				if elems[0].Type() == Image || elems[1].Type() == Image {
+					r = append(r, &msg.Elem{Text: &msg.Text{Str: proto.String(" ")}})
+				}
+			}
 		}
 	}
 	for _, elem := range elems {
