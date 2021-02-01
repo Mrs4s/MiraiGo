@@ -46,6 +46,7 @@ type (
 
 	sessionSyncEvent struct {
 		IsEnd         bool
+		GroupNum      int32
 		GroupSessions []*GroupSessionInfo
 	}
 )
@@ -81,7 +82,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 	}
 	ret := &SessionSyncResponse{}
 	notifyChan := make(chan bool)
-	ended := false
+	var groupNum int32 = -1
 	p := 0
 	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i interface{}, err error) {
 		if err != nil {
@@ -92,10 +93,10 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		if len(e.GroupSessions) > 0 {
 			ret.GroupSessions = append(ret.GroupSessions, e.GroupSessions...)
 		}
-		if e.IsEnd {
-			ended = true
+		if e.GroupNum != -1 {
+			groupNum = e.GroupNum
 		}
-		if p > 1 {
+		if groupNum != -1 && len(ret.GroupSessions) >= int(groupNum) {
 			notifyChan <- true
 		}
 	})
@@ -349,7 +350,11 @@ func decodeMsgSyncResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 		return nil, err
 	}
 	ret := &sessionSyncEvent{
-		IsEnd: (rsp.GetFlag() & 2) == 2,
+		IsEnd:    (rsp.GetFlag() & 2) == 2,
+		GroupNum: -1,
+	}
+	if rsp.Info != nil {
+		ret.GroupNum = int32(rsp.Info.GetGroupNum())
 	}
 	if len(rsp.GroupMsg) > 0 {
 		for _, gm := range rsp.GroupMsg {
