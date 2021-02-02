@@ -1,8 +1,14 @@
 package client
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"math"
+	"math/rand"
+	"strconv"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
@@ -10,12 +16,9 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
+
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"math"
-	"math/rand"
-	"strconv"
-	"time"
 )
 
 func init() {
@@ -528,7 +531,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 func (c *QQClient) SetEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
 	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgId), uint32(msgInternalId), 1))
 	if err != nil {
-		return errors.Wrap(err, "set essence msg network:")
+		return errors.Wrap(err, "set essence msg network")
 	}
 	rsp := r.(*oidb.EACRspBody)
 	if rsp.GetErrorCode() != 0 {
@@ -541,7 +544,7 @@ func (c *QQClient) SetEssenceMessage(groupCode int64, msgId, msgInternalId int32
 func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
 	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgId), uint32(msgInternalId), 2))
 	if err != nil {
-		return errors.Wrap(err, "set essence msg network:")
+		return errors.Wrap(err, "set essence msg networ")
 	}
 	rsp := r.(*oidb.EACRspBody)
 	if rsp.GetErrorCode() != 0 {
@@ -573,4 +576,23 @@ func decodeEssenceMsgResponse(_ *QQClient, _ uint16, payload []byte) (interface{
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return rsp, nil
+}
+
+// GetGroupEssenceMsgList 获取群精华消息列表
+func (c *QQClient) GetGroupEssenceMsgList(groupCode int64) ([]GroupDigest, error) {
+	essenceURL := "https://qun.qq.com/essence/index?gc=" + strconv.FormatInt(groupCode, 10) + "&_wv=3&_wwv=128&_wvx=2&_wvxBclr=f5f6fa"
+	rsp, err := utils.HttpGetBytes(essenceURL, c.getCookiesWithDomain("qun.qq.com"))
+	if err != nil {
+		return nil, errors.Wrap(err, "get essence msg network error")
+	}
+	rsp = rsp[bytes.Index(rsp, []byte("window.__INITIAL_STATE__={"))+25:]
+	rsp = rsp[:bytes.Index(rsp, []byte("</script>"))]
+	var data = &struct {
+		List []GroupDigest `json:"msgList"`
+	}{}
+	err = json.Unmarshal(rsp, data)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal json")
+	}
+	return data.List, nil
 }

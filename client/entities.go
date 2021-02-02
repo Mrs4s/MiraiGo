@@ -162,6 +162,19 @@ type (
 		DownloadUrl string
 	}
 
+	// GroupDigest 群精华消息
+	GroupDigest struct {
+		GroupCode         string `json:"group_code"`
+		MessageID         uint32 `json:"msg_seq"`
+		InternalMessageID uint32 `json:"msg_random"`
+		SenderUin         string `json:"sender_uin"`
+		SenderNick        string `json:"sender_nick"`
+		SenderTime        int64  `json:"sender_time"`
+		AddDigestUin      string `json:"add_digest_uin"`
+		AddDigestNick     string `json:"add_digest_nick"`
+		AddDigestTime     int64  `json:"add_digest_time"`
+	}
+
 	// GroupDigestEvent 群精华消息 不知道tx为什么搞两种名字
 	GroupDigestEvent struct {
 		GroupCode         int64

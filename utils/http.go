@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// HttpGetBytes 带 cookie 的 GET 请求
 func HttpGetBytes(url, cookie string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
