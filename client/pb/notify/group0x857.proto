@@ -7,6 +7,7 @@ message NotifyMsgBody {
   RedGrayTipsInfo optMsgRedTips = 9;
   MessageRecallReminder optMsgRecall = 11;
   GeneralGrayTipInfo optGeneralGrayTip = 26;
+  QQGroupDigestMsg qqGroupDigestMsg = 33;
   int32 serviceType = 13;
 }
 
@@ -64,4 +65,18 @@ message RedGrayTipsInfo {
   sint32 msgType = 7;
   uint32 luckyFlag = 8;
   uint32 hideFlag = 9;
+}
+
+message QQGroupDigestMsg {
+  uint64 groupCode = 1;
+  uint32 seq = 2;
+  uint32 random = 3;
+  int32 opType = 4;
+  uint64 sender = 5;
+  uint64 digestOper = 6;
+  uint32 opTime = 7;
+  uint32 lastestMsgSeq = 8;
+  bytes operNick = 9;
+  bytes senderNick = 10;
+  int32 extInfo = 11;
 }

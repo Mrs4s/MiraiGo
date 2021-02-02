@@ -32,6 +32,7 @@ type eventHandlers struct {
 	friendNotifyHandlers             []func(*QQClient, INotifyEvent)
 	offlineFileHandlers              []func(*QQClient, *OfflineFileEvent)
 	otherClientStatusChangedHandlers []func(*QQClient, *OtherClientStatusChangedEvent)
+	groupDigestHandlers              []func(*QQClient, *GroupDigestEvent)
 	groupMessageReceiptHandlers      sync.Map
 }
 
@@ -133,6 +134,11 @@ func (c *QQClient) OnGroupNotify(f func(*QQClient, INotifyEvent)) {
 
 func (c *QQClient) OnFriendNotify(f func(*QQClient, INotifyEvent)) {
 	c.eventHandlers.friendNotifyHandlers = append(c.eventHandlers.friendNotifyHandlers, f)
+}
+
+// OnGroupDigest 群精华消息事件注册
+func (c *QQClient) OnGroupDigest(f func(*QQClient, *GroupDigestEvent)) {
+	c.eventHandlers.groupDigestHandlers = append(c.eventHandlers.groupDigestHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
@@ -381,6 +387,17 @@ func (c *QQClient) dispatchOtherClientStatusChangedEvent(e *OtherClientStatusCha
 		return
 	}
 	for _, f := range c.eventHandlers.otherClientStatusChangedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchGroupDigestEvent(e *GroupDigestEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.groupDigestHandlers {
 		cover(func() {
 			f(c, e)
 		})

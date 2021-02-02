@@ -1,8 +1,14 @@
 package client
 
 import (
+	"bytes"
 	"encoding/base64"
 	"fmt"
+	"math"
+	"math/rand"
+	"strconv"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
@@ -10,11 +16,9 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
+
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"math"
-	"math/rand"
-	"time"
 )
 
 func init() {
@@ -22,6 +26,8 @@ func init() {
 	decoders["MessageSvc.PbSendMsg"] = decodeMsgSendResponse
 	decoders["MessageSvc.PbGetGroupMsg"] = decodeGetGroupMsgResponse
 	decoders["OidbSvc.0x8a7_0"] = decodeAtAllRemainResponse
+	decoders["OidbSvc.0xeac_1"] = decodeEssenceMsgResponse
+	decoders["OidbSvc.0xeac_2"] = decodeEssenceMsgResponse
 }
 
 // SendGroupMessage 发送群消息
@@ -519,4 +525,74 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		g.InternalId = m.Body.RichText.Attr.GetRandom()
 	}
 	return g
+}
+
+// SetEssenceMessage 设为群精华消息
+func (c *QQClient) SetEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
+	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgId), uint32(msgInternalId), 1))
+	if err != nil {
+		return errors.Wrap(err, "set essence msg network")
+	}
+	rsp := r.(*oidb.EACRspBody)
+	if rsp.GetErrorCode() != 0 {
+		return errors.New(rsp.GetWording())
+	}
+	return nil
+}
+
+// DeleteEssenceMessage 移出群精华消息
+func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
+	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgId), uint32(msgInternalId), 2))
+	if err != nil {
+		return errors.Wrap(err, "set essence msg networ")
+	}
+	rsp := r.(*oidb.EACRspBody)
+	if rsp.GetErrorCode() != 0 {
+		return errors.New(rsp.GetWording())
+	}
+	return nil
+}
+
+func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand, opType uint32) (uint16, []byte) {
+	seq := c.nextSeq()
+	commandName := "OidbSvc.0xeac_" + strconv.FormatInt(int64(opType), 10)
+	payload := c.packOIDBPackageProto(3756, int32(opType), &oidb.EACReqBody{ // serviceType 2 取消
+		GroupCode: proto.Uint64(uint64(groupCode)),
+		Seq:       proto.Uint32(msgSeq),
+		Random:    proto.Uint32(msgRand),
+	})
+	packet := packets.BuildUniPacket(c.Uin, seq, commandName, 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0xeac_1/2
+func decodeEssenceMsgResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := &oidb.EACRspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return rsp, nil
+}
+
+// GetGroupEssenceMsgList 获取群精华消息列表
+func (c *QQClient) GetGroupEssenceMsgList(groupCode int64) ([]GroupDigest, error) {
+	essenceURL := "https://qun.qq.com/essence/index?gc=" + strconv.FormatInt(groupCode, 10) + "&_wv=3&_wwv=128&_wvx=2&_wvxBclr=f5f6fa"
+	rsp, err := utils.HttpGetBytes(essenceURL, c.getCookiesWithDomain("qun.qq.com"))
+	if err != nil {
+		return nil, errors.Wrap(err, "get essence msg network error")
+	}
+	rsp = rsp[bytes.Index(rsp, []byte("window.__INITIAL_STATE__={"))+25:]
+	rsp = rsp[:bytes.Index(rsp, []byte("</script>"))]
+	var data = &struct {
+		List []GroupDigest `json:"msgList"`
+	}{}
+	err = json.Unmarshal(rsp, data)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal json")
+	}
+	return data.List, nil
 }

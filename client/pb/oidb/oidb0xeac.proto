@@ -1,0 +1,135 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+/*
+message ArkMsg {
+  optional string appName = 1;
+  optional string json = 2;
+}
+
+message BatchReqBody {
+  optional uint64 groupCode = 1;
+  repeated MsgInfo msgs = 2;
+}
+
+message BatchRspBody {
+  optional string wording = 1;
+  optional uint32 errorCode = 2;
+  optional int32 succCnt = 3;
+  repeated MsgProcessInfo procInfos = 4;
+  optional uint32 digestTime = 5;
+}
+
+message DigestMsg {
+  optional uint64 groupCode = 1;
+  optional uint32 seq = 2;
+  optional uint32 random = 3;
+  repeated MsgElem content = 4;
+  optional uint64 textSize = 5;
+  optional uint64 picSize = 6;
+  optional uint64 videoSize = 7;
+  optional uint64 senderUin = 8;
+  optional uint32 senderTime = 9;
+  optional uint64 addDigestUin = 10;
+  optional uint32 addDigestTime = 11;
+  optional uint32 startTime = 12;
+  optional uint32 latestMsgSeq = 13;
+  optional uint32 opType = 14;
+}
+
+message FaceMsg {
+  optional uint32 index = 1;
+  optional string text = 2;
+}
+
+message GroupFileMsg {
+  optional bytes fileName = 1;
+  optional uint32 busId = 2;
+  optional string fileId = 3;
+  optional uint64 fileSize = 4;
+  optional uint64 deadTime = 5;
+  optional bytes fileSha1 = 6;
+  optional bytes ext = 7;
+  optional bytes fileMd5 = 8;
+}
+
+message ImageMsg {
+  optional string md5 = 1;
+  optional string uuid = 2;
+  optional uint32 imgType = 3;
+  optional uint32 fileSize = 4;
+  optional uint32 width = 5;
+  optional uint32 height = 6;
+  optional uint32 fileId = 101;
+  optional uint32 serverIp = 102;
+  optional uint32 serverPort = 103;
+  optional string filePath = 104;
+  optional string thumbUrl = 201;
+  optional string originalUrl = 202;
+  optional string resaveUrl = 203;
+}
+
+message MsgElem {
+  optional uint32 type = 1;
+  optional TextMsg textMsg = 11;
+  optional FaceMsg faceMsg = 12;
+  optional ImageMsg imageMsg = 13;
+  optional GroupFileMsg groupFileMsg = 14;
+  optional ShareMsg shareMsg = 15;
+  optional RichMsg richMsg = 16;
+  optional ArkMsg arkMsg = 17;
+}
+
+message MsgInfo {
+  optional uint32 seq = 1;
+  optional uint32 random = 2;
+}
+
+message MsgProcessInfo {
+  optional MsgInfo msg = 1;
+  optional uint32 errorCode = 2;
+  optional uint64 digestUin = 3;
+  optional uint32 digestTime = 4;
+}
+*/
+
+message EACReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 seq = 2;
+  optional uint32 random = 3;
+}
+
+/*
+message RichMsg {
+  optional uint32 serviceId = 1;
+  optional string xml = 2;
+  optional string longMsgResid = 3;
+}
+*/
+
+message EACRspBody {
+  optional string wording = 1;
+  optional uint64 digestUin = 2;
+  optional uint32 digestTime = 3;
+  //optional DigestMsg msg = 4;
+  optional uint32 errorCode = 10;
+}
+
+/*
+message ShareMsg {
+  optional string type = 1;
+  optional string title = 2;
+  optional string summary = 3;
+  optional string brief = 4;
+  optional string url = 5;
+  optional string pictureUrl = 6;
+  optional string action = 7;
+  optional string source = 8;
+  optional string sourceUrl = 9;
+}
+
+message TextMsg {
+  optional bytes str = 1;
+}
+ */

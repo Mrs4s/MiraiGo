@@ -558,7 +558,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					TargetUin:   target,
 					Time:        t,
 				})
-			case 0x10, 0x11, 0x14: // group notify msg
+			case 0x10, 0x11, 0x14, 0x15: // group notify msg
 				r.ReadByte()
 				b := notify.NotifyMsgBody{}
 				_ = proto.Unmarshal(r.ReadAvailable(), &b)
@@ -587,6 +587,20 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 							LuckyKing: int64(b.OptMsgRedTips.ReceiverUin),
 						})
 					}
+				}
+				if b.QqGroupDigestMsg != nil {
+					var digest = b.QqGroupDigestMsg
+					c.dispatchGroupDigestEvent(&GroupDigestEvent{
+						GroupCode:         int64(digest.GroupCode),
+						MessageID:         int32(digest.Seq),
+						InternalMessageID: int32(digest.Random),
+						OperationType:     digest.OpType,
+						OperateTime:       digest.OpTime,
+						SenderUin:         int64(digest.Sender),
+						OperatorUin:       int64(digest.DigestOper),
+						SenderNick:        string(digest.SenderNick),
+						OperatorNick:      string(digest.OperNick),
+					})
 				}
 			}
 		}
