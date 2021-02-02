@@ -162,6 +162,19 @@ type (
 		DownloadUrl string
 	}
 
+	// GroupDigestEvent 群精华消息 不知道tx为什么搞两种名字
+	GroupDigestEvent struct {
+		GroupCode         int64
+		MessageID         int32
+		InternalMessageID int32
+		OperationType     int32 // 1 -> 设置精华消息, 2 -> 移除精华消息
+		OperateTime       uint32
+		SenderUin         int64
+		OperatorUin       int64
+		SenderNick        string
+		OperatorNick      string
+	}
+
 	OcrResponse struct {
 		Texts    []*TextDetection `json:"texts"`
 		Language string           `json:"language"`
