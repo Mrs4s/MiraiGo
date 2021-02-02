@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"sync"
+	"unsafe"
 )
 
 type JceWriter struct {
@@ -203,8 +204,9 @@ func (w *JceWriter) WriteObject(i interface{}, tag int) {
 }
 
 type decoder []struct {
-	fieldID int
-	id      int
+	ty     reflect2.Type
+	offset uintptr
+	id     int
 }
 
 var decoderCache = sync.Map{}
@@ -212,7 +214,6 @@ var decoderCache = sync.Map{}
 // WriteJceStructRaw 写入 Jce 结构体
 func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 	var (
-		v      = reflect.ValueOf(s).Elem()
 		ty2    = reflect2.TypeOf(s)
 		jceDec decoder
 	)
@@ -221,9 +222,10 @@ func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 		jceDec = dec.(decoder)
 	} else { // 初次反射
 		jceDec = decoder{}
-		t := reflect.TypeOf(s).Elem()
+		t := reflect2.TypeOf(s).(reflect2.PtrType).Elem().(reflect2.StructType)
 		for i := 0; i < t.NumField(); i++ {
-			strId := t.Field(i).Tag.Get("jceId")
+			field := t.Field(i)
+			strId := field.Tag().Get("jceId")
 			if strId == "" {
 				continue
 			}
@@ -232,14 +234,15 @@ func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 				continue
 			}
 			jceDec = append(jceDec, struct {
-				fieldID int
-				id      int
-			}{fieldID: i, id: id})
+				ty     reflect2.Type
+				offset uintptr
+				id     int
+			}{ty: field.Type(), offset: field.Offset(), id: id})
 		}
 		decoderCache.Store(ty2, jceDec) // 存入缓存
 	}
 	for _, dec := range jceDec {
-		obj := v.Field(dec.fieldID).Interface()
+		var obj = dec.ty.UnsafeIndirect(unsafe.Pointer(uintptr(reflect2.PtrOf(s)) + dec.offset)) // MAGIC!
 		if obj != nil {
 			w.WriteObject(obj, dec.id)
 		}
