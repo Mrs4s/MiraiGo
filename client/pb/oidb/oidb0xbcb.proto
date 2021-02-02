@@ -1,0 +1,63 @@
+syntax = "proto2";
+
+option go_package = ".;oidb";
+
+message CheckUrlReq {
+  repeated string url = 1;
+  optional string refer = 2;
+  optional string plateform = 3;
+  optional string qqPfTo = 4;
+  optional uint32 type = 5;
+  optional uint32 from = 6;
+  optional uint64 chatid = 7;
+  optional uint64 serviceType = 8;
+  optional uint64 sendUin = 9;
+  optional string reqType = 10;
+  optional string originalUrl = 11;
+  optional bool isArk = 12;
+  optional string arkName = 13;
+  optional bool isFinish = 14;
+  repeated string srcUrls = 15;
+  optional uint32 srcPlatform = 16;
+  optional string qua = 17;
+}
+
+message CheckUrlReqItem {
+  optional string url = 1;
+  optional string refer = 2;
+  optional string plateform = 3;
+  optional string qqPfTo = 4;
+  optional uint32 type = 5;
+  optional uint32 from = 6;
+  optional uint64 chatid = 7;
+  optional uint64 serviceType = 8;
+  optional uint64 sendUin = 9;
+  optional string reqType = 10;
+}
+
+message CheckUrlRsp {
+  repeated UrlCheckResult results = 1;
+  optional uint32 nextReqDuration = 2;
+}
+
+message DBCBReqBody {
+  optional int32 notUseCache = 9;
+  optional CheckUrlReq checkUrlReq = 10;
+}
+
+message DBCBRspBody {
+  optional string wording = 1;
+  optional CheckUrlRsp checkUrlRsp = 10;
+}
+
+message UrlCheckResult {
+  optional string url = 1;
+  optional uint32 result = 2;
+  optional uint32 jumpResult = 3;
+  optional string jumpUrl = 4;
+  optional uint32 level = 5;
+  optional uint32 subLevel = 6;
+  optional uint32 umrtype = 7;
+  optional uint32 retFrom = 8;
+  optional uint64 operationBit = 9;
+}
