@@ -22,6 +22,7 @@ func init() {
 	decoders["MessageSvc.PbSendMsg"] = decodeMsgSendResponse
 	decoders["MessageSvc.PbGetGroupMsg"] = decodeGetGroupMsgResponse
 	decoders["OidbSvc.0x8a7_0"] = decodeAtAllRemainResponse
+	decoders["OidbSvc.0xeac_1"] = decodeEssenceMsgResponse
 }
 
 // SendGroupMessage 发送群消息
@@ -519,4 +520,41 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		g.InternalId = m.Body.RichText.Attr.GetRandom()
 	}
 	return g
+}
+
+// SetEssenceMessage 设置群精华消息
+func (c *QQClient) SetEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
+	r, err := c.sendAndWait(c.buildSetEssenceMsgPacket(groupCode, uint32(msgId), uint32(msgInternalId)))
+	if err != nil {
+		return errors.Wrap(err, "set essence msg network:")
+	}
+	rsp := r.(*oidb.EACRspBody)
+	if rsp.GetErrorCode() != 0 {
+		return errors.New(rsp.GetWording())
+	}
+	return nil
+}
+
+func (c *QQClient) buildSetEssenceMsgPacket(groupCode int64, msgSeq, msgRand uint32) (uint16, []byte) {
+	seq := c.nextSeq()
+	payload := c.packOIDBPackageProto(3756, 1, &oidb.EACReqBody{ // serviceType 2 取消
+		GroupCode: proto.Uint64(uint64(groupCode)),
+		Seq:       proto.Uint32(msgSeq),
+		Random:    proto.Uint32(msgRand),
+	})
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xeac_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// OidbSvc.0xeac_1
+func decodeEssenceMsgResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+	pkg := oidb.OIDBSSOPkg{}
+	rsp := &oidb.EACRspBody{}
+	if err := proto.Unmarshal(payload, &pkg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return rsp, nil
 }
