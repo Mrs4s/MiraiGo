@@ -94,6 +94,7 @@ message ReqSystemMsgNew {
   bool isGetFrdRibbon = 8;
   bool isGetGrpRibbon = 9;
   int64 friendMsgTypeFlag = 10;
+  int32 reqMsgType = 11;
 }
 message ReqSystemMsgRead {
   int64 latestFriendSeq = 1;
