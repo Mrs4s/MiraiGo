@@ -2,6 +2,14 @@ syntax = "proto2";
 
 option go_package = ".;oidb";
 
+message GroupFileFeedsInfo {
+  optional uint32 busId = 1;
+  optional string fileId = 2;
+  optional uint32 msgRandom = 3;
+  optional bytes ext = 4;
+  optional uint32 feedFlag = 5;
+}
+
 message CopyFromReqBody {
   optional uint64 groupCode = 1;
   optional uint32 appId = 2;
@@ -51,7 +59,7 @@ message CopyToRspBody {
 message FeedsReqBody {
   optional uint64 groupCode = 1;
   optional uint32 appId = 2;
-  //repeated C8639group_file_common.FeedsInfo feedsInfoList = 3;
+  repeated GroupFileFeedsInfo feedsInfoList = 3;
   optional uint32 multiSendSeq = 4;
 }
 

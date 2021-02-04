@@ -107,6 +107,7 @@ message UploadFileReqBody {
   bytes sha = 9;
   bytes sha3 = 10;
   bytes md5 = 11;
+  bool supportMultiUpload = 15;
 }
 message UploadFileRspBody {
   int32 retCode = 1;
@@ -119,4 +120,7 @@ message UploadFileRspBody {
   bytes fileKey = 8;
   bytes checkKey = 9;
   bool boolFileExist = 10;
+  repeated string uploadIpLanV4 = 12;
+  repeated string uploadIpLanV6 = 13;
+  int32 uploadPort = 14;
 }
