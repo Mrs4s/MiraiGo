@@ -497,7 +497,7 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 	)
 }
 
-func (c *QQClient) sendGroupPoke(groupCode, target int64) {
+func (c *QQClient) SendGroupPoke(groupCode, target int64) {
 	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
 }
 

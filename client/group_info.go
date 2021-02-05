@@ -358,7 +358,7 @@ func (m *GroupMemberInfo) EditCard(card string) {
 }
 
 func (m *GroupMemberInfo) Poke() {
-	m.Group.client.sendGroupPoke(m.Group.Code, m.Uin)
+	m.Group.client.SendGroupPoke(m.Group.Code, m.Uin)
 }
 
 func (m *GroupMemberInfo) SetAdmin(flag bool) {
