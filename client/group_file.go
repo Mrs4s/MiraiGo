@@ -156,7 +156,7 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderId string) ([]*GroupFile, []*G
 func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	file, err := os.OpenFile(p, os.O_RDONLY, 0666)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "open file error")
 	}
 	defer file.Close()
 	md5Hash, size := utils.ComputeMd5AndLength(file)

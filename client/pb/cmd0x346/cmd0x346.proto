@@ -243,7 +243,11 @@ message ApplyUploadRspV3 {
   bytes uploadKey = 100;
   bool boolFileExist = 110;
   int32 packSize = 120;
-  repeated string uploadipList = 130;
+  repeated string uploadIpList = 130;
+  int32 uploadHttpsPort = 140;
+  string uploadHttpsDomain = 150;
+  string uploadDns = 160;
+  string uploadLanip = 170;
 }
 message DelMessageReq {
   int64 uinSender = 1;
