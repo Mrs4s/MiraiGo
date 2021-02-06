@@ -466,7 +466,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
 		// is rich long msg
-		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" {
+		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" && len(g.Elements) == 1 {
 			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
 					Id:             m.Head.GetMsgSeq(),
