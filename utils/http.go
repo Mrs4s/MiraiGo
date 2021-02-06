@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+var client = &http.Client{
+	Transport: &http.Transport{
+		ForceAttemptHTTP2:   true,
+		MaxConnsPerHost:     0,
+		MaxIdleConns:        0,
+		MaxIdleConnsPerHost: 999,
+	},
+}
+
 // HttpGetBytes 带 cookie 的 GET 请求
 func HttpGetBytes(url, cookie string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
@@ -19,7 +28,7 @@ func HttpGetBytes(url, cookie string) ([]byte, error) {
 	if cookie != "" {
 		req.Header["Cookie"] = []string{cookie}
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +54,7 @@ func HttpPostBytes(url string, data []byte) ([]byte, error) {
 	}
 	req.Header["User-Agent"] = []string{"QQ/8.2.0.1296 CFNetwork/1126"}
 	req.Header["Net-Type"] = []string{"Wifi"}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +87,7 @@ func HttpPostBytesWithCookie(url string, data []byte, cookie string, contentType
 	if cookie != "" {
 		req.Header["Cookie"] = []string{cookie}
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
