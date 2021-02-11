@@ -133,6 +133,72 @@ func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) (uint16, []byte
 	return seq, packet
 }
 
+// ProfileService.Pb.ReqSystemMsgAction.Group
+func (c *QQClient) buildSystemMsgGroupActionPacket(reqId, requester, group int64, msgType int32, isInvite, accept, block bool, reason string) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &structmsg.ReqSystemMsgAction{
+		MsgType: msgType,
+		MsgSeq:  reqId,
+		ReqUin:  requester,
+		SubType: 1,
+		SrcId:   3,
+		SubSrcId: func() int32 {
+			if isInvite {
+				return 10016
+			}
+			return 31
+		}(),
+		GroupMsgType: func() int32 {
+			if isInvite {
+				return 2
+			}
+			return 1
+		}(),
+		ActionInfo: &structmsg.SystemMsgActionInfo{
+			Type: func() int32 {
+				if accept {
+					return 11
+				}
+				return 12
+			}(),
+			GroupCode: group,
+			Blacklist: block,
+			Msg:       reason,
+			Sig:       EmptyBytes,
+		},
+		Language: 1000,
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgAction.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+// ProfileService.Pb.ReqSystemMsgAction.Friend
+func (c *QQClient) buildSystemMsgFriendActionPacket(reqId, requester int64, accept bool) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &structmsg.ReqSystemMsgAction{
+		MsgType:  1,
+		MsgSeq:   reqId,
+		ReqUin:   requester,
+		SubType:  1,
+		SrcId:    6,
+		SubSrcId: 7,
+		ActionInfo: &structmsg.SystemMsgActionInfo{
+			Type: func() int32 {
+				if accept {
+					return 2
+				}
+				return 3
+			}(),
+			Blacklist:    false,
+			AddFrdSNInfo: &structmsg.AddFrdSNInfo{},
+		},
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgAction.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // ProfileService.Pb.ReqSystemMsgNew.Group
 func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
 	rsp := structmsg.RspSystemMsgNew{}

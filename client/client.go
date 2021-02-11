@@ -609,10 +609,16 @@ func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reas
 
 	switch req := i.(type) {
 	case *UserJoinGroupRequest:
-		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, false, accept, block, reason)
+		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, func() int32 {
+			if req.Suspicious {
+				return 2
+			} else {
+				return 1
+			}
+		}(), false, accept, block, reason)
 		_ = c.send(pkt)
 	case *GroupInvitedRequest:
-		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, true, accept, block, reason)
+		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, 1, true, accept, block, reason)
 		_ = c.send(pkt)
 	}
 }
