@@ -65,6 +65,7 @@ message RedGrayTipsInfo {
   sint32 msgType = 7;
   uint32 luckyFlag = 8;
   uint32 hideFlag = 9;
+  uint64 luckyUin = 12;
 }
 
 message QQGroupDigestMsg {
