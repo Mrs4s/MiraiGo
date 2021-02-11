@@ -316,7 +316,6 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 			Seq:  pkt.Message.Head.GetMsgSeq(),
 			Msg:  c.parseGroupMessage(pkt.Message),
 		})
-		return nil, nil
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
 		var builder *groupMessageBuilder
@@ -330,11 +329,19 @@ func decodeGroupMessagePacket(c *QQClient, _ uint16, payload []byte) (interface{
 		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
 		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.GetPkgNum() {
 			c.groupMsgBuilders.Delete(pkt.Message.Content.GetDivSeq())
-			c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
+			if pkt.Message.Head.GetFromUin() == c.Uin {
+				c.dispatchGroupMessageSelf(c.parseGroupMessage(builder.build()))
+			} else {
+				c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
+			}
 		}
 		return nil, nil
 	}
-	c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message))
+	if pkt.Message.Head.GetFromUin() == c.Uin {
+		c.dispatchGroupMessageSelf(c.parseGroupMessage(pkt.Message))
+	} else {
+		c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message))
+	}
 	return nil, nil
 }
 
