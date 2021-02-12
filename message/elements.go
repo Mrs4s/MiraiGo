@@ -158,10 +158,28 @@ type FriendFlashPicElement struct {
 
 type RedBagMessageType int
 
+// /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
 const (
-	Simple RedBagMessageType = 2
-	Lucky  RedBagMessageType = 3
-	World  RedBagMessageType = 6
+	RedBagSimple             RedBagMessageType = 2
+	RedBagLucky              RedBagMessageType = 3
+	RedBagSimpleTheme        RedBagMessageType = 4
+	RedBagLuckTheme          RedBagMessageType = 5
+	RedBagWord               RedBagMessageType = 6
+	RedBagSimpleSpecify      RedBagMessageType = 7
+	RedBagLucySpecify        RedBagMessageType = 8
+	RedBagSimpleSpecifyOver3 RedBagMessageType = 11
+	RedBagLuckSpecifyOver3   RedBagMessageType = 12
+	RedBagVoice              RedBagMessageType = 13
+	RedBagLook               RedBagMessageType = 14 // ?
+	RedBagVoiceC2C           RedBagMessageType = 15
+	RedBagH5                 RedBagMessageType = 17
+	RedBagKSong              RedBagMessageType = 18
+	RedBagEmoji              RedBagMessageType = 19
+	RedBagDraw               RedBagMessageType = 22
+	RedBagH5Common           RedBagMessageType = 20
+	RedBagWordChain          RedBagMessageType = 24
+	RedBagKeyword            RedBagMessageType = 25 // ?
+	RedBagDrawMultiModel     RedBagMessageType = 26 // ??
 )
 
 func NewText(s string) *TextElement {

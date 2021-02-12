@@ -500,8 +500,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			})
 		}
 		if elem.QQWalletMsg != nil && elem.QQWalletMsg.AioBody != nil {
+			// /com/tencent/mobileqq/data/MessageForQQWalletMsg.java#L366
 			msgType := elem.QQWalletMsg.AioBody.GetMsgType()
-			if msgType == 2 || msgType == 3 || msgType == 6 {
+			if msgType <= 1000 && elem.QQWalletMsg.AioBody.RedType != nil {
 				return []IMessageElement{
 					&RedBagElement{
 						MsgType: RedBagMessageType(msgType),
