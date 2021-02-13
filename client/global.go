@@ -25,31 +25,33 @@ import (
 )
 
 type DeviceInfo struct {
-	Display     []byte
-	Product     []byte
-	Device      []byte
-	Board       []byte
-	Brand       []byte
-	Model       []byte
-	Bootloader  []byte
-	FingerPrint []byte
-	BootId      []byte
-	ProcVersion []byte
-	BaseBand    []byte
-	SimInfo     []byte
-	OSType      []byte
-	MacAddress  []byte
-	IpAddress   []byte
-	WifiBSSID   []byte
-	WifiSSID    []byte
-	IMSIMd5     []byte
-	IMEI        string
-	AndroidId   []byte
-	APN         []byte
-	Guid        []byte
-	TgtgtKey    []byte
-	Protocol    ClientProtocol
-	Version     *Version
+	Display      []byte
+	Product      []byte
+	Device       []byte
+	Board        []byte
+	Brand        []byte
+	Model        []byte
+	Bootloader   []byte
+	FingerPrint  []byte
+	BootId       []byte
+	ProcVersion  []byte
+	BaseBand     []byte
+	SimInfo      []byte
+	OSType       []byte
+	MacAddress   []byte
+	IpAddress    []byte
+	WifiBSSID    []byte
+	WifiSSID     []byte
+	IMSIMd5      []byte
+	IMEI         string
+	AndroidId    []byte
+	APN          []byte
+	VendorName   []byte
+	VendorOSName []byte
+	Guid         []byte
+	TgtgtKey     []byte
+	Protocol     ClientProtocol
+	Version      *Version
 }
 
 type Version struct {
@@ -60,29 +62,31 @@ type Version struct {
 }
 
 type DeviceInfoFile struct {
-	Display     string       `json:"display"`
-	Product     string       `json:"product"`
-	Device      string       `json:"device"`
-	Board       string       `json:"board"`
-	Model       string       `json:"model"`
-	FingerPrint string       `json:"finger_print"`
-	BootId      string       `json:"boot_id"`
-	ProcVersion string       `json:"proc_version"`
-	Protocol    int          `json:"protocol"` // 0: Pad 1: Phone 2: Watch
-	IMEI        string       `json:"imei"`
-	Brand       string       `json:"brand"`
-	Bootloader  string       `json:"bootloader"`
-	BaseBand    string       `json:"base_band"`
-	Version     *VersionFile `json:"version"`
-	SimInfo     string       `json:"sim_info"`
-	OsType      string       `json:"os_type"`
-	MacAddress  string       `json:"mac_address"`
-	IpAddress   []int32      `json:"ip_address"`
-	WifiBSSID   string       `json:"wifiBSSID"`
-	WifiSSID    string       `json:"wifiSSID"`
-	ImsiMd5     string       `json:"imsiMd5"`
-	AndroidId   string       `json:"android_id"`
-	Apn         string       `json:"apn"`
+	Display      string       `json:"display"`
+	Product      string       `json:"product"`
+	Device       string       `json:"device"`
+	Board        string       `json:"board"`
+	Model        string       `json:"model"`
+	FingerPrint  string       `json:"finger_print"`
+	BootId       string       `json:"boot_id"`
+	ProcVersion  string       `json:"proc_version"`
+	Protocol     int          `json:"protocol"` // 0: Pad 1: Phone 2: Watch
+	IMEI         string       `json:"imei"`
+	Brand        string       `json:"brand"`
+	Bootloader   string       `json:"bootloader"`
+	BaseBand     string       `json:"base_band"`
+	Version      *VersionFile `json:"version"`
+	SimInfo      string       `json:"sim_info"`
+	OsType       string       `json:"os_type"`
+	MacAddress   string       `json:"mac_address"`
+	IpAddress    []int32      `json:"ip_address"`
+	WifiBSSID    string       `json:"wifi_bssid"`
+	WifiSSID     string       `json:"wifi_ssid"`
+	ImsiMd5      string       `json:"imsi_md5"`
+	AndroidId    string       `json:"android_id"`
+	Apn          string       `json:"apn"`
+	VendorName   string       `json:"vendor_name"`
+	VendorOSName string       `json:"vendor_os_name"`
 }
 
 type VersionFile struct {
@@ -111,27 +115,29 @@ type versionInfo struct {
 
 // default
 var SystemDeviceInfo = &DeviceInfo{
-	Display:     []byte("MIRAI.123456.001"),
-	Product:     []byte("mirai"),
-	Device:      []byte("mirai"),
-	Board:       []byte("mirai"),
-	Brand:       []byte("mamoe"),
-	Model:       []byte("mirai"),
-	Bootloader:  []byte("unknown"),
-	FingerPrint: []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/1234567:user/release-keys"),
-	BootId:      []byte("cb886ae2-00b6-4d68-a230-787f111d12c7"),
-	ProcVersion: []byte("Linux version 3.0.31-cb886ae2 (android-build@xxx.xxx.xxx.xxx.com)"),
-	BaseBand:    []byte{},
-	SimInfo:     []byte("T-Mobile"),
-	OSType:      []byte("android"),
-	MacAddress:  []byte("00:50:56:C0:00:08"),
-	IpAddress:   []byte{10, 0, 1, 3}, // 10.0.1.3
-	WifiBSSID:   []byte("00:50:56:C0:00:08"),
-	WifiSSID:    []byte("<unknown ssid>"),
-	IMEI:        "468356291846738",
-	AndroidId:   []byte("MIRAI.123456.001"),
-	APN:         []byte("wifi"),
-	Protocol:    IPad,
+	Display:      []byte("MIRAI.123456.001"),
+	Product:      []byte("mirai"),
+	Device:       []byte("mirai"),
+	Board:        []byte("mirai"),
+	Brand:        []byte("mamoe"),
+	Model:        []byte("mirai"),
+	Bootloader:   []byte("unknown"),
+	FingerPrint:  []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/1234567:user/release-keys"),
+	BootId:       []byte("cb886ae2-00b6-4d68-a230-787f111d12c7"),
+	ProcVersion:  []byte("Linux version 3.0.31-cb886ae2 (android-build@xxx.xxx.xxx.xxx.com)"),
+	BaseBand:     []byte{},
+	SimInfo:      []byte("T-Mobile"),
+	OSType:       []byte("android"),
+	MacAddress:   []byte("00:50:56:C0:00:08"),
+	IpAddress:    []byte{10, 0, 1, 3}, // 10.0.1.3
+	WifiBSSID:    []byte("00:50:56:C0:00:08"),
+	WifiSSID:     []byte("<unknown ssid>"),
+	IMEI:         "468356291846738",
+	AndroidId:    []byte("MIRAI.123456.001"),
+	APN:          []byte("wifi"),
+	VendorName:   []byte("MIUI"),
+	VendorOSName: []byte("mirai"),
+	Protocol:     IPad,
 	Version: &Version{
 		Incremental: []byte("5891938"),
 		Release:     []byte("10"),
@@ -163,7 +169,9 @@ func GenRandomDevice() {
 	t := md5.Sum(r)
 	SystemDeviceInfo.IMSIMd5 = t[:]
 	SystemDeviceInfo.IMEI = GenIMEI()
-	SystemDeviceInfo.AndroidId = SystemDeviceInfo.Display
+	r = make([]byte, 8)
+	rand.Read(r)
+	hex.Encode(SystemDeviceInfo.AndroidId, r)
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
 }
@@ -247,14 +255,16 @@ func (info *DeviceInfo) ToJson() []byte {
 			Codename:    string(info.Version.CodeName),
 			Sdk:         info.Version.Sdk,
 		},
-		SimInfo:    string(info.SimInfo),
-		OsType:     string(info.OSType),
-		MacAddress: string(info.MacAddress),
-		IpAddress:  []int32{int32(info.IpAddress[0]), int32(info.IpAddress[1]), int32(info.IpAddress[2]), int32(info.IpAddress[3])},
-		WifiBSSID:  string(info.WifiBSSID),
-		WifiSSID:   string(info.WifiSSID),
-		ImsiMd5:    hex.EncodeToString(info.IMSIMd5),
-		Apn:        string(info.APN),
+		SimInfo:      string(info.SimInfo),
+		OsType:       string(info.OSType),
+		MacAddress:   string(info.MacAddress),
+		IpAddress:    []int32{int32(info.IpAddress[0]), int32(info.IpAddress[1]), int32(info.IpAddress[2]), int32(info.IpAddress[3])},
+		WifiBSSID:    string(info.WifiBSSID),
+		WifiSSID:     string(info.WifiSSID),
+		ImsiMd5:      hex.EncodeToString(info.IMSIMd5),
+		Apn:          string(info.APN),
+		VendorName:   string(info.VendorName),
+		VendorOSName: string(info.VendorOSName),
 		Protocol: func() int {
 			switch info.Protocol {
 			case IPad:
@@ -311,11 +321,14 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	if f.IMEI != "" {
 		info.IMEI = f.IMEI
 	}
-	SetIfNotEmpty(&info.AndroidId, f.AndroidId)
 	SetIfNotEmpty(&info.APN, f.Apn)
+	SetIfNotEmpty(&info.VendorName, f.VendorName)
+	SetIfNotEmpty(&info.VendorOSName, f.VendorOSName)
 
-	info.AndroidId = info.Display // 兼容旧的
-	SetIfNotEmpty(&info.AndroidId, f.Display)
+	SetIfNotEmpty(&info.AndroidId, f.AndroidId)
+	if f.AndroidId == "" {
+		info.AndroidId = info.Display // ?
+	}
 
 	switch f.Protocol {
 	case 1:
