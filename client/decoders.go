@@ -4,27 +4,26 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
-	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/client/pb/notify"
-	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
-	"github.com/pkg/errors"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
+	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -584,7 +583,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
 							GroupCode: groupId,
 							Sender:    int64(b.OptMsgRedTips.SenderUin),
-							LuckyKing: int64(b.OptMsgRedTips.ReceiverUin),
+							LuckyKing: int64(b.OptMsgRedTips.LuckyUin),
 						})
 					}
 				}
