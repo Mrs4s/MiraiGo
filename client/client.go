@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary/jce"
-	jsoniter "github.com/json-iterator/go"
 	"io"
 	"math"
 	"math/rand"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/binary/jce"
+	jsoniter "github.com/json-iterator/go"
 
 	"github.com/pkg/errors"
 

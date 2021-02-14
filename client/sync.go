@@ -2,6 +2,11 @@ package client
 
 import (
 	"fmt"
+	"math/rand"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msf"
@@ -11,10 +16,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-	"math/rand"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 func init() {

@@ -6,11 +6,6 @@ import (
 	binary2 "encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb"
-	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 	"io"
 	"io/ioutil"
 	"net"
@@ -20,6 +15,12 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 )
 
 func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {

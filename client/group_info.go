@@ -2,6 +2,11 @@ package client
 
 import (
 	"fmt"
+	"math/rand"
+	"net/url"
+	"strings"
+	"sync"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
@@ -10,10 +15,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"math/rand"
-	"net/url"
-	"strings"
-	"sync"
 )
 
 type (

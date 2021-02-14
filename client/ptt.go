@@ -3,6 +3,9 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"io"
+	"os"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
@@ -13,8 +16,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"io"
-	"os"
 )
 
 func init() {

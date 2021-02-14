@@ -3,11 +3,12 @@ package jce
 import (
 	"bytes"
 	goBinary "encoding/binary"
-	"github.com/modern-go/reflect2"
 	"reflect"
 	"strconv"
 	"sync"
 	"unsafe"
+
+	"github.com/modern-go/reflect2"
 )
 
 type JceWriter struct {

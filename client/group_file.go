@@ -4,16 +4,17 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"math/rand"
+	"os"
+	"runtime/debug"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-	"io"
-	"math/rand"
-	"os"
-	"runtime/debug"
 )
 
 type (

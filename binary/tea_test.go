@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"testing"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 var testTEA = NewTeaCipher([]byte("0123456789ABCDEF"))

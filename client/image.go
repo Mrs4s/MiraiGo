@@ -4,6 +4,11 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"image"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -11,10 +16,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-	"image"
-	"io"
-	"os"
-	"strings"
 )
 
 func init() {

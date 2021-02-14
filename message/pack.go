@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/hex"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/golang/protobuf/proto"
