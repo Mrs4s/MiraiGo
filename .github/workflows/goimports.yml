@@ -1,0 +1,38 @@
+name: Goimports Style Fix
+
+on:
+  push:
+    branches: [ master ]
+      
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.13
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Fix stylings
+      run: |
+        export PATH="$PATH:$GOPATH/bin"
+        GO111MODULE=off go get golang.org/x/tools/cmd/goimports
+        goimports -l -w ./
+
+    - name: Commit back
+      continue-on-error: true
+      run: |
+        git config --local user.name 'github-actions'
+        git config --local user.email 'github-actions@users.noreply.github.com'
+        git add --all
+        git commit -m "ci(chore): Fix stylings"
+        git push
+
+#     - name: Test
+#       run: go test -v .
