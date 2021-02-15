@@ -163,12 +163,12 @@ const (
 	RedBagSimple             RedBagMessageType = 2
 	RedBagLucky              RedBagMessageType = 3
 	RedBagSimpleTheme        RedBagMessageType = 4
-	RedBagLuckyTheme          RedBagMessageType = 5
+	RedBagLuckyTheme         RedBagMessageType = 5
 	RedBagWord               RedBagMessageType = 6
 	RedBagSimpleSpecify      RedBagMessageType = 7
-	RedBagLuckySpecify        RedBagMessageType = 8
+	RedBagLuckySpecify       RedBagMessageType = 8
 	RedBagSimpleSpecifyOver3 RedBagMessageType = 11
-	RedBagLuckySpecifyOver3   RedBagMessageType = 12
+	RedBagLuckySpecifyOver3  RedBagMessageType = 12
 	RedBagVoice              RedBagMessageType = 13
 	RedBagLook               RedBagMessageType = 14 // ?
 	RedBagVoiceC2C           RedBagMessageType = 15
