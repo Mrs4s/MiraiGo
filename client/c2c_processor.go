@@ -2,12 +2,13 @@ package client
 
 import (
 	"fmt"
+	"sync/atomic"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"sync/atomic"
-	"time"
 )
 
 // com.tencent.mobileqq.app.QQMessageFacadeConfig::start
