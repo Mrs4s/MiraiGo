@@ -104,9 +104,11 @@ func (c *QQClient) decodeT119(data []byte) {
 	}
 	key := md5.Sum(append(append(c.PasswordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt32(uint32(c.Uin)) })...))
 	decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sigInfo.encryptedA1)
-	dr := binary.NewReader(decrypted)
-	dr.ReadBytes(51)
-	SystemDeviceInfo.TgtgtKey = dr.ReadBytes(16)
+	if len(decrypted) > 51+16 {
+		dr := binary.NewReader(decrypted)
+		dr.ReadBytes(51)
+		SystemDeviceInfo.TgtgtKey = dr.ReadBytes(16)
+	}
 	c.Nickname = nick
 	c.Age = age
 	c.Gender = gender

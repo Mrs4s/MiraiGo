@@ -11,7 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// com.tencent.mobileqq.app.QQMessageFacadeConfig::start
 var c2cDecoders = map[int32]func(*QQClient, *msg.Message){
 	33: troopAddMemberBroadcastDecoder,
 	35: troopSystemMessageDecoder, 36: troopSystemMessageDecoder, 37: troopSystemMessageDecoder,
