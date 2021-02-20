@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/rand"
 	"net"
+	"net/url"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -378,6 +379,15 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 		return nil, err
 	}
 	return &ret, nil
+}
+
+func (c *QQClient) AddGroupNoticeSimple(groupCode int64, text string) error {
+	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}`, groupCode, c.getCSRFToken(), url.QueryEscape(text))
+	_, err := utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), c.getCookiesWithDomain("qun.qq.com"))
+	if err != nil {
+		return errors.Wrap(err, "request error")
+	}
+	return nil
 }
 
 func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
