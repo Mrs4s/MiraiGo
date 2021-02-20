@@ -4,11 +4,12 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"google.golang.org/protobuf/proto"
 	"io"
 	"math/rand"
 	"os"
 	"runtime/debug"
+
+	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
