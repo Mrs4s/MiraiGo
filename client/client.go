@@ -4,10 +4,15 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
+	"html"
 	"io"
+	"io/ioutil"
 	"math"
 	"math/rand"
+	"mime/multipart"
 	"net"
+	"net/http"
+	"net/textproto"
 	"net/url"
 	"runtime/debug"
 	"sort"
@@ -17,16 +22,14 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/binary/jce"
-	jsoniter "github.com/json-iterator/go"
-
-	"github.com/pkg/errors"
-
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/pkg/errors"
 )
 
 var json = jsoniter.ConfigFastest
@@ -379,6 +382,56 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 		return nil, err
 	}
 	return &ret, nil
+}
+
+func (c *QQClient) uploadGroupNoticePic(img []byte) (string, error) {
+	buf := new(bytes.Buffer)
+	var w = multipart.NewWriter(buf)
+	err := w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
+	if err != nil {
+		return "", errors.Wrap(err, "write multipart<bkn> failed")
+	}
+	err = w.WriteField("source", "troopNotice")
+	if err != nil {
+		return "", errors.Wrap(err, "write multipart<source> failed")
+	}
+	err = w.WriteField("m", "0")
+	if err != nil {
+		return "", errors.Wrap(err, "write multipart<m> failed")
+	}
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", `form-data; name="pic_up"; filename="temp_uploadFile.png"`)
+	h.Set("Content-Type", "image/png")
+	fw, err := w.CreatePart(h)
+	if err != nil {
+		return "", errors.Wrap(err, "create multipart field<pic_up> failed")
+	}
+	_, err = fw.Write(img)
+	if err != nil {
+		return "", errors.Wrap(err, "write multipart<pic_up> failed")
+	}
+	err = w.Close()
+	if err != nil {
+		return "", errors.Wrap(err, "close multipart failed")
+	}
+	req, err := http.NewRequest("POST", "https://web.qun.qq.com/cgi-bin/announce/upload_img", buf)
+	if err != nil {
+		return "", errors.Wrap(err, "new request error")
+	}
+	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set("Cookie", c.getCookies())
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", errors.Wrap(err, "post error")
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", errors.Wrap(err, "read body error")
+	}
+	str := html.UnescapeString(string(body))
+	//fmt.Println(str)
+	return str, nil
 }
 
 func (c *QQClient) AddGroupNoticeSimple(groupCode int64, text string) error {
