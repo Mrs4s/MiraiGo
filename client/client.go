@@ -4,16 +4,10 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"html"
 	"io"
-	"io/ioutil"
 	"math"
 	"math/rand"
-	"mime/multipart"
 	"net"
-	"net/http"
-	"net/textproto"
-	"net/url"
 	"runtime/debug"
 	"sort"
 	"strconv"
@@ -382,65 +376,6 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 		return nil, err
 	}
 	return &ret, nil
-}
-
-func (c *QQClient) uploadGroupNoticePic(img []byte) (string, error) {
-	buf := new(bytes.Buffer)
-	var w = multipart.NewWriter(buf)
-	err := w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
-	if err != nil {
-		return "", errors.Wrap(err, "write multipart<bkn> failed")
-	}
-	err = w.WriteField("source", "troopNotice")
-	if err != nil {
-		return "", errors.Wrap(err, "write multipart<source> failed")
-	}
-	err = w.WriteField("m", "0")
-	if err != nil {
-		return "", errors.Wrap(err, "write multipart<m> failed")
-	}
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", `form-data; name="pic_up"; filename="temp_uploadFile.png"`)
-	h.Set("Content-Type", "image/png")
-	fw, err := w.CreatePart(h)
-	if err != nil {
-		return "", errors.Wrap(err, "create multipart field<pic_up> failed")
-	}
-	_, err = fw.Write(img)
-	if err != nil {
-		return "", errors.Wrap(err, "write multipart<pic_up> failed")
-	}
-	err = w.Close()
-	if err != nil {
-		return "", errors.Wrap(err, "close multipart failed")
-	}
-	req, err := http.NewRequest("POST", "https://web.qun.qq.com/cgi-bin/announce/upload_img", buf)
-	if err != nil {
-		return "", errors.Wrap(err, "new request error")
-	}
-	req.Header.Set("Content-Type", w.FormDataContentType())
-	req.Header.Set("Cookie", c.getCookies())
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return "", errors.Wrap(err, "post error")
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", errors.Wrap(err, "read body error")
-	}
-	str := html.UnescapeString(string(body))
-	//fmt.Println(str)
-	return str, nil
-}
-
-func (c *QQClient) AddGroupNoticeSimple(groupCode int64, text string) error {
-	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}`, groupCode, c.getCSRFToken(), url.QueryEscape(text))
-	_, err := utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), c.getCookiesWithDomain("qun.qq.com"))
-	if err != nil {
-		return errors.Wrap(err, "request error")
-	}
-	return nil
 }
 
 func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
