@@ -311,6 +311,7 @@ func (c *QQClient) init() {
 		go c.doHeartbeat()
 	}
 	_ = c.RefreshStatus()
+	_, _ = c.SyncSessions()
 	c.stat.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
 			c.stat.MessageReceived++
