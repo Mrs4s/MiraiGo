@@ -52,7 +52,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse) {
 			if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Minute*5); ok {
 				continue
 			}
-			c.msgSvcCache.Add(strKey, "", time.Minute)
+			c.msgSvcCache.Add(strKey, "", time.Minute*5)
 			if decoder, ok := c2cDecoders[pMsg.Head.GetMsgType()]; ok {
 				decoder(c, pMsg)
 			}
