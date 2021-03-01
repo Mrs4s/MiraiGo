@@ -72,6 +72,20 @@ func (cache *Cache) Get(key string) (interface{}, bool) {
 	return nil, false
 }
 
+func (cache *Cache) GetAndUpdate(key string, ttl time.Duration) (interface{}, bool) {
+	cache.lock.RLock()
+	defer cache.lock.RUnlock()
+
+	e, ok := cache.cache[key]
+
+	if ok && e.expiry != nil {
+		expiry := time.Now().Add(ttl)
+		e.expiry = &expiry
+		return e.value, true
+	}
+	return nil, false
+}
+
 // Add - add key/value in cache
 func (cache *Cache) Add(key string, value interface{}, ttl time.Duration) {
 	cache.lock.Lock()

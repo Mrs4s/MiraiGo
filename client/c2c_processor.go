@@ -49,7 +49,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse) {
 				continue
 			}
 			strKey := fmt.Sprintf("%d%d%d%d", pMsg.Head.GetFromUin(), pMsg.Head.GetToUin(), pMsg.Head.GetMsgSeq(), pMsg.Head.GetMsgUid())
-			if _, ok := c.msgSvcCache.Get(strKey); ok {
+			if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Minute*5); ok {
 				continue
 			}
 			c.msgSvcCache.Add(strKey, "", time.Minute)
