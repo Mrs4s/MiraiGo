@@ -235,6 +235,18 @@ message MessageItem {
   bytes sig = 7;
 }
 
+message Sub27DelFriend {
+  repeated uint64 uins = 1;
+}
+
+message Sub27ForwardBody {
+  Sub27DelFriend delFriend = 14;
+}
+
+message Sub27 {
+  repeated Sub27ForwardBody modInfos = 1;
+}
+
 message SubD4 {
   int64 uin = 1;
 }
