@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net"
 	"strconv"
 	"strings"
@@ -647,6 +648,22 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 				}
 				groupLeaveLock.Unlock()
+			case 0x27:
+				s27 := pb.Sub27{}
+				if err := proto.Unmarshal(probuf, &s27); err != nil {
+					return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+				}
+				for _, m := range s27.ModInfos {
+					if m.DelFriend != nil {
+						frdUin := m.DelFriend.Uins[0]
+						if frd := c.FindFriend(int64(frdUin)); frd != nil {
+							log.Infof("好友被删除: %v(%v)", frd.Nickname, frd.Uin)
+							if err := c.ReloadFriendList(); err != nil {
+								return nil, errors.Wrap(err, "failed to reload friend list")
+							}
+						}
+					}
+				}
 			case 290:
 				t := &notify.GeneralGrayTipInfo{}
 				_ = proto.Unmarshal(probuf, t)
