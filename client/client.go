@@ -313,6 +313,7 @@ func (c *QQClient) init() {
 		go c.doHeartbeat()
 	}
 	_ = c.RefreshStatus()
+	_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	_, _ = c.SyncSessions()
 	c.stat.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {

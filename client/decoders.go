@@ -10,8 +10,6 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -658,7 +656,6 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					if m.DelFriend != nil {
 						frdUin := m.DelFriend.Uins[0]
 						if frd := c.FindFriend(int64(frdUin)); frd != nil {
-							log.Infof("好友被删除: %v(%v)", frd.Nickname, frd.Uin)
 							if err := c.ReloadFriendList(); err != nil {
 								return nil, errors.Wrap(err, "failed to reload friend list")
 							}

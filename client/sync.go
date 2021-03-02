@@ -101,7 +101,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 	select {
 	case <-notifyChan:
 		stop()
-	case <-time.After(time.Second * 5):
+	case <-time.After(time.Second * 20):
 		stop()
 	}
 	return ret, nil
