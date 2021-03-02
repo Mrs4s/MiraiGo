@@ -18,7 +18,7 @@ var c2cDecoders = map[int32]func(*QQClient, *msg.Message, *c2cExtraOption){
 	45: troopSystemMessageDecoder, 46: troopSystemMessageDecoder, 84: troopSystemMessageDecoder,
 	85: troopSystemMessageDecoder, 86: troopSystemMessageDecoder, 87: troopSystemMessageDecoder,
 	140: tempSessionDecoder, 141: tempSessionDecoder,
-	166: privateMessageDecoder, 208: privateMessageDecoder,
+	166: privateMessageDecoder, 208: privatePttDecoder,
 	187: systemMessageDecoder, 188: systemMessageDecoder, 189: systemMessageDecoder,
 	190: systemMessageDecoder, 191: systemMessageDecoder,
 	529: msgType0x211Decoder,
@@ -153,7 +153,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, opt *c2c
 	}
 }
 
-func privateMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
+func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
 	if pMsg.Head.GetFromUin() == c.Uin {
 		for {
 			frdSeq := atomic.LoadInt32(&c.friendSeq)
@@ -172,7 +172,18 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) 
 	c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
 }
 
-func tempSessionDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
+func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
+	if pMsg.Body == nil || pMsg.Body.RichText == nil || pMsg.Body.RichText.Ptt == nil {
+		return
+	}
+	if len(pMsg.Body.RichText.Ptt.Reserve) != 0 {
+		//m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
+		// T3 -> timestamp T8 -> voiceType T9 -> voiceLength T10 -> PbReserveStruct
+	}
+	c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
+}
+
+func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
 	if pMsg.Head.C2CTmpMsgHead == nil {
 		return
 	}
@@ -186,7 +197,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
 	c.dispatchTempMessage(c.parseTempMessage(pMsg))
 }
 
-func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
+func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
 	groupJoinLock.Lock()
 	defer groupJoinLock.Unlock()
 	group := c.FindGroupByUin(pMsg.Head.GetFromUin())
@@ -212,7 +223,7 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtr
 	}
 }
 
-func systemMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
+func systemMessageDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
 	_, pkt := c.buildSystemMsgNewFriendPacket()
 	_ = c.send(pkt)
 }
@@ -232,7 +243,7 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOpti
 	}
 }
 
-func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
+func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
 	sub4 := msg.SubMsgType0X4Body{}
 	if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
 		err = errors.Wrap(err, "unmarshal sub msg 0x4 error")

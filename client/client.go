@@ -304,6 +304,9 @@ func (c *QQClient) RequestSMS() bool {
 }
 
 func (c *QQClient) init() {
+	if len(c.g) == 0 {
+		c.Warning("device lock is disable. http api may fail.")
+	}
 	c.Online = true
 	_ = c.registerClient()
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
@@ -629,7 +632,7 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 }
 
 func (c *QQClient) getSKey() string {
-	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() {
+	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() && len(c.g) > 0 {
 		c.Debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
 	}
