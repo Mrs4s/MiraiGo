@@ -2,9 +2,10 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/binary"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/binary"
 
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
