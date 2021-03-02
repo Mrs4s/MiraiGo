@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary"
 	"sync/atomic"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var c2cDecoders = map[int32]func(*QQClient, *msg.Message){
+var c2cDecoders = map[int32]func(*QQClient, *msg.Message, *c2cExtraOption){
 	33: troopAddMemberBroadcastDecoder,
 	35: troopSystemMessageDecoder, 36: troopSystemMessageDecoder, 37: troopSystemMessageDecoder,
 	45: troopSystemMessageDecoder, 46: troopSystemMessageDecoder, 84: troopSystemMessageDecoder,
@@ -23,7 +24,11 @@ var c2cDecoders = map[int32]func(*QQClient, *msg.Message){
 	529: msgType0x211Decoder,
 }
 
-func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse) {
+type c2cExtraOption struct {
+	UsedRegProxy bool
+}
+
+func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, opt *c2cExtraOption) {
 	c.syncCookie = rsp.SyncCookie
 	c.pubAccountCookie = rsp.PubAccountCookie
 	c.msgCtrlBuf = rsp.MsgCtrlBuf
@@ -54,7 +59,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse) {
 			}
 			c.msgSvcCache.Add(strKey, "", time.Minute*5)
 			if decoder, ok := c2cDecoders[pMsg.Head.GetMsgType()]; ok {
-				decoder(c, pMsg)
+				decoder(c, pMsg, opt)
 			}
 			/*
 				switch pMsg.Head.GetMsgType() {
@@ -148,7 +153,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse) {
 	}
 }
 
-func privateMessageDecoder(c *QQClient, pMsg *msg.Message) {
+func privateMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
 	if pMsg.Head.GetFromUin() == c.Uin {
 		for {
 			frdSeq := atomic.LoadInt32(&c.friendSeq)
@@ -167,7 +172,7 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message) {
 	c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
 }
 
-func tempSessionDecoder(c *QQClient, pMsg *msg.Message) {
+func tempSessionDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
 	if pMsg.Head.C2CTmpMsgHead == nil {
 		return
 	}
@@ -181,7 +186,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message) {
 	c.dispatchTempMessage(c.parseTempMessage(pMsg))
 }
 
-func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message) {
+func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
 	groupJoinLock.Lock()
 	defer groupJoinLock.Unlock()
 	group := c.FindGroupByUin(pMsg.Head.GetFromUin())
@@ -207,16 +212,27 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message) {
 	}
 }
 
-func systemMessageDecoder(c *QQClient, pMsg *msg.Message) {
+func systemMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
 	_, pkt := c.buildSystemMsgNewFriendPacket()
 	_ = c.send(pkt)
 }
 
-func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message) {
-	c.exceptAndDispatchGroupSysMsg()
+func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
+	if !opt.UsedRegProxy && pMsg.Head.GetMsgType() != 85 && pMsg.Head.GetMsgType() != 36 {
+		c.exceptAndDispatchGroupSysMsg()
+	}
+	if len(pMsg.Body.GetMsgContent()) == 0 {
+		return
+	}
+	reader := binary.NewReader(pMsg.GetBody().GetMsgContent())
+	groupCode := uint32(reader.ReadInt32())
+	if info := c.FindGroup(int64(groupCode)); info != nil && pMsg.Head.GetGroupName() != "" && info.Name != pMsg.Head.GetGroupName() {
+		c.Debug("group %v name updated. %v -> %v", groupCode, info.Name, pMsg.Head.GetGroupName())
+		info.Name = pMsg.Head.GetGroupName()
+	}
 }
 
-func msgType0x211Decoder(c *QQClient, pMsg *msg.Message) {
+func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, opt *c2cExtraOption) {
 	sub4 := msg.SubMsgType0X4Body{}
 	if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
 		err = errors.Wrap(err, "unmarshal sub msg 0x4 error")

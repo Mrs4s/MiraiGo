@@ -294,7 +294,7 @@ func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{},
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	c.c2cMessageSyncProcessor(&rsp)
+	c.c2cMessageSyncProcessor(&rsp, &c2cExtraOption{UsedRegProxy: false})
 	return nil, nil
 }
 

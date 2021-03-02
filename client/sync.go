@@ -376,7 +376,7 @@ func decodeMsgSyncResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 	if len(rsp.C2CMsg) > 4 {
 		c2cRsp := &msg.GetMessageResponse{}
 		if proto.Unmarshal(rsp.C2CMsg[4:], c2cRsp) == nil {
-			c.c2cMessageSyncProcessor(c2cRsp) // todo rewrite c2c processor
+			c.c2cMessageSyncProcessor(c2cRsp, &c2cExtraOption{UsedRegProxy: true})
 		}
 	}
 	return ret, nil
