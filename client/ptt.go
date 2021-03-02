@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"io"
@@ -60,33 +61,31 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 // UploadPrivatePtt 将语音数据使用好友语音通道上传到服务器, 返回 message.PrivateVoiceElement 可直接发送
 func (c *QQClient) UploadPrivatePtt(target int64, voice []byte) (*message.PrivateVoiceElement, error) {
 	h := md5.Sum(voice)
-	i, err := c.sendAndWait(c.buildPrivatePttStorePacket(target, h[:], int32(len(voice)), int32(len(voice))))
+	ext := c.buildC2CPttStoreBDHExt(target, h[:], int32(len(voice)), int32(len(voice)))
+	rsp, err := c.highwayUploadByBDH(bytes.NewReader(voice), 26, c.highwaySession.SigSession, ext, false)
 	if err != nil {
 		return nil, err
 	}
-	rsp := i.(pttUploadResponse)
-	if rsp.IsExists {
-		goto ok
+	if len(rsp) == 0 {
+		return nil, errors.New("miss rsp")
 	}
-	for i, ip := range rsp.UploadIp {
-		err := c.uploadPtt(ip, rsp.UploadPort[i], rsp.UploadKey, rsp.FileKey, voice, h[:])
-		if err != nil {
-			continue
-		}
-		goto ok
+	pkt := cmd0x346.C346RspBody{}
+	if err = proto.Unmarshal(rsp, &pkt); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	return nil, errors.New("upload failed")
-ok:
+	if pkt.ApplyUploadRsp == nil {
+		return nil, errors.New("miss apply upload rsp")
+	}
 	return &message.PrivateVoiceElement{
 		Ptt: &msg.Ptt{
-			FileType:  proto.Int32(4),
-			SrcUin:    &c.Uin,
-			FileMd5:   h[:],
-			FileName:  proto.String(hex.EncodeToString(h[:]) + ".amr"),
-			FileSize:  proto.Int32(int32(len(voice))),
-			FileKey:   rsp.FileKey,
+			FileType: proto.Int32(4),
+			SrcUin:   &c.Uin,
+			FileUuid: pkt.ApplyUploadRsp.Uuid,
+			FileMd5:  h[:],
+			FileName: proto.String(hex.EncodeToString(h[:]) + ".amr"),
+			FileSize: proto.Int32(int32(len(voice))),
+			// Reserve:   constructPTTExtraInfo(1, int32(len(voice))), // todo length
 			BoolValid: proto.Bool(true),
-			PbReserve: []byte{8, 0, 40, 0, 56, 0},
 		}}, nil
 }
 
@@ -291,7 +290,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interfa
 }
 
 // PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500
-func (c *QQClient) buildPrivatePttStorePacket(target int64, md5 []byte, size, voiceLength int32) (uint16, []byte) {
+func (c *QQClient) buildC2CPttStoreBDHExt(target int64, md5 []byte, size, voiceLength int32) []byte {
 	seq := c.nextSeq()
 	req := &cmd0x346.C346ReqBody{
 		Cmd: 500,
@@ -315,38 +314,7 @@ func (c *QQClient) buildPrivatePttStorePacket(target int64, md5 []byte, size, vo
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500
-func decodePrivatePttStoreResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
-	rsp := cmd0x346.C346RspBody{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		c.Error("unmarshal cmd0x346 rsp body error: %v", err)
-		return nil, errors.Wrap(err, "unmarshal cmd0x346 rsp body error")
-	}
-	if rsp.ApplyUploadRsp == nil {
-		c.Error("decode apply upload 500 error: apply rsp is nil.")
-		return nil, errors.New("apply rsp is nil")
-	}
-	if rsp.ApplyUploadRsp.RetCode != 0 {
-		c.Error("decode apply upload 500 error: %v", rsp.ApplyUploadRsp.RetCode)
-		return nil, errors.Errorf("apply upload rsp error: %d", rsp.ApplyUploadRsp.RetCode)
-	}
-	if rsp.ApplyUploadRsp.BoolFileExist {
-		return pttUploadResponse{IsExists: true}, nil
-	}
-	var port []int32
-	for range rsp.ApplyUploadRsp.UploadipList {
-		port = append(port, rsp.ApplyUploadRsp.UploadPort)
-	}
-	return pttUploadResponse{
-		UploadKey:  rsp.ApplyUploadRsp.UploadKey,
-		UploadIp:   rsp.ApplyUploadRsp.UploadipList,
-		UploadPort: port,
-		FileKey:    rsp.ApplyUploadRsp.Uuid,
-	}, nil
+	return payload
 }
 
 // PttCenterSvr.ShortVideoDownReq
@@ -374,4 +342,20 @@ func decodeGroupShortVideoUploadResponse(_ *QQClient, _ uint16, payload []byte) 
 		return nil, errors.Errorf("ret code error: %v", rsp.PttShortVideoUploadRsp.RetCode)
 	}
 	return rsp.PttShortVideoUploadRsp, nil
+}
+
+func constructPTTExtraInfo(codec, length int32) []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteByte(3)
+		w.WriteByte(8)
+		w.WriteUInt16(4)
+		w.WriteUInt32(uint32(codec))
+		w.WriteByte(9)
+		w.WriteUInt16(4)
+		w.WriteUInt32(uint32(14)) // length 时间
+		w.WriteByte(10)
+		info := []byte{0x08, 0x00, 0x28, 0x00, 0x38, 0x00} // todo
+		w.WriteUInt16(uint16(len(info)))
+		w.Write(info)
+	})
 }
