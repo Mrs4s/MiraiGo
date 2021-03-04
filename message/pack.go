@@ -128,7 +128,7 @@ func (e *FriendImageElement) Pack() (r []*msg.Elem) {
 func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	// id =35 已移至 ForwardElement
-	if e.Id == 33 {
+	if e.Id == 1 {
 		r = append(r, &msg.Elem{
 			Text: &msg.Text{Str: &e.ResId},
 		})

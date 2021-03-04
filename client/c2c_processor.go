@@ -178,24 +178,26 @@ func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
 		return
 	}
 	if len(pMsg.Body.RichText.Ptt.Reserve) != 0 {
-		//m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
+		// m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
 		// T3 -> timestamp T8 -> voiceType T9 -> voiceLength T10 -> PbReserveStruct
 	}
 	c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
 }
 
 func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
-	if pMsg.Head.C2CTmpMsgHead == nil {
+	if pMsg.Head.C2CTmpMsgHead == nil || pMsg.Body == nil {
 		return
 	}
-	group := c.FindGroupByUin(pMsg.Head.C2CTmpMsgHead.GetGroupUin())
-	if group == nil {
-		return
+	if pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6 {
+		group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
+		if group == nil {
+			return
+		}
+		if pMsg.Head.GetFromUin() == c.Uin {
+			return
+		}
+		c.dispatchTempMessage(c.parseTempMessage(pMsg))
 	}
-	if pMsg.Head.GetFromUin() == c.Uin {
-		return
-	}
-	c.dispatchTempMessage(c.parseTempMessage(pMsg))
 }
 
 func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *c2cExtraOption) {
