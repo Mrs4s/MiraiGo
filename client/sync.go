@@ -29,7 +29,6 @@ func init() {
 }
 
 type (
-
 	// SessionSyncResponse 会话同步结果
 	SessionSyncResponse struct {
 		GroupSessions []*GroupSessionInfo
@@ -342,7 +341,7 @@ func decodePushParamPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 }
 
 // RegPrxySvc.PbSyncMsg
-func decodeMsgSyncResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := &msf.SvcRegisterProxyMsgResp{}
 	if err := proto.Unmarshal(payload, rsp); err != nil {
 		return nil, err
@@ -376,7 +375,7 @@ func decodeMsgSyncResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 	if len(rsp.C2CMsg) > 4 {
 		c2cRsp := &msg.GetMessageResponse{}
 		if proto.Unmarshal(rsp.C2CMsg[4:], c2cRsp) == nil {
-			c.c2cMessageSyncProcessor(c2cRsp, &c2cExtraOption{UsedRegProxy: true})
+			c.c2cMessageSyncProcessor(c2cRsp, info)
 		}
 	}
 	return ret, nil

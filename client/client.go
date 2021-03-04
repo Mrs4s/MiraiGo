@@ -28,7 +28,7 @@ import (
 
 var json = jsoniter.ConfigFastest
 
-//go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]func(i interface{}, err error)"
+//go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]*handlerInfo"
 
 type QQClient struct {
 	Uin         int64
@@ -119,6 +119,11 @@ type loginSigInfo struct {
 
 	psKeyMap    map[string][]byte
 	pt4TokenMap map[string][]byte
+}
+
+type handlerInfo struct {
+	fun    func(i interface{}, err error)
+	params requestParams
 }
 
 var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){
@@ -313,7 +318,10 @@ func (c *QQClient) init() {
 		go c.doHeartbeat()
 	}
 	_ = c.RefreshStatus()
-	_, _ = c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
+	go func() {
+		seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
+		_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
+	}()
 	_, _ = c.SyncSessions()
 	c.stat.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
@@ -796,7 +804,7 @@ func (c *QQClient) send(pkt []byte) error {
 	return errors.Wrap(err, "Packet failed to send")
 }
 
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) (interface{}, error) {
 	type T struct {
 		Response interface{}
 		Error    error
@@ -809,12 +817,20 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 
 	ch := make(chan T)
 	defer close(ch)
-	c.handlers.Store(seq, func(i interface{}, err error) {
+
+	p := func() requestParams {
+		if len(params) == 0 {
+			return nil
+		}
+		return params[0]
+	}()
+
+	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
 		ch <- T{
 			Response: i,
 			Error:    err,
 		}
-	})
+	}, params: p})
 
 	retry := 0
 	for true {
@@ -916,21 +932,28 @@ func (c *QQClient) netLoop() {
 
 			if decoder, ok := decoders[pkt.CommandName]; ok {
 				// found predefined decoder
+				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
 				rsp, err := decoder(c, &incomingPacketInfo{
 					SequenceId:  pkt.SequenceId,
 					CommandName: pkt.CommandName,
+					Params: func() requestParams {
+						if !ok {
+							return nil
+						}
+						return info.params
+					}(),
 				}, payload)
 				if err != nil {
 					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
 				}
-				if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
-					f(rsp, err)
+				if ok {
+					info.fun(rsp, err)
 				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
 					f.(func(interface{}, error))(rsp, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder
-				f(nil, nil)
+				f.fun(nil, nil)
 			} else {
 				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}

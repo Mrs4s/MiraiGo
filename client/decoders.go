@@ -288,13 +288,13 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 }
 
 // MessageSvc.PbGetMsg
-func decodeMessageSvcPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMessageSvcPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.GetMessageResponse{}
 	err := proto.Unmarshal(payload, &rsp)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	c.c2cMessageSyncProcessor(&rsp, &c2cExtraOption{UsedRegProxy: false})
+	c.c2cMessageSyncProcessor(&rsp, info)
 	return nil, nil
 }
 

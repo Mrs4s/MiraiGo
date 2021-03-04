@@ -117,7 +117,10 @@ type (
 	incomingPacketInfo struct {
 		CommandName string
 		SequenceId  uint16
+		Params      requestParams
 	}
+
+	requestParams map[string]interface{}
 )
 
 // default
@@ -582,6 +585,17 @@ func genLongTemplate(resId, brief string, ts int64) *message.ServiceElement {
 		ResId:   resId,
 		SubType: "Long",
 	}
+}
+
+func (p requestParams) bool(k string) bool {
+	if p == nil {
+		return false
+	}
+	i, ok := p[k]
+	if !ok {
+		return false
+	}
+	return i.(bool)
 }
 
 func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {

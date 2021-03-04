@@ -70,9 +70,7 @@ type readOnlyHandlerMap struct {
 
 // expunged is an arbitrary pointer that marks entries which have been deleted
 // from the dirty map.
-var expungedHandlerMap = unsafe.Pointer(new(func(i interface{}, err error,
-
-)))
+var expungedHandlerMap = unsafe.Pointer(new(*handlerInfo))
 
 // An entry is a slot in the map corresponding to a particular key.
 type entryHandlerMap struct {
@@ -97,18 +95,14 @@ type entryHandlerMap struct {
 	p unsafe.Pointer // *interface{}
 }
 
-func newEntryHandlerMap(i func(i interface{}, err error,
-
-)) *entryHandlerMap {
+func newEntryHandlerMap(i *handlerInfo) *entryHandlerMap {
 	return &entryHandlerMap{p: unsafe.Pointer(&i)}
 }
 
 // Load returns the value stored in the map for a key, or nil if no
 // value is present.
 // The ok result indicates whether value was found in the map.
-func (m *HandlerMap) Load(key uint16) (value func(i interface{}, err error,
-
-), ok bool) {
+func (m *HandlerMap) Load(key uint16) (value *handlerInfo, ok bool) {
 	read, _ := m.read.Load().(readOnlyHandlerMap)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -133,22 +127,16 @@ func (m *HandlerMap) Load(key uint16) (value func(i interface{}, err error,
 	return e.load()
 }
 
-func (e *entryHandlerMap) load() (value func(i interface{}, err error,
-
-), ok bool) {
+func (e *entryHandlerMap) load() (value *handlerInfo, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == nil || p == expungedHandlerMap {
 		return value, false
 	}
-	return *(*func(i interface{}, err error,
-
-	))(p), true
+	return *(**handlerInfo)(p), true
 }
 
 // Store sets the value for a key.
-func (m *HandlerMap) Store(key uint16, value func(i interface{}, err error,
-
-)) {
+func (m *HandlerMap) Store(key uint16, value *handlerInfo) {
 	read, _ := m.read.Load().(readOnlyHandlerMap)
 	if e, ok := read.m[key]; ok && e.tryStore(&value) {
 		return
@@ -181,9 +169,7 @@ func (m *HandlerMap) Store(key uint16, value func(i interface{}, err error,
 //
 // If the entry is expunged, tryStore returns false and leaves the entry
 // unchanged.
-func (e *entryHandlerMap) tryStore(i *func(i interface{}, err error,
-
-)) bool {
+func (e *entryHandlerMap) tryStore(i **handlerInfo) bool {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == expungedHandlerMap {
@@ -206,20 +192,14 @@ func (e *entryHandlerMap) unexpungeLocked() (wasExpunged bool) {
 // storeLocked unconditionally stores a value to the entry.
 //
 // The entry must be known not to be expunged.
-func (e *entryHandlerMap) storeLocked(i *func(i interface{}, err error,
-
-)) {
+func (e *entryHandlerMap) storeLocked(i **handlerInfo) {
 	atomic.StorePointer(&e.p, unsafe.Pointer(i))
 }
 
 // LoadOrStore returns the existing value for the key if present.
 // Otherwise, it stores and returns the given value.
 // The loaded result is true if the value was loaded, false if stored.
-func (m *HandlerMap) LoadOrStore(key uint16, value func(i interface{}, err error,
-
-)) (actual func(i interface{}, err error,
-
-), loaded bool) {
+func (m *HandlerMap) LoadOrStore(key uint16, value *handlerInfo) (actual *handlerInfo, loaded bool) {
 	// Avoid locking if it's a clean hit.
 	read, _ := m.read.Load().(readOnlyHandlerMap)
 	if e, ok := read.m[key]; ok {
@@ -259,19 +239,13 @@ func (m *HandlerMap) LoadOrStore(key uint16, value func(i interface{}, err error
 //
 // If the entry is expunged, tryLoadOrStore leaves the entry unchanged and
 // returns with ok==false.
-func (e *entryHandlerMap) tryLoadOrStore(i func(i interface{}, err error,
-
-)) (actual func(i interface{}, err error,
-
-), loaded, ok bool) {
+func (e *entryHandlerMap) tryLoadOrStore(i *handlerInfo) (actual *handlerInfo, loaded, ok bool) {
 	p := atomic.LoadPointer(&e.p)
 	if p == expungedHandlerMap {
 		return actual, false, false
 	}
 	if p != nil {
-		return *(*func(i interface{}, err error,
-
-		))(p), true, true
+		return *(**handlerInfo)(p), true, true
 	}
 
 	// Copy the interface after the first load to make this method more amenable
@@ -287,18 +261,14 @@ func (e *entryHandlerMap) tryLoadOrStore(i func(i interface{}, err error,
 			return actual, false, false
 		}
 		if p != nil {
-			return *(*func(i interface{}, err error,
-
-			))(p), true, true
+			return *(**handlerInfo)(p), true, true
 		}
 	}
 }
 
 // LoadAndDelete deletes the value for a key, returning the previous value if any.
 // The loaded result reports whether the key was present.
-func (m *HandlerMap) LoadAndDelete(key uint16) (value func(i interface{}, err error,
-
-), loaded bool) {
+func (m *HandlerMap) LoadAndDelete(key uint16) (value *handlerInfo, loaded bool) {
 	read, _ := m.read.Load().(readOnlyHandlerMap)
 	e, ok := read.m[key]
 	if !ok && read.amended {
@@ -326,18 +296,14 @@ func (m *HandlerMap) Delete(key uint16) {
 	m.LoadAndDelete(key)
 }
 
-func (e *entryHandlerMap) delete() (value func(i interface{}, err error,
-
-), ok bool) {
+func (e *entryHandlerMap) delete() (value *handlerInfo, ok bool) {
 	for {
 		p := atomic.LoadPointer(&e.p)
 		if p == nil || p == expungedHandlerMap {
 			return value, false
 		}
 		if atomic.CompareAndSwapPointer(&e.p, p, nil) {
-			return *(*func(i interface{}, err error,
-
-			))(p), true
+			return *(**handlerInfo)(p), true
 		}
 	}
 }
@@ -352,9 +318,7 @@ func (e *entryHandlerMap) delete() (value func(i interface{}, err error,
 //
 // Range may be O(N) with the number of elements in the map even if f returns
 // false after a constant number of calls.
-func (m *HandlerMap) Range(f func(key uint16, value func(i interface{}, err error,
-
-)) bool) {
+func (m *HandlerMap) Range(f func(key uint16, value *handlerInfo) bool) {
 	// We need to be able to iterate over all of the keys that were already
 	// present at the start of the call to Range.
 	// If read.amended is false, then read.m satisfies that property without
