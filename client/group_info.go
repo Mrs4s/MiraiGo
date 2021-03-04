@@ -183,7 +183,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 }
 
 // SummaryCard.ReqSearch
-func decodeGroupSearchResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupSearchResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -219,7 +219,7 @@ func decodeGroupSearchResponse(_ *QQClient, _ uint16, payload []byte) (interface
 }
 
 // OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D88DRspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {

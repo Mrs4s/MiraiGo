@@ -260,7 +260,7 @@ func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash [
 }
 
 // PttStore.GroupPttUp
-func decodeGroupPttStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupPttStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -318,7 +318,7 @@ func (c *QQClient) buildC2CPttStoreBDHExt(target int64, md5 []byte, size, voiceL
 }
 
 // PttCenterSvr.ShortVideoDownReq
-func decodePttShortVideoDownResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodePttShortVideoDownResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := pttcenter.ShortVideoRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -330,7 +330,7 @@ func decodePttShortVideoDownResponse(_ *QQClient, _ uint16, payload []byte) (int
 }
 
 // PttCenterSvr.GroupShortVideoUpReq
-func decodeGroupShortVideoUploadResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupShortVideoUploadResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := pttcenter.ShortVideoRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

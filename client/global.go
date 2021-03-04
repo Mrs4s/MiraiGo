@@ -24,94 +24,101 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type DeviceInfo struct {
-	Display      []byte
-	Product      []byte
-	Device       []byte
-	Board        []byte
-	Brand        []byte
-	Model        []byte
-	Bootloader   []byte
-	FingerPrint  []byte
-	BootId       []byte
-	ProcVersion  []byte
-	BaseBand     []byte
-	SimInfo      []byte
-	OSType       []byte
-	MacAddress   []byte
-	IpAddress    []byte
-	WifiBSSID    []byte
-	WifiSSID     []byte
-	IMSIMd5      []byte
-	IMEI         string
-	AndroidId    []byte
-	APN          []byte
-	VendorName   []byte
-	VendorOSName []byte
-	Guid         []byte
-	TgtgtKey     []byte
-	Protocol     ClientProtocol
-	Version      *Version
-}
+type (
+	DeviceInfo struct {
+		Display      []byte
+		Product      []byte
+		Device       []byte
+		Board        []byte
+		Brand        []byte
+		Model        []byte
+		Bootloader   []byte
+		FingerPrint  []byte
+		BootId       []byte
+		ProcVersion  []byte
+		BaseBand     []byte
+		SimInfo      []byte
+		OSType       []byte
+		MacAddress   []byte
+		IpAddress    []byte
+		WifiBSSID    []byte
+		WifiSSID     []byte
+		IMSIMd5      []byte
+		IMEI         string
+		AndroidId    []byte
+		APN          []byte
+		VendorName   []byte
+		VendorOSName []byte
+		Guid         []byte
+		TgtgtKey     []byte
+		Protocol     ClientProtocol
+		Version      *Version
+	}
 
-type Version struct {
-	Incremental []byte
-	Release     []byte
-	CodeName    []byte
-	Sdk         uint32
-}
+	Version struct {
+		Incremental []byte
+		Release     []byte
+		CodeName    []byte
+		Sdk         uint32
+	}
 
-type DeviceInfoFile struct {
-	Display      string       `json:"display"`
-	Product      string       `json:"product"`
-	Device       string       `json:"device"`
-	Board        string       `json:"board"`
-	Model        string       `json:"model"`
-	FingerPrint  string       `json:"finger_print"`
-	BootId       string       `json:"boot_id"`
-	ProcVersion  string       `json:"proc_version"`
-	Protocol     int          `json:"protocol"` // 0: Pad 1: Phone 2: Watch
-	IMEI         string       `json:"imei"`
-	Brand        string       `json:"brand"`
-	Bootloader   string       `json:"bootloader"`
-	BaseBand     string       `json:"base_band"`
-	Version      *VersionFile `json:"version"`
-	SimInfo      string       `json:"sim_info"`
-	OsType       string       `json:"os_type"`
-	MacAddress   string       `json:"mac_address"`
-	IpAddress    []int32      `json:"ip_address"`
-	WifiBSSID    string       `json:"wifi_bssid"`
-	WifiSSID     string       `json:"wifi_ssid"`
-	ImsiMd5      string       `json:"imsi_md5"`
-	AndroidId    string       `json:"android_id"`
-	Apn          string       `json:"apn"`
-	VendorName   string       `json:"vendor_name"`
-	VendorOSName string       `json:"vendor_os_name"`
-}
+	DeviceInfoFile struct {
+		Display      string       `json:"display"`
+		Product      string       `json:"product"`
+		Device       string       `json:"device"`
+		Board        string       `json:"board"`
+		Model        string       `json:"model"`
+		FingerPrint  string       `json:"finger_print"`
+		BootId       string       `json:"boot_id"`
+		ProcVersion  string       `json:"proc_version"`
+		Protocol     int          `json:"protocol"` // 0: Pad 1: Phone 2: Watch
+		IMEI         string       `json:"imei"`
+		Brand        string       `json:"brand"`
+		Bootloader   string       `json:"bootloader"`
+		BaseBand     string       `json:"base_band"`
+		Version      *VersionFile `json:"version"`
+		SimInfo      string       `json:"sim_info"`
+		OsType       string       `json:"os_type"`
+		MacAddress   string       `json:"mac_address"`
+		IpAddress    []int32      `json:"ip_address"`
+		WifiBSSID    string       `json:"wifi_bssid"`
+		WifiSSID     string       `json:"wifi_ssid"`
+		ImsiMd5      string       `json:"imsi_md5"`
+		AndroidId    string       `json:"android_id"`
+		Apn          string       `json:"apn"`
+		VendorName   string       `json:"vendor_name"`
+		VendorOSName string       `json:"vendor_os_name"`
+	}
 
-type VersionFile struct {
-	Incremental string `json:"incremental"`
-	Release     string `json:"release"`
-	Codename    string `json:"codename"`
-	Sdk         uint32 `json:"sdk"`
-}
+	VersionFile struct {
+		Incremental string `json:"incremental"`
+		Release     string `json:"release"`
+		Codename    string `json:"codename"`
+		Sdk         uint32 `json:"sdk"`
+	}
 
-type groupMessageBuilder struct {
-	MessageSlices []*msg.Message
-}
+	groupMessageBuilder struct {
+		MessageSlices []*msg.Message
+	}
 
-type versionInfo struct {
-	ApkSign         []byte
-	ApkId           string
-	SortVersionName string
-	SdkVersion      string
-	AppId           uint32
-	BuildTime       uint32
-	SSOVersion      uint32
-	MiscBitmap      uint32
-	SubSigmap       uint32
-	MainSigMap      uint32
-}
+	versionInfo struct {
+		ApkSign         []byte
+		ApkId           string
+		SortVersionName string
+		SdkVersion      string
+		AppId           uint32
+		BuildTime       uint32
+		SSOVersion      uint32
+		MiscBitmap      uint32
+		SubSigmap       uint32
+		MainSigMap      uint32
+	}
+
+	incomingPacketInfo struct {
+		CommandName string
+		SequenceId  uint16
+	}
+)
 
 // default
 var SystemDeviceInfo = &DeviceInfo{

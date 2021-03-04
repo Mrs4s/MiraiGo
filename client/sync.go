@@ -274,7 +274,7 @@ func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, [
 }
 
 // StatSvc.GetDevLoginInfo
-func decodeDevListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeDevListResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -297,7 +297,7 @@ func decodeDevListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, 
 }
 
 // RegPrxySvc.PushParam
-func decodePushParamPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodePushParamPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -342,7 +342,7 @@ func decodePushParamPacket(c *QQClient, _ uint16, payload []byte) (interface{}, 
 }
 
 // RegPrxySvc.PbSyncMsg
-func decodeMsgSyncResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeMsgSyncResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := &msf.SvcRegisterProxyMsgResp{}
 	if err := proto.Unmarshal(payload, rsp); err != nil {
 		return nil, err
@@ -382,7 +382,7 @@ func decodeMsgSyncResponse(c *QQClient, _ uint16, payload []byte) (interface{}, 
 	return ret, nil
 }
 
-func decodeMsgReadedResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeMsgReadedResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.PbMsgReadedReportResp{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -396,7 +396,7 @@ func decodeMsgReadedResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 var loginNotifyLock sync.Mutex
 
 // StatSvc.SvcReqMSFLoginNotify
-func decodeLoginNotifyPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeLoginNotifyPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}

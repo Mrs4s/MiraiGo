@@ -121,7 +121,7 @@ type loginSigInfo struct {
 	pt4TokenMap map[string][]byte
 }
 
-var decoders = map[string]func(*QQClient, uint16, []byte) (interface{}, error){
+var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 	"StatSvc.register":                             decodeClientRegisterResponse,
@@ -916,7 +916,10 @@ func (c *QQClient) netLoop() {
 
 			if decoder, ok := decoders[pkt.CommandName]; ok {
 				// found predefined decoder
-				rsp, err := decoder(c, pkt.SequenceId, payload)
+				rsp, err := decoder(c, &incomingPacketInfo{
+					SequenceId:  pkt.SequenceId,
+					CommandName: pkt.CommandName,
+				}, payload)
 				if err != nil {
 					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
 				}
