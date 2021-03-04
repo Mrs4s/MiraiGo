@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"runtime/debug"
+	"sync"
 
 	"google.golang.org/protobuf/proto"
 
@@ -53,6 +54,8 @@ type (
 		TotalFileCount uint32 `json:"total_file_count"`
 	}
 )
+
+var fileSingleFlight = sync.Map{}
 
 func init() {
 	decoders["OidbSvc.0x6d8_1"] = decodeOIDB6d81Response
@@ -156,6 +159,17 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderId string) ([]*GroupFile, []*G
 }
 
 func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
+	// 同文件等待其他线程上传
+	if wg, ok := fileSingleFlight.Load(p); ok {
+		wg.(*sync.WaitGroup).Wait()
+	} else {
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		fileSingleFlight.Store(p, wg)
+		defer wg.Done()
+		defer fileSingleFlight.Delete(p)
+	}
+
 	file, err := os.OpenFile(p, os.O_RDONLY, 0666)
 	if err != nil {
 		return errors.Wrap(err, "open file error")
