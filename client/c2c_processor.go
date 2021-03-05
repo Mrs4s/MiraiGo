@@ -19,7 +19,11 @@ var c2cDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
 	45: troopSystemMessageDecoder, 46: troopSystemMessageDecoder, 84: troopSystemMessageDecoder,
 	85: troopSystemMessageDecoder, 86: troopSystemMessageDecoder, 87: troopSystemMessageDecoder,
 	140: tempSessionDecoder, 141: tempSessionDecoder,
-	166: privateMessageDecoder, 208: privatePttDecoder,
+	9: privateMessageDecoder, 10: privateMessageDecoder, 31: privateMessageDecoder,
+	79: privateMessageDecoder, 97: privateMessageDecoder, 120: privateMessageDecoder,
+	132: privateMessageDecoder, 133: privateMessageDecoder, 166: privateMessageDecoder,
+	167: privateMessageDecoder,
+	208: privatePttDecoder,
 	187: systemMessageDecoder, 188: systemMessageDecoder, 189: systemMessageDecoder,
 	190: systemMessageDecoder, 191: systemMessageDecoder,
 	529: msgType0x211Decoder,
@@ -52,6 +56,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 			}
 			strKey := fmt.Sprintf("%d%d%d%d", pMsg.Head.GetFromUin(), pMsg.Head.GetToUin(), pMsg.Head.GetMsgSeq(), pMsg.Head.GetMsgUid())
 			if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Minute*5); ok {
+				c.Debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
 				continue
 			}
 			c.msgSvcCache.Add(strKey, "", time.Minute*5)
@@ -60,6 +65,8 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 			}
 			if decoder, ok := c2cDecoders[pMsg.Head.GetMsgType()]; ok {
 				decoder(c, pMsg, info)
+			} else {
+				c.Debug("unknown msg type on c2c processor: %v", pMsg.Head.GetMsgType())
 			}
 			/*
 				switch pMsg.Head.GetMsgType() {
@@ -155,22 +162,27 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 }
 
 func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
-	if pMsg.Head.GetFromUin() == c.Uin {
-		for {
-			frdSeq := atomic.LoadInt32(&c.friendSeq)
-			if frdSeq < pMsg.Head.GetMsgSeq() {
-				if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, pMsg.Head.GetMsgSeq()) {
+	switch pMsg.Head.GetC2CCmd() {
+	case 11, 175: // friend msg
+		if pMsg.Head.GetFromUin() == c.Uin {
+			for {
+				frdSeq := atomic.LoadInt32(&c.friendSeq)
+				if frdSeq < pMsg.Head.GetMsgSeq() {
+					if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, pMsg.Head.GetMsgSeq()) {
+						break
+					}
+				} else {
 					break
 				}
-			} else {
-				break
 			}
 		}
+		if pMsg.Body.RichText == nil || pMsg.Body.RichText.Elems == nil {
+			return
+		}
+		c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
+	default:
+		c.Debug("unknown c2c cmd on private msg decoder: %v", pMsg.Head.GetC2CCmd())
 	}
-	if pMsg.Body.RichText == nil || pMsg.Body.RichText.Elems == nil {
-		return
-	}
-	c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
 }
 
 func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
