@@ -320,7 +320,6 @@ func (c *QQClient) init() {
 	_ = c.RefreshStatus()
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
-	_, _ = c.SyncSessions()
 	c.stat.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
 			c.stat.MessageReceived++
