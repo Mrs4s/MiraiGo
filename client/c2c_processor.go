@@ -200,7 +200,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 	if pMsg.Head.C2CTmpMsgHead == nil || pMsg.Body == nil {
 		return
 	}
-	if pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6 {
+	if (pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6) || pMsg.Body.RichText != nil {
 		group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
 		if group == nil {
 			return
