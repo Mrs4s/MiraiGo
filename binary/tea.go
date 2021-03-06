@@ -17,9 +17,7 @@ func isZero(a []byte) bool { // MAGIC
 	return *(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&a)).Data)) == 0
 }
 
-type TEA struct {
-	key [4]uint32
-}
+type TEA [4]uint32
 
 // http://bbs.chinaunix.net/thread-583468-1-1.html
 // 感谢xichen大佬对TEA的解释
@@ -138,8 +136,8 @@ var sumTable = [0x10]uint32{
 func (t *TEA) encode(src, dst []byte) {
 	v0, v1 := unpack(src)
 	for i := 0; i < 0x10; i++ {
-		v0 += ((v1 << 4) + t.key[0]) ^ (v1 + sumTable[i]) ^ ((v1 >> 5) + t.key[1])
-		v1 += ((v0 << 4) + t.key[2]) ^ (v0 + sumTable[i]) ^ ((v0 >> 5) + t.key[3])
+		v0 += ((v1 << 4) + t[0]) ^ (v1 + sumTable[i]) ^ ((v1 >> 5) + t[1])
+		v1 += ((v0 << 4) + t[2]) ^ (v0 + sumTable[i]) ^ ((v0 >> 5) + t[3])
 	}
 	repack(dst, v0, v1)
 }
@@ -149,8 +147,8 @@ func (t *TEA) encode(src, dst []byte) {
 func (t *TEA) decode(src, dst []byte) {
 	v0, v1 := unpack(src)
 	for i := 0xf; i >= 0; i-- {
-		v1 -= ((v0 << 4) + t.key[2]) ^ (v0 + sumTable[i]) ^ ((v0 >> 5) + t.key[3])
-		v0 -= ((v1 << 4) + t.key[0]) ^ (v1 + sumTable[i]) ^ ((v1 >> 5) + t.key[1])
+		v1 -= ((v0 << 4) + t[2]) ^ (v0 + sumTable[i]) ^ ((v0 >> 5) + t[3])
+		v0 -= ((v1 << 4) + t[0]) ^ (v1 + sumTable[i]) ^ ((v1 >> 5) + t[1])
 	}
 	repack(dst, v0, v1)
 }
@@ -161,9 +159,9 @@ func NewTeaCipher(key []byte) *TEA {
 		return nil
 	}
 	t := new(TEA)
-	t.key[3] = binary.BigEndian.Uint32(key[12:])
-	t.key[2] = binary.BigEndian.Uint32(key[8:])
-	t.key[1] = binary.BigEndian.Uint32(key[4:])
-	t.key[0] = binary.BigEndian.Uint32(key[0:])
+	t[3] = binary.BigEndian.Uint32(key[12:])
+	t[2] = binary.BigEndian.Uint32(key[8:])
+	t[1] = binary.BigEndian.Uint32(key[4:])
+	t[0] = binary.BigEndian.Uint32(key[0:])
 	return t
 }
