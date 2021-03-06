@@ -65,7 +65,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	if err != nil {
 		return nil, err
 	}
-	defer img.Close()
+	defer func() { _ = img.Close() }()
 	fh, length := utils.ComputeMd5AndLength(img)
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
 	r, err := c.sendAndWait(seq, pkt)
@@ -213,7 +213,7 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := pb.D388RespBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {

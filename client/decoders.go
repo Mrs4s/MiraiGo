@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"net"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ var (
 )
 
 // wtlogin.login
-func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeLoginResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	reader := binary.NewReader(payload)
 	reader.ReadUInt16() // sub command
 	t := reader.ReadByte()
@@ -182,7 +181,7 @@ func decodeLoginResponse(c *QQClient, _ uint16, payload []byte) (interface{}, er
 }
 
 // StatSvc.register
-func decodeClientRegisterResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeClientRegisterResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -199,7 +198,7 @@ func decodeClientRegisterResponse(c *QQClient, _ uint16, payload []byte) (interf
 }
 
 // wtlogin.exchange_emp
-func decodeExchangeEmpResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	reader := binary.NewReader(payload)
 	cmd := reader.ReadUInt16()
 	t := reader.ReadByte()
@@ -216,7 +215,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ uint16, payload []byte) (interface
 }
 
 // ConfigPushSvc.PushReq
-func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -289,24 +288,24 @@ func decodePushReqPacket(c *QQClient, _ uint16, payload []byte) (interface{}, er
 }
 
 // MessageSvc.PbGetMsg
-func decodeMessageSvcPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeMessageSvcPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.GetMessageResponse{}
 	err := proto.Unmarshal(payload, &rsp)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	c.c2cMessageSyncProcessor(&rsp)
+	c.c2cMessageSyncProcessor(&rsp, info)
 	return nil, nil
 }
 
 // MessageSvc.PushNotify
-func decodeSvcNotify(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
+func decodeSvcNotify(c *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
 }
 
 // SummaryCard.ReqSummaryCard
-func decodeSummaryCardResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeSummaryCardResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -355,7 +354,7 @@ func decodeSummaryCardResponse(_ *QQClient, _ uint16, payload []byte) (interface
 }
 
 // friendlist.getFriendGroupList
-func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -381,7 +380,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 }
 
 // friendlist.GetTroopListReqV2
-func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupListResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -415,7 +414,7 @@ func decodeGroupListResponse(c *QQClient, _ uint16, payload []byte) (interface{}
 }
 
 // friendlist.GetTroopMemberListReq
-func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion3{}
@@ -451,7 +450,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ uint16, payload []byte) (inter
 }
 
 // group_member_card.get_group_member_card_info
-func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeGroupMemberInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := pb.GroupMemberRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -484,7 +483,7 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ uint16, payload []byte) (inter
 }
 
 // LongConn.OffPicUp
-func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOffPicUpResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := cmd0x352.RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -522,7 +521,7 @@ func decodeOffPicUpResponse(_ *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // OnlinePush.ReqPush
-func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interface{}, error) {
+func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -531,7 +530,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 	msgInfos := []jce.PushMessageInfo{}
 	uin := jr.ReadInt64(0)
 	jr.ReadSlice(&msgInfos, 2)
-	_ = c.send(c.buildDeleteOnlinePushPacket(uin, seq, msgInfos))
+	_ = c.send(c.buildDeleteOnlinePushPacket(uin, info.SequenceId, msgInfos))
 	for _, m := range msgInfos {
 		k := fmt.Sprintf("%v%v%v", m.MsgSeq, m.MsgTime, m.MsgUid)
 		if _, ok := c.onlinePushCache.Get(k); ok {
@@ -657,7 +656,6 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 					if m.DelFriend != nil {
 						frdUin := m.DelFriend.Uins[0]
 						if frd := c.FindFriend(int64(frdUin)); frd != nil {
-							log.Infof("好友被删除: %v(%v)", frd.Nickname, frd.Uin)
 							if err := c.ReloadFriendList(); err != nil {
 								return nil, errors.Wrap(err, "failed to reload friend list")
 							}
@@ -722,7 +720,7 @@ func decodeOnlinePushReqPacket(c *QQClient, seq uint16, payload []byte) (interfa
 }
 
 // OnlinePush.PbPushTransMsg
-func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	info := msg.TransMsgInfo{}
 	err := proto.Unmarshal(payload, &info)
 	if err != nil {
@@ -829,7 +827,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ uint16, payload []byte) (interfa
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Friend
-func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeSystemMsgFriendPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := structmsg.RspSystemMsgNew{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -851,7 +849,7 @@ func decodeSystemMsgFriendPacket(c *QQClient, _ uint16, payload []byte) (interfa
 }
 
 // MessageSvc.PushForceOffline
-func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeForceOfflinePacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -865,7 +863,7 @@ func decodeForceOfflinePacket(c *QQClient, _ uint16, payload []byte) (interface{
 }
 
 // StatSvc.ReqMSFOffline
-func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error) {
+func decodeMSFOfflinePacket(c *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
 	c.lastLostMsg = "服务器端强制下线."
 	c.NetLooping = false
 	c.Online = false
@@ -873,7 +871,7 @@ func decodeMSFOfflinePacket(c *QQClient, _ uint16, _ []byte) (interface{}, error
 }
 
 // OidbSvc.0xd79
-func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeWordSegmentation(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := &oidb.D79RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -889,7 +887,7 @@ func decodeWordSegmentation(_ *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.DE07RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -926,7 +924,7 @@ func decodeImageOcrResponse(_ *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // LightAppSvc.mini_app_info.GetAppInfoById
-func decodeAppInfoResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := qweb.QWebRsp{}
 	rsp := qweb.GetAppInfoByIdRsp{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -941,6 +939,6 @@ func decodeAppInfoResponse(_ *QQClient, _ uint16, payload []byte) (interface{}, 
 	return rsp.AppInfo, nil
 }
 
-func ignoreDecoder(_ *QQClient, _ uint16, _ []byte) (interface{}, error) {
+func ignoreDecoder(_ *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
 	return nil, nil
 }

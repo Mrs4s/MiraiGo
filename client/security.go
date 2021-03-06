@@ -49,7 +49,7 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 	return seq, packet
 }
 
-func decodeUrlCheckResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeUrlCheckResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := &oidb.OIDBSSOPkg{}
 	rsp := &oidb.DBCBRspBody{}
 	if err := proto.Unmarshal(payload, pkg); err != nil {

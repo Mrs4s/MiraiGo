@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"runtime/debug"
+	"sync"
 
 	"google.golang.org/protobuf/proto"
 
@@ -53,6 +54,8 @@ type (
 		TotalFileCount uint32 `json:"total_file_count"`
 	}
 )
+
+var fileSingleFlight = sync.Map{}
 
 func init() {
 	decoders["OidbSvc.0x6d8_1"] = decodeOIDB6d81Response
@@ -156,11 +159,22 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderId string) ([]*GroupFile, []*G
 }
 
 func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
+	// 同文件等待其他线程上传
+	if wg, ok := fileSingleFlight.Load(p); ok {
+		wg.(*sync.WaitGroup).Wait()
+	} else {
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		fileSingleFlight.Store(p, wg)
+		defer wg.Done()
+		defer fileSingleFlight.Delete(p)
+	}
+
 	file, err := os.OpenFile(p, os.O_RDONLY, 0666)
 	if err != nil {
 		return errors.Wrap(err, "open file error")
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	md5Hash, size := utils.ComputeMd5AndLength(file)
 	_, _ = file.Seek(0, io.SeekStart)
 	sha1H := sha1.New()
@@ -387,7 +401,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 	return seq, packet
 }
 
-func decodeOIDB6d81Response(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D8RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -400,7 +414,7 @@ func decodeOIDB6d81Response(c *QQClient, _ uint16, payload []byte) (interface{},
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d62Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOIDB6d62Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -417,7 +431,7 @@ func decodeOIDB6d62Response(_ *QQClient, _ uint16, payload []byte) (interface{},
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
-func decodeOIDB6d63Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOIDB6d63Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -432,7 +446,7 @@ func decodeOIDB6d63Response(_ *QQClient, _ uint16, payload []byte) (interface{},
 	return rsp.DeleteFileRsp.ClientWording, nil
 }
 
-func decodeOIDB6d60Response(_ *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeOIDB6d60Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {

@@ -200,7 +200,7 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqId, requester int64, acce
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Group
-func decodeSystemMsgGroupPacket(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeSystemMsgGroupPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := structmsg.RspSystemMsgNew{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, err

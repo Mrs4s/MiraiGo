@@ -42,7 +42,7 @@ func (c *QQClient) Translate(src, dst, text string) (string, error) {
 }
 
 // OidbSvc.0x990
-func decodeTranslateResponse(c *QQClient, _ uint16, payload []byte) (interface{}, error) {
+func decodeTranslateResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.TranslateRspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
