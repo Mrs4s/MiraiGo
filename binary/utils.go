@@ -6,9 +6,10 @@ import (
 	"compress/zlib"
 	binary2 "encoding/binary"
 	"encoding/hex"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"io"
 	"net"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 func ZlibUncompress(src []byte) []byte {
