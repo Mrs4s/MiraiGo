@@ -7,5 +7,6 @@ require (
 	github.com/json-iterator/go v1.1.10
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
 	github.com/pkg/errors v0.9.1
+	github.com/sirupsen/logrus v1.8.0
 	google.golang.org/protobuf v1.25.0
 )

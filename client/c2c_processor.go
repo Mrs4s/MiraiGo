@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"sync/atomic"
 	"time"
 
@@ -200,7 +201,9 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 	if pMsg.Head.C2CTmpMsgHead == nil || pMsg.Body == nil {
 		return
 	}
-	if pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6 {
+	cond := pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6 ||
+		pMsg.Head.GetMsgType() == 141 && pMsg.Head.GetC2CCmd() == 11
+	if cond {
 		group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
 		if group == nil {
 			return
@@ -209,6 +212,10 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 			return
 		}
 		c.dispatchTempMessage(c.parseTempMessage(pMsg))
+	} else if pMsg.Head.GetMsgType() == 140 {
+		// FIXME: pMsg.Head.GetMsgType() == 140 && pMsg.Head.GetC2CCmd() == ??
+		// 如果有人找到了这个cmd是什么可以帮忙提个PR
+		log.Infof("请在MiraiGo开启一个issue, 标题为: tempSession type 140 cmd %v 内容为空, 感谢你的帮忙!", pMsg.Head.GetC2CCmd())
 	}
 }
 
