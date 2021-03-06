@@ -258,7 +258,10 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *incomingPac
 	}
 }
 
-func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
+func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *incomingPacketInfo) {
+	if pMsg.Head.GetC2CCmd() == 6 || pMsg.Head.C2CTmpMsgHead != nil {
+		tempSessionDecoder(c, pMsg, info)
+	}
 	sub4 := msg.SubMsgType0X4Body{}
 	if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
 		err = errors.Wrap(err, "unmarshal sub msg 0x4 error")
