@@ -173,7 +173,7 @@ func GenRandomDevice() {
 	rand.Read(r)
 	SystemDeviceInfo.Display = []byte("MIRAI." + utils.RandomStringRange(6, NumberRange) + ".001")
 	SystemDeviceInfo.FingerPrint = []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, NumberRange) + ":user/release-keys")
-	SystemDeviceInfo.BootId = []byte(binary.GenUUID(r))
+	SystemDeviceInfo.BootId = binary.GenUUID(r)
 	SystemDeviceInfo.ProcVersion = []byte("Linux version 3.0.31-" + utils.RandomString(8) + " (android-build@xxx.xxx.xxx.xxx.com)")
 	rand.Read(r)
 	t := md5.Sum(r)
