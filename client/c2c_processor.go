@@ -268,7 +268,7 @@ func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *incomingPacketInf
 		c.Error("unmarshal sub msg 0x4 error: %v", err)
 		return
 	}
-	if sub4.NotOnlineFile != nil {
+	if sub4.NotOnlineFile != nil && sub4.NotOnlineFile.GetSubcmd() == 1 { // subcmd: 1 -> send, 2-> recv
 		rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
 		if err != nil {
 			return
