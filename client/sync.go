@@ -73,19 +73,13 @@ func (c *QQClient) RefreshStatus() error {
 }
 
 func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
-	_, pkt := c.buildSyncMsgRequestPacket()
-	if err := c.send(pkt); err != nil {
-		return nil, err
-	}
 	ret := &SessionSyncResponse{}
 	notifyChan := make(chan bool)
 	var groupNum int32 = -1
-	p := 0
 	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i interface{}, err error) {
 		if err != nil {
 			return
 		}
-		p++
 		e := i.(*sessionSyncEvent)
 		if len(e.GroupSessions) > 0 {
 			ret.GroupSessions = append(ret.GroupSessions, e.GroupSessions...)
@@ -93,14 +87,20 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		if e.GroupNum != -1 {
 			groupNum = e.GroupNum
 		}
+		c.Debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
 		if groupNum != -1 && len(ret.GroupSessions) >= int(groupNum) {
 			notifyChan <- true
 		}
 	})
+	_, pkt := c.buildSyncMsgRequestPacket()
+	if err := c.send(pkt); err != nil {
+		stop()
+		return nil, err
+	}
 	select {
 	case <-notifyChan:
 		stop()
-	case <-time.After(time.Second * 20):
+	case <-time.After(time.Second * 3):
 		stop()
 	}
 	return ret, nil
