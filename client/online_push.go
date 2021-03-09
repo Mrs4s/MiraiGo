@@ -2,9 +2,10 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210"
 	"strconv"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
