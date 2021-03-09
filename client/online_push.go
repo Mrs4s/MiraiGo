@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210"
 	"strconv"
 	"time"
 
@@ -169,11 +170,28 @@ func msgType0x210SubD4Decoder(c *QQClient, protobuf []byte) error {
 }
 
 func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
-	s27 := pb.Sub27{}
+	s27 := msgtype0x210.SubMsg0X27Body{}
 	if err := proto.Unmarshal(protobuf, &s27); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	for _, m := range s27.ModInfos {
+		if m.ModGroupProfile != nil {
+			for _, info := range m.ModGroupProfile.GroupProfileInfos {
+				switch info.GetField() {
+				case 1:
+					if g := c.FindGroup(int64(m.ModGroupProfile.GetGroupCode())); g != nil {
+						old := g.Name
+						g.Name = string(info.GetValue())
+						c.dispatchGroupNameUpdatedEvent(&GroupNameUpdatedEvent{
+							Group:       g,
+							OldName:     old,
+							NewName:     g.Name,
+							OperatorUin: int64(m.ModGroupProfile.GetCmdUin()),
+						})
+					}
+				}
+			}
+		}
 		if m.DelFriend != nil {
 			frdUin := m.DelFriend.Uins[0]
 			if frd := c.FindFriend(int64(frdUin)); frd != nil {
