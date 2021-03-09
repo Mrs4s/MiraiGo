@@ -178,7 +178,7 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 	for _, m := range s27.ModInfos {
 		if m.ModGroupProfile != nil {
 			for _, info := range m.ModGroupProfile.GroupProfileInfos {
-				switch info.GetField() {
+				switch info.GetField() { // 1 -> group name 2 -> group head 3 -> group creditLevel
 				case 1:
 					if g := c.FindGroup(int64(m.ModGroupProfile.GetGroupCode())); g != nil {
 						old := g.Name
