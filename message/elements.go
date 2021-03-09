@@ -64,8 +64,8 @@ type FriendImageElement struct {
 }
 
 type FaceElement struct {
-	Index      int32
-	Name       string
+	Index int32
+	Name  string
 }
 
 type AtElement struct {
