@@ -111,6 +111,10 @@ func (c *QQClient) MarkGroupMessageReaded(groupCode, seq int64) {
 	_, _ = c.sendAndWait(c.buildGroupMsgReadedPacket(groupCode, seq))
 }
 
+func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
+	_, _ = c.sendAndWait(c.buildPrivateMsgReadedPacket(uin, time))
+}
+
 // StatSvc.GetDevLoginInfo
 func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
@@ -268,6 +272,18 @@ func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, [
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		LastReadSeq: proto.Uint64(uint64(msgSeq)),
 	}}})
+	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgReadedReport", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, req)
+	return seq, packet
+}
+
+func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{C2CReadReport: &msg.PbC2CReadedReportReq{PairInfo: []*msg.UinPairReadInfo{
+		{
+			PeerUin:      proto.Uint64(uint64(uin)),
+			LastReadTime: proto.Uint32(uint32(time)),
+		},
+	}, SyncCookie: c.syncCookie}})
 	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgReadedReport", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, req)
 	return seq, packet
 }
