@@ -20,6 +20,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 	jsoniter "github.com/json-iterator/go"
@@ -163,6 +164,7 @@ func NewClient(uin int64, password string) *QQClient {
 }
 
 func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
+	crypto.ECDH.FetchPubKey(uin)
 	cli := &QQClient{
 		Uin:                     uin,
 		PasswordMd5:             passwordMd5,
