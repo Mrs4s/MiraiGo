@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/richmedia"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -12,7 +11,8 @@ import (
 
 func (c *QQClient) GetTts(text string) ([]byte, error) {
 	url := "https://textts.qq.com/cgi-bin/tts"
-	data := fmt.Sprintf("{\"appid\": \"201908021016\",\"sendUin\": %v,\"text\": \"%v\"}", c.Uin, text)
+	text, _ = json.MarshalToString(text)
+	data := fmt.Sprintf(`{"appid": "201908021016","sendUin": %v,"text": %v}`, c.Uin, text)
 	rsp, err := utils.HttpPostBytesWithCookie(url, []byte(data), c.getCookies())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to post to tts server")
