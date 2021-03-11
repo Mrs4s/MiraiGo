@@ -1,0 +1,341 @@
+syntax = "proto2";
+
+option go_package = ".;msgtype0x210";
+
+message AddGroup {
+  optional uint32 groupid = 1;
+  optional uint32 sortid = 2;
+  optional bytes groupname = 3;
+}
+
+message AppointmentNotify {
+  optional uint64 fromUin = 1;
+  optional string appointId = 2;
+  optional uint32 notifytype = 3;
+  optional string tipsContent = 4;
+  optional uint32 unreadCount = 5;
+  optional string joinWording = 6;
+  optional string viewWording = 7;
+  optional bytes sig = 8;
+  optional bytes eventInfo = 9;
+  optional bytes nearbyEventInfo = 10;
+  optional bytes feedEventInfo = 11;
+}
+
+message BinaryMsg {
+  optional uint32 opType = 1;
+  optional bytes opValue = 2;
+}
+
+message ChatMatchInfo {
+  optional bytes sig = 1;
+  optional uint64 uin = 2;
+  optional uint64 matchUin = 3;
+  optional bytes tipsWording = 4;
+  optional uint32 leftChatTime = 5;
+  optional uint64 timeStamp = 6;
+  optional uint32 matchExpiredTime = 7;
+  optional uint32 c2CExpiredTime = 8;
+  optional uint32 matchCount = 9;
+  optional bytes nick = 10;
+}
+
+message ConfMsgRoamFlag {
+  optional uint64 confid = 1;
+  optional uint32 flag = 2;
+  optional uint64 timestamp = 3;
+}
+
+message DaRenNotify {
+  optional uint64 uin = 1;
+  optional uint32 loginDays = 2;
+  optional uint32 days = 3;
+  optional uint32 isYestodayLogin = 4;
+  optional uint32 isTodayLogin = 5;
+}
+
+message DelFriend {
+  repeated uint64 uins = 1;
+}
+
+message DelGroup {
+  optional uint32 groupid = 1;
+}
+
+message FanpaiziNotify {
+  optional uint64 fromUin = 1;
+  optional string fromNick = 2;
+  optional bytes tipsContent = 3;
+  optional bytes sig = 4;
+}
+
+message ForwardBody {
+  optional uint32 notifyType = 1;
+  optional uint32 opType = 2;
+  optional AddGroup addGroup = 3;
+  optional DelGroup delGroup = 4;
+  optional ModGroupName modGroupName = 5;
+  optional ModGroupSort modGroupSort = 6;
+  optional ModFriendGroup modFriendGroup = 7;
+  optional ModProfile modProfile = 8;
+  optional ModFriendRemark modFriendRemark = 9;
+  optional ModLongNick modLongNick = 10;
+  optional ModCustomFace modCustomFace = 11;
+  optional ModGroupProfile modGroupProfile = 12;
+  optional ModGroupMemberProfile modGroupMemberProfile = 13;
+  optional DelFriend delFriend = 14;
+  optional ModFrdRoamPriv roamPriv = 15;
+  optional GrpMsgRoamFlag grpMsgRoamFlag = 16;
+  optional ConfMsgRoamFlag confMsgRoamFlag = 17;
+  optional ModLongNick modRichLongNick = 18;
+  optional BinaryMsg binPkg = 19;
+  optional ModSnsGeneralInfo modFriendRings = 20;
+  optional ModConfProfile modConfProfile = 21;
+  optional SnsUpdateFlag modFriendFlag = 22;
+  optional AppointmentNotify appointmentNotify = 23;
+  optional DaRenNotify darenNotify = 25;
+  optional NewComeinUserNotify newComeinUserNotify = 26;
+  optional PushSearchDev pushSearchDev = 200;
+  optional PushReportDev pushReportDev = 201;
+  optional QQPayPush qqPayPush = 202;
+  optional bytes redpointInfo = 203;
+  optional HotFriendNotify hotFriendNotify = 204;
+  optional PraiseRankNotify praiseRankNotify = 205;
+  optional MQQCampusNotify campusNotify = 210;
+  optional ModLongNick modRichLongNickEx = 211;
+  optional ChatMatchInfo chatMatchInfo = 212;
+  optional FrdCustomOnlineStatusChange frdCustomOnlineStatusChange = 214;
+  optional FanpaiziNotify fanpanziNotify = 2000;
+}
+
+message FrdCustomOnlineStatusChange {
+  optional uint64 uin = 1;
+}
+
+message FriendGroup {
+  optional uint64 fuin = 1;
+  repeated uint32 oldGroupId = 2;
+  repeated uint32 newGroupId = 3;
+}
+
+message FriendRemark {
+  optional uint32 type = 1;
+  optional uint64 fuin = 2;
+  optional bytes rmkName = 3;
+  optional uint64 groupCode = 4;
+}
+
+message GPS {
+  optional int32 lat = 1;
+  optional int32 lon = 2;
+  optional int32 alt = 3;
+  optional int32 type = 4;
+}
+
+message GroupMemberProfileInfo {
+  optional uint32 field = 1;
+  optional bytes value = 2;
+}
+
+message GroupProfileInfo {
+  optional uint32 field = 1;
+  optional bytes value = 2;
+}
+
+message GroupSort {
+  optional uint32 groupid = 1;
+  optional uint32 sortid = 2;
+}
+
+message GrpMsgRoamFlag {
+  optional uint64 groupcode = 1;
+  optional uint32 flag = 2;
+  optional uint64 timestamp = 3;
+}
+
+message HotFriendNotify {
+  optional uint64 dstUin = 1;
+  optional uint32 praiseHotLevel = 2;
+  optional uint32 chatHotLevel = 3;
+  optional uint32 praiseHotDays = 4;
+  optional uint32 chatHotDays = 5;
+  optional uint32 closeLevel = 6;
+  optional uint32 closeDays = 7;
+  optional uint32 praiseFlag = 8;
+  optional uint32 chatFlag = 9;
+  optional uint32 closeFlag = 10;
+  optional uint64 notifyTime = 11;
+  optional uint64 lastPraiseTime = 12;
+  optional uint64 lastChatTime = 13;
+  optional uint32 qzoneHotLevel = 14;
+  optional uint32 qzoneHotDays = 15;
+  optional uint32 qzoneFlag = 16;
+  optional uint64 lastQzoneTime = 17;
+}
+
+message MQQCampusNotify {
+  optional uint64 fromUin = 1;
+  optional string wording = 2;
+  optional string target = 3;
+  optional uint32 type = 4;
+  optional string source = 5;
+}
+
+message ModConfProfile {
+  optional uint64 uin = 1;
+  optional uint32 confUin = 2;
+  repeated ProfileInfo profileInfos = 3;
+}
+
+message ModCustomFace {
+  optional uint32 type = 1;
+  optional uint64 uin = 2;
+  optional uint64 groupCode = 3;
+  optional uint64 cmdUin = 4;
+}
+
+message ModFrdRoamPriv {
+  repeated OneRoamPriv roamPriv = 1;
+}
+
+message ModFriendGroup {
+  repeated FriendGroup frdGroup = 1;
+}
+
+message ModFriendRemark {
+  repeated FriendRemark frdRmk = 1;
+}
+
+message ModGroupMemberProfile {
+  optional uint64 groupUin = 1;
+  optional uint64 uin = 2;
+  repeated GroupMemberProfileInfo groupMemberProfileInfos = 3;
+  optional uint64 groupCode = 4;
+}
+
+message ModGroupName {
+  optional uint32 groupid = 1;
+  optional bytes groupname = 2;
+}
+
+message ModGroupProfile {
+  optional uint64 groupUin = 1;
+  repeated GroupProfileInfo groupProfileInfos = 2;
+  optional uint64 groupCode = 3;
+  optional uint64 cmdUin = 4;
+}
+
+message ModGroupSort {
+  repeated GroupSort groupsort = 1;
+}
+
+message ModLongNick {
+  optional uint64 uin = 1;
+  optional bytes value = 2;
+}
+
+message ModProfile {
+  optional uint64 uin = 1;
+  repeated ProfileInfo profileInfos = 2;
+}
+
+message ModSnsGeneralInfo {
+  repeated SnsUpateBuffer snsGeneralInfos = 1;
+}
+
+message SubMsg0x27Body {
+  repeated ForwardBody modInfos = 1;
+}
+
+message NewComeinUser {
+  optional uint64 uin = 1;
+  optional uint32 isFrd = 2;
+  optional bytes remark = 3;
+  optional bytes nick = 4;
+}
+
+message NewComeinUserNotify {
+  optional uint32 msgType = 1;
+  optional bool ongNotify = 2;
+  optional uint32 pushTime = 3;
+  optional NewComeinUser newComeinUser = 4;
+  optional NewGroup newGroup = 5;
+  optional NewGroupUser newGroupUser = 6;
+}
+
+message NewGroup {
+  optional uint64 groupCode = 1;
+  optional bytes groupName = 2;
+  optional uint64 ownerUin = 3;
+  optional bytes ownerNick = 4;
+  optional bytes distance = 5;
+}
+
+message NewGroupUser {
+  optional uint64 uin = 1;
+  optional int32 sex = 2;
+  optional int32 age = 3;
+  optional string nick = 4;
+  optional bytes distance = 5;
+}
+
+message OneRoamPriv {
+  optional uint64 fuin = 1;
+  optional uint32 privTag = 2;
+  optional uint32 privValue = 3;
+}
+
+message PraiseRankNotify {
+  optional uint32 isChampion = 11;
+  optional uint32 rankNum = 12;
+  optional string msg = 13;
+}
+
+message ProfileInfo {
+  optional uint32 field = 1;
+  optional bytes value = 2;
+}
+
+message PushReportDev {
+  optional uint32 msgType = 1;
+  optional bytes cookie = 4;
+  optional uint32 reportMaxNum = 5;
+  optional bytes sn = 6;
+}
+
+message PushSearchDev {
+  optional uint32 msgType = 1;
+  optional GPS gpsInfo = 2;
+  optional uint32 devTime = 3;
+  optional uint32 pushTime = 4;
+  optional uint64 din = 5;
+  optional string data = 6;
+}
+
+message QQPayPush {
+  optional uint64 uin = 1;
+  optional bool payOk = 2;
+}
+
+message SnsUpateBuffer {
+  optional uint64 uin = 1;
+  optional uint64 code = 2;
+  optional uint32 result = 3;
+  repeated SnsUpdateItem snsUpdateItem = 400;
+  repeated uint32 idlist = 401;
+}
+
+message SnsUpdateFlag {
+  repeated SnsUpdateOneFlag updateSnsFlag = 1;
+}
+
+message SnsUpdateItem {
+  optional uint32 updateSnsType = 1;
+  optional bytes value = 2;
+}
+
+message SnsUpdateOneFlag {
+  optional uint64 XUin = 1;
+  optional uint64 id = 2;
+  optional uint32 flag = 3;
+}

@@ -23,7 +23,7 @@ func (e *TextElement) Pack() (r []*msg.Elem) {
 
 func (e *FaceElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
-	if e.NewSysFace {
+	if e.Index >= 260 {
 		elem := &msg.MsgElemInfoServtype33{
 			Index:  proto.Uint32(uint32(e.Index)),
 			Text:   []byte("/" + e.Name),

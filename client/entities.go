@@ -105,6 +105,13 @@ type (
 		Member *GroupMemberInfo
 	}
 
+	GroupNameUpdatedEvent struct {
+		Group       *GroupInfo
+		OldName     string
+		NewName     string
+		OperatorUin int64
+	}
+
 	MemberCardUpdatedEvent struct {
 		Group   *GroupInfo
 		OldCard string

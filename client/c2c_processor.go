@@ -68,92 +68,11 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 			} else {
 				c.Debug("unknown msg type on c2c processor: %v", pMsg.Head.GetMsgType())
 			}
-			/*
-				switch pMsg.Head.GetMsgType() {
-				case 33: // 加群同步
-					func() {
-						groupJoinLock.Lock()
-						defer groupJoinLock.Unlock()
-						group := c.FindGroupByUin(pMsg.Head.GetFromUin())
-						if pMsg.Head.GetAuthUin() == c.Uin {
-							if group == nil && c.ReloadGroupList() == nil {
-								c.dispatchJoinGroupEvent(c.FindGroupByUin(pMsg.Head.GetFromUin()))
-							}
-						} else {
-							if group != nil && group.FindMember(pMsg.Head.GetAuthUin()) == nil {
-								mem, err := c.getMemberInfo(group.Code, pMsg.Head.GetAuthUin())
-								if err != nil {
-									c.Debug("error to fetch new member info: %v", err)
-									return
-								}
-								group.Update(func(info *GroupInfo) {
-									info.Members = append(info.Members, mem)
-								})
-								c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-									Group:  group,
-									Member: mem,
-								})
-							}
-						}
-					}()
-				case 84, 87:
-					c.exceptAndDispatchGroupSysMsg()
-				case 141: // 临时会话
-					if pMsg.Head.C2CTmpMsgHead == nil {
-						continue
-					}
-					group := c.FindGroupByUin(pMsg.Head.C2CTmpMsgHead.GetGroupUin())
-					if group == nil {
-						continue
-					}
-					if pMsg.Head.GetFromUin() == c.Uin {
-						continue
-					}
-					c.dispatchTempMessage(c.parseTempMessage(pMsg))
-				case 166, 208: // 好友消息
-					if pMsg.Head.GetFromUin() == c.Uin {
-						for {
-							frdSeq := atomic.LoadInt32(&c.friendSeq)
-							if frdSeq < pMsg.Head.GetMsgSeq() {
-								if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, pMsg.Head.GetMsgSeq()) {
-									break
-								}
-							} else {
-								break
-							}
-						}
-					}
-					if pMsg.Body.RichText == nil || pMsg.Body.RichText.Elems == nil {
-						continue
-					}
-					c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
-				case 187:
-					_, pkt := c.buildSystemMsgNewFriendPacket()
-					_ = c.send(pkt)
-				case 529:
-					sub4 := msg.SubMsgType0X4Body{}
-					if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
-						err = errors.Wrap(err, "unmarshal sub msg 0x4 error")
-						c.Error("unmarshal sub msg 0x4 error: %v", err)
-						continue
-					}
-					if sub4.NotOnlineFile != nil {
-						rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
-						if err != nil {
-							continue
-						}
-						c.dispatchOfflineFileEvent(&OfflineFileEvent{
-							FileName:    string(sub4.NotOnlineFile.FileName),
-							FileSize:    sub4.NotOnlineFile.GetFileSize(),
-							Sender:      pMsg.Head.GetFromUin(),
-							DownloadUrl: rsp.(string),
-						})
-					}
-				}
-			*/
 		}
 	}
-	_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
+	if delItems != nil {
+		_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
+	}
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
 		seq, pkt := c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix())
@@ -200,7 +119,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 	if pMsg.Head.C2CTmpMsgHead == nil || pMsg.Body == nil {
 		return
 	}
-	if pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6 {
+	if (pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6) || pMsg.Body.RichText != nil {
 		group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
 		if group == nil {
 			return
@@ -258,14 +177,17 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *incomingPac
 	}
 }
 
-func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
+func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *incomingPacketInfo) {
+	if pMsg.Head.GetC2CCmd() == 6 || pMsg.Head.C2CTmpMsgHead != nil {
+		tempSessionDecoder(c, pMsg, info)
+	}
 	sub4 := msg.SubMsgType0X4Body{}
 	if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
 		err = errors.Wrap(err, "unmarshal sub msg 0x4 error")
 		c.Error("unmarshal sub msg 0x4 error: %v", err)
 		return
 	}
-	if sub4.NotOnlineFile != nil {
+	if sub4.NotOnlineFile != nil && sub4.NotOnlineFile.GetSubcmd() == 1 { // subcmd: 1 -> send, 2-> recv
 		rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
 		if err != nil {
 			return

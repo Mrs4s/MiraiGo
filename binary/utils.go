@@ -6,10 +6,10 @@ import (
 	"compress/zlib"
 	binary2 "encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"net"
-	"strings"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 func ZlibUncompress(src []byte) []byte {
@@ -50,24 +50,40 @@ func GZipUncompress(src []byte) []byte {
 }
 
 func CalculateImageResourceId(md5 []byte) string {
-	return strings.ToUpper(fmt.Sprintf(
-		"{%s}.png", GenUUID(md5),
-	))
+	id := make([]byte, 36+6)[:0]
+	id = append(id, '{')
+	AppendUUID(id[1:], md5)
+	id = id[:37]
+	id = append(id, "}.png"...)
+	return utils.B2S(bytes.ToUpper(id))
+
 }
 
-func GenUUID(uuid []byte) string {
-	u := uuid[0:16]
-	buf := make([]byte, 36)
-	hex.Encode(buf[0:], u[0:4])
-	buf[8] = '-'
-	hex.Encode(buf[9:], u[4:6])
-	buf[13] = '-'
-	hex.Encode(buf[14:], u[6:8])
-	buf[18] = '-'
-	hex.Encode(buf[19:], u[8:10])
-	buf[23] = '-'
-	hex.Encode(buf[24:], u[10:16])
-	return string(buf)
+func GenUUID(uuid []byte) []byte {
+	return AppendUUID(nil, uuid)
+}
+
+func AppendUUID(dst []byte, uuid []byte) []byte {
+	_ = uuid[15]
+	if cap(dst) > 36 {
+		dst = dst[:36]
+		dst[8] = '-'
+		dst[13] = '-'
+		dst[18] = '-'
+		dst[23] = '-'
+	} else { // Need Grow
+		dst = append(dst, "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"...)
+	}
+	hex.Encode(dst[0:], uuid[0:4])
+	hex.Encode(dst[9:], uuid[4:6])
+	hex.Encode(dst[14:], uuid[6:8])
+	hex.Encode(dst[19:], uuid[8:10])
+	hex.Encode(dst[24:], uuid[10:16])
+	return dst
+}
+
+func genUUID(uuid []byte, dst []byte) {
+
 }
 
 func ToIPV4Address(arr []byte) string {
