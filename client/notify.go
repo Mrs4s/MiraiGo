@@ -39,8 +39,7 @@ type (
 
 // grayTipProcessor 提取出来专门用于处理群内 notify tips
 func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTipInfo) {
-	switch tipInfo.TemplId {
-	case 10043, 1136, 1132: // 戳一戳
+	if tipInfo.BusiType == 12 && tipInfo.BusiId == 1061 {
 		var sender int64 = 0
 		receiver := c.Uin
 		for _, templ := range tipInfo.MsgTemplParam {
@@ -51,11 +50,15 @@ func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTi
 				receiver, _ = strconv.ParseInt(templ.Value, 10, 64)
 			}
 		}
-		c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
-			GroupCode: groupId,
-			Sender:    sender,
-			Receiver:  receiver,
-		})
+		if sender != 0 {
+			c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
+				GroupCode: groupId,
+				Sender:    sender,
+				Receiver:  receiver,
+			})
+		}
+	}
+	switch tipInfo.TemplId {
 	case 1052, 1053, 1054, 1067: // 群荣誉
 		var nick string
 		var uin int64
