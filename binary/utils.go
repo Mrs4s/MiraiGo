@@ -38,6 +38,9 @@ func GZipCompress(data []byte) []byte {
 }
 
 func GZipUncompress(src []byte) []byte {
+	if src == nil {
+		return nil
+	}
 	b := bytes.NewReader(src)
 	var out bytes.Buffer
 	r, _ := gzip.NewReader(b)
