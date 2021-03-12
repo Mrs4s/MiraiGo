@@ -82,7 +82,8 @@ func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardMe
 
 // GetGroupMessages 从服务器获取历史信息
 func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*message.GroupMessage, error) {
-	i, err := c.sendAndWait(c.buildGetGroupMsgRequest(groupCode, beginSeq, endSeq))
+	seq, pkt := c.buildGetGroupMsgRequest(groupCode, beginSeq, endSeq)
+	i, err := c.sendAndWait(seq, pkt, requestParams{"raw": false})
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +357,7 @@ func decodeMsgSendResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 	return nil, nil
 }
 
-func decodeGetGroupMsgResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGetGroupMsgResponse(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.GetGroupMsgResp{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -368,6 +369,34 @@ func decodeGetGroupMsgResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 	var ret []*message.GroupMessage
 	for _, m := range rsp.Msg {
 		if m.Head.FromUin == nil {
+			continue
+		}
+		if m.Content != nil && m.Content.GetPkgNum() > 1 && !info.Params.bool("raw") {
+			if m.Content.GetPkgIndex() == 0 {
+				c.Debug("build fragmented message from history")
+				i := m.Head.GetMsgSeq() - m.Content.GetPkgNum()
+				builder := &groupMessageBuilder{}
+				for {
+					end := int32(math.Min(float64(i+19), float64(m.Head.GetMsgSeq()+m.Content.GetPkgNum())))
+					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GetGroupCode(), int64(i), int64(end))
+					data, err := c.sendAndWait(seq, pkt, requestParams{"raw": true})
+					if err != nil {
+						return nil, errors.Wrap(err, "build fragmented message error")
+					}
+					for _, fm := range data.([]*message.GroupMessage) {
+						if fm.OriginalObject.Content != nil && fm.OriginalObject.Content.GetDivSeq() == m.Content.GetDivSeq() {
+							builder.MessageSlices = append(builder.MessageSlices, fm.OriginalObject)
+						}
+					}
+					if len(builder.MessageSlices) >= int(m.Content.GetPkgNum()) || data == nil {
+						break
+					}
+					i = end
+				}
+				if elem := c.parseGroupMessage(builder.build()); elem != nil {
+					ret = append(ret, elem)
+				}
+			}
 			continue
 		}
 		if elem := c.parseGroupMessage(m); elem != nil {

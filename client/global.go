@@ -598,6 +598,17 @@ func (p requestParams) bool(k string) bool {
 	return i.(bool)
 }
 
+func (p requestParams) int32(k string) int32 {
+	if p == nil {
+		return 0
+	}
+	i, ok := p[k]
+	if !ok {
+		return 0
+	}
+	return i.(int32)
+}
+
 func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 	pkg := &oidb.OIDBSSOPkg{
 		Command:       cmd,
