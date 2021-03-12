@@ -5,26 +5,51 @@ import (
 	"encoding/binary"
 )
 
-type Writer struct {
-	buf *bytes.Buffer
+type Writer bytes.Buffer
+
+/*
+var bufferPool = sync.Pool{ // todo sync.Pool 无法通过单元测试
+	New: func() interface{} {
+		return new(bytes.Buffer)
+	},
 }
+
+func NewBuffer() *bytes.Buffer {
+	return bufferPool.Get().(*bytes.Buffer)
+}
+
+func PutBuffer(buf *bytes.Buffer) {
+	// See https://golang.org/issue/23199
+	const maxSize = 1 << 16
+	if buf.Cap() < maxSize { // 对于大Buffer直接丢弃
+		buf.Reset()
+		bufferPool.Put(buf)
+	}
+}
+*/
 
 func NewWriter() *Writer {
-	return &Writer{buf: new(bytes.Buffer)}
+	return new(Writer)
 }
 
+/*
+func PutWriter(w *Writer) {
+	PutBuffer((*bytes.Buffer)(w))
+}
+*/
+
 func NewWriterF(f func(writer *Writer)) []byte {
-	w := NewWriter()
-	f(w)
+	w := new(bytes.Buffer)
+	f((*Writer)(w))
 	return w.Bytes()
 }
 
 func (w *Writer) Write(b []byte) {
-	w.buf.Write(b)
+	(*bytes.Buffer)(w).Write(b)
 }
 
 func (w *Writer) WriteByte(b byte) {
-	w.buf.WriteByte(b)
+	(*bytes.Buffer)(w).WriteByte(b)
 }
 
 func (w *Writer) WriteUInt16(v uint16) {
@@ -70,9 +95,7 @@ func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(writer *Writer)) {
-	t := NewWriter()
-	f(t)
-	data := t.Bytes()
+	data := NewWriterF(f)
 	w.WriteUInt32(uint32(len(data) + offset))
 	w.Write(data)
 }
@@ -108,5 +131,5 @@ func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {
 }
 
 func (w *Writer) Bytes() []byte {
-	return w.buf.Bytes()
+	return (*bytes.Buffer)(w).Bytes()
 }
