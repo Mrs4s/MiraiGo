@@ -119,7 +119,11 @@ func decodeMultiApplyDownResponse(_ *QQClient, _ *incomingPacketInfo, payload []
 	if err = proto.Unmarshal(data, &lb); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	uc := binary.GZipUncompress(lb.MsgDownRsp[0].MsgContent)
+	msgContent := lb.MsgDownRsp[0].MsgContent
+	if msgContent == nil {
+		return nil, errors.New("message content is empty")
+	}
+	uc := binary.GZipUncompress(msgContent)
 	mt := msg.PbMultiMsgTransmit{}
 	if err = proto.Unmarshal(uc, &mt); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
