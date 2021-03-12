@@ -388,7 +388,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *incomingPacketInfo, payload []
 							builder.MessageSlices = append(builder.MessageSlices, fm.OriginalObject)
 						}
 					}
-					if len(builder.MessageSlices) >= int(m.Content.GetPkgNum()) || data == nil {
+					if end >= m.Head.GetMsgSeq()+m.Content.GetPkgNum() {
 						break
 					}
 					i = end
