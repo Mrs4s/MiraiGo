@@ -642,3 +642,7 @@ func ToReadableString(m []IMessageElement) (r string) {
 	}
 	return
 }
+
+func FaceNameById(id int) string {
+	return faceMap[id]
+}
