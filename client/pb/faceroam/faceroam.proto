@@ -1,0 +1,45 @@
+syntax = "proto2";
+
+option go_package = ".;faceroam";
+
+message PlatInfo {
+  optional int64 implat = 1;
+  optional string osver = 2;
+  optional string mqqver = 3;
+}
+
+message FaceroamReqBody {
+  optional PlatInfo comm = 1;
+  optional uint64 uin = 2;
+  optional uint32 subCmd = 3;
+  optional ReqUserInfo reqUserInfo = 4;
+  optional ReqDeleteItem reqDeleteItem = 5;
+}
+
+message ReqDeleteItem {
+  repeated string filename = 1;
+}
+
+message ReqUserInfo {
+}
+
+message FaceroamRspBody {
+  optional int64 ret = 1;
+  optional string errmsg = 2;
+  optional uint32 subCmd = 3;
+  optional RspUserInfo rspUserInfo = 4;
+  optional RspDeleteItem rspDeleteItem = 5;
+}
+
+message RspDeleteItem {
+  repeated string filename = 1;
+  repeated int64 ret = 2;
+}
+
+message RspUserInfo {
+  repeated string filename = 1;
+  repeated string deleteFile = 2;
+  optional string bid = 3;
+  optional uint32 maxRoamSize = 4;
+  repeated uint32 emojiType = 5;
+}
