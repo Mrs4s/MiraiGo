@@ -27,6 +27,16 @@ type (
 		MemberCount    uint16
 		MaxMemberCount uint16
 		Members        []*GroupMemberInfo
+		Uin             int64
+		Code            int64
+		Name            string
+		Memo            string
+		OwnerUin        int64
+		GroupCreateTime uint32
+		GroupLevel      uint32
+		MemberCount     uint16
+		MaxMemberCount  uint16
+		Members         []*GroupMemberInfo
 		// 最后一条信息的SEQ,只有通过 GetGroupInfo 函数获取的 GroupInfo 才会有
 		LastMsgSeq int64
 
@@ -53,6 +63,7 @@ type (
 	GroupSearchInfo struct {
 		Code int64  // 群号
 		Name string // 群名
+		Memo string // 简介
 	}
 )
 
@@ -211,6 +222,7 @@ func decodeGroupSearchResponse(_ *QQClient, _ *incomingPacketInfo, payload []byt
 			ret = append(ret, GroupSearchInfo{
 				Code: int64(g.GetCode()),
 				Name: g.GetName(),
+				Memo: g.GetBrief(),
 			})
 		}
 		return ret, nil
@@ -246,6 +258,18 @@ func decodeGroupInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte)
 		Members:        []*GroupMemberInfo{},
 		LastMsgSeq:     int64(info.GroupInfo.GetGroupCurMsgSeq()),
 		client:         c,
+		Uin:             int64(*info.GroupInfo.GroupUin),
+		Code:            int64(*info.GroupCode),
+		Name:            string(info.GroupInfo.GroupName),
+		Memo:            string(info.GroupInfo.GroupMemo),
+		GroupCreateTime: *info.GroupInfo.GroupCreateTime,
+		GroupLevel:      *info.GroupInfo.GroupLevel,
+		OwnerUin:        int64(*info.GroupInfo.GroupOwner),
+		MemberCount:     uint16(*info.GroupInfo.GroupMemberNum),
+		MaxMemberCount:  uint16(*info.GroupInfo.GroupMemberMaxNum),
+		Members:         []*GroupMemberInfo{},
+		LastMsgSeq:      int64(info.GroupInfo.GetGroupCurMsgSeq()),
+		client:          c,
 	}, nil
 }
 
@@ -417,3 +441,4 @@ func (m *GroupMemberInfo) CardChangable() bool {
 	}
 	return m.Permission != Owner
 }
+
