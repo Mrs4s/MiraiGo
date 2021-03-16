@@ -54,20 +54,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 			if (int64(pairMsg.GetLastReadTime()) & 4294967295) > int64(pMsg.Head.GetMsgTime()) {
 				continue
 			}
-			strKey := fmt.Sprintf("%d%d%d%d", pMsg.Head.GetFromUin(), pMsg.Head.GetToUin(), pMsg.Head.GetMsgSeq(), pMsg.Head.GetMsgUid())
-			if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Minute*5); ok {
-				c.Debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
-				continue
-			}
-			c.msgSvcCache.Add(strKey, "", time.Minute*5)
-			if info.Params.bool("init") {
-				continue
-			}
-			if decoder, ok := c2cDecoders[pMsg.Head.GetMsgType()]; ok {
-				decoder(c, pMsg, info)
-			} else {
-				c.Debug("unknown msg type on c2c processor: %v", pMsg.Head.GetMsgType())
-			}
+			c.commMsgProcessor(pMsg, info)
 		}
 	}
 	if delItems != nil {
@@ -77,6 +64,23 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
 		seq, pkt := c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix())
 		_, _ = c.sendAndWait(seq, pkt, info.Params)
+	}
+}
+
+func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *incomingPacketInfo) {
+	strKey := fmt.Sprintf("%d%d%d%d", pMsg.Head.GetFromUin(), pMsg.Head.GetToUin(), pMsg.Head.GetMsgSeq(), pMsg.Head.GetMsgUid())
+	if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Minute*5); ok {
+		c.Debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
+		return
+	}
+	c.msgSvcCache.Add(strKey, "", time.Minute*5)
+	if info.Params.bool("init") {
+		return
+	}
+	if decoder, ok := c2cDecoders[pMsg.Head.GetMsgType()]; ok {
+		decoder(c, pMsg, info)
+	} else {
+		c.Debug("unknown msg type on c2c processor: %v", pMsg.Head.GetMsgType())
 	}
 }
 
@@ -98,7 +102,11 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo
 		if pMsg.Body.RichText == nil || pMsg.Body.RichText.Elems == nil {
 			return
 		}
-		c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
+		if pMsg.Head.GetFromUin() == c.Uin {
+			c.dispatchPrivateMessageSelf(c.parsePrivateMessage(pMsg))
+			return
+		}
+		c.dispatchPrivateMessage(c.parsePrivateMessage(pMsg))
 	default:
 		c.Debug("unknown c2c cmd on private msg decoder: %v", pMsg.Head.GetC2CCmd())
 	}
@@ -112,7 +120,7 @@ func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 		// m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
 		// T3 -> timestamp T8 -> voiceType T9 -> voiceLength T10 -> PbReserveStruct
 	}
-	c.dispatchFriendMessage(c.parsePrivateMessage(pMsg))
+	c.dispatchPrivateMessage(c.parsePrivateMessage(pMsg))
 }
 
 func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {

@@ -570,8 +570,8 @@ func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint1
 }
 
 // OnlinePush.RespPush
-func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []jce.PushMessageInfo) []byte {
-	req := &jce.SvcRespPushMsg{Uin: uin}
+func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, svrip int32, pushToken []byte, seq uint16, delMsg []jce.PushMessageInfo) []byte {
+	req := &jce.SvcRespPushMsg{Uin: uin, Svrip: svrip, PushToken: pushToken, DelInfos: []jce.IJceStruct{}}
 	for _, m := range delMsg {
 		req.DelInfos = append(req.DelInfos, &jce.DelMsgInfo{
 			FromUin:    m.FromUin,
@@ -580,8 +580,7 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, seq uint16, delMsg []j
 			MsgTime:    m.MsgTime,
 		})
 	}
-	b := append([]byte{0x0A}, req.ToBytes()...)
-	b = append(b, 0x0B)
+	b := packUniRequestData(req.ToBytes())
 	buf := &jce.RequestDataVersion3{
 		Map: map[string][]byte{"resp": b},
 	}

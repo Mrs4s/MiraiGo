@@ -26,6 +26,7 @@ func init() {
 	decoders["RegPrxySvc.PbSyncMsg"] = decodeMsgSyncResponse
 	decoders["PbMessageSvc.PbMsgReadedReport"] = decodeMsgReadedResponse
 	decoders["MessageSvc.PushReaded"] = ignoreDecoder
+	decoders["OnlinePush.PbC2CMsgSync"] = decodeC2CSyncPacket
 }
 
 type (
@@ -72,6 +73,7 @@ func (c *QQClient) RefreshStatus() error {
 	return err
 }
 
+// SyncSessions 同步会话列表
 func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 	ret := &SessionSyncResponse{}
 	notifyChan := make(chan bool)
@@ -395,6 +397,17 @@ func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte
 		}
 	}
 	return ret, nil
+}
+
+// OnlinePush.PbC2CMsgSync
+func decodeC2CSyncPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
+	m := msg.PbPushMsg{}
+	if err := proto.Unmarshal(payload, &m); err != nil {
+		return nil, err
+	}
+	_ = c.send(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
+	c.commMsgProcessor(m.Msg, info)
+	return nil, nil
 }
 
 func decodeMsgReadedResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {

@@ -31,7 +31,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 	msgInfos := []jce.PushMessageInfo{}
 	uin := jr.ReadInt64(0)
 	jr.ReadSlice(&msgInfos, 2)
-	_ = c.send(c.buildDeleteOnlinePushPacket(uin, info.SequenceId, msgInfos))
+	_ = c.send(c.buildDeleteOnlinePushPacket(uin, 0, nil, info.SequenceId, msgInfos))
 	for _, m := range msgInfos {
 		k := fmt.Sprintf("%v%v%v", m.MsgSeq, m.MsgTime, m.MsgUid)
 		if _, ok := c.onlinePushCache.Get(k); ok {
