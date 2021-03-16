@@ -192,7 +192,7 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 }
 
 func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.ForwardElement {
-	if len(m.Nodes) >= 200 {
+	if len(m.Nodes) > 200 {
 		return nil
 	}
 	ts := time.Now().UnixNano()
