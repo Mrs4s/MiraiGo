@@ -485,7 +485,7 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 	}
 	ret := &message.PrivateMessage{
 		Id:     msg.Head.GetMsgSeq(),
-		Target: c.Uin,
+		Target: msg.Head.GetToUin(),
 		Time:   msg.Head.GetMsgTime(),
 		Sender: sender,
 		Elements: func() []message.IMessageElement {
