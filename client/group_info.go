@@ -423,4 +423,3 @@ func (m *GroupMemberInfo) CardChangable() bool {
 	}
 	return m.Permission != Owner
 }
-
