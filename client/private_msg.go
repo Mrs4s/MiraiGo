@@ -16,7 +16,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	t := time.Now().Unix()
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
 	msgLen := message.EstimateLength(m.Elements, 703)
-	if msgLen > 5000 || imgCount > 50 {
+	if msgLen > 703 || imgCount > 50 {
 		return nil
 	}
 	if msgLen > 300 || imgCount > 2 {
