@@ -12,7 +12,7 @@ func T144(
 ) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x144)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.EncryptAndWrite(tgtgtKey, binary.NewWriterF(func(w *binary.Writer) {
 				w.WriteUInt16(5)
 				w.Write(T109(imei))

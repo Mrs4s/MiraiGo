@@ -213,6 +213,88 @@ func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 	return nil, nil
 }
 
+// wtlogin.trans_emp
+func decodeTransEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+	if SystemDeviceInfo.Protocol != AndroidWatch { // safe
+		return nil, nil
+	}
+	if len(payload) < 48 {
+		return nil, errors.New("missing payload length")
+	}
+	reader := binary.NewReader(payload)
+	reader.ReadBytes(5) // trans req head
+	reader.ReadByte()
+	reader.ReadUInt16()
+	cmd := reader.ReadUInt16()
+	reader.ReadBytes(21)
+	reader.ReadByte()
+	reader.ReadUInt16()
+	reader.ReadUInt16()
+	reader.ReadInt32()
+	reader.ReadInt64()
+	body := binary.NewReader(reader.ReadBytes(reader.Len() - 1))
+	if cmd == 0x31 {
+		body.ReadUInt16()
+		body.ReadInt32()
+		code := body.ReadByte()
+		if code != 0 {
+			return nil, errors.Errorf("wtlogin.trans_emp sub cmd 0x31 error: %v", code)
+		}
+		sig := body.ReadBytesShort()
+		body.ReadUInt16()
+		m := body.ReadTlvMap(2)
+		if m.Exists(0x17) {
+			return &QRCodeLoginResponse{
+				State:     QRCodeImageFetch,
+				ImageData: m[0x17],
+				Sig:       sig,
+			}, nil
+		}
+		return nil, errors.Errorf("wtlogin.trans_emp sub cmd 0x31 error: image not found")
+	}
+	if cmd == 0x12 {
+		aVarLen := body.ReadUInt16()
+		if aVarLen != 0 {
+			aVarLen-- // 阴间的位移操作
+			if body.ReadByte() == 2 {
+				body.ReadInt64() // uin ?
+				aVarLen -= 8
+			}
+		}
+		if aVarLen > 0 {
+			body.ReadBytes(int(aVarLen))
+		}
+		body.ReadInt32() // app id?
+		code := body.ReadByte()
+		if code != 0 {
+			if code == 0x30 {
+				return &QRCodeLoginResponse{State: QRCodeWaitingForScan}, nil
+			}
+			if code == 0x35 {
+				return &QRCodeLoginResponse{State: QRCodeWaitingForConfirm}, nil
+			}
+			if code == 0x11 {
+				return &QRCodeLoginResponse{State: QRCodeTimeout}, nil
+			}
+			return nil, errors.Errorf("wtlogin.trans_emp sub cmd 0x12 error: %v", code)
+		}
+		c.Uin = body.ReadInt64()
+		body.ReadInt32() // sig create time
+		body.ReadUInt16()
+		m := body.ReadTlvMap(2)
+		if !m.Exists(0x18) || !m.Exists(0x1e) || !m.Exists(0x19) {
+			return nil, errors.New("wtlogin.trans_emp sub cmd 0x12 error: tlv error")
+		}
+		SystemDeviceInfo.TgtgtKey = m[0x1e]
+		return &QRCodeLoginResponse{State: QRCodeConfirmed, LoginInfo: &QRCodeLoginInfo{
+			tmpPwd:      m[0x18],
+			tmpNoPicSig: m[0x19],
+			tgtQR:       m[0x65],
+		}}, nil
+	}
+	return nil, errors.Errorf("unknown trans_emp response: %v", cmd)
+}
+
 // ConfigPushSvc.PushReq
 func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}

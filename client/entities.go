@@ -15,6 +15,8 @@ var (
 type (
 	LoginError int
 
+	QRCodeLoginState int
+
 	MemberPermission int
 
 	ClientProtocol int
@@ -35,6 +37,21 @@ type (
 
 		// other error
 		ErrorMessage string
+	}
+
+	QRCodeLoginResponse struct {
+		State QRCodeLoginState
+
+		ImageData []byte
+		Sig       []byte
+
+		LoginInfo *QRCodeLoginInfo
+	}
+
+	QRCodeLoginInfo struct {
+		tmpPwd      []byte
+		tmpNoPicSig []byte
+		tgtQR       []byte
 	}
 
 	FriendInfo struct {
@@ -270,6 +287,12 @@ const (
 	SMSOrVerifyNeededError LoginError = 7
 	SliderNeededError      LoginError = 8
 	UnknownLoginError      LoginError = -1
+
+	QRCodeImageFetch        QRCodeLoginState = 1
+	QRCodeWaitingForScan    QRCodeLoginState = 2
+	QRCodeWaitingForConfirm QRCodeLoginState = 3
+	QRCodeTimeout           QRCodeLoginState = 4
+	QRCodeConfirmed         QRCodeLoginState = 5
 
 	Owner MemberPermission = iota
 	Administrator

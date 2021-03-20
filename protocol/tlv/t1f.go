@@ -5,7 +5,7 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T1F(isRoot bool, osName, osVersion, simOperatorName, apn []byte, networkType uint16) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x1F)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteByte(func() byte {
 				if isRoot {
 					return 1
@@ -13,12 +13,12 @@ func T1F(isRoot bool, osName, osVersion, simOperatorName, apn []byte, networkTyp
 					return 0
 				}
 			}())
-			w.WriteTlv(osName)
-			w.WriteTlv(osVersion)
+			w.WriteBytesShort(osName)
+			w.WriteBytesShort(osVersion)
 			w.WriteUInt16(networkType)
-			w.WriteTlv(simOperatorName)
-			w.WriteTlv([]byte{})
-			w.WriteTlv(apn)
+			w.WriteBytesShort(simOperatorName)
+			w.WriteBytesShort([]byte{})
+			w.WriteBytesShort(apn)
 		}))
 	})
 }

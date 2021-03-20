@@ -55,6 +55,23 @@ func BuildOicqRequestPacket(uin int64, commandId uint16, encrypt IEncryptMethod,
 	return p.Bytes()
 }
 
+func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		body := binary.NewWriterF(bodyFunc)
+		w.WriteByte(2)
+		w.WriteUInt16(uint16(43 + len(body) + 1))
+		w.WriteUInt16(cmd)
+		w.Write(make([]byte, 21))
+		w.WriteByte(3)
+		w.WriteUInt16(0)
+		w.WriteUInt16(50) // version
+		w.WriteUInt32(seq)
+		w.WriteUInt64(j)
+		w.Write(body)
+		w.WriteByte(3)
+	})
+}
+
 func BuildSsoPacket(seq uint16, appId uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
 	p := binary.NewWriter()
 	p.WriteIntLvPacket(4, func(writer *binary.Writer) {
@@ -95,7 +112,7 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 	flag1 := reader.ReadInt32()
 	flag2 := reader.ReadByte()
 	if reader.ReadByte() != 0 { // flag3
-		return nil, errors.WithStack(ErrUnknownFlag)
+		//return nil, errors.WithStack(ErrUnknownFlag)
 	}
 	reader.ReadString() // uin string
 	decrypted := func() (data []byte) {

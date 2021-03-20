@@ -5,7 +5,7 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T128(isGuidFromFileNull, isGuidAvailable, isGuidChanged bool, guidFlag uint32, buildModel, guid, buildBrand []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x128)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0)
 			w.WriteBool(isGuidFromFileNull)
 			w.WriteBool(isGuidAvailable)

@@ -5,7 +5,7 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T18(appId uint32, uin uint32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x18)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(1)
 			w.WriteUInt32(1536)
 			w.WriteUInt32(appId)

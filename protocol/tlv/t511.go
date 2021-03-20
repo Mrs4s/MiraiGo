@@ -16,14 +16,14 @@ func T511(domains []string) []byte {
 	}
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x511)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(uint16(len(arr2)))
 			for _, d := range arr2 {
 				indexOf := strings.Index(d, "(")
 				indexOf2 := strings.Index(d, ")")
 				if indexOf != 0 || indexOf2 <= 0 {
 					w.WriteByte(0x01)
-					w.WriteTlv([]byte(d))
+					w.WriteBytesShort([]byte(d))
 				} else {
 					var b byte
 					var z bool
@@ -44,7 +44,7 @@ func T511(domains []string) []byte {
 							b |= 2
 						}
 						w.WriteByte(b)
-						w.WriteTlv([]byte(d[indexOf2+1:]))
+						w.WriteBytesShort([]byte(d[indexOf2+1:]))
 					}
 				}
 			}

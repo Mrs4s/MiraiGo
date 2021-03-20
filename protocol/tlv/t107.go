@@ -5,7 +5,7 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T107(picType uint16) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x107)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(picType)
 			w.WriteByte(0x00)
 			w.WriteUInt16(0)

@@ -5,10 +5,10 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T177(buildTime uint32, sdkVersion string) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x177)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteByte(0x01)
 			w.WriteUInt32(buildTime)
-			w.WriteTlv([]byte(sdkVersion))
+			w.WriteBytesShort([]byte(sdkVersion))
 		}))
 	})
 }

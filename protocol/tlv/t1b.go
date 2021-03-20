@@ -5,7 +5,7 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T1B(micro, version, size, margin, dpi, ecLevel, hint uint32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x1B)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt32(micro)
 			w.WriteUInt32(version)
 			w.WriteUInt32(size)

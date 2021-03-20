@@ -9,7 +9,7 @@ import (
 func T187(macAddress []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x187)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			h := md5.Sum(macAddress)
 			w.Write(h[:])
 		}))

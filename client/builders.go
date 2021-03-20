@@ -87,7 +87,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		}
 		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
 		w.Write(tlv.T516())
-		w.Write(tlv.T521())
+		w.Write(tlv.T521(0))
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
@@ -105,6 +105,122 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T104(c.t104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T401(c.g))
+	})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	return seq, packet
+}
+
+func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(0, 0x812, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+		w.WriteHex(`0001110000001000000072000000`) // trans header
+		w.WriteUInt32(uint32(time.Now().Unix()))
+		w.Write(packets.BuildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
+			w.WriteUInt16(0)  // const
+			w.WriteUInt32(16) // app id
+			w.WriteUInt64(0)  // const
+			w.WriteByte(8)    // const
+			w.WriteBytesShort(EmptyBytes)
+
+			w.WriteUInt16(6)
+			w.Write(tlv.T16(c.version.SSOVersion, 16, c.version.AppId, SystemDeviceInfo.Guid, []byte(c.version.ApkId), []byte(c.version.SortVersionName), c.version.ApkSign))
+			w.Write(tlv.T1B(0, 0, 3, 4, 72, 2, 2))
+			w.Write(tlv.T1D(c.version.MiscBitmap))
+			w.Write(tlv.T1F(false, SystemDeviceInfo.OSType, []byte("7.1.2"), []byte("China Mobile GSM"), SystemDeviceInfo.APN, 2))
+			w.Write(tlv.T33(SystemDeviceInfo.Guid))
+			w.Write(tlv.T35(8))
+		}))
+	})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.trans_emp", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
+	return seq, packet
+}
+
+func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(0, 0x812, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+		w.WriteHex(`0000620000001000000072000000`) // trans header
+		w.WriteUInt32(uint32(time.Now().Unix()))
+		w.Write(packets.BuildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
+			w.WriteUInt16(5)  // const
+			w.WriteByte(1)    // const
+			w.WriteUInt32(8)  // product type
+			w.WriteUInt32(16) // app id
+			w.WriteBytesShort(sig)
+			w.WriteUInt64(0) // const
+			w.WriteByte(8)   // const
+			w.WriteBytesShort(EmptyBytes)
+			w.WriteUInt16(0) // const
+		}))
+	})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.trans_emp", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
+	return seq, packet
+}
+
+func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+		w.WriteUInt16(9)
+		w.WriteUInt16(24)
+
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
+		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt16(0x106)
+			w.WriteBytesShort(t106)
+		}))
+		//w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 0))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T100(c.version.SSOVersion, c.version.AppId, c.version.MainSigMap))
+		w.Write(tlv.T107(0))
+		w.Write(tlv.T142(c.version.ApkId))
+		w.Write(tlv.T144(
+			[]byte(SystemDeviceInfo.IMEI),
+			SystemDeviceInfo.GenDeviceInfoData(),
+			SystemDeviceInfo.OSType,
+			SystemDeviceInfo.Version.Release,
+			SystemDeviceInfo.SimInfo,
+			SystemDeviceInfo.APN,
+			false, true, false, tlv.GuidFlag(),
+			SystemDeviceInfo.Model,
+			SystemDeviceInfo.Guid,
+			SystemDeviceInfo.Brand,
+			SystemDeviceInfo.TgtgtKey,
+		))
+
+		w.Write(tlv.T145(SystemDeviceInfo.Guid))
+		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
+		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt16(0x16A)
+			w.WriteBytesShort(t16a)
+		}))
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T141(SystemDeviceInfo.SimInfo, SystemDeviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T511([]string{
+			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
+			"qzone.qq.com", "vip.qq.com", "gamecenter.qq.com", "qun.qq.com", "game.qq.com",
+			"qqweb.qq.com", "office.qq.com", "ti.qq.com", "mail.qq.com", "mma.qq.com",
+		}))
+		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
+		w.Write(tlv.T188(SystemDeviceInfo.AndroidId))
+		if len(SystemDeviceInfo.IMSIMd5) != 0 {
+			w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
+		}
+		w.Write(tlv.T191(0x00))
+		if len(SystemDeviceInfo.WifiBSSID) != 0 && len(SystemDeviceInfo.WifiSSID) != 0 {
+			w.Write(tlv.T202(SystemDeviceInfo.WifiBSSID, SystemDeviceInfo.WifiSSID))
+		}
+		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T516())
+		w.Write(tlv.T521(8))
+		//w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
+		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+			w.WriteUInt16(0x318)
+			w.WriteBytesShort(t318)
+		}))
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.login", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
@@ -190,7 +306,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T1(uint32(c.Uin), SystemDeviceInfo.IpAddress))
 		w.Write(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x106)
-			w.WriteTlv(c.sigInfo.encryptedA1)
+			w.WriteBytesShort(c.sigInfo.encryptedA1)
 		}))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
@@ -227,7 +343,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
 		w.Write(tlv.T202(SystemDeviceInfo.WifiBSSID, SystemDeviceInfo.WifiSSID))
 		w.Write(tlv.T516())
-		w.Write(tlv.T521())
+		w.Write(tlv.T521(0))
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 
 	})

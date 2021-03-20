@@ -130,6 +130,7 @@ type handlerInfo struct {
 var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
+	"wtlogin.trans_emp":                            decodeTransEmpResponse,
 	"StatSvc.register":                             decodeClientRegisterResponse,
 	"StatSvc.ReqMSFOffline":                        decodeMSFOfflinePacket,
 	"MessageSvc.PushNotify":                        decodeSvcNotify,
@@ -161,6 +162,10 @@ func init() {
 // NewClient create new qq client
 func NewClient(uin int64, password string) *QQClient {
 	return NewClientMd5(uin, md5.Sum([]byte(password)))
+}
+
+func NewClientEmpty() *QQClient {
+	return NewClient(0, "")
 }
 
 func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
@@ -256,6 +261,47 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 		c.init()
 	}
 	return &l, nil
+}
+
+func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
+	if SystemDeviceInfo.Protocol != AndroidWatch {
+		return nil, errors.New("only android watch protocol can login by QRCode")
+	}
+	if c.Online {
+		return nil, ErrAlreadyOnline
+	}
+	if c.Conn == nil {
+		err := c.connect()
+		if err != nil {
+			return nil, err
+		}
+		go c.netLoop()
+	}
+	i, err := c.sendAndWait(c.buildQRCodeFetchRequestPacket())
+	if err != nil {
+		return nil, errors.Wrap(err, "fetch qrcode error")
+	}
+	return i.(*QRCodeLoginResponse), nil
+}
+
+func (c *QQClient) QueryQRCodeStatus(sig []byte) (*QRCodeLoginResponse, error) {
+	i, err := c.sendAndWait(c.buildQRCodeResultQueryRequestPacket(sig))
+	if err != nil {
+		return nil, errors.Wrap(err, "query result error")
+	}
+	return i.(*QRCodeLoginResponse), nil
+}
+
+func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
+	i, err := c.sendAndWait(c.buildQRCodeLoginPacket(info.tmpPwd, info.tmpNoPicSig, info.tgtQR))
+	if err != nil {
+		return nil, errors.Wrap(err, "qrcode login error")
+	}
+	rsp := i.(LoginResponse)
+	if rsp.Success {
+		c.init()
+	}
+	return &rsp, nil
 }
 
 // SubmitCaptcha send captcha to server

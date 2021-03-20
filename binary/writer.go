@@ -3,6 +3,7 @@ package binary
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
 )
 
 type Writer bytes.Buffer
@@ -48,6 +49,11 @@ func (w *Writer) Write(b []byte) {
 	(*bytes.Buffer)(w).Write(b)
 }
 
+func (w *Writer) WriteHex(h string) {
+	b, _ := hex.DecodeString(h)
+	w.Write(b)
+}
+
 func (w *Writer) WriteByte(b byte) {
 	(*bytes.Buffer)(w).WriteByte(b)
 }
@@ -77,7 +83,7 @@ func (w *Writer) WriteString(v string) {
 }
 
 func (w *Writer) WriteStringShort(v string) {
-	w.WriteTlv([]byte(v))
+	w.WriteBytesShort([]byte(v))
 }
 
 func (w *Writer) WriteBool(b bool) {
@@ -117,17 +123,17 @@ func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body [
 	})
 }
 
-func (w *Writer) WriteTlv(data []byte) {
+func (w *Writer) WriteBytesShort(data []byte) {
 	w.WriteUInt16(uint16(len(data)))
 	w.Write(data)
 }
 
 func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {
 	if len(data) <= limit {
-		w.WriteTlv(data)
+		w.WriteBytesShort(data)
 		return
 	}
-	w.WriteTlv(data[:limit])
+	w.WriteBytesShort(data[:limit])
 }
 
 func (w *Writer) Bytes() []byte {

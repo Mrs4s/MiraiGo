@@ -5,7 +5,7 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T116(miscBitmap, subSigMap uint32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x116)
-		w.WriteTlv(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteByte(0x00)
 			w.WriteUInt32(miscBitmap)
 			w.WriteUInt32(subSigMap)
