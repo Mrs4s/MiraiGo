@@ -270,6 +270,9 @@ func decodeTransEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) 
 			if code == 0x35 {
 				return &QRCodeLoginResponse{State: QRCodeWaitingForConfirm}, nil
 			}
+			if code == 0x36 {
+				return &QRCodeLoginResponse{State: QRCodeCanceled}, nil
+			}
 			if code == 0x11 {
 				return &QRCodeLoginResponse{State: QRCodeTimeout}, nil
 			}

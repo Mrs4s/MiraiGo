@@ -293,6 +293,7 @@ const (
 	QRCodeWaitingForConfirm QRCodeLoginState = 3
 	QRCodeTimeout           QRCodeLoginState = 4
 	QRCodeConfirmed         QRCodeLoginState = 5
+	QRCodeCanceled          QRCodeLoginState = 6
 
 	Owner MemberPermission = iota
 	Administrator
