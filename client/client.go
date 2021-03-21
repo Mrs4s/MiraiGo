@@ -264,9 +264,6 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 }
 
 func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
-	if SystemDeviceInfo.Protocol != AndroidWatch {
-		return nil, errors.New("only android watch protocol can login by QRCode")
-	}
 	if c.Online {
 		return nil, ErrAlreadyOnline
 	}

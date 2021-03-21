@@ -215,9 +215,6 @@ func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 
 // wtlogin.trans_emp
 func decodeTransEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
-	if SystemDeviceInfo.Protocol != AndroidWatch { // safe
-		return nil, nil
-	}
 	if len(payload) < 48 {
 		return nil, errors.New("missing payload length")
 	}

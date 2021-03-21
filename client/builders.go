@@ -112,6 +112,7 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 }
 
 func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
+	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(0, 0x812, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteHex(`0001110000001000000072000000`) // trans header
@@ -124,20 +125,21 @@ func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 			w.WriteBytesShort(EmptyBytes)
 
 			w.WriteUInt16(6)
-			w.Write(tlv.T16(c.version.SSOVersion, 16, c.version.AppId, SystemDeviceInfo.Guid, []byte(c.version.ApkId), []byte(c.version.SortVersionName), c.version.ApkSign))
+			w.Write(tlv.T16(watch.SSOVersion, 16, watch.AppId, SystemDeviceInfo.Guid, []byte(watch.ApkId), []byte(watch.SortVersionName), watch.ApkSign))
 			w.Write(tlv.T1B(0, 0, 3, 4, 72, 2, 2))
-			w.Write(tlv.T1D(c.version.MiscBitmap))
+			w.Write(tlv.T1D(watch.MiscBitmap))
 			w.Write(tlv.T1F(false, SystemDeviceInfo.OSType, []byte("7.1.2"), []byte("China Mobile GSM"), SystemDeviceInfo.APN, 2))
 			w.Write(tlv.T33(SystemDeviceInfo.Guid))
 			w.Write(tlv.T35(8))
 		}))
 	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.trans_emp", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	sso := packets.BuildSsoPacket(seq, watch.AppId, "wtlogin.trans_emp", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
+	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(0, 0x812, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
 		w.WriteHex(`0000620000001000000072000000`) // trans header
@@ -154,7 +156,7 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 			w.WriteUInt16(0) // const
 		}))
 	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.trans_emp", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	sso := packets.BuildSsoPacket(seq, watch.AppId, "wtlogin.trans_emp", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
