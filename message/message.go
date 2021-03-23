@@ -248,7 +248,7 @@ func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
 func EstimateLength(elems []IMessageElement, limit int) int {
 	sum := 0
 	for _, elem := range elems {
-		if sum >= limit {
+		if sum > limit {
 			break
 		}
 		left := int(math.Max(float64(limit-sum), 0))

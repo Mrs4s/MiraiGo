@@ -55,7 +55,7 @@ func ChineseLength(str string, limit int) int {
 		default:
 			sum += 4
 		}
-		if sum >= limit {
+		if sum > limit {
 			break
 		}
 	}
