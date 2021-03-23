@@ -10,8 +10,8 @@ import (
 )
 
 func NewWriterFOld(f func(writer *Writer)) []byte {
-	w := (*Writer)(new(bytes.Buffer))
-	f(w)
+	w := new(bytes.Buffer)
+	f((*Writer)(w))
 	return w.Bytes()
 }
 
@@ -53,8 +53,8 @@ func TestNewWriterF(t *testing.T) {
 	wg.Wait()
 }
 
-func BenchmarkNewWriterFOld256(b *testing.B) {
-	test := make([]byte, 256)
+func BenchmarkNewWriterFOld128(b *testing.B) {
+	test := make([]byte, 128)
 	rand.Read(test)
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -66,8 +66,8 @@ func BenchmarkNewWriterFOld256(b *testing.B) {
 	})
 }
 
-func BenchmarkNewWriterF256(b *testing.B) {
-	test := make([]byte, 256)
+func BenchmarkNewWriterF128(b *testing.B) {
+	test := make([]byte, 128)
 	rand.Read(test)
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
@@ -79,26 +79,30 @@ func BenchmarkNewWriterF256(b *testing.B) {
 	})
 }
 
-func BenchmarkNewWriterFOld1024(b *testing.B) {
-	test := make([]byte, 1024)
+func BenchmarkNewWriterFOld128_3(b *testing.B) {
+	test := make([]byte, 128)
 	rand.Read(test)
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			NewWriterFOld(func(w *Writer) {
 				w.Write(test)
+				w.Write(test)
+				w.Write(test)
 			})
 		}
 	})
 }
 
-func BenchmarkNewWriterF1024(b *testing.B) {
-	test := make([]byte, 1024)
+func BenchmarkNewWriterF128_3(b *testing.B) {
+	test := make([]byte, 128)
 	rand.Read(test)
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			NewWriterF(func(w *Writer) {
+				w.Write(test)
+				w.Write(test)
 				w.Write(test)
 			})
 		}

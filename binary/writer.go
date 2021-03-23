@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"sync"
 )
 
 type Writer bytes.Buffer
 
-/*
-var bufferPool = sync.Pool{ // todo sync.Pool 无法通过单元测试
+var bufferPool = sync.Pool{
 	New: func() interface{} {
 		return new(bytes.Buffer)
 	},
@@ -27,7 +27,6 @@ func PutBuffer(buf *bytes.Buffer) {
 		bufferPool.Put(buf)
 	}
 }
-*/
 
 func NewWriter() *Writer {
 	return new(Writer)
@@ -40,9 +39,11 @@ func PutWriter(w *Writer) {
 */
 
 func NewWriterF(f func(writer *Writer)) []byte {
-	w := new(bytes.Buffer)
+	w := NewBuffer()
 	f((*Writer)(w))
-	return w.Bytes()
+	b := append([]byte(nil), w.Bytes()...)
+	PutBuffer(w)
+	return b
 }
 
 func (w *Writer) Write(b []byte) {
