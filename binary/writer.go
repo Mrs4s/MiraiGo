@@ -1,53 +1,44 @@
 package binary
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"sync"
 )
 
-type Writer bytes.Buffer
+type Writer struct {
+	b []byte
+}
 
 var bufferPool = sync.Pool{
 	New: func() interface{} {
-		return new(bytes.Buffer)
+		return new(Writer)
 	},
 }
 
-func NewBuffer() *bytes.Buffer {
-	return bufferPool.Get().(*bytes.Buffer)
+func NewWriter() *Writer {
+	return bufferPool.Get().(*Writer)
 }
 
-func PutBuffer(buf *bytes.Buffer) {
+func PutBuffer(w *Writer) {
 	// See https://golang.org/issue/23199
 	const maxSize = 1 << 16
-	if buf.Cap() < maxSize { // 对于大Buffer直接丢弃
-		buf.Reset()
-		bufferPool.Put(buf)
+	if cap(w.b) < maxSize { // 对于大Buffer直接丢弃
+		w.b = w.b[:0]
+		bufferPool.Put(w)
 	}
 }
 
-func NewWriter() *Writer {
-	return new(Writer)
-}
-
-/*
-func PutWriter(w *Writer) {
-	PutBuffer((*bytes.Buffer)(w))
-}
-*/
-
 func NewWriterF(f func(writer *Writer)) []byte {
-	w := NewBuffer()
-	f((*Writer)(w))
+	w := NewWriter()
+	f(w)
 	b := append([]byte(nil), w.Bytes()...)
 	PutBuffer(w)
 	return b
 }
 
 func (w *Writer) Write(b []byte) {
-	(*bytes.Buffer)(w).Write(b)
+	w.b = append(w.b, b...)
 }
 
 func (w *Writer) WriteHex(h string) {
@@ -56,7 +47,7 @@ func (w *Writer) WriteHex(h string) {
 }
 
 func (w *Writer) WriteByte(b byte) {
-	(*bytes.Buffer)(w).WriteByte(b)
+	w.b = append(w.b, b)
 }
 
 func (w *Writer) WriteUInt16(v uint16) {
@@ -138,5 +129,5 @@ func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {
 }
 
 func (w *Writer) Bytes() []byte {
-	return (*bytes.Buffer)(w).Bytes()
+	return w.b
 }

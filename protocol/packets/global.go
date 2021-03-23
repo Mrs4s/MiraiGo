@@ -33,26 +33,23 @@ type IEncryptMethod interface {
 }
 
 func BuildOicqRequestPacket(uin int64, commandId uint16, encrypt IEncryptMethod, key []byte, bodyFunc func(writer *binary.Writer)) []byte {
-	b := binary.NewWriter()
-	bodyFunc(b)
-
-	body := encrypt.DoEncrypt(b.Bytes(), key)
-	p := binary.NewWriter()
-	p.WriteByte(0x02)
-	p.WriteUInt16(27 + 2 + uint16(len(body)))
-	p.WriteUInt16(8001)
-	p.WriteUInt16(commandId)
-	p.WriteUInt16(1)
-	p.WriteUInt32(uint32(uin))
-	p.WriteByte(3)
-	p.WriteByte(encrypt.Id())
-	p.WriteByte(0)
-	p.WriteUInt32(2)
-	p.WriteUInt32(0)
-	p.WriteUInt32(0)
-	p.Write(body)
-	p.WriteByte(0x03)
-	return p.Bytes()
+	body := encrypt.DoEncrypt(binary.NewWriterF(bodyFunc), key)
+	return binary.NewWriterF(func(p *binary.Writer) {
+		p.WriteByte(0x02)
+		p.WriteUInt16(27 + 2 + uint16(len(body)))
+		p.WriteUInt16(8001)
+		p.WriteUInt16(commandId)
+		p.WriteUInt16(1)
+		p.WriteUInt32(uint32(uin))
+		p.WriteByte(3)
+		p.WriteByte(encrypt.Id())
+		p.WriteByte(0)
+		p.WriteUInt32(2)
+		p.WriteUInt32(0)
+		p.WriteUInt32(0)
+		p.Write(body)
+		p.WriteByte(0x03)
+	})
 }
 
 func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
@@ -73,35 +70,35 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 }
 
 func BuildSsoPacket(seq uint16, appID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
-	p := binary.NewWriter()
-	p.WriteIntLvPacket(4, func(writer *binary.Writer) {
-		writer.WriteUInt32(uint32(seq))
-		writer.WriteUInt32(appID)
-		writer.WriteUInt32(appID)
-		writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
-		if len(extData) == 0 || len(extData) == 4 {
+	return binary.NewWriterF(func(p *binary.Writer) {
+		p.WriteIntLvPacket(4, func(writer *binary.Writer) {
+			writer.WriteUInt32(uint32(seq))
+			writer.WriteUInt32(appID)
+			writer.WriteUInt32(appID)
+			writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
+			if len(extData) == 0 || len(extData) == 4 {
+				writer.WriteUInt32(0x04)
+			} else {
+				writer.WriteUInt32(uint32(len(extData) + 4))
+				writer.Write(extData)
+			}
+			writer.WriteString(commandName)
+			writer.WriteIntLvPacket(4, func(w *binary.Writer) {
+				w.Write(outPacketSessionId)
+			})
+			writer.WriteString(imei)
 			writer.WriteUInt32(0x04)
-		} else {
-			writer.WriteUInt32(uint32(len(extData) + 4))
-			writer.Write(extData)
-		}
-		writer.WriteString(commandName)
-		writer.WriteIntLvPacket(4, func(w *binary.Writer) {
-			w.Write(outPacketSessionId)
+			{
+				writer.WriteUInt16(uint16(len(ksid)) + 2)
+				writer.Write(ksid)
+			}
+			writer.WriteUInt32(0x04)
 		})
-		writer.WriteString(imei)
-		writer.WriteUInt32(0x04)
-		{
-			writer.WriteUInt16(uint16(len(ksid)) + 2)
-			writer.Write(ksid)
-		}
-		writer.WriteUInt32(0x04)
-	})
 
-	p.WriteIntLvPacket(4, func(writer *binary.Writer) {
-		writer.Write(body)
+		p.WriteIntLvPacket(4, func(writer *binary.Writer) {
+			writer.Write(body)
+		})
 	})
-	return p.Bytes()
 }
 
 func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {

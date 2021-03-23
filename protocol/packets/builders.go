@@ -7,35 +7,35 @@ import (
 )
 
 func BuildLoginPacket(uin int64, bodyType byte, key, body, extraData []byte) []byte {
-	w := binary.NewWriter()
-	w.WriteIntLvPacket(4, func(w *binary.Writer) {
-		w.WriteUInt32(0x00_00_00_0A)
-		w.WriteByte(bodyType)
+	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteIntLvPacket(4, func(w *binary.Writer) {
-			w.Write(extraData)
+			w.WriteUInt32(0x00_00_00_0A)
+			w.WriteByte(bodyType)
+			w.WriteIntLvPacket(4, func(w *binary.Writer) {
+				w.Write(extraData)
+			})
+			w.WriteByte(0x00)
+			w.WriteString(strconv.FormatInt(uin, 10))
+			if len(key) == 0 {
+				w.Write(body)
+			} else {
+				w.EncryptAndWrite(key, body)
+			}
 		})
-		w.WriteByte(0x00)
-		w.WriteString(strconv.FormatInt(uin, 10))
-		if len(key) == 0 {
-			w.Write(body)
-		} else {
-			w.EncryptAndWrite(key, body)
-		}
 	})
-	return w.Bytes()
 }
 
 func BuildUniPacket(uin int64, seq uint16, commandName string, encryptType byte, sessionID, extraData, key, body []byte) []byte {
-	w := binary.NewWriter()
-	w.WriteIntLvPacket(4, func(w *binary.Writer) {
-		w.WriteUInt32(0x0B)
-		w.WriteByte(encryptType)
-		w.WriteUInt32(uint32(seq))
-		w.WriteByte(0)
-		w.WriteString(strconv.FormatInt(uin, 10))
-		w.EncryptAndWrite(key, binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteUniPacket(commandName, sessionID, extraData, body)
-		}))
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteIntLvPacket(4, func(w *binary.Writer) {
+			w.WriteUInt32(0x0B)
+			w.WriteByte(encryptType)
+			w.WriteUInt32(uint32(seq))
+			w.WriteByte(0)
+			w.WriteString(strconv.FormatInt(uin, 10))
+			w.EncryptAndWrite(key, binary.NewWriterF(func(w *binary.Writer) {
+				w.WriteUniPacket(commandName, sessionID, extraData, body)
+			}))
+		})
 	})
-	return w.Bytes()
 }
