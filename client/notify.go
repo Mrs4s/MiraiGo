@@ -38,9 +38,9 @@ type (
 )
 
 // grayTipProcessor 提取出来专门用于处理群内 notify tips
-func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTipInfo) {
+func (c *QQClient) grayTipProcessor(groupID int64, tipInfo *notify.GeneralGrayTipInfo) {
 	if tipInfo.BusiType == 12 && tipInfo.BusiId == 1061 {
-		var sender int64 = 0
+		var sender = int64(0)
 		receiver := c.Uin
 		for _, templ := range tipInfo.MsgTemplParam {
 			if templ.Name == "uin_str1" {
@@ -52,7 +52,7 @@ func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTi
 		}
 		if sender != 0 {
 			c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
-				GroupCode: groupId,
+				GroupCode: groupID,
 				Sender:    sender,
 				Receiver:  receiver,
 			})
@@ -71,7 +71,7 @@ func (c *QQClient) grayTipProcessor(groupId int64, tipInfo *notify.GeneralGrayTi
 			}
 		}
 		c.dispatchGroupNotifyEvent(&MemberHonorChangedNotifyEvent{
-			GroupCode: groupId,
+			GroupCode: groupID,
 			Honor: func() HonorType {
 				switch tipInfo.TemplId {
 				case 1052:

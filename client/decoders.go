@@ -59,7 +59,7 @@ func decodeLoginResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 		}, nil
 	}
 	if t == 2 {
-		c.t104, _ = m[0x104]
+		c.t104 = m[0x104]
 		if m.Exists(0x192) {
 			return LoginResponse{
 				Success:   false,
@@ -136,7 +136,6 @@ func decodeLoginResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 				ErrorMessage: "",
 			}, nil
 		}
-
 	}
 
 	if t == 162 {
@@ -444,7 +443,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	totalFriendCount := r.ReadInt16(5)
 	friends := []jce.FriendInfo{}
 	r.ReadSlice(&friends, 7)
-	var l []*FriendInfo
+	var l = make([]*FriendInfo, 0, len(friends))
 	for _, f := range friends {
 		l = append(l, &FriendInfo{
 			Uin:      f.FriendUin,
@@ -471,7 +470,7 @@ func decodeGroupListResponse(c *QQClient, _ *incomingPacketInfo, payload []byte)
 	groups := []jce.TroopNumber{}
 	r.ReadSlice(&vecCookie, 4)
 	r.ReadSlice(&groups, 5)
-	var l []*GroupInfo
+	var l = make([]*GroupInfo, 0, len(groups))
 	for _, g := range groups {
 		l = append(l, &GroupInfo{
 			Uin:            g.GroupUin,
@@ -504,7 +503,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	members := []jce.TroopMemberInfo{}
 	r.ReadSlice(&members, 3)
 	next := r.ReadInt64(4)
-	var l []*GroupMemberInfo
+	var l = make([]*GroupMemberInfo, 0, len(members))
 	for _, m := range members {
 		l = append(l, &GroupMemberInfo{
 			Uin:                    m.MemberUin,
@@ -627,14 +626,12 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []b
 			case 0x02:
 				if target == c.Uin {
 					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
-				} else {
-					if m := g.FindMember(target); m != nil {
-						g.removeMember(target)
-						c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
-							Group:  g,
-							Member: m,
-						})
-					}
+				} else if m := g.FindMember(target); m != nil {
+					g.removeMember(target)
+					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+						Group:  g,
+						Member: m,
+					})
 				}
 			case 0x03:
 				if err = c.ReloadGroupList(); err != nil {
@@ -645,15 +642,13 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []b
 						Group:    g,
 						Operator: g.FindMember(operator),
 					})
-				} else {
-					if m := g.FindMember(target); m != nil {
-						g.removeMember(target)
-						c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
-							Group:    g,
-							Member:   m,
-							Operator: g.FindMember(operator),
-						})
-					}
+				} else if m := g.FindMember(target); m != nil {
+					g.removeMember(target)
+					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+						Group:    g,
+						Member:   m,
+						Operator: g.FindMember(operator),
+					})
 				}
 			case 0x82:
 				if m := g.FindMember(target); m != nil {
@@ -678,7 +673,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []b
 	if info.GetMsgType() == 44 {
 		data.ReadBytes(5)
 		var4 := int32(data.ReadByte())
-		var var5 int64 = 0
+		var var5 = int64(0)
 		target := int64(uint32(data.ReadInt32()))
 		if var4 != 0 && var4 != 1 {
 			var5 = int64(uint32(data.ReadInt32()))
@@ -782,11 +777,11 @@ func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 		return nil, errors.New(rsp.Wording)
 	}
 	if rsp.RetCode != 0 {
-		return nil, errors.New(fmt.Sprintf("server error, code: %v msg: %v", rsp.RetCode, rsp.ErrMsg))
+		return nil, errors.Errorf("server error, code: %v msg: %v", rsp.RetCode, rsp.ErrMsg)
 	}
-	var texts []*TextDetection
+	var texts = make([]*TextDetection, 0, len(rsp.OcrRspBody.TextDetections))
 	for _, text := range rsp.OcrRspBody.TextDetections {
-		var points []*Coordinate
+		var points = make([]*Coordinate, 0, len(text.Polygon.Coordinates))
 		for _, c := range text.Polygon.Coordinates {
 			points = append(points, &Coordinate{
 				X: c.X,

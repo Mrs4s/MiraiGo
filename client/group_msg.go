@@ -564,8 +564,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 }
 
 // SetEssenceMessage 设为群精华消息
-func (c *QQClient) SetEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
-	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgId), uint32(msgInternalId), 1))
+func (c *QQClient) SetEssenceMessage(groupCode int64, msgID, msgInternalId int32) error {
+	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgID), uint32(msgInternalId), 1))
 	if err != nil {
 		return errors.Wrap(err, "set essence msg network")
 	}
@@ -577,8 +577,8 @@ func (c *QQClient) SetEssenceMessage(groupCode int64, msgId, msgInternalId int32
 }
 
 // DeleteEssenceMessage 移出群精华消息
-func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgId, msgInternalId int32) error {
-	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgId), uint32(msgInternalId), 2))
+func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgID, msgInternalId int32) error {
+	r, err := c.sendAndWait(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgID), uint32(msgInternalId), 2))
 	if err != nil {
 		return errors.Wrap(err, "set essence msg networ")
 	}

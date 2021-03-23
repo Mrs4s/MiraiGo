@@ -44,7 +44,7 @@ func ChunkString(s string, chunkSize int) []string {
 
 func ChineseLength(str string, limit int) int {
 	sum := 0
-	for _, r := range []rune(str) {
+	for _, r := range str {
 		switch {
 		case r >= '\u0000' && r <= '\u007F':
 			sum += 1
@@ -62,9 +62,9 @@ func ChineseLength(str string, limit int) int {
 	return sum
 }
 
-// from github.com/savsgio/gotils/strconv
 // B2S converts byte slice to a string without memory allocation.
 // See https://groups.google.com/forum/#!msg/Golang-Nuts/ENgbUzYvCuU/90yGx7GUAgAJ .
+// from github.com/savsgio/gotils/strconv
 func B2S(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }

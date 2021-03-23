@@ -276,7 +276,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []b
 	if rsp.BoolFileExit {
 		return pttUploadResponse{IsExists: true}, nil
 	}
-	var ip []string
+	var ip = make([]string, 0, len(rsp.Uint32UpIp))
 	for _, i := range rsp.Uint32UpIp {
 		ip = append(ip, binary.UInt32ToIPV4Address(uint32(i)))
 	}

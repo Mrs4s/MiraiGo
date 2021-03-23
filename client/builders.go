@@ -173,7 +173,7 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 			w.WriteUInt16(0x106)
 			w.WriteBytesShort(t106)
 		}))
-		//w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 0))
+		// w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, SystemDeviceInfo.Guid, SystemDeviceInfo.TgtgtKey, 0))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, c.version.AppId, c.version.MainSigMap))
 		w.Write(tlv.T107(0))
@@ -218,7 +218,7 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(8))
-		//w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
+		// w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 		w.Write(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x318)
 			w.WriteBytesShort(t318)
@@ -347,7 +347,6 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(0))
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
-
 	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
 	return seq, packet
@@ -1016,11 +1015,11 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 }
 
 // OidbSvc.0xdad_1
-func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productId message.GroupGift) (uint16, []byte) {
+func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.GroupGift) (uint16, []byte) {
 	seq := c.nextSeq()
 	payload := c.packOIDBPackageProto(3501, 1, &oidb.DADReqBody{
 		Client:    1,
-		ProductId: uint64(productId),
+		ProductId: uint64(productID),
 		ToUin:     uin,
 		Gc:        groupCode,
 		Version:   "V 8.4.5.4745",

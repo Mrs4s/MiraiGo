@@ -72,12 +72,12 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 	})
 }
 
-func BuildSsoPacket(seq uint16, appId uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
+func BuildSsoPacket(seq uint16, appID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
 	p := binary.NewWriter()
 	p.WriteIntLvPacket(4, func(writer *binary.Writer) {
 		writer.WriteUInt32(uint32(seq))
-		writer.WriteUInt32(appId)
-		writer.WriteUInt32(appId)
+		writer.WriteUInt32(appID)
+		writer.WriteUInt32(appID)
 		writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
 		if len(extData) == 0 || len(extData) == 4 {
 			writer.WriteUInt32(0x04)
@@ -142,7 +142,7 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	if reader.ReadInt32()-4 > int32(reader.Len()) {
 		return nil, errors.WithStack(ErrPacketDropped)
 	}
-	seqId := reader.ReadInt32()
+	seqID := reader.ReadInt32()
 	retCode := reader.ReadInt32()
 	if retCode != 0 {
 		if retCode == -10008 {
@@ -152,13 +152,13 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	}
 	reader.ReadBytes(int(reader.ReadInt32()) - 4) // extra data
 	commandName := reader.ReadString()
-	sessionId := reader.ReadBytes(int(reader.ReadInt32()) - 4)
+	sessionID := reader.ReadBytes(int(reader.ReadInt32()) - 4)
 	if commandName == "Heartbeat.Alive" {
 		return &IncomingPacket{
-			SequenceId:  uint16(seqId),
+			SequenceId:  uint16(seqID),
 			Flag2:       flag2,
 			CommandName: commandName,
-			SessionId:   sessionId,
+			SessionId:   sessionID,
 			Payload:     []byte{},
 		}, nil
 	}
@@ -182,10 +182,10 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 		return nil
 	}()
 	return &IncomingPacket{
-		SequenceId:  uint16(seqId),
+		SequenceId:  uint16(seqID),
 		Flag2:       flag2,
 		CommandName: commandName,
-		SessionId:   sessionId,
+		SessionId:   sessionID,
 		Payload:     packet,
 	}, nil
 }

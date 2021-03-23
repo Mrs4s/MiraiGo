@@ -82,14 +82,14 @@ type QQClient struct {
 	pwdFlag          bool
 
 	lastMessageSeq int32
-	//lastMessageSeqTmp      sync.Map
+	// lastMessageSeqTmp      sync.Map
 	msgSvcCache            *utils.Cache
 	transCache             *utils.Cache
 	lastLostMsg            string
 	groupSysMsgCache       *GroupSystemMessages
 	groupMsgBuilders       sync.Map
 	onlinePushCache        *utils.Cache
-	requestPacketRequestId int32
+	requestPacketRequestID int32
 	groupSeq               int32
 	friendSeq              int32
 	heartbeatEnabled       bool
@@ -178,7 +178,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		sigInfo:                 &loginSigInfo{},
-		requestPacketRequestId:  1921334513,
+		requestPacketRequestID:  1921334513,
 		groupSeq:                int32(rand.Intn(20000)),
 		friendSeq:               22911,
 		highwayApplyUpSeq:       77918,
@@ -485,8 +485,8 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	return r, nil
 }
 
-func (c *QQClient) GetForwardMessage(resId string) *message.ForwardMessage {
-	m := c.DownloadForwardMessage(resId)
+func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
+	m := c.DownloadForwardMessage(resID)
 	if m == nil {
 		return nil
 	}
@@ -779,10 +779,7 @@ func (c *QQClient) connect() error {
 			return errors.New("All servers are unreachable")
 		}
 		c.Error("connect server error: %v", err)
-		if err = c.connect(); err != nil {
-			return err
-		}
-		return nil
+		return err
 	}
 	c.retryTimes = 0
 	c.ConnectTime = time.Now()
@@ -817,7 +814,7 @@ func (c *QQClient) nextSeq() uint16 {
 }
 
 func (c *QQClient) nextPacketSeq() int32 {
-	return atomic.AddInt32(&c.requestPacketRequestId, 2)
+	return atomic.AddInt32(&c.requestPacketRequestID, 2)
 }
 
 func (c *QQClient) nextGroupSeq() int32 {
@@ -875,7 +872,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 	}, params: p})
 
 	retry := 0
-	for true {
+	for {
 		select {
 		case rsp := <-ch:
 			return rsp.Response, rsp.Error
@@ -886,12 +883,11 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 				continue
 			}
 			c.handlers.Delete(seq)
-			//c.Error("packet timed out, seq: %v", seq)
-			//println("Packet Timed out")
+			// c.Error("packet timed out, seq: %v", seq)
+			// println("Packet Timed out")
 			return nil, errors.New("Packet timed out")
 		}
 	}
-	return nil, nil
 }
 
 // 等待一个或多个数据包解析, 优先级低于 sendAndWait
@@ -939,7 +935,7 @@ func (c *QQClient) netLoop() {
 			}
 			continue
 		}
-		data, err := reader.ReadBytes(int(l) - 4)
+		data, _ := reader.ReadBytes(int(l) - 4)
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)

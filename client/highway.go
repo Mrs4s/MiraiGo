@@ -23,8 +23,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdId int32) error {
-	return c.highwayUploadStream(ip, port, updKey, bytes.NewReader(data), cmdId)
+func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdID int32) error {
+	return c.highwayUploadStream(ip, port, updKey, bytes.NewReader(data), cmdID)
 }
 
 func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, stream io.ReadSeeker, cmdId int32) error {
@@ -48,10 +48,10 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	for {
 		chunk := make([]byte, chunkSize)
 		rl, err := io.ReadFull(stream, chunk)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
-		if err == io.ErrUnexpectedEOF {
+		if errors.Is(err, io.ErrUnexpectedEOF) {
 			chunk = chunk[:rl]
 		}
 		ch := md5.Sum(chunk)
@@ -72,7 +72,7 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 				Datalength:    int32(rl),
 				Serviceticket: updKey,
 				Md5:           ch[:],
-				FileMd5:       fh[:],
+				FileMd5:       fh,
 			},
 			ReqExtendinfo: EmptyBytes,
 		})
@@ -131,10 +131,10 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 	for {
 		chunk := make([]byte, chunkSize)
 		rl, err := io.ReadFull(stream, chunk)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
-		if err == io.ErrUnexpectedEOF {
+		if errors.Is(err, io.ErrUnexpectedEOF) {
 			chunk = chunk[:rl]
 		}
 		ch := md5.Sum(chunk)
@@ -306,7 +306,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 					Datalength:    int32(ri),
 					Serviceticket: ticket,
 					Md5:           ch[:],
-					FileMd5:       fh[:],
+					FileMd5:       fh,
 				},
 				ReqExtendinfo: ext,
 			})

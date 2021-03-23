@@ -62,7 +62,7 @@ func decodeMultiApplyUpResponse(_ *QQClient, _ *incomingPacketInfo, payload []by
 }
 
 // MultiMsg.ApplyDown
-func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
+func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &multimsg.MultiReqBody{
 		Subcmd:       2,
@@ -72,7 +72,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resId string) (uint16, []byte) {
 		BuildVer:     "8.2.0.1296",
 		MultimsgApplydownReq: []*multimsg.MultiMsgApplyDownReq{
 			{
-				MsgResid: []byte(resId),
+				MsgResid: []byte(resID),
 				MsgType:  3,
 			},
 		},

@@ -150,9 +150,9 @@ func (c *QQClient) decodeT186(data []byte) {
 
 // --- tlv readers ---
 
-func readT125(data []byte) (openId, openKey []byte) {
+func readT125(data []byte) (openID, openKey []byte) {
 	reader := binary.NewReader(data)
-	openId = reader.ReadBytesShort()
+	openID = reader.ReadBytesShort()
 	openKey = reader.ReadBytesShort()
 	return
 }
@@ -166,9 +166,9 @@ func readT11A(data []byte) (nick string, age, gender uint16) {
 	return
 }
 
-func readT199(data []byte) (openId, payToken []byte) {
+func readT199(data []byte) (openID, payToken []byte) {
 	reader := binary.NewReader(data)
-	openId = reader.ReadBytesShort()
+	openID = reader.ReadBytesShort()
 	payToken = reader.ReadBytesShort()
 	return
 }

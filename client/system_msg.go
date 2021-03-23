@@ -134,11 +134,11 @@ func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) (uint16, []byte
 }
 
 // ProfileService.Pb.ReqSystemMsgAction.Group
-func (c *QQClient) buildSystemMsgGroupActionPacket(reqId, requester, group int64, msgType int32, isInvite, accept, block bool, reason string) (uint16, []byte) {
+func (c *QQClient) buildSystemMsgGroupActionPacket(reqID, requester, group int64, msgType int32, isInvite, accept, block bool, reason string) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &structmsg.ReqSystemMsgAction{
 		MsgType: msgType,
-		MsgSeq:  reqId,
+		MsgSeq:  reqID,
 		ReqUin:  requester,
 		SubType: 1,
 		SrcId:   3,
@@ -174,11 +174,11 @@ func (c *QQClient) buildSystemMsgGroupActionPacket(reqId, requester, group int64
 }
 
 // ProfileService.Pb.ReqSystemMsgAction.Friend
-func (c *QQClient) buildSystemMsgFriendActionPacket(reqId, requester int64, accept bool) (uint16, []byte) {
+func (c *QQClient) buildSystemMsgFriendActionPacket(reqID, requester int64, accept bool) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &structmsg.ReqSystemMsgAction{
 		MsgType:  1,
-		MsgSeq:   reqId,
+		MsgSeq:   reqID,
 		ReqUin:   requester,
 		SubType:  1,
 		SrcId:    6,

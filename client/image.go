@@ -14,8 +14,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -26,7 +26,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
+	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ ok:
 	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
 }
 
 func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*message.GroupImageElement, error) {
@@ -110,7 +110,7 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	count++
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
-	e, err := c.QueryFriendImage(target, fh[:], int32(length))
+	e, err := c.QueryFriendImage(target, fh, int32(length))
 	if errors.Is(err, ErrNotExists) {
 		// use group highway upload and query again for image id.
 		if _, err = c.UploadGroupImage(target, img); err != nil {

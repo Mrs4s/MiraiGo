@@ -588,7 +588,7 @@ func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, 
 }
 
 func (forMsg *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
-	var msgs []*msg.Message
+	var msgs = make([]*msg.Message, 0, len(forMsg.Nodes))
 	for _, node := range forMsg.Nodes {
 		msgs = append(msgs, &msg.Message{
 			Head: &msg.MessageHead{

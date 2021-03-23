@@ -5,7 +5,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 var imgOld = []byte{0x15, 0x36, 0x20, 0x39, 0x32, 0x6B, 0x41, 0x31, 0x00, 0x38, 0x37, 0x32, 0x66, 0x30, 0x36, 0x36, 0x30, 0x33, 0x61, 0x65, 0x31, 0x30, 0x33, 0x62, 0x37, 0x20, 0x20, 0x20, 0x20, 0x20,
@@ -101,7 +101,7 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 			FilePath:  &e.ImageId,
 			ImageType: &e.ImageType,
 			Size:      &e.Size,
-			Md5:       e.Md5[:],
+			Md5:       e.Md5,
 			Flag:      make([]byte, 4),
 			//OldData:  imgOld,
 		},
@@ -216,7 +216,7 @@ func (e *GroupFlashPicElement) Pack() (r []*msg.Elem) {
 			FileId:   proto.Int32(int32(e.FileId)),
 			FilePath: &e.ImageId,
 			Size:     &e.Size,
-			Md5:      e.Md5[:],
+			Md5:      e.Md5,
 			Flag:     make([]byte, 4),
 		},
 	}
@@ -250,7 +250,7 @@ func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
 			FileId:    proto.Int32(int32(e.FileId)),
 			FilePath:  &e.ImageId,
 			Size:      &e.Size,
-			Md5:       e.Md5[:],
+			Md5:       e.Md5,
 			Flag:      []byte{0x11, 0x00, 0x00, 0x00},
 			//OldData:  imgOld,
 			PbReserve: reserve,

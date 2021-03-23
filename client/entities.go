@@ -59,7 +59,7 @@ type (
 		Nickname string
 		Remark   string
 		FaceId   int16
-		//msgSeqList *utils.Cache
+		// msgSeqList *utils.Cache
 	}
 
 	SummaryCardInfo struct {

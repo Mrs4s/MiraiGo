@@ -41,7 +41,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 		// 0x2dc
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
-			groupId := int64(uint32(r.ReadInt32()))
+			groupID := int64(uint32(r.ReadInt32()))
 			iType := r.ReadByte()
 			r.ReadByte()
 			switch iType {
@@ -54,7 +54,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 				target := int64(uint32(r.ReadInt32()))
 				t := r.ReadInt32()
 				c.dispatchGroupMuteEvent(&GroupMuteEvent{
-					GroupCode:   groupId,
+					GroupCode:   groupID,
 					OperatorUin: operator,
 					TargetUin:   target,
 					Time:        t,
@@ -69,7 +69,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 							continue
 						}
 						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
-							GroupCode:   groupId,
+							GroupCode:   groupID,
 							OperatorUin: b.OptMsgRecall.Uin,
 							AuthorUin:   rm.AuthorUin,
 							MessageId:   rm.Seq,
@@ -78,12 +78,12 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 					}
 				}
 				if b.OptGeneralGrayTip != nil {
-					c.grayTipProcessor(groupId, b.OptGeneralGrayTip)
+					c.grayTipProcessor(groupID, b.OptGeneralGrayTip)
 				}
 				if b.OptMsgRedTips != nil {
 					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
 						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
-							GroupCode: groupId,
+							GroupCode: groupID,
 							Sender:    int64(b.OptMsgRedTips.SenderUin),
 							LuckyKing: int64(b.OptMsgRedTips.LuckyUin),
 						})
@@ -178,8 +178,7 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 	for _, m := range s27.ModInfos {
 		if m.ModGroupProfile != nil {
 			for _, info := range m.ModGroupProfile.GroupProfileInfos {
-				switch info.GetField() { // 1 -> group name 2 -> group head 3 -> group creditLevel
-				case 1:
+				if info.GetField() == 1 {
 					if g := c.FindGroup(int64(m.ModGroupProfile.GetGroupCode())); g != nil {
 						old := g.Name
 						g.Name = string(info.GetValue())

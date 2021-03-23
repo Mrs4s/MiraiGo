@@ -109,12 +109,12 @@ func (fs *GroupFileSystem) Root() ([]*GroupFile, []*GroupFolder, error) {
 	return fs.GetFilesByFolder("/")
 }
 
-func (fs *GroupFileSystem) GetFilesByFolder(folderId string) ([]*GroupFile, []*GroupFolder, error) {
+func (fs *GroupFileSystem) GetFilesByFolder(folderID string) ([]*GroupFile, []*GroupFolder, error) {
 	var startIndex uint32 = 0
 	var files []*GroupFile
 	var folders []*GroupFolder
 	for {
-		i, err := fs.client.sendAndWait(fs.client.buildGroupFileListRequestPacket(fs.GroupCode, folderId, startIndex))
+		i, err := fs.client.sendAndWait(fs.client.buildGroupFileListRequestPacket(fs.GroupCode, folderID, startIndex))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -191,7 +191,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		return fs.client.send(pkt)
 	}
 	if len(rsp.UploadIpLanV4) == 0 {
-		return errors.New("server requires unsupported ftn upload.")
+		return errors.New("server requires unsupported ftn upload")
 	}
 	ext, _ := proto.Marshal(&exciting.GroupFileUploadExt{
 		Unknown1: proto.Int32(100),
@@ -243,22 +243,22 @@ func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {
 
 // DeleteFile 删除群文件，需要管理权限.
 // 返回错误, 空为删除成功
-func (fs *GroupFileSystem) DeleteFile(parentFolderId, fileId string, busId int32) string {
-	i, err := fs.client.sendAndWait(fs.client.buildGroupFileDeleteReqPacket(fs.GroupCode, parentFolderId, fileId, busId))
+func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32) string {
+	i, err := fs.client.sendAndWait(fs.client.buildGroupFileDeleteReqPacket(fs.GroupCode, parentFolderID, fileId, busId))
 	if err != nil {
 		return err.Error()
 	}
 	return i.(string)
 }
 
-func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderId, fileName string, groupCode, fileSize int64, md5, sha1 []byte) (uint16, []byte) {
+func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string, groupCode, fileSize int64, md5, sha1 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	b, _ := proto.Marshal(&oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
 		GroupCode:          groupCode,
 		AppId:              3,
 		BusId:              102,
 		Entrance:           5,
-		ParentFolderId:     parentFolderId,
+		ParentFolderId:     parentFolderID,
 		FileName:           fileName,
 		LocalPath:          "/storage/emulated/0/Pictures/files/s/" + fileName,
 		Int64FileSize:      fileSize,
@@ -277,13 +277,13 @@ func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderId, fileName string
 	return seq, packet
 }
 
-func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileId string, busId, msgRand int32) (uint16, []byte) {
+func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, busId, msgRand int32) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := c.packOIDBPackageProto(1753, 4, &oidb.D6D9ReqBody{FeedsInfoReq: &oidb.FeedsReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 		FeedsInfoList: []*oidb.GroupFileFeedsInfo{{
-			FileId:    &fileId,
+			FileId:    &fileID,
 			FeedFlag:  proto.Uint32(1),
 			BusId:     proto.Uint32(uint32(busId)),
 			MsgRandom: proto.Uint32(uint32(msgRand)),
@@ -294,12 +294,12 @@ func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileId string, bu
 }
 
 // OidbSvc.0x6d8_1
-func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderId string, startIndex uint32) (uint16, []byte) {
+func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID string, startIndex uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{FileListInfoReq: &oidb.GetFileListReqBody{
 		GroupCode:    proto.Uint64(uint64(groupCode)),
 		AppId:        proto.Uint32(3),
-		FolderId:     &folderId,
+		FolderId:     &folderID,
 		FileCount:    proto.Uint32(20),
 		AllFileCount: proto.Uint32(0),
 		ReqFrom:      proto.Uint32(3),
