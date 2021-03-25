@@ -466,7 +466,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				if mem = group.FindMemberWithoutLock(m.Head.GetFromUin()); mem != nil {
 					return
 				}
-				info, _ := c.getMemberInfo(group.Code, m.Head.GetFromUin())
+				info, _ := c.GetMemberInfo(group.Code, m.Head.GetFromUin())
 				if info == nil {
 					return
 				}

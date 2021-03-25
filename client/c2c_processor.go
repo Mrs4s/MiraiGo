@@ -149,7 +149,7 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *incomingP
 		}
 	} else {
 		if group != nil && group.FindMember(pMsg.Head.GetAuthUin()) == nil {
-			mem, err := c.getMemberInfo(group.Code, pMsg.Head.GetAuthUin())
+			mem, err := c.GetMemberInfo(group.Code, pMsg.Head.GetAuthUin())
 			if err != nil {
 				c.Debug("error to fetch new member info: %v", err)
 				return
