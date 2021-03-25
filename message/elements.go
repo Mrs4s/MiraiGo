@@ -246,6 +246,15 @@ func NewReply(m *GroupMessage) *ReplyElement {
 	}
 }
 
+func NewPrivateReply(m *PrivateMessage) *ReplyElement {
+	return &ReplyElement{
+		ReplySeq: m.Id,
+		Sender:   m.Sender.Uin,
+		Time:     m.Time,
+		Elements: m.Elements,
+	}
+}
+
 func NewUrlShare(url, title, content, image string) *ServiceElement {
 	template := fmt.Sprintf(`<?xml version="1.0" encoding="utf-8"?><msg templateID="12345" action="web" brief="[分享] %s" serviceID="1" url="%s"><item layout="2"><picture cover="%v"/><title>%v</title><summary>%v</summary></item><source/></msg>`,
 		title, url, image, title, content,
