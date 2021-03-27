@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -349,6 +350,53 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
+	return seq, packet
+}
+
+func (c *QQClient) buildRequestChangeSigPacket() (uint16, []byte) {
+	seq := c.nextSeq()
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+		w.WriteUInt16(11)
+		w.WriteUInt16(17)
+
+		w.Write(tlv.T100(c.version.SSOVersion, 100, c.version.MainSigMap))
+		w.Write(tlv.T10A(c.sigInfo.tgt))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T108(SystemDeviceInfo.IMEI))
+		h := md5.Sum(c.sigInfo.d2Key)
+		w.Write(tlv.T144(
+			SystemDeviceInfo.AndroidId,
+			SystemDeviceInfo.GenDeviceInfoData(),
+			SystemDeviceInfo.OSType,
+			SystemDeviceInfo.Version.Release,
+			SystemDeviceInfo.SimInfo,
+			SystemDeviceInfo.APN,
+			false, true, false, tlv.GuidFlag(),
+			SystemDeviceInfo.Model,
+			SystemDeviceInfo.Guid,
+			SystemDeviceInfo.Brand,
+			h[:],
+		))
+		w.Write(tlv.T143(c.sigInfo.d2))
+		w.Write(tlv.T142(c.version.ApkId))
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T141(SystemDeviceInfo.SimInfo, SystemDeviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
+		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T187(SystemDeviceInfo.MacAddress))
+		w.Write(tlv.T188(SystemDeviceInfo.AndroidId))
+		w.Write(tlv.T194(SystemDeviceInfo.IMSIMd5))
+		w.Write(tlv.T511([]string{
+			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
+			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
+			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
+		}))
+		//w.Write(tlv.T202(SystemDeviceInfo.WifiBSSID, SystemDeviceInfo.WifiSSID))
+	})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, "wtlogin.exchange_emp", SystemDeviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 

@@ -56,3 +56,12 @@ func MultiReadSeeker(r ...io.ReadSeeker) io.ReadSeeker {
 		readers: r,
 	}
 }
+
+// Select 如果A为nil 将会返回 B 否则返回A
+// 对应 ?? 语法
+func Select(a, b []byte) []byte {
+	if a == nil {
+		return b
+	}
+	return a
+}

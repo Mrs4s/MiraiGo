@@ -53,7 +53,7 @@ func decodeLoginResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 		if m.Exists(0x403) {
 			c.randSeed = m[0x403]
 		}
-		c.decodeT119(m[0x119])
+		c.decodeT119(m[0x119], SystemDeviceInfo.TgtgtKey)
 		return LoginResponse{
 			Success: true,
 		}, nil
@@ -204,10 +204,14 @@ func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 	m := reader.ReadTlvMap(2)
 	if t != 0 {
 		c.Error("exchange_emp error: %v", t)
-		return nil, nil
+		return nil, errors.New("exchange_emp failed")
 	}
-	if cmd == 15 { // TODO: 免密登录
+	if cmd == 15 {
 		c.decodeT119R(m[0x119])
+	}
+	if cmd == 11 {
+		h := md5.Sum(c.sigInfo.d2Key)
+		c.decodeT119(m[0x119], h[:])
 	}
 	return nil, nil
 }

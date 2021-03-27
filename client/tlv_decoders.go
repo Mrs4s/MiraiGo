@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -19,8 +20,8 @@ func (c *QQClient) decodeT161(data []byte) {
 	}
 }
 
-func (c *QQClient) decodeT119(data []byte) {
-	tea := binary.NewTeaCipher(SystemDeviceInfo.TgtgtKey)
+func (c *QQClient) decodeT119(data, ek []byte) {
+	tea := binary.NewTeaCipher(ek)
 	reader := binary.NewReader(tea.Decrypt(data))
 	reader.ReadBytes(2)
 	m := reader.ReadTlvMap(2)
@@ -85,9 +86,9 @@ func (c *QQClient) decodeT119(data []byte) {
 
 	c.sigInfo = &loginSigInfo{
 		loginBitmap:        0,
-		srmToken:           m[0x16a],
-		t133:               m[0x133],
-		encryptedA1:        m[0x106],
+		srmToken:           utils.Select(m[0x16a], c.sigInfo.srmToken),
+		t133:               utils.Select(m[0x133], c.sigInfo.t133),
+		encryptedA1:        utils.Select(m[0x106], c.sigInfo.encryptedA1),
 		tgt:                m[0x10a],
 		tgtKey:             m[0x10d],
 		userStKey:          m[0x10e],
@@ -96,18 +97,20 @@ func (c *QQClient) decodeT119(data []byte) {
 		sKeyExpiredTime:    time.Now().Unix() + 21600,
 		d2:                 m[0x143],
 		d2Key:              m[0x305],
-		wtSessionTicketKey: m[0x134],
+		wtSessionTicketKey: utils.Select(m[0x134], c.sigInfo.wtSessionTicketKey),
 		deviceToken:        m[0x322],
 
 		psKeyMap:    psKeyMap,
 		pt4TokenMap: pt4TokenMap,
 	}
-	key := md5.Sum(append(append(c.PasswordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt32(uint32(c.Uin)) })...))
-	decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sigInfo.encryptedA1)
-	if len(decrypted) > 51+16 {
-		dr := binary.NewReader(decrypted)
-		dr.ReadBytes(51)
-		SystemDeviceInfo.TgtgtKey = dr.ReadBytes(16)
+	if len(c.PasswordMd5[:]) > 0 {
+		key := md5.Sum(append(append(c.PasswordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt32(uint32(c.Uin)) })...))
+		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sigInfo.encryptedA1)
+		if len(decrypted) > 51+16 {
+			dr := binary.NewReader(decrypted)
+			dr.ReadBytes(51)
+			SystemDeviceInfo.TgtgtKey = dr.ReadBytes(16)
+		}
 	}
 	c.Nickname = nick
 	c.Age = age

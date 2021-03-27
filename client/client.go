@@ -263,6 +263,38 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	return &l, nil
 }
 
+func (c *QQClient) TokenLogin(token []byte) error {
+	if c.Online {
+		return ErrAlreadyOnline
+	}
+	if c.Conn == nil {
+		err := c.connect()
+		if err != nil {
+			return err
+		}
+		go c.netLoop()
+	}
+	{
+		r := binary.NewReader(token)
+		c.Uin = r.ReadInt64()
+		c.sigInfo.d2 = r.ReadBytesShort()
+		c.sigInfo.d2Key = r.ReadBytesShort()
+		c.sigInfo.tgt = r.ReadBytesShort()
+		c.sigInfo.srmToken = r.ReadBytesShort()
+		c.sigInfo.t133 = r.ReadBytesShort()
+		c.sigInfo.encryptedA1 = r.ReadBytesShort()
+		c.sigInfo.wtSessionTicketKey = r.ReadBytesShort()
+		c.OutGoingPacketSessionId = r.ReadBytesShort()
+		SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
+	}
+	_, err := c.sendAndWait(c.buildRequestChangeSigPacket())
+	if err != nil {
+		return err
+	}
+	c.init()
+	return nil
+}
+
 func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
 	if c.Online {
 		return nil, ErrAlreadyOnline
@@ -381,6 +413,21 @@ func (c *QQClient) init() {
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
 			c.stat.MessageSent++
 		})
+	})
+}
+
+func (c *QQClient) GenToken() []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteUInt64(uint64(c.Uin))
+		w.WriteBytesShort(c.sigInfo.d2)
+		w.WriteBytesShort(c.sigInfo.d2Key)
+		w.WriteBytesShort(c.sigInfo.tgt)
+		w.WriteBytesShort(c.sigInfo.srmToken)
+		w.WriteBytesShort(c.sigInfo.t133)
+		w.WriteBytesShort(c.sigInfo.encryptedA1)
+		w.WriteBytesShort(c.sigInfo.wtSessionTicketKey)
+		w.WriteBytesShort(c.OutGoingPacketSessionId)
+		w.WriteBytesShort(SystemDeviceInfo.TgtgtKey)
 	})
 }
 
