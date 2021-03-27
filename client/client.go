@@ -624,6 +624,14 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 	}
 }
 
+func (c *QQClient) GetMemberInfo(groupCode, memberUin int64) (*GroupMemberInfo, error) {
+	info, err := c.sendAndWait(c.buildGroupMemberInfoRequestPacket(groupCode, memberUin))
+	if err != nil {
+		return nil, err
+	}
+	return info.(*GroupMemberInfo), nil
+}
+
 func (c *QQClient) FindFriend(uin int64) *FriendInfo {
 	for _, t := range c.FriendList {
 		f := t
@@ -709,14 +717,6 @@ func (c *QQClient) getCSRFToken() int {
 		accu = accu + (accu << 5) + int(b)
 	}
 	return 2147483647 & accu
-}
-
-func (c *QQClient) getMemberInfo(groupCode, memberUin int64) (*GroupMemberInfo, error) {
-	info, err := c.sendAndWait(c.buildGroupMemberInfoRequestPacket(groupCode, memberUin))
-	if err != nil {
-		return nil, err
-	}
-	return info.(*GroupMemberInfo), nil
 }
 
 func (c *QQClient) editMemberCard(groupCode, memberUin int64, card string) {
