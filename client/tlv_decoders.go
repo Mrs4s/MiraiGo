@@ -3,8 +3,9 @@ package client
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 )
