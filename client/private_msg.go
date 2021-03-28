@@ -34,6 +34,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	ret := &message.PrivateMessage{
 		Id:         seq,
 		InternalId: mr,
+		Self:       c.Uin,
 		Target:     target,
 		Time:       int32(t),
 		Sender: &message.Sender{
@@ -58,6 +59,7 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 			Id:        pm.Id,
 			GroupCode: group.Code,
 			GroupName: group.Name,
+			Self:      c.Uin,
 			Sender:    pm.Sender,
 			Elements:  m.Elements,
 		}
@@ -72,6 +74,7 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 		Id:        seq,
 		GroupCode: group.Code,
 		GroupName: group.Name,
+		Self:      c.Uin,
 		Sender: &message.Sender{
 			Uin:      c.Uin,
 			Nickname: c.Nickname,

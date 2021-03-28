@@ -21,6 +21,7 @@ type (
 	PrivateMessage struct {
 		Id         int32
 		InternalId int32
+		Self       int64
 		Target     int64
 		Time       int32
 		Sender     *Sender
@@ -31,6 +32,7 @@ type (
 		Id        int32
 		GroupCode int64
 		GroupName string
+		Self      int64
 		Sender    *Sender
 		Elements  []IMessageElement
 	}

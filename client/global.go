@@ -488,6 +488,7 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		Target: msg.Head.GetToUin(),
 		Time:   msg.Head.GetMsgTime(),
 		Sender: sender,
+		Self:   c.Uin,
 		Elements: func() []message.IMessageElement {
 			if msg.Body.RichText.Ptt != nil {
 				return []message.IMessageElement{
@@ -524,6 +525,7 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 		Id:        msg.Head.GetMsgSeq(),
 		GroupCode: group.Code,
 		GroupName: group.Name,
+		Self:      c.Uin,
 		Sender:    sender,
 		Elements:  message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
