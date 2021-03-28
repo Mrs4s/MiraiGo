@@ -380,7 +380,10 @@ func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte
 			var latest []*message.GroupMessage
 			for _, m := range gmRsp.Msg {
 				if m.Head.GetFromUin() != 0 {
-					latest = append(latest, c.parseGroupMessage(m))
+					pm := c.parseGroupMessage(m)
+					if pm != nil {
+						latest = append(latest, pm)
+					}
 				}
 			}
 			ret.GroupSessions = append(ret.GroupSessions, &GroupSessionInfo{
