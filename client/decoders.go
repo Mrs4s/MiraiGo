@@ -767,43 +767,6 @@ func decodeWordSegmentation(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return nil, errors.New("no word received")
 }
 
-// OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.DE07RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if rsp.Wording != "" {
-		return nil, errors.New(rsp.Wording)
-	}
-	if rsp.RetCode != 0 {
-		return nil, errors.Errorf("server error, code: %v msg: %v", rsp.RetCode, rsp.ErrMsg)
-	}
-	var texts = make([]*TextDetection, 0, len(rsp.OcrRspBody.TextDetections))
-	for _, text := range rsp.OcrRspBody.TextDetections {
-		var points = make([]*Coordinate, 0, len(text.Polygon.Coordinates))
-		for _, c := range text.Polygon.Coordinates {
-			points = append(points, &Coordinate{
-				X: c.X,
-				Y: c.Y,
-			})
-		}
-		texts = append(texts, &TextDetection{
-			Text:        text.DetectedText,
-			Confidence:  text.Confidence,
-			Coordinates: points,
-		})
-	}
-	return &OcrResponse{
-		Texts:    texts,
-		Language: rsp.OcrRspBody.Language,
-	}, nil
-}
-
 // LightAppSvc.mini_app_info.GetAppInfoById
 func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := qweb.QWebRsp{}

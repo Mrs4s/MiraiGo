@@ -148,7 +148,6 @@ var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interfac
 	"LongConn.OffPicUp":                            decodeOffPicUpResponse,
 	"ProfileService.Pb.ReqSystemMsgNew.Group":      decodeSystemMsgGroupPacket,
 	"ProfileService.Pb.ReqSystemMsgNew.Friend":     decodeSystemMsgFriendPacket,
-	"OidbSvc.0xe07_0":                              decodeImageOcrResponse,
 	"OidbSvc.0xd79":                                decodeWordSegmentation,
 	"OidbSvc.0x990":                                decodeTranslateResponse,
 	"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,

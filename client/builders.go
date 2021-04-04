@@ -1009,28 +1009,6 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 	return seq, packet
 }
 
-// OidbSvc.0xe07_0
-func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, height int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	body := &oidb.DE07ReqBody{
-		Version:  1,
-		Entrance: 3,
-		OcrReqBody: &oidb.OCRReqBody{
-			ImageUrl:              url,
-			OriginMd5:             md5,
-			AfterCompressMd5:      md5,
-			AfterCompressFileSize: size,
-			AfterCompressWeight:   weight,
-			AfterCompressHeight:   height,
-			IsCut:                 false,
-		},
-	}
-	b, _ := proto.Marshal(body)
-	payload := c.packOIDBPackage(3591, 0, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
 // LightAppSvc.mini_app_info.GetAppInfoById
 func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	seq := c.nextSeq()

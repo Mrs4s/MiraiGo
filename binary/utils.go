@@ -79,10 +79,6 @@ func AppendUUID(dst []byte, uuid []byte) []byte {
 	return dst
 }
 
-func genUUID(uuid []byte, dst []byte) {
-
-}
-
 func ToIPV4Address(arr []byte) string {
 	ip := (net.IP)(arr)
 	return ip.String()

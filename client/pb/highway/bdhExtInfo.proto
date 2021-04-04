@@ -1,0 +1,110 @@
+syntax = "proto2";
+
+option go_package = ".;highway";
+
+message CommFileExtReq {
+  optional uint32 actionType = 1;
+  optional bytes uuid = 2;
+}
+
+message CommFileExtRsp {
+  optional int32 retcode = 1;
+  optional bytes downloadUrl = 2;
+}
+
+message PicInfo {
+  optional uint32 idx = 1;
+  optional uint32 size = 2;
+  optional bytes binMd5 = 3;
+  optional uint32 type = 4;
+}
+
+message QQVoiceExtReq {
+  optional bytes qid = 1;
+  optional uint32 fmt = 2;
+  optional uint32 rate = 3;
+  optional uint32 bits = 4;
+  optional uint32 channel = 5;
+  optional uint32 pinyin = 6;
+}
+
+message QQVoiceExtRsp {
+  optional bytes qid = 1;
+  optional int32 retcode = 2;
+  repeated QQVoiceResult result = 3;
+}
+
+message QQVoiceResult {
+  optional bytes text = 1;
+  optional bytes pinyin = 2;
+  optional uint32 source = 3;
+}
+
+message ShortVideoReqExtInfo {
+  optional uint32 cmd = 1;
+  optional uint64 sessionId = 2;
+  optional PicInfo thumbinfo = 3;
+  optional VideoInfo videoinfo = 4;
+  optional ShortVideoSureReqInfo shortvideoSureReq = 5;
+  optional bool isMergeCmdBeforeData = 6;
+}
+
+message ShortVideoRspExtInfo {
+  optional uint32 cmd = 1;
+  optional uint64 sessionId = 2;
+  optional int32 retcode = 3;
+  optional bytes errinfo = 4;
+  optional PicInfo thumbinfo = 5;
+  optional VideoInfo videoinfo = 6;
+  optional ShortVideoSureRspInfo shortvideoSureRsp = 7;
+  optional uint32 retryFlag = 8;
+}
+
+message ShortVideoSureReqInfo {
+  optional uint64 fromuin = 1;
+  optional uint32 chatType = 2;
+  optional uint64 touin = 3;
+  optional uint64 groupCode = 4;
+  optional uint32 clientType = 5;
+  optional PicInfo thumbinfo = 6;
+  repeated VideoInfo mergeVideoinfo = 7;
+  repeated VideoInfo dropVideoinfo = 8;
+  optional uint32 businessType = 9;
+  optional uint32 subBusinessType = 10;
+}
+
+message ShortVideoSureRspInfo {
+  optional bytes fileid = 1;
+  optional bytes ukey = 2;
+  optional VideoInfo videoinfo = 3;
+  optional uint32 mergeCost = 4;
+}
+
+message StoryVideoExtReq {
+}
+
+message StoryVideoExtRsp {
+  optional int32 retcode = 1;
+  optional bytes msg = 2;
+  optional bytes cdnUrl = 3;
+  optional bytes fileKey = 4;
+  optional bytes fileId = 5;
+}
+
+message UploadPicExtInfo {
+  optional bytes fileResid = 1;
+  optional bytes downloadUrl = 2;
+  optional bytes thumbDownloadUrl = 3;
+}
+
+message VideoInfo {
+  optional uint32 idx = 1;
+  optional uint32 size = 2;
+  optional bytes binMd5 = 3;
+  optional uint32 format = 4;
+  optional uint32 resLen = 5;
+  optional uint32 resWidth = 6;
+  optional uint32 time = 7;
+  optional uint64 starttime = 8;
+  optional uint32 isAudio = 9;
+}
