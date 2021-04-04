@@ -246,11 +246,13 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if c.Online {
 		return nil, ErrAlreadyOnline
 	}
-	err := c.connect()
-	if err != nil {
-		return nil, err
+	if c.Conn == nil {
+		err := c.connect()
+		if err != nil {
+			return nil, err
+		}
+		go c.netLoop()
 	}
-	go c.netLoop()
 	rsp, err := c.sendAndWait(c.buildLoginPacket())
 	if err != nil {
 		c.Disconnect()
