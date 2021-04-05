@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/highway"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"image"
 	"io"
 	"math/rand"
 	"os"
 	"strings"
+
+	"github.com/Mrs4s/MiraiGo/client/pb/highway"
+	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
