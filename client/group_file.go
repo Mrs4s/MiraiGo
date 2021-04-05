@@ -62,8 +62,9 @@ func init() {
 	decoders["OidbSvc.0x6d6_0"] = decodeOIDB6d60Response
 	decoders["OidbSvc.0x6d6_2"] = decodeOIDB6d62Response
 	decoders["OidbSvc.0x6d6_3"] = decodeOIDB6d63Response
-	decoders["OidbSvc.0x6d7_0"] = decodeOIDB6d70Response
-	decoders["OidbSvc.0x6d7_2"] = decodeOIDB6d72Response
+	decoders["OidbSvc.0x6d7_0"] = decodeOIDB6d7Response
+	decoders["OidbSvc.0x6d7_1"] = decodeOIDB6d7Response
+	decoders["OidbSvc.0x6d7_2"] = decodeOIDB6d7Response
 	decoders["OidbSvc.0x6d9_4"] = ignoreDecoder
 }
 
@@ -257,6 +258,13 @@ func (fs *GroupFileSystem) RenameFolder(folderId, newName string) error {
 	return nil
 }
 
+func (fs *GroupFileSystem) DeleteFolder(folderId string) error {
+	if _, err := fs.client.sendAndWait(fs.client.buildGroupFileDeleteFolderPacket(fs.GroupCode, folderId)); err != nil {
+		return errors.Wrap(err, "rename folder error")
+	}
+	return nil
+}
+
 // DeleteFile 删除群文件，需要管理权限.
 // 返回错误, 空为删除成功
 func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32) string {
@@ -398,6 +406,17 @@ func (c *QQClient) buildGroupFileRenameFolderPacket(groupCode int64, folderId, n
 	return seq, packet
 }
 
+func (c *QQClient) buildGroupFileDeleteFolderPacket(groupCode int64, folderId string) (uint16, []byte) {
+	seq := c.nextSeq()
+	payload := c.packOIDBPackageProto(1751, 1, &oidb.D6D7ReqBody{DeleteFolderReq: &oidb.DeleteFolderReqBody{
+		GroupCode: proto.Uint64(uint64(groupCode)),
+		AppId:     proto.Uint32(3),
+		FolderId:  proto.String(folderId),
+	}})
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d7_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
 // OidbSvc.0x6d6_2
 func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId string, busId int32) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -498,7 +517,7 @@ func decodeOIDB6d60Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return rsp.UploadFileRsp, nil
 }
 
-func decodeOIDB6d70Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOIDB6d7Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D7RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -507,23 +526,14 @@ func decodeOIDB6d70Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.CreateFolderRsp.GetRetCode() != 0 {
+	if rsp.CreateFolderRsp != nil && rsp.CreateFolderRsp.GetRetCode() != 0 {
 		return nil, errors.Errorf("create folder error: %v", rsp.CreateFolderRsp.GetRetCode())
 	}
-	return nil, nil
-}
-
-func decodeOIDB6d72Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D6D7RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	if rsp.RenameFolderRsp != nil && rsp.RenameFolderRsp.GetRetCode() != 0 {
+		return nil, errors.Errorf("rename folder error: %v", rsp.CreateFolderRsp.GetRetCode())
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if rsp.RenameFolderRsp.GetRetCode() != 0 {
-		return nil, errors.Errorf("create folder error: %v", rsp.CreateFolderRsp.GetRetCode())
+	if rsp.DeleteFolderRsp != nil && rsp.DeleteFolderRsp.GetRetCode() != 0 {
+		return nil, errors.Errorf("delete folder error: %v", rsp.CreateFolderRsp.GetRetCode())
 	}
 	return nil, nil
 }
