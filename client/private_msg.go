@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/pkg/errors"
 	"math/rand"
 	"time"
 
@@ -48,7 +49,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	return ret
 }
 
-func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMessage) *message.TempMessage {
+func (c *QQClient) SendGroupTempMessage(groupCode, target int64, m *message.SendingMessage) *message.TempMessage {
 	group := c.FindGroup(groupCode)
 	if group == nil {
 		return nil
@@ -67,7 +68,7 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 	mr := int32(rand.Uint32())
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
-	_, pkt := c.buildTempSendingPacket(group.Uin, target, seq, mr, t, m)
+	_, pkt := c.buildGroupTempSendingPacket(group.Uin, target, seq, mr, t, m)
 	_ = c.send(pkt)
 	c.stat.MessageSent++
 	return &message.TempMessage{
@@ -81,6 +82,36 @@ func (c *QQClient) SendTempMessage(groupCode, target int64, m *message.SendingMe
 			IsFriend: true,
 		},
 		Elements: m.Elements,
+	}
+}
+
+func (c *QQClient) sendWPATempMessage(target int64, sig []byte, m *message.SendingMessage) *message.TempMessage {
+	mr := int32(rand.Uint32())
+	seq := c.nextFriendSeq()
+	t := time.Now().Unix()
+	_, pkt := c.buildWPATempSendingPacket(target, sig, seq, mr, t, m)
+	_ = c.send(pkt)
+	c.stat.MessageSent++
+	return &message.TempMessage{
+		Id:   seq,
+		Self: c.Uin,
+		Sender: &message.Sender{
+			Uin:      c.Uin,
+			Nickname: c.Nickname,
+			IsFriend: true,
+		},
+		Elements: m.Elements,
+	}
+}
+
+func (s *TempSessionInfo) SendMessage(m *message.SendingMessage) (*message.TempMessage, error) {
+	switch s.Source {
+	case GroupSource:
+		return s.client.SendGroupTempMessage(s.GroupCode, s.Sender, m), nil
+	case ConsultingSource:
+		return s.client.sendWPATempMessage(s.Sender, s.sig, m), nil
+	default:
+		return nil, errors.New("unsupported message source")
 	}
 }
 
@@ -137,12 +168,45 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildTempSendingPacket(groupUin, target int64, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{GrpTmp: &msg.GrpTmp{
 			GroupUin: &groupUin,
 			ToUin:    &target,
+		}},
+		ContentHead: &msg.ContentHead{PkgNum: proto.Int32(1)},
+		MsgBody: &msg.MessageBody{
+			RichText: &msg.RichText{
+				Elems: message.ToProtoElems(m.Elements, false),
+			},
+		},
+		MsgSeq:  &msgSeq,
+		MsgRand: &r,
+		SyncCookie: func() []byte {
+			cookie := &msg.SyncCookie{
+				Time:   &time,
+				Ran1:   proto.Int64(rand.Int63()),
+				Ran2:   proto.Int64(rand.Int63()),
+				Const1: &syncConst1,
+				Const2: &syncConst2,
+				Const3: proto.Int64(0x1d),
+			}
+			b, _ := proto.Marshal(cookie)
+			return b
+		}(),
+	}
+	payload, _ := proto.Marshal(req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &msg.SendMessageRequest{
+		RoutingHead: &msg.RoutingHead{WpaTmp: &msg.WPATmp{
+			ToUin: proto.Uint64(uint64(uin)),
+			Sig:   sig,
 		}},
 		ContentHead: &msg.ContentHead{PkgNum: proto.Int32(1)},
 		MsgBody: &msg.MessageBody{

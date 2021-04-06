@@ -98,10 +98,10 @@ message RoutingHead {
   optional C2C c2c = 1;
   optional Grp grp = 2;
   optional GrpTmp grpTmp = 3;
+  optional WPATmp wpaTmp = 6;
   /*
   Dis dis = 4;
   DisTmp disTmp = 5;
-  WPATmp? wpaTmp = 6;
   SecretFileHead? secretFile = 7;
   PublicPlat? publicPlat = 8;
   TransMsg? transMsg = 9;
@@ -119,6 +119,11 @@ message RoutingHead {
   NearByAssistantTmp? nearbyAssistantTmp = 21;
   CommTmp? commTmp = 22;
   */
+}
+
+message WPATmp {
+  optional uint64 toUin = 1;
+  optional bytes sig = 2;
 }
 
 message C2C {

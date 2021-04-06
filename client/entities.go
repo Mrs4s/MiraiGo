@@ -114,6 +114,11 @@ type (
 		Time      int64
 	}
 
+	TempMessageEvent struct {
+		Message *message.TempMessage
+		Session *TempSessionInfo
+	}
+
 	GroupLeaveEvent struct {
 		Group    *GroupInfo
 		Operator *GroupMemberInfo

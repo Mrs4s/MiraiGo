@@ -407,7 +407,7 @@ func (c *QQClient) init() {
 			c.stat.MessageReceived++
 			c.stat.LastMessageTime = time.Now().Unix()
 		})
-		c.OnTempMessage(func(_ *QQClient, _ *message.TempMessage) {
+		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
 			c.stat.MessageReceived++
 			c.stat.LastMessageTime = time.Now().Unix()
 		})

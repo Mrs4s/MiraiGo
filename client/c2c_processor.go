@@ -29,6 +29,30 @@ var c2cDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
 	529: msgType0x211Decoder,
 }
 
+type (
+	TempSessionInfo struct {
+		Source    TempSessionSource
+		GroupCode int64
+		Sender    int64
+
+		sig    []byte
+		client *QQClient
+	}
+	TempSessionSource int
+)
+
+const (
+	GroupSource         TempSessionSource = 0 // 来自群聊
+	ConsultingSource    TempSessionSource = 1 // 来自QQ咨询
+	SearchSource        TempSessionSource = 2 // 来自查找
+	MovieSource         TempSessionSource = 3 // 来自QQ电影
+	HotChatSource       TempSessionSource = 4 // 来自热聊
+	SystemMessageSource TempSessionSource = 6 // 来自验证消息
+	MultiChatSource     TempSessionSource = 7 // 来自多人聊天
+	DateSource          TempSessionSource = 8 // 来自约会
+	AddressBookSource   TempSessionSource = 9 // 来自通讯录
+)
+
 func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *incomingPacketInfo) {
 	c.syncCookie = rsp.SyncCookie
 	c.pubAccountCookie = rsp.PubAccountCookie
@@ -128,14 +152,59 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 		return
 	}
 	if (pMsg.Head.GetMsgType() == 529 && pMsg.Head.GetC2CCmd() == 6) || pMsg.Body.RichText != nil {
-		group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
-		if group == nil {
+		genTempSessionInfo := func() *TempSessionInfo {
+			if pMsg.Head.C2CTmpMsgHead.GetServiceType() == 0 {
+				group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
+				if group == nil {
+					return nil
+				}
+				return &TempSessionInfo{
+					Source:    GroupSource,
+					GroupCode: group.Code,
+					Sender:    pMsg.Head.GetFromUin(),
+					client:    c,
+				}
+			}
+			info := &TempSessionInfo{
+				Source: 0,
+				Sender: pMsg.Head.GetFromUin(),
+				sig:    pMsg.Head.C2CTmpMsgHead.GetSig(),
+				client: c,
+			}
+
+			switch pMsg.Head.C2CTmpMsgHead.GetServiceType() {
+			case 1:
+				info.Source = MultiChatSource
+			case 130:
+				info.Source = AddressBookSource
+			case 132:
+				info.Source = HotChatSource
+			case 134:
+				info.Source = SystemMessageSource
+			case 201:
+				info.Source = ConsultingSource
+			default:
+				return nil
+			}
+			return info
+		}
+		session := genTempSessionInfo()
+		if session == nil {
 			return
 		}
+		/*
+			group := c.FindGroup(pMsg.Head.C2CTmpMsgHead.GetGroupCode())
+			if group == nil {
+				return
+			}
+		*/
 		if pMsg.Head.GetFromUin() == c.Uin {
 			return
 		}
-		c.dispatchTempMessage(c.parseTempMessage(pMsg))
+		c.dispatchTempMessage(&TempMessageEvent{
+			Message: c.parseTempMessage(pMsg),
+			Session: session,
+		})
 	}
 }
 
@@ -165,7 +234,7 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *incomingP
 	}
 }
 
-func systemMessageDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
+func systemMessageDecoder(c *QQClient, _ *msg.Message, _ *incomingPacketInfo) {
 	_, pkt := c.buildSystemMsgNewFriendPacket()
 	_ = c.send(pkt)
 }
