@@ -432,6 +432,14 @@ func (c *QQClient) GenToken() []byte {
 	})
 }
 
+func (c *QQClient) SetOnlineStatus(s UserOnlineStatus) {
+	if s < 1000 {
+		_, _ = c.sendAndWait(c.buildStatusSetPacket(int32(s), 0))
+		return
+	}
+	_, _ = c.sendAndWait(c.buildStatusSetPacket(11, int32(s)))
+}
+
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
 	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), c.getCookiesWithDomain("h5.vip.qq.com"))
 	if err != nil {

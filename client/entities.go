@@ -19,6 +19,8 @@ type (
 
 	MemberPermission int
 
+	UserOnlineStatus int
+
 	ClientProtocol int
 
 	LoginResponse struct {
@@ -295,9 +297,34 @@ const (
 	QRCodeConfirmed         QRCodeLoginState = 5
 	QRCodeCanceled          QRCodeLoginState = 6
 
-	Owner MemberPermission = iota
-	Administrator
-	Member
+	StatusOnline        UserOnlineStatus = 11   // 在线
+	StatusOffline       UserOnlineStatus = 21   // 离线
+	StatusAway          UserOnlineStatus = 31   // 离开
+	StatusInvisible     UserOnlineStatus = 41   // 隐身
+	StatusBusy          UserOnlineStatus = 50   // 忙
+	StatusBattery       UserOnlineStatus = 1000 // 当前电量
+	StatusListening     UserOnlineStatus = 1028 // 听歌中
+	StatusConstellation UserOnlineStatus = 1040 // 星座运势
+	StatusWeather       UserOnlineStatus = 1030 // 今日天气
+	StatusMeetSpring    UserOnlineStatus = 1069 // 遇见春天
+	StatusTimi          UserOnlineStatus = 1027 // Timi中
+	StatusEatChicken    UserOnlineStatus = 1064 // 吃鸡中
+	StatusLoving        UserOnlineStatus = 1051 // 恋爱中
+	StatusWangWang      UserOnlineStatus = 1053 // 汪汪汪
+	StatusCookedRice    UserOnlineStatus = 1019 // 干饭中
+	StatusStudy         UserOnlineStatus = 1018 // 学习中
+	StatusStayUp        UserOnlineStatus = 1032 // 熬夜中
+	StatusPlayBall      UserOnlineStatus = 1050 // 打球中
+	StatusSignal        UserOnlineStatus = 1011 // 信号弱
+	StatusStudyOnline   UserOnlineStatus = 1024 // 在线学习
+	StatusGaming        UserOnlineStatus = 1017 // 游戏中
+	StatusVacationing   UserOnlineStatus = 1022 // 度假中
+	StatusWatchingTV    UserOnlineStatus = 1021 // 追剧中
+	StatusFitness       UserOnlineStatus = 1020 // 健身中
+
+	Owner         MemberPermission = 1
+	Administrator MemberPermission = 2
+	Member        MemberPermission = 3
 
 	AndroidPhone ClientProtocol = 1
 	IPad         ClientProtocol = 2

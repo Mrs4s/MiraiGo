@@ -111,6 +111,8 @@ type (
 		IsSetStatus        byte   `jceId:"34"`
 		ServerBuf          []byte `jceId:"35"`
 		SetMute            byte   `jceId:"36"`
+		ExtOnlineStatus    int64  `jceId:"38"`
+		BatteryStatus      int32  `jceId:"39"`
 	}
 
 	SvcRespRegister struct {

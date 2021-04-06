@@ -448,6 +448,44 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 	return seq, packet
 }
 
+func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte) {
+	seq := c.nextSeq()
+	svc := &jce.SvcReqRegister{
+		ConnType:        0,
+		Uin:             c.Uin,
+		Bid:             7,
+		Status:          status,
+		KickPC:          0,
+		KickWeak:        0,
+		Timestamp:       time.Now().Unix(),
+		IOSVersion:      int64(SystemDeviceInfo.Version.Sdk),
+		NetType:         1,
+		RegType:         0,
+		Guid:            SystemDeviceInfo.Guid,
+		IsSetStatus:     1,
+		LocaleId:        2052,
+		DevName:         string(SystemDeviceInfo.Model),
+		DevType:         string(SystemDeviceInfo.Model),
+		OSVer:           string(SystemDeviceInfo.Version.Release),
+		OpenPush:        1,
+		LargeSeq:        1551,
+		ExtOnlineStatus: int64(extStatus),
+	}
+	buf := &jce.RequestDataVersion3{
+		Map: map[string][]byte{"SvcReqRegister": packUniRequestData(svc.ToBytes())},
+	}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		SServantName: "PushService",
+		SFuncName:    "SvcReqRegister",
+		SBuffer:      buf.ToBytes(),
+		Context:      make(map[string]string),
+		Status:       make(map[string]string),
+	}
+	packet := packets.BuildUniPacket(c.Uin, seq, "StatSvc.SetStatusFromClient", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
+
 // ConfigPushSvc.PushResp
 func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte) (uint16, []byte) {
 	seq := c.nextSeq()
