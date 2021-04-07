@@ -225,6 +225,7 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *incomingP
 			}
 			group.Update(func(info *GroupInfo) {
 				info.Members = append(info.Members, mem)
+				info.sort()
 			})
 			c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
 				Group:  group,

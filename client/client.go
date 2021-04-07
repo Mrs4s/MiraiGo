@@ -675,6 +675,9 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 		}
 		list = append(list, rsp.list...)
 		if nextUin == 0 {
+			sort.Slice(list, func(i, j int) bool {
+				return list[i].Uin < list[j].Uin
+			})
 			return list, nil
 		}
 	}
@@ -813,12 +816,13 @@ func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string, block
 
 func (g *GroupInfo) removeMember(uin int64) {
 	g.Update(func(info *GroupInfo) {
-		for i, m := range info.Members {
-			if m.Uin == uin {
-				info.Members = append(info.Members[:i], info.Members[i+1:]...)
-				break
-			}
+		i := sort.Search(len(info.Members), func(i int) bool {
+			return info.Members[i].Uin >= uin
+		})
+		if i >= len(info.Members) || info.Members[i].Uin != uin { // not found
+			return
 		}
+		info.Members = append(info.Members[:i], info.Members[i+1:]...)
 	})
 }
 

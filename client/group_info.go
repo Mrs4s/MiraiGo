@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/url"
+	"sort"
 	"strings"
 	"sync"
 
@@ -329,13 +330,20 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 }
 
 func (g *GroupInfo) FindMemberWithoutLock(uin int64) *GroupMemberInfo {
-	for _, m := range g.Members {
-		f := m
-		if f.Uin == uin {
-			return f
-		}
+	i := sort.Search(len(g.Members), func(i int) bool {
+		return g.Members[i].Uin >= uin
+	})
+	if i >= len(g.Members) || g.Members[i].Uin != uin {
+		return nil
 	}
-	return nil
+	return g.Members[i]
+}
+
+// sort call this method must hold the lock
+func (g *GroupInfo) sort() {
+	sort.Slice(g.Members, func(i, j int) bool {
+		return g.Members[i].Uin < g.Members[j].Uin
+	})
 }
 
 func (g *GroupInfo) Update(f func(*GroupInfo)) {
