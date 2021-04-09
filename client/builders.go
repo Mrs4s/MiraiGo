@@ -933,7 +933,7 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 		StGroupInfo: &oidb.D89AGroupinfo{
 			ShutupTime: &oidb.D89AGroupinfo_Val{Val: func() int32 {
 				if mute {
-					return 1
+					return 268435455
 				}
 				return 0
 			}()},
