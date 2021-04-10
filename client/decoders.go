@@ -746,7 +746,8 @@ func decodeForceOfflinePacket(c *QQClient, _ *incomingPacketInfo, payload []byte
 func decodeMSFOfflinePacket(c *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
 	// c.lastLostMsg = "服务器端强制下线."
 	c.Disconnect()
-	c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "服务端强制下线."})
+	// 这个decoder不能消耗太多时间, event另起线程处理
+	go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "服务端强制下线."})
 	return nil, nil
 }
 
