@@ -382,7 +382,9 @@ func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.g) == 0 {
 		c.Warning("device lock is disable. http api may fail.")
 	}
-	_ = c.registerClient()
+	if err := c.registerClient(); err != nil {
+		return errors.Wrap(err, "register error")
+	}
 	if tokenLogin {
 		notify := make(chan struct{})
 		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i interface{}, err error) {
