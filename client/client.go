@@ -388,12 +388,17 @@ func (c *QQClient) init(tokenLogin bool) error {
 		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i interface{}, err error) {
 			notify <- struct{}{}
 		})
+		d2 := c.waitPacket("MessageSvc.PushForceOffline", func(i interface{}, err error) {
+			notify <- struct{}{}
+		})
 		select {
 		case <-notify:
 			d()
+			d2()
 			return errors.New("token failed")
 		case <-time.After(time.Second):
 			d()
+			d2()
 		}
 	}
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()

@@ -737,8 +737,8 @@ func decodeForceOfflinePacket(c *QQClient, _ *incomingPacketInfo, payload []byte
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
 	tips := r.ReadString(2)
-	c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: tips})
 	c.Disconnect()
+	go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: tips})
 	return nil, nil
 }
 
