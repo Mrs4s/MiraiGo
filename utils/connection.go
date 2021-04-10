@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"github.com/pkg/errors"
 	"io"
 	"net"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type TCPListener struct {
