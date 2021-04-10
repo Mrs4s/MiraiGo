@@ -259,7 +259,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.init()
+		_ = c.init(false)
 	}
 	return &l, nil
 }
@@ -289,8 +289,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 	if err != nil {
 		return err
 	}
-	c.init()
-	return nil
+	return c.init(true)
 }
 
 func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
@@ -323,7 +322,7 @@ func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
 	}
 	rsp := i.(LoginResponse)
 	if rsp.Success {
-		c.init()
+		_ = c.init(false)
 	}
 	return &rsp, nil
 }
@@ -338,7 +337,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.init()
+		_ = c.init(false)
 	}
 	return &l, nil
 }
@@ -352,7 +351,7 @@ func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.init()
+		_ = c.init(false)
 	}
 	return &l, nil
 }
@@ -365,7 +364,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		c.init()
+		_ = c.init(false)
 	}
 	return &l, nil
 }
@@ -379,11 +378,24 @@ func (c *QQClient) RequestSMS() bool {
 	return rsp.(LoginResponse).Error == SMSNeededError
 }
 
-func (c *QQClient) init() {
+func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.g) == 0 {
 		c.Warning("device lock is disable. http api may fail.")
 	}
 	_ = c.registerClient()
+	if tokenLogin {
+		notify := make(chan struct{})
+		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i interface{}, err error) {
+			notify <- struct{}{}
+		})
+		select {
+		case <-notify:
+			d()
+			return errors.New("token failed")
+		case <-time.After(time.Second):
+			d()
+		}
+	}
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	if !c.heartbeatEnabled {
 		go c.doHeartbeat()
@@ -408,6 +420,7 @@ func (c *QQClient) init() {
 			c.stat.MessageSent++
 		})
 	})
+	return nil
 }
 
 func (c *QQClient) GenToken() []byte {
