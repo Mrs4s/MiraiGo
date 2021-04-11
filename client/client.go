@@ -983,6 +983,7 @@ func (c *QQClient) quickReconnect() {
 }
 
 func (c *QQClient) Disconnect() {
+	c.Online = false
 	c.TCP.Close()
 }
 
