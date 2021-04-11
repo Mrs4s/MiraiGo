@@ -968,6 +968,7 @@ func (c *QQClient) connect() error {
 
 func (c *QQClient) quickReconnect() {
 	c.Disconnect()
+	time.Sleep(time.Millisecond * 200)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
 		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "quick reconnect failed"})
