@@ -994,6 +994,7 @@ func (c *QQClient) planedDisconnect(_ *utils.TCPListener) {
 func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
 	c.Error("unexpected disconnect: %v", e)
 	c.stat.DisconnectTimes++
+	c.Online = false
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
 		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
