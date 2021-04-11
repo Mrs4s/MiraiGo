@@ -104,7 +104,7 @@ func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *incomingPacketInfo)
 	if decoder, ok := c2cDecoders[pMsg.Head.GetMsgType()]; ok {
 		decoder(c, pMsg, info)
 	} else {
-		c.Debug("unknown msg type on c2c processor: %v", pMsg.Head.GetMsgType())
+		c.Debug("unknown msg type on c2c processor: %v - %v", pMsg.Head.GetMsgType(), pMsg.Head.GetC2CCmd())
 	}
 }
 
