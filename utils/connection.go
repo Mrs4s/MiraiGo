@@ -95,12 +95,12 @@ func (t *TCPListener) close() {
 
 func (t *TCPListener) invokePlanedDisconnect() {
 	if t.planedDisconnect != nil {
-		t.planedDisconnect(t)
+		go t.planedDisconnect(t)
 	}
 }
 
 func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
 	if t.unexpectedDisconnect != nil {
-		t.unexpectedDisconnect(t, err)
+		go t.unexpectedDisconnect(t, err)
 	}
 }
