@@ -59,7 +59,7 @@ func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
 	buf := make([]byte, len)
 	_, err := io.ReadFull(t.conn, buf)
 	if err != nil {
-		time.Sleep(time.Millisecond * 100) // 服务器会发送offline包后立即断开连接, 此时还没解析
+		time.Sleep(time.Millisecond * 500) // 服务器会发送offline包后立即断开连接, 此时还没解析, 可能还是得加锁
 		if t.conn != nil {
 			t.close()
 			t.invokeUnexpectedDisconnect(err)
