@@ -16,11 +16,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 func (c *QQClient) highwayUpload(ip uint32, port int, updKey, data []byte, cmdID int32) error {
@@ -431,6 +432,7 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 			ReqExtendinfo: ext,
 		})
 		offset += int64(rl)
+		io.Pipe()
 		req, _ := http.NewRequest("POST", url, bytes.NewReader(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteByte(40)
 			w.WriteUInt32(uint32(len(head)))

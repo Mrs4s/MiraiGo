@@ -1,11 +1,13 @@
 package client
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"io"
 	"os"
+
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -15,8 +17,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -59,10 +59,13 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 }
 
 // UploadPrivatePtt 将语音数据使用好友语音通道上传到服务器, 返回 message.PrivateVoiceElement 可直接发送
-func (c *QQClient) UploadPrivatePtt(target int64, voice []byte) (*message.PrivateVoiceElement, error) {
-	h := md5.Sum(voice)
-	ext := c.buildC2CPttStoreBDHExt(target, h[:], int32(len(voice)), int32(len(voice)))
-	rsp, err := c.highwayUploadByBDH(bytes.NewReader(voice), 26, c.highwaySession.SigSession, ext, false)
+func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message.PrivateVoiceElement, error) {
+	h := md5.New()
+	length, _ := io.Copy(h, voice)
+	fh := h.Sum(nil)
+	_, _ = voice.Seek(0, io.SeekStart)
+	ext := c.buildC2CPttStoreBDHExt(target, fh[:], int32(length), int32(length))
+	rsp, err := c.highwayUploadByBDH(voice, 26, c.highwaySession.SigSession, ext, false)
 	if err != nil {
 		return nil, err
 	}
@@ -81,9 +84,9 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice []byte) (*message.Privat
 			FileType: proto.Int32(4),
 			SrcUin:   &c.Uin,
 			FileUuid: pkt.ApplyUploadRsp.Uuid,
-			FileMd5:  h[:],
-			FileName: proto.String(hex.EncodeToString(h[:]) + ".amr"),
-			FileSize: proto.Int32(int32(len(voice))),
+			FileMd5:  fh[:],
+			FileName: proto.String(hex.EncodeToString(fh[:]) + ".amr"),
+			FileSize: proto.Int32(int32(length)),
 			// Reserve:   constructPTTExtraInfo(1, int32(len(voice))), // todo length
 			BoolValid: proto.Bool(true),
 		}}, nil
