@@ -46,7 +46,10 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	defer conn.Close()
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	chunk := make([]byte, chunkSize)
+	chunk := *binary.Get128KBytes()
+	defer func() { // 延迟捕获 chunk
+		binary.Put128KBytes(&chunk)
+	}()
 	w := binary.NewWriter()
 	defer binary.PutBuffer(w)
 	for {
@@ -128,7 +131,10 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		return nil, errors.Wrap(err, "echo error")
 	}
 	var rspExt []byte
-	chunk := make([]byte, chunkSize)
+	chunk := *binary.Get128KBytes()
+	defer func() { // 延迟捕获 chunk
+		binary.Put128KBytes(&chunk)
+	}()
 	w := binary.NewWriter()
 	defer binary.PutBuffer(w)
 	for {
