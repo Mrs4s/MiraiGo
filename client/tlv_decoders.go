@@ -43,24 +43,24 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 	}
 
 	var (
-		//openId   []byte
-		//openKey  []byte
-		//payToken []byte
-		//pf       []byte
-		//pfkey    []byte
+		// openId   []byte
+		// openKey  []byte
+		// payToken []byte
+		// pf       []byte
+		// pfkey    []byte
 		gender uint16 = 0
 		age    uint16 = 0
 		nick          = ""
-		//a1       []byte
-		//noPicSig []byte
-		//ctime           = time.Now().Unix()
-		//etime           = ctime + 2160000
+		// a1       []byte
+		// noPicSig []byte
+		// ctime           = time.Now().Unix()
+		// etime           = ctime + 2160000
 		psKeyMap    map[string][]byte
 		pt4TokenMap map[string][]byte
 	)
 
 	if _, ok := m[0x125]; ok {
-		//openId, openKey = readT125(t125)
+		// openId, openKey = readT125(t125)
 	}
 	if t186, ok := m[0x186]; ok {
 		c.decodeT186(t186)
@@ -69,20 +69,20 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		nick, age, gender = readT11A(t11a)
 	}
 	if _, ok := m[0x199]; ok {
-		//openId, payToken = readT199(t199)
+		// openId, payToken = readT199(t199)
 	}
 	if _, ok := m[0x200]; ok {
-		//pf, pfkey = readT200(t200)
+		// pf, pfkey = readT200(t200)
 	}
 	if t512, ok := m[0x512]; ok {
 		psKeyMap, pt4TokenMap = readT512(t512)
 	}
 	if _, ok := m[0x531]; ok {
-		//a1, noPicSig = readT531(t531)
+		// a1, noPicSig = readT531(t531)
 	}
 
 	if _, ok := m[0x138]; ok {
-		//readT138(t138) // chg time
+		// readT138(t138) // chg time
 	}
 
 	c.sigInfo = &loginSigInfo{

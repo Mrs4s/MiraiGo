@@ -447,7 +447,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	totalFriendCount := r.ReadInt16(5)
 	friends := []jce.FriendInfo{}
 	r.ReadSlice(&friends, 7)
-	var l = make([]*FriendInfo, 0, len(friends))
+	l := make([]*FriendInfo, 0, len(friends))
 	for _, f := range friends {
 		l = append(l, &FriendInfo{
 			Uin:      f.FriendUin,
@@ -474,7 +474,7 @@ func decodeGroupListResponse(c *QQClient, _ *incomingPacketInfo, payload []byte)
 	groups := []jce.TroopNumber{}
 	r.ReadSlice(&vecCookie, 4)
 	r.ReadSlice(&groups, 5)
-	var l = make([]*GroupInfo, 0, len(groups))
+	l := make([]*GroupInfo, 0, len(groups))
 	for _, g := range groups {
 		l = append(l, &GroupInfo{
 			Uin:            g.GroupUin,
@@ -507,7 +507,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	members := []jce.TroopMemberInfo{}
 	r.ReadSlice(&members, 3)
 	next := r.ReadInt64(4)
-	var l = make([]*GroupMemberInfo, 0, len(members))
+	l := make([]*GroupMemberInfo, 0, len(members))
 	for _, m := range members {
 		l = append(l, &GroupMemberInfo{
 			Uin:                    m.MemberUin,
@@ -677,7 +677,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []b
 	if info.GetMsgType() == 44 {
 		data.ReadBytes(5)
 		var4 := int32(data.ReadByte())
-		var var5 = int64(0)
+		var5 := int64(0)
 		target := int64(uint32(data.ReadInt32()))
 		if var4 != 0 && var4 != 1 {
 			var5 = int64(uint32(data.ReadInt32()))

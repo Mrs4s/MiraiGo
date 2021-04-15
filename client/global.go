@@ -156,8 +156,10 @@ var SystemDeviceInfo = &DeviceInfo{
 	},
 }
 
-var EmptyBytes = []byte{}
-var NumberRange = "0123456789"
+var (
+	EmptyBytes  = []byte{}
+	NumberRange = "0123456789"
+)
 
 func init() {
 	r := make([]byte, 16)
@@ -404,7 +406,7 @@ func GenIMEI() string {
 		sum += toAdd
 		final.WriteString(fmt.Sprintf("%d", toAdd)) // and even printing them here!
 	}
-	var ctrlDigit = (sum * 9) % 10 // calculating the control digit
+	ctrlDigit := (sum * 9) % 10 // calculating the control digit
 	final.WriteString(fmt.Sprintf("%d", ctrlDigit))
 	return final.String()
 }
@@ -443,7 +445,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
 	servers := []jce.SsoServerInfo{}
 	reader.ReadSlice(&servers, 2)
-	var adds = make([]*net.TCPAddr, 0, len(servers))
+	adds := make([]*net.TCPAddr, 0, len(servers))
 	for _, s := range servers {
 		if strings.Contains(s.Server, "com") {
 			continue

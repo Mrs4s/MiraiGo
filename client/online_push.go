@@ -7,12 +7,13 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210"
 
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 var msg0x210Decoders = map[int64]func(*QQClient, []byte) error{
@@ -90,7 +91,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 					}
 				}
 				if b.QqGroupDigestMsg != nil {
-					var digest = b.QqGroupDigestMsg
+					digest := b.QqGroupDigestMsg
 					c.dispatchGroupDigestEvent(&GroupDigestEvent{
 						GroupCode:         int64(digest.GroupCode),
 						MessageID:         int32(digest.Seq),

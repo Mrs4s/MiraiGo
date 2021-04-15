@@ -631,7 +631,7 @@ func (c *QQClient) GetGroupEssenceMsgList(groupCode int64) ([]GroupDigest, error
 	}
 	rsp = rsp[bytes.Index(rsp, []byte("window.__INITIAL_STATE__={"))+25:]
 	rsp = rsp[:bytes.Index(rsp, []byte("</script>"))]
-	var data = &struct {
+	data := &struct {
 		List []GroupDigest `json:"msgList"`
 	}{}
 	err = json.Unmarshal(rsp, data)

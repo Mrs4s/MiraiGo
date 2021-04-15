@@ -11,8 +11,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 type noticePicUpResponse struct {
@@ -29,7 +30,7 @@ type noticeImage struct {
 
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 	buf := new(bytes.Buffer)
-	var w = multipart.NewWriter(buf)
+	w := multipart.NewWriter(buf)
 	err := w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
 	if err != nil {
 		return nil, errors.Wrap(err, "write multipart<bkn> failed")

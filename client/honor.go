@@ -31,9 +31,9 @@ type (
 )
 
 const (
-	Talkative    HonorType = 1 //龙王
-	Performer    HonorType = 2 //群聊之火
-	Legend       HonorType = 3 //群聊炙焰
-	StrongNewbie HonorType = 5 //冒尖小春笋
-	Emotion      HonorType = 6 //快乐源泉
+	Talkative    HonorType = 1 // 龙王
+	Performer    HonorType = 2 // 群聊之火
+	Legend       HonorType = 3 // 群聊炙焰
+	StrongNewbie HonorType = 5 // 冒尖小春笋
+	Emotion      HonorType = 6 // 快乐源泉
 )

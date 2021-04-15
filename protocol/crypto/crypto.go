@@ -96,7 +96,7 @@ func (e *EncryptECDH) FetchPubKey(uin int64) {
 		return
 	}
 	defer resp.Body.Close()
-	var pubKey = pubKeyResp{}
+	pubKey := pubKeyResp{}
 	err = jsoniter.NewDecoder(resp.Body).Decode(&pubKey)
 	if err != nil {
 		return

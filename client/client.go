@@ -15,6 +15,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	jsoniter "github.com/json-iterator/go"
+	"github.com/pkg/errors"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -22,8 +25,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/pkg/errors"
 )
 
 var json = jsoniter.ConfigFastest
@@ -536,7 +537,7 @@ func (c *QQClient) ReloadFriendList() error {
 
 // GetFriendList request friend list
 func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
-	var curFriendCount = 0
+	curFriendCount := 0
 	r := &FriendListResponse{}
 	for {
 		rsp, err := c.sendAndWait(c.buildFriendGroupListRequestPacket(int16(curFriendCount), 150, 0, 0))

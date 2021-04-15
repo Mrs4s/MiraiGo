@@ -31,7 +31,7 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 	fh := h.Sum(nil)
 	_, _ = voice.Seek(0, io.SeekStart)
 	ext := c.buildGroupPttStoreBDHExt(groupCode, fh[:], int32(length), 0, int32(length))
-	rsp, err := c.highwayUploadByBDH(voice, 29, c.highwaySession.SigSession, ext, false)
+	rsp, err := c.highwayUploadByBDH(voice, length, 29, c.highwaySession.SigSession, fh, ext, false)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,8 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 			GroupFileKey: pkt.MsgTryUpPttRsp[0].FileKey,
 			BoolValid:    proto.Bool(true),
 			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
-		}}, nil
+		},
+	}, nil
 }
 
 // UploadPrivatePtt 将语音数据使用好友语音通道上传到服务器, 返回 message.PrivateVoiceElement 可直接发送
@@ -65,7 +66,7 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	fh := h.Sum(nil)
 	_, _ = voice.Seek(0, io.SeekStart)
 	ext := c.buildC2CPttStoreBDHExt(target, fh[:], int32(length), int32(length))
-	rsp, err := c.highwayUploadByBDH(voice, 26, c.highwaySession.SigSession, ext, false)
+	rsp, err := c.highwayUploadByBDH(voice, length, 26, c.highwaySession.SigSession, fh, ext, false)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,8 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 			FileSize: proto.Int32(int32(length)),
 			// Reserve:   constructPTTExtraInfo(1, int32(len(voice))), // todo length
 			BoolValid: proto.Bool(true),
-		}}, nil
+		},
+	}, nil
 }
 
 // UploadGroupShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送
@@ -117,22 +119,27 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	}
 	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen).PttShortVideoUploadReq)
 	var hwRsp []byte
+	multi := utils.MultiReadSeeker(thumb, video)
+	h := md5.New()
+	length, _ := io.Copy(h, multi)
+	fh := h.Sum(nil)
+	_, _ = multi.Seek(0, io.SeekStart)
 	if cache != "" {
 		var file *os.File
-		file, err = os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0666)
+		file, err = os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0o666)
 		cp := func() error {
 			_, err := io.Copy(file, utils.MultiReadSeeker(thumb, video))
 			return err
 		}
 		if err != nil || cp() != nil {
-			hwRsp, err = c.highwayUploadByBDH(utils.MultiReadSeeker(thumb, video), 25, c.highwaySession.SigSession, ext, true)
+			hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.highwaySession.SigSession, fh, ext, true)
 		} else {
 			_ = file.Close()
 			hwRsp, err = c.highwayUploadFileMultiThreadingByBDH(cache, 25, 8, c.highwaySession.SigSession, ext, true)
 			_ = os.Remove(cache)
 		}
 	} else {
-		hwRsp, err = c.highwayUploadByBDH(utils.MultiReadSeeker(thumb, video), 25, c.highwaySession.SigSession, ext, true)
+		hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.highwaySession.SigSession, fh, ext, true)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "upload video file error")
@@ -279,7 +286,7 @@ func decodeGroupPttStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []b
 	if rsp.BoolFileExit {
 		return pttUploadResponse{IsExists: true}, nil
 	}
-	var ip = make([]string, 0, len(rsp.Uint32UpIp))
+	ip := make([]string, 0, len(rsp.Uint32UpIp))
 	for _, i := range rsp.Uint32UpIp {
 		ip = append(ip, binary.UInt32ToIPV4Address(uint32(i)))
 	}

@@ -8,11 +8,13 @@ import (
 	"github.com/pkg/errors"
 )
 
-var ErrUnknownFlag = errors.New("unknown flag")
-var ErrInvalidPayload = errors.New("invalid payload")
-var ErrDecryptFailed = errors.New("decrypt failed")
-var ErrSessionExpired = errors.New("session expired")
-var ErrPacketDropped = errors.New("packet dropped")
+var (
+	ErrUnknownFlag    = errors.New("unknown flag")
+	ErrInvalidPayload = errors.New("invalid payload")
+	ErrDecryptFailed  = errors.New("decrypt failed")
+	ErrSessionExpired = errors.New("session expired")
+	ErrPacketDropped  = errors.New("packet dropped")
+)
 
 type ISendingPacket interface {
 	CommandId() uint16
@@ -109,7 +111,7 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 	flag1 := reader.ReadInt32()
 	flag2 := reader.ReadByte()
 	if reader.ReadByte() != 0 { // flag3
-		//return nil, errors.WithStack(ErrUnknownFlag)
+		// return nil, errors.WithStack(ErrUnknownFlag)
 	}
 	reader.ReadString() // uin string
 	decrypted := func() (data []byte) {

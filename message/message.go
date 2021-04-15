@@ -46,7 +46,7 @@ type (
 		Time           int32
 		Elements       []IMessageElement
 		OriginalObject *msg.Message
-		//OriginalElements []*msg.Elem
+		// OriginalElements []*msg.Elem
 	}
 
 	SendingMessage struct {
@@ -327,7 +327,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					})
 					break L
 				}
-				//d, _ := hex.DecodeString("08097800C80100F00100F80100900200C80200980300A00320B00300C00300D00300E803008A04020803900480808010B80400C00400")
+				// d, _ := hex.DecodeString("08097800C80100F00100F80100900200C80200980300A00320B00300C00300D00300E803008A04020803900480808010B80400C00400")
 				r = append(r, &msg.Elem{
 					GeneralFlags: &msg.GeneralFlags{
 						PbReserve: []byte{
@@ -590,7 +590,7 @@ func (forMsg *ForwardMessage) CalculateValidationDataForward(seq, random int32, 
 }
 
 func (forMsg *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
-	var msgs = make([]*msg.Message, 0, len(forMsg.Nodes))
+	msgs := make([]*msg.Message, 0, len(forMsg.Nodes))
 	for _, node := range forMsg.Nodes {
 		msgs = append(msgs, &msg.Message{
 			Head: &msg.MessageHead{

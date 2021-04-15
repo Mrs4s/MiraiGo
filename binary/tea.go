@@ -13,12 +13,9 @@ func xorQ(a, b []byte, c []byte) { // MAGIC
 			*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))
 }
 
-func isZero(a []byte) bool { // MAGIC
-	return *(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&a)).Data)) == 0
-}
-
 type TEA [4]uint32
 
+// Encrypt tea 加密
 // http://bbs.chinaunix.net/thread-583468-1-1.html
 // 感谢xichen大佬对TEA的解释
 func (t *TEA) Encrypt(src []byte) (dst []byte) {
@@ -27,9 +24,9 @@ func (t *TEA) Encrypt(src []byte) (dst []byte) {
 	tmp1 := make([]byte, 8) // 非纯src的数据
 	tmp2 := make([]byte, 8)
 	dst = make([]byte, fill+lens+7)
-	//for i := 0; i < fill; i++ {
-	//	dst[i] = ' '
-	//} // For test purpose
+	// for i := 0; i < fill; i++ {
+	//	 dst[i] = ' '
+	// } // For test purpose
 	_, _ = rand.Read(dst[0:fill])
 	dst[0] = byte(fill-3) | 0xF8 // 存储pad长度
 	in := 0                      // 位置
@@ -86,9 +83,6 @@ func (t *TEA) Decrypt(data []byte) []byte {
 		xorQ(dst[in:in+8], data[in-8:in], dst[in:in+8])
 		xorQ(dst[in:in+8], data[in-8:in], tmp)
 	}
-	//if !isZero(dst[len(data)-7:]) {
-	//	return nil
-	//}
 	return dst[dst[0]&7+3 : len(data)-7]
 }
 

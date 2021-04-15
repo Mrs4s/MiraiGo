@@ -1,7 +1,7 @@
 package jce
 
 type IJceStruct interface {
-	//ToBytes() []byte
+	// ToBytes() []byte
 	ReadFrom(*JceReader)
 }
 
@@ -42,8 +42,8 @@ type (
 		BigDataChannel        *BigDataChannel         `jceId:"5"`
 		VipEmotionList        []FileStorageServerInfo `jceId:"6"`
 		C2CPicDownList        []FileStorageServerInfo `jceId:"7"`
-		//FmtIPInfo             *FmtIPInfo `jceId:"8"`
-		//DomainIPChannel       *DomainIPChannel `jceId:"9"`
+		// FmtIPInfo             *FmtIPInfo `jceId:"8"`
+		// DomainIPChannel       *DomainIPChannel `jceId:"9"`
 		PttList []byte `jceId:"10"`
 	}
 
@@ -496,8 +496,8 @@ type (
 		IsFriend           byte  `jceId:"3"`
 		GroupCode          int64 `jceId:"4"`
 		GroupUin           int64 `jceId:"5"`
-		//Seed               []byte`jceId:"6"`
-		//SearchName         string`jceId:"7"`
+		// Seed               []byte`jceId:"6"`
+		// SearchName         string`jceId:"7"`
 		GetControl       int64    `jceId:"8"`
 		AddFriendSource  int32    `jceId:"9"`
 		SecureSig        []byte   `jceId:"10"`

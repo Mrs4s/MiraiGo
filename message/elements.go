@@ -86,7 +86,7 @@ type ReplyElement struct {
 	Time     int32
 	Elements []IMessageElement
 
-	//original []*msg.Elem
+	// original []*msg.Elem
 }
 
 type ShortVideoElement struct {
@@ -241,7 +241,7 @@ func NewReply(m *GroupMessage) *ReplyElement {
 		ReplySeq: m.Id,
 		Sender:   m.Sender.Uin,
 		Time:     m.Time,
-		//original: m.OriginalElements,
+		// original: m.OriginalElements,
 		Elements: m.Elements,
 	}
 }
@@ -271,9 +271,10 @@ func NewUrlShare(url, title, content, image string) *ServiceElement {
 		SubType: "UrlShare",
 	}
 }
+
 func NewRichXml(template string, ResId int64) *ServiceElement {
 	if ResId == 0 {
-		ResId = 60 //默认值60
+		ResId = 60 // 默认值60
 	}
 	return &ServiceElement{
 		Id:      int32(ResId),

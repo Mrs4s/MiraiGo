@@ -36,7 +36,7 @@ var faceMap = map[int]string{
 `
 
 func main() {
-	f, _ := os.OpenFile("face.go", os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0755)
+	f, _ := os.OpenFile("face.go", os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0o755)
 	defer func() { _ = f.Close() }()
 	resp, err := http.Get(faceDownloadUrl)
 	if err != nil {

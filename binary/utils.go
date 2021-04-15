@@ -8,42 +8,9 @@ import (
 	"encoding/hex"
 	"io"
 	"net"
-	"sync"
 
 	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-type gzipWriter struct {
-	w   *gzip.Writer
-	buf *bytes.Buffer
-}
-
-var gzipPool = sync.Pool{
-	New: func() interface{} {
-		buf := new(bytes.Buffer)
-		w := gzip.NewWriter(buf)
-		return &gzipWriter{
-			w:   w,
-			buf: buf,
-		}
-	},
-}
-
-func acquireGzipWriter() *gzipWriter {
-	ret := gzipPool.Get().(*gzipWriter)
-	ret.buf.Reset()
-	ret.w.Reset(ret.buf)
-	return ret
-}
-
-func releaseGzipWriter(w *gzipWriter) {
-	// See https://golang.org/issue/23199
-	const maxSize = 1 << 15
-	if w.buf.Cap() < maxSize {
-		w.buf.Reset()
-		gzipPool.Put(w)
-	}
-}
 
 func ZlibUncompress(src []byte) []byte {
 	b := bytes.NewReader(src)
@@ -55,11 +22,12 @@ func ZlibUncompress(src []byte) []byte {
 }
 
 func ZlibCompress(data []byte) []byte {
-	buf := new(bytes.Buffer)
-	w := zlib.NewWriter(buf)
-	_, _ = w.Write(data)
-	w.Close()
-	return buf.Bytes()
+	zw := acquireZlibWriter()
+	_, _ = zw.w.Write(data)
+	_ = zw.w.Close()
+	ret := append([]byte(nil), zw.buf.Bytes()...)
+	releaseZlibWriter(zw)
+	return ret
 }
 
 func GZipCompress(data []byte) []byte {
@@ -87,7 +55,6 @@ func CalculateImageResourceId(md5 []byte) string {
 	id = id[:37]
 	id = append(id, "}.png"...)
 	return utils.B2S(bytes.ToUpper(id))
-
 }
 
 func GenUUID(uuid []byte) []byte {

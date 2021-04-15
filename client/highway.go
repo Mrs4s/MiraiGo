@@ -37,7 +37,7 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	h := md5.New()
 	length, _ := io.Copy(h, stream)
 	fh := h.Sum(nil)
-	chunkSize := 8192 * 8
+	const chunkSize = 8192 * 8
 	_, _ = stream.Seek(0, io.SeekStart)
 	conn, err := net.DialTCP("tcp", nil, &addr)
 	if err != nil {
@@ -46,8 +46,11 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	defer conn.Close()
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
+	chunk := make([]byte, chunkSize)
+	w := binary.NewWriter()
+	defer binary.PutBuffer(w)
 	for {
-		chunk := make([]byte, chunkSize)
+		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(stream, chunk)
 		if errors.Is(err, io.EOF) {
 			break
@@ -78,14 +81,14 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 			ReqExtendinfo: EmptyBytes,
 		})
 		offset += rl
-		_, err = conn.Write(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteByte(40)
-			w.WriteUInt32(uint32(len(head)))
-			w.WriteUInt32(uint32(len(chunk)))
-			w.Write(head)
-			w.Write(chunk)
-			w.WriteByte(41)
-		}))
+		w.Reset()
+		w.WriteByte(40)
+		w.WriteUInt32(uint32(len(head)))
+		w.WriteUInt32(uint32(len(chunk)))
+		w.Write(head)
+		w.Write(chunk)
+		w.WriteByte(41)
+		_, err = conn.Write(w.Bytes())
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
 		}
@@ -100,7 +103,7 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	return nil
 }
 
-func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket, ext []byte, encrypt bool) ([]byte, error) {
+func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int32, ticket, sum, ext []byte, encrypt bool) ([]byte, error) {
 	if len(c.srvSsoAddrs) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
@@ -110,11 +113,7 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 		}
 		ext = binary.NewTeaCipher(c.highwaySession.SessionKey).Encrypt(ext)
 	}
-	h := md5.New()
-	length, _ := io.Copy(h, stream)
-	fh := h.Sum(nil)
-	chunkSize := 8192 * 16
-	_, _ = stream.Seek(0, io.SeekStart)
+	const chunkSize = 8192 * 16
 	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 	if err != nil {
 		return nil, errors.Wrap(err, "connect error")
@@ -129,8 +128,11 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 		return nil, errors.Wrap(err, "echo error")
 	}
 	var rspExt []byte
+	chunk := make([]byte, chunkSize)
+	w := binary.NewWriter()
+	defer binary.PutBuffer(w)
 	for {
-		chunk := make([]byte, chunkSize)
+		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(stream, chunk)
 		if errors.Is(err, io.EOF) {
 			break
@@ -156,19 +158,19 @@ func (c *QQClient) highwayUploadByBDH(stream io.ReadSeeker, cmdId int32, ticket,
 				Datalength:    int32(rl),
 				Serviceticket: ticket,
 				Md5:           ch[:],
-				FileMd5:       fh[:],
+				FileMd5:       sum,
 			},
 			ReqExtendinfo: ext,
 		})
 		offset += rl
-		_, err = conn.Write(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteByte(40)
-			w.WriteUInt32(uint32(len(head)))
-			w.WriteUInt32(uint32(len(chunk)))
-			w.Write(head)
-			w.Write(chunk)
-			w.WriteByte(41)
-		}))
+		w.Reset()
+		w.WriteByte(40)
+		w.WriteUInt32(uint32(len(head)))
+		w.WriteUInt32(uint32(len(chunk)))
+		w.Write(head)
+		w.Write(chunk)
+		w.WriteByte(41)
+		_, err = conn.Write(w.Bytes())
 		if err != nil {
 			return nil, errors.Wrap(err, "write conn error")
 		}
@@ -203,22 +205,23 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 	if err != nil {
 		return nil, errors.Wrap(err, "get stat error")
 	}
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(path, os.O_RDONLY, 0o666)
 	if err != nil {
 		return nil, errors.Wrap(err, "open file error")
 	}
 	defer file.Close()
+	h := md5.New()
+	length, _ := io.Copy(h, file)
+	fh := h.Sum(nil)
+	_, _ = file.Seek(0, io.SeekStart)
 	if stat.Size() < 1024*1024*3 {
-		return c.highwayUploadByBDH(file, cmdId, ticket, ext, false)
+		return c.highwayUploadByBDH(file, length, cmdId, ticket, fh, ext, false)
 	}
 	type BlockMetaData struct {
 		Id          int
 		BeginOffset int64
 		EndOffset   int64
 	}
-	h := md5.New()
-	_, _ = io.Copy(h, file)
-	fh := h.Sum(nil)
 	const blockSize int64 = 1024 * 512
 	var (
 		blocks        []*BlockMetaData
@@ -251,7 +254,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			return errors.Wrap(err, "connect error")
 		}
 		defer conn.Close()
-		chunk, _ := os.OpenFile(path, os.O_RDONLY, 0666)
+		chunk, _ := os.OpenFile(path, os.O_RDONLY, 0o666)
 		defer chunk.Close()
 		reader := binary.NewNetworkReader(conn)
 		if err = c.highwaySendHeartbreak(conn); err != nil {
@@ -278,7 +281,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			}
 			buffer := make([]byte, blockSize)
 			_, _ = chunk.Seek(block.BeginOffset, io.SeekStart)
-			ri, err := io.ReadFull(chunk, buffer)
+			ri, err := io.ReadFull(chunk, buffer) // todo: reuse buffer
 			if err != nil {
 				if err == io.EOF {
 					break
@@ -311,14 +314,15 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 				},
 				ReqExtendinfo: ext,
 			})
-			_, err = conn.Write(binary.NewWriterF(func(w *binary.Writer) {
-				w.WriteByte(40)
-				w.WriteUInt32(uint32(len(head)))
-				w.WriteUInt32(uint32(len(buffer)))
-				w.Write(head)
-				w.Write(buffer)
-				w.WriteByte(41)
-			}))
+			w := binary.NewWriter()
+			w.WriteByte(40)
+			w.WriteUInt32(uint32(len(head)))
+			w.WriteUInt32(uint32(len(buffer)))
+			w.Write(head)
+			w.Write(buffer)
+			w.WriteByte(41)
+			_, err = conn.Write(w.Bytes())
+			binary.PutBuffer(w)
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}
@@ -364,13 +368,14 @@ func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {
 			LocaleId:  2052,
 		},
 	})
-	_, err := conn.Write(binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteByte(40)
-		w.WriteUInt32(uint32(len(head)))
-		w.WriteUInt32(0)
-		w.Write(head)
-		w.WriteByte(41)
-	}))
+	w := binary.NewWriter()
+	w.WriteByte(40)
+	w.WriteUInt32(uint32(len(head)))
+	w.WriteUInt32(0)
+	w.Write(head)
+	w.WriteByte(41)
+	_, err := conn.Write(w.Bytes())
+	binary.PutBuffer(w)
 	return err
 }
 
@@ -400,8 +405,12 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 		offset    int64 = 0
 		chunkSize       = 524288
 	)
+	chunk := make([]byte, chunkSize)
+	w := binary.NewWriter()
+	w.Reset()
+	w.Grow(600 * 1024) // 复用,600k 不要放回池中
 	for {
-		chunk := make([]byte, chunkSize)
+		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(stream, chunk)
 		if err == io.EOF {
 			break
@@ -432,15 +441,14 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 			ReqExtendinfo: ext,
 		})
 		offset += int64(rl)
-		io.Pipe()
-		req, _ := http.NewRequest("POST", url, bytes.NewReader(binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteByte(40)
-			w.WriteUInt32(uint32(len(head)))
-			w.WriteUInt32(uint32(len(chunk)))
-			w.Write(head)
-			w.Write(chunk)
-			w.WriteByte(41)
-		})))
+		w.Reset()
+		w.WriteByte(40)
+		w.WriteUInt32(uint32(len(head)))
+		w.WriteUInt32(uint32(len(chunk)))
+		w.Write(head)
+		w.Write(chunk)
+		w.WriteByte(41)
+		req, _ := http.NewRequest("POST", url, bytes.NewReader(w.Bytes()))
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Connection", "Keep-Alive")
 		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
@@ -504,7 +512,7 @@ func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
 		groupCode,
 		len(img),
 	)
-	req, err := http.NewRequest("POST", url, bytes.NewReader(img))
+	req, _ := http.NewRequest("POST", url, bytes.NewReader(img))
 	req.Header["User-Agent"] = []string{"Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)"}
 	req.Header["Content-Type"] = []string{"multipart/form-data;boundary=****"}
 	rsp, err := http.DefaultClient.Do(req)

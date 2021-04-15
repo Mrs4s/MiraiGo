@@ -56,7 +56,7 @@ func (c *QQClient) GetAllowedClients() ([]*OtherClientInfo, error) {
 		return nil, err
 	}
 	list := i.([]jce.SvcDevLoginInfo)
-	var ret = make([]*OtherClientInfo, 0, len(list))
+	ret := make([]*OtherClientInfo, 0, len(list))
 	for _, l := range list {
 		ret = append(ret, &OtherClientInfo{
 			AppId:      l.AppId,
@@ -208,7 +208,8 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 				Type:    proto.Uint32(283),
 				Version: proto.Uint32(0),
 			},
-		}})
+		},
+	})
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional:   128 | 64 | 256 | 2 | 8192 | 16384 | 65536,
 		DisGroupMsgFilter: 1,

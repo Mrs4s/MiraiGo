@@ -27,7 +27,7 @@ var sampleData = func() [][3]string {
 
 		{"LXY1226    Mrs4s", "LXY Testing~", "ab20caa63f3a6503a84f3cb28f9e26b6c18c051e995d1721"},
 	}
-	for i, _ := range out {
+	for i := range out {
 		c, _ := hex.DecodeString(out[i][ENC])
 		out[i][ENC] = utils.B2S(c)
 	}

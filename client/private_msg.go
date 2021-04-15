@@ -6,10 +6,11 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
-	"github.com/golang/protobuf/proto"
 )
 
 func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *message.PrivateMessage {
