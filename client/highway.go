@@ -263,6 +263,10 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		if _, _, err = highwayReadResponse(reader); err != nil {
 			return errors.Wrap(err, "echo error")
 		}
+		buffer := make([]byte, blockSize)
+		w := binary.NewWriter()
+		w.Reset()
+		w.Grow(600 * 1024) // 复用,600k 不要放回池中
 		for {
 			nextId := atomic.AddUint32(&BlockId, 1)
 			if nextId >= uint32(len(blocks)) {
@@ -279,9 +283,9 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 					break
 				}
 			}
-			buffer := make([]byte, blockSize)
+			buffer = buffer[:blockSize]
 			_, _ = chunk.Seek(block.BeginOffset, io.SeekStart)
-			ri, err := io.ReadFull(chunk, buffer) // todo: reuse buffer
+			ri, err := io.ReadFull(chunk, buffer)
 			if err != nil {
 				if err == io.EOF {
 					break
@@ -314,7 +318,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 				},
 				ReqExtendinfo: ext,
 			})
-			w := binary.NewWriter()
+			w.Reset()
 			w.WriteByte(40)
 			w.WriteUInt32(uint32(len(head)))
 			w.WriteUInt32(uint32(len(buffer)))
@@ -322,7 +326,6 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			w.Write(buffer)
 			w.WriteByte(41)
 			_, err = conn.Write(w.Bytes())
-			binary.PutBuffer(w)
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}
