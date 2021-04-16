@@ -1025,12 +1025,12 @@ func (c *QQClient) netLoop() {
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
 			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
-				c.quickReconnect()
+				go c.quickReconnect()
 				continue
 			}
 			errCount++
 			if errCount > 2 {
-				c.quickReconnect()
+				go c.quickReconnect()
 				continue
 			}
 			continue
