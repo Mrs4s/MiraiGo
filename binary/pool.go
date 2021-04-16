@@ -32,30 +32,25 @@ func PutBuffer(w *Writer) {
 	}
 }
 
-type gzipWriter struct {
-	w   *gzip.Writer
-	buf *bytes.Buffer
-}
-
 var gzipPool = sync.Pool{
 	New: func() interface{} {
 		buf := new(bytes.Buffer)
 		w := gzip.NewWriter(buf)
-		return &gzipWriter{
+		return &GzipWriter{
 			w:   w,
 			buf: buf,
 		}
 	},
 }
 
-func acquireGzipWriter() *gzipWriter {
-	ret := gzipPool.Get().(*gzipWriter)
+func AcquireGzipWriter() *GzipWriter {
+	ret := gzipPool.Get().(*GzipWriter)
 	ret.buf.Reset()
 	ret.w.Reset(ret.buf)
 	return ret
 }
 
-func releaseGzipWriter(w *gzipWriter) {
+func ReleaseGzipWriter(w *GzipWriter) {
 	// See https://golang.org/issue/23199
 	const maxSize = 1 << 16
 	if w.buf.Cap() < maxSize {

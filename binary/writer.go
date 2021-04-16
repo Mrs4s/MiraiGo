@@ -79,20 +79,24 @@ func (w *Writer) WriteIntLvPacket(offset int, f func(writer *Writer)) {
 }
 
 func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body []byte) {
-	w.WriteIntLvPacket(4, func(w *Writer) {
-		w.WriteString(commandName)
-		w.WriteUInt32(8)
-		w.Write(sessionId)
+	w1 := NewWriter()
+	{ // WriteIntLvPacket
+		w1.WriteString(commandName)
+		w1.WriteUInt32(8)
+		w1.Write(sessionId)
 		if len(extraData) == 0 {
-			w.WriteUInt32(0x04)
+			w1.WriteUInt32(0x04)
 		} else {
-			w.WriteUInt32(uint32(len(extraData) + 4))
-			w.Write(extraData)
+			w1.WriteUInt32(uint32(len(extraData) + 4))
+			w1.Write(extraData)
 		}
-	})
-	w.WriteIntLvPacket(4, func(w *Writer) {
-		w.Write(body)
-	})
+	}
+	data := w1.Bytes()
+	w.WriteUInt32(uint32(len(data) + 4))
+	w.Write(data)
+	PutBuffer(w1)
+	w.WriteUInt32(uint32(len(body) + 4)) // WriteIntLvPacket
+	w.Write(body)
 }
 
 func (w *Writer) WriteBytesShort(data []byte) {

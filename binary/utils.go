@@ -12,6 +12,23 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
+type GzipWriter struct {
+	w   *gzip.Writer
+	buf *bytes.Buffer
+}
+
+func (w *GzipWriter) Write(p []byte) (int, error) {
+	return w.w.Write(p)
+}
+
+func (w *GzipWriter) Close() error {
+	return w.w.Close()
+}
+
+func (w *GzipWriter) Bytes() []byte {
+	return w.buf.Bytes()
+}
+
 func ZlibUncompress(src []byte) []byte {
 	b := bytes.NewReader(src)
 	var out bytes.Buffer
@@ -31,11 +48,11 @@ func ZlibCompress(data []byte) []byte {
 }
 
 func GZipCompress(data []byte) []byte {
-	gw := acquireGzipWriter()
-	_, _ = gw.w.Write(data)
-	_ = gw.w.Close()
+	gw := AcquireGzipWriter()
+	_, _ = gw.Write(data)
+	_ = gw.Close()
 	ret := append([]byte(nil), gw.buf.Bytes()...)
-	releaseGzipWriter(gw)
+	ReleaseGzipWriter(gw)
 	return ret
 }
 

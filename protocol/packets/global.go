@@ -3,9 +3,10 @@ package packets
 import (
 	"strconv"
 
+	"github.com/pkg/errors"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
-	"github.com/pkg/errors"
 )
 
 var (

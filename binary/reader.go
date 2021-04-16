@@ -117,10 +117,8 @@ func (r *Reader) Len() int {
 }
 
 func (tlv TlvMap) Exists(key uint16) bool {
-	if _, ok := tlv[key]; ok {
-		return true
-	}
-	return false
+	_, ok := tlv[key]
+	return ok
 }
 
 // --- Network reader ---
@@ -144,13 +142,13 @@ func (r *NetworkReader) ReadByte() (byte, error) {
 func (r *NetworkReader) ReadBytes(len int) ([]byte, error) {
 	buf := make([]byte, len)
 	_, err := io.ReadFull(r.conn, buf)
-	//for i := 0; i < len; i++ {
-	//	b, err := r.ReadByte()
-	//	if err != nil {
+	// for i := 0; i < len; i++ {
+	//	 b, err := r.ReadByte()
+	//	 if err != nil {
 	//		return nil, err
-	//	}
-	//	buf[i] = b
-	//}
+	//	 }
+	// 	 buf[i] = b
+	// }
 	return buf, err
 }
 
