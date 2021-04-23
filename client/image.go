@@ -52,7 +52,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	if _, err = c.highwayUploadByBDH(img, length, 2, rsp.UploadKey, EmptyBytes, fh, false); err == nil {
 		goto ok
 	}
-	return nil, errors.New("upload failed")
+	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
 	i, _, _ := image.DecodeConfig(img)
@@ -93,7 +93,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	if _, err = c.highwayUploadFileMultiThreadingByBDH(path, 2, 4, rsp.UploadKey, EmptyBytes, false); err == nil {
 		goto ok
 	}
-	return nil, errors.New("upload failed")
+	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
 	i, _, _ := image.DecodeConfig(img)
