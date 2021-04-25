@@ -10,16 +10,16 @@ import (
 
 type TCPListener struct {
 	conn                 net.Conn
-	planedDisconnect     func(*TCPListener)
+	plannedDisconnect     func(*TCPListener)
 	unexpectedDisconnect func(*TCPListener, error)
 }
 
 var ErrConnectionClosed = errors.New("connection closed")
 
-// PlanedDisconnect 预料中的断开连接
+// PlannedDisconnect 预料中的断开连接
 // 如调用 Close() Connect()
-func (t *TCPListener) PlanedDisconnect(f func(*TCPListener)) {
-	t.planedDisconnect = f
+func (t *TCPListener) PlannedDisconnect(f func(*TCPListener)) {
+	t.plannedDisconnect = f
 }
 
 // UnexpectedDisconnect 未预料钟的断开连接
@@ -82,7 +82,7 @@ func (t *TCPListener) Close() {
 		return
 	}
 	t.close()
-	t.invokePlanedDisconnect()
+	t.invokePlannedDisconnect()
 }
 
 func (t *TCPListener) close() {
@@ -93,9 +93,9 @@ func (t *TCPListener) close() {
 	t.conn = nil
 }
 
-func (t *TCPListener) invokePlanedDisconnect() {
-	if t.planedDisconnect != nil {
-		go t.planedDisconnect(t)
+func (t *TCPListener) invokePlannedDisconnect() {
+	if t.plannedDisconnect != nil {
+		go t.plannedDisconnect(t)
 	}
 }
 

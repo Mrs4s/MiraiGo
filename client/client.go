@@ -237,7 +237,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	if len(cli.servers) > 3 {
 		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
 	}
-	cli.TCP.PlanedDisconnect(cli.planedDisconnect)
+	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
 	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
 	rand.Read(cli.RandomKey)
 	go cli.netLoop()
@@ -988,8 +988,8 @@ func (c *QQClient) Disconnect() {
 	c.TCP.Close()
 }
 
-func (c *QQClient) planedDisconnect(_ *utils.TCPListener) {
-	c.Debug("planed disconnect.")
+func (c *QQClient) plannedDisconnect(_ *utils.TCPListener) {
+	c.Debug("planned disconnect.")
 	c.stat.DisconnectTimes++
 	c.Online = false
 }
