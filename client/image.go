@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"image"
+	_ "image/gif"
 	"io"
 	"math/rand"
 	"os"
