@@ -190,6 +190,18 @@ type (
 		PCClientType        int32        `jceId:"8"`
 	}
 
+	RequestPushNotify struct {
+		Uin          int64  `jceId:"0"`
+		Type         byte   `jceId:"1"`
+		Service      string `jceId:"2"`
+		Cmd          string `jceId:"3"`
+		NotifyCookie []byte `jceId:"4"`
+		MsgType      int32  `jceId:"5"`
+		UserActive   int32  `jceId:"6"`
+		GeneralFlag  int32  `jceId:"7"`
+		BindedUin    int64  `jceId:"8"`
+	}
+
 	OnlineInfo struct {
 		InstanceId   int32  `jceId:"0"`
 		ClientType   int32  `jceId:"1"`
@@ -759,6 +771,18 @@ func (pkt *SvcRespParam) ReadFrom(r *JceReader) {
 	pkt.RoamFlag = r.ReadInt64(6)
 	r.ReadSlice(&pkt.OnlineInfos, 7)
 	pkt.PCClientType = r.ReadInt32(8)
+}
+
+func (pkt *RequestPushNotify) ReadFrom(r *JceReader) {
+	pkt.Uin = r.ReadInt64(0)
+	pkt.Type = r.ReadByte(1)
+	pkt.Service = r.ReadString(2)
+	pkt.Cmd = r.ReadString(3)
+	pkt.NotifyCookie = r.ReadAny(4).([]byte)
+	pkt.MsgType = r.ReadInt32(5)
+	pkt.UserActive = r.ReadInt32(6)
+	pkt.GeneralFlag = r.ReadInt32(7)
+	pkt.BindedUin = r.ReadInt64(8)
 }
 
 func (pkt *OnlineInfo) ReadFrom(r *JceReader) {

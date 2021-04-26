@@ -383,7 +383,25 @@ func decodeMessageSvcPacket(c *QQClient, info *incomingPacketInfo, payload []byt
 }
 
 // MessageSvc.PushNotify
-func decodeSvcNotify(c *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
+func decodeSvcNotify(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload[15:]))
+	data := &jce.RequestDataVersion2{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	if len(data.Map) == 0 {
+		_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
+		return nil, err
+	}
+	notify := &jce.RequestPushNotify{}
+	notify.ReadFrom(jce.NewJceReader(data.Map["req_PushNotify"]["PushNotifyPack.RequestPushNotify"][1:]))
+	if _, ok := troopSystemMsgDecoders[notify.MsgType]; ok && notify.MsgType != 85 && notify.MsgType != 36 {
+		c.exceptAndDispatchGroupSysMsg()
+		return nil, nil
+	}
+	if _, ok := sysMsgDecoders[notify.MsgType]; ok {
+		_, pkt := c.buildSystemMsgNewFriendPacket()
+		return nil, c.send(pkt)
+	}
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
 }
