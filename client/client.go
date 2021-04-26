@@ -1025,7 +1025,8 @@ func (c *QQClient) netLoop() {
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
 			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
-				go c.quickReconnect()
+				c.Disconnect()
+				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
 				continue
 			}
 			errCount++
