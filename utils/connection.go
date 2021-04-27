@@ -10,7 +10,7 @@ import (
 
 type TCPListener struct {
 	conn                 net.Conn
-	plannedDisconnect     func(*TCPListener)
+	plannedDisconnect    func(*TCPListener)
 	unexpectedDisconnect func(*TCPListener, error)
 }
 
