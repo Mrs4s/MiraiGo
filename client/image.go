@@ -33,12 +33,12 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
-	if length == 0 {
-		return nil, errors.Wrap(err, "failed to read file")
-	}
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
+		if length == 0 {
+			return nil, errors.Wrap(err, "failed to read file")
+		}
 		return nil, err
 	}
 	rsp := r.(imageUploadResponse)
@@ -77,12 +77,12 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	}
 	defer func() { _ = img.Close() }()
 	fh, length := utils.ComputeMd5AndLength(img)
-	if length == 0 {
-		return nil, errors.Wrap(err, "failed to read file")
-	}
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
+		if length == 0 {
+			return nil, errors.Wrap(err, "failed to read file")
+		}
 		return nil, err
 	}
 	rsp := r.(imageUploadResponse)
