@@ -195,13 +195,13 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 		return &message.FriendImageElement{
 			ImageId: rsp.ResourceId,
 			Md5:     hash,
-			Url:     "http://c2cpicdw.qpic.cn/offpic_new/0/" + rsp.ResourceId + "/0?term=2",
+			Url:     "https://c2cpicdw.qpic.cn/offpic_new/0/" + rsp.ResourceId + "/0?term=2",
 		}, errors.WithStack(ErrNotExists)
 	}
 	return &message.FriendImageElement{
 		ImageId: rsp.ResourceId,
 		Md5:     hash,
-		Url:     "http://c2cpicdw.qpic.cn/offpic_new/0/" + rsp.ResourceId + "/0?term=2",
+		Url:     "https://c2cpicdw.qpic.cn/offpic_new/0/" + rsp.ResourceId + "/0?term=2",
 	}, nil
 }
 
