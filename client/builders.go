@@ -781,11 +781,6 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 	return seq, packet
 }
 
-func (c *QQClient) buildStopGetMessagePacket(msgTime int64) []byte {
-	_, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_STOP, msgTime)
-	return pkt
-}
-
 // MessageSvc.PbDeleteMsg
 func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint16, []byte) {
 	seq := c.nextSeq()
