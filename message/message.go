@@ -480,9 +480,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				Height:   elem.CustomFace.GetHeight(),
 				Url: func() string {
 					if elem.CustomFace.GetOrigUrl() == "" {
-						return "http://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
+						return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
 					}
-					return "http://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
+					return "https://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
 				}(),
 				Md5: elem.CustomFace.Md5,
 			})
@@ -490,9 +490,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		if elem.NotOnlineImage != nil {
 			var img string
 			if elem.NotOnlineImage.GetOrigUrl() != "" {
-				img = "http://c2cpicdw.qpic.cn" + elem.NotOnlineImage.GetOrigUrl()
+				img = "https://c2cpicdw.qpic.cn" + elem.NotOnlineImage.GetOrigUrl()
 			} else {
-				img = "http://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.GetResId() + "/0?term=2"
+				img = "https://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.GetResId() + "/0?term=2"
 			}
 			res = append(res, &ImageElement{
 				Filename: elem.NotOnlineImage.GetFilePath(),
