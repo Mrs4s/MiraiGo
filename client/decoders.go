@@ -481,6 +481,19 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	return rsp, nil
 }
 
+// friendlist.delFriend
+func decodeFriendDeleteResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+	request := &jce.RequestPacket{}
+	request.ReadFrom(jce.NewJceReader(payload))
+	data := &jce.RequestDataVersion3{}
+	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	r := jce.NewJceReader(data.Map["DFRESP"][1:])
+	if ret := r.ReadInt32(2); ret != 0 {
+		return nil, errors.Errorf("delete friend error: %v", ret)
+	}
+	return nil, nil
+}
+
 // friendlist.GetTroopListReqV2
 func decodeGroupListResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}

@@ -141,6 +141,7 @@ var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interfac
 	"MessageSvc.PushForceOffline":                  decodeForceOfflinePacket,
 	"PbMessageSvc.PbMsgWithDraw":                   decodeMsgWithDrawResponse,
 	"friendlist.getFriendGroupList":                decodeFriendGroupListResponse,
+	"friendlist.delFriend":                         decodeFriendDeleteResponse,
 	"friendlist.GetTroopListReqV2":                 decodeGroupListResponse,
 	"friendlist.GetTroopMemberListReq":             decodeGroupMemberListResponse,
 	"group_member_card.get_group_member_card_info": decodeGroupMemberInfoResponse,
@@ -713,6 +714,14 @@ func (c *QQClient) FindFriend(uin int64) *FriendInfo {
 		}
 	}
 	return nil
+}
+
+func (c *QQClient) DeleteFriend(uin int64) error {
+	if c.FindFriend(uin) == nil {
+		return errors.New("friend not found")
+	}
+	_, err := c.sendAndWait(c.buildFriendDeletePacket(uin))
+	return errors.Wrap(err, "delete friend error")
 }
 
 func (c *QQClient) FindGroupByUin(uin int64) *GroupInfo {

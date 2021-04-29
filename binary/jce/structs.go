@@ -529,6 +529,14 @@ type (
 		Version     int32    `jceId:"2"`
 		ReqServices [][]byte `jceId:"3"` // busi
 	}
+
+	DelFriendReq struct {
+		IJceStruct
+		Uin     int64 `jceId:"0"`
+		DelUin  int64 `jceId:"1"`
+		DelType byte  `jceId:"2"`
+		Version int32 `jceId:"3"`
+	}
 )
 
 func (pkt *RequestPacket) ToBytes() []byte {
@@ -834,6 +842,12 @@ func (pkt *SvcReqGetDevLoginInfo) ToBytes() []byte {
 }
 
 func (pkt *SvcReqRegisterNew) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteJceStructRaw(pkt)
+	return w.Bytes()
+}
+
+func (pkt *DelFriendReq) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteJceStructRaw(pkt)
 	return w.Bytes()

@@ -651,6 +651,31 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 	return seq, packet
 }
 
+// friendlist.delFriend
+func (c *QQClient) buildFriendDeletePacket(target int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	req := &jce.DelFriendReq{
+		Uin:     c.Uin,
+		DelUin:  target,
+		DelType: 2,
+		Version: 1,
+	}
+	buf := &jce.RequestDataVersion3{
+		Map: map[string][]byte{"DF": packUniRequestData(req.ToBytes())},
+	}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		IRequestId:   c.nextPacketSeq(),
+		SServantName: "mqq.IMService.FriendListServiceServantObj",
+		SFuncName:    "DelFriendReq",
+		SBuffer:      buf.ToBytes(),
+		Context:      make(map[string]string),
+		Status:       make(map[string]string),
+	}
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.delFriend", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return seq, packet
+}
+
 // friendlist.GetTroopListReqV2
 func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -665,10 +690,8 @@ func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte
 		VersionNum:       1,
 		GetLongGroupName: 1,
 	}
-	b := append([]byte{0x0A}, req.ToBytes()...)
-	b = append(b, 0x0B)
 	buf := &jce.RequestDataVersion3{
-		Map: map[string][]byte{"GetTroopListReqV2Simplify": b},
+		Map: map[string][]byte{"GetTroopListReqV2Simplify": packUniRequestData(req.ToBytes())},
 	}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
