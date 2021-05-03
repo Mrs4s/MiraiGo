@@ -4,6 +4,9 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x3f6"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
@@ -12,8 +15,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-	"io/ioutil"
-	"net/http"
 )
 
 func init() {
