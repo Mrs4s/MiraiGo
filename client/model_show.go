@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -56,7 +57,7 @@ func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
 		Req: ModelReq{
 			Req: ModelReqData{
 				Uin:            c.Uin,
-				Model:          url.QueryEscape(modelName),
+				Model:          strings.ReplaceAll(url.QueryEscape(modelName), "+", "%20"),
 				AppType:        0,
 				IMei:           SystemDeviceInfo.IMEI,
 				ShowInfo:       true,
@@ -99,11 +100,11 @@ func (c *QQClient) SetModelShow(modelName string, modelShow string) error {
 		Req: ModelReq{
 			Req: ModelReqData{
 				Uin:            c.Uin,
-				Model:          url.QueryEscape(modelName),
+				Model:          strings.ReplaceAll(url.QueryEscape(modelName), "+", "%20"),
 				AppType:        0,
 				IMei:           SystemDeviceInfo.IMEI,
 				ShowInfo:       true,
-				ModelShow:      url.QueryEscape(modelShow),
+				ModelShow:      strings.ReplaceAll(url.QueryEscape(modelShow), "+", "%20"),
 				RecoverDefault: recover,
 			},
 		},
