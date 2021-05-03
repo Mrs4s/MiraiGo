@@ -312,6 +312,8 @@ func (info *DeviceInfo) ToJson() []byte {
 				return 2
 			case MacOS:
 				return 3
+			case QiDian:
+				return 4
 			}
 			return 0
 		}(),
@@ -374,6 +376,8 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 		info.Protocol = AndroidWatch
 	case 3:
 		info.Protocol = MacOS
+	case 4:
+		info.Protocol = QiDian
 	default:
 		info.Protocol = IPad
 	}
