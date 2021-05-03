@@ -1,0 +1,123 @@
+syntax = "proto2";
+option go_package = ".;msg";
+
+message C2CHead {
+  optional uint64 toUin = 1;
+  optional uint64 fromUin = 2;
+  optional uint32 ccType = 3;
+  optional uint32 ccCmd = 4;
+  optional bytes authPicSig = 5;
+  optional bytes authSig = 6;
+  optional bytes authBuf = 7;
+  optional uint32 serverTime = 8;
+  optional uint32 clientTime = 9;
+  optional uint32 rand = 10;
+  optional string phoneNumber = 11;
+}
+
+message CSHead {
+  optional uint64 uin = 1;
+  optional uint32 command = 2;
+  optional uint32 seq = 3;
+  optional uint32 version = 4;
+  optional uint32 retryTimes = 5;
+  optional uint32 clientType = 6;
+  optional uint32 pubno = 7;
+  optional uint32 localid = 8;
+  optional uint32 timezone = 9;
+  optional fixed32 clientIp = 10;
+  optional uint32 clientPort = 11;
+  optional fixed32 connIp = 12;
+  optional uint32 connPort = 13;
+  optional fixed32 interfaceIp = 14;
+  optional uint32 interfacePort = 15;
+  optional fixed32 actualIp = 16;
+  optional uint32 flag = 17;
+  optional fixed32 timestamp = 18;
+  optional uint32 subcmd = 19;
+  optional uint32 result = 20;
+  optional uint32 appId = 21;
+  optional uint32 instanceId = 22;
+  optional uint64 sessionId = 23;
+  optional uint32 idcId = 24;
+}
+
+message DeltaHead {
+  optional uint64 totalLen = 1;
+  optional uint64 offset = 2;
+  optional uint64 ackOffset = 3;
+  optional bytes cookie = 4;
+  optional bytes ackCookie = 5;
+  optional uint32 result = 6;
+  optional uint32 flags = 7;
+}
+
+message IMHead {
+  optional uint32 headType = 1;
+  optional CSHead csHead = 2;
+  optional S2CHead s2CHead = 3;
+  optional HttpConnHead httpconnHead = 4;
+  optional uint32 paintFlag = 5;
+  optional LoginSig loginSig = 6;
+  optional DeltaHead deltaHead = 7;
+  optional C2CHead c2CHead = 8;
+}
+
+message HttpConnHead {
+  optional uint64 uin = 1;
+  optional uint32 command = 2;
+  optional uint32 subCommand = 3;
+  optional uint32 seq = 4;
+  optional uint32 version = 5;
+  optional uint32 retryTimes = 6;
+  optional uint32 clientType = 7;
+  optional uint32 pubNo = 8;
+  optional uint32 localId = 9;
+  optional uint32 timeZone = 10;
+  optional fixed32 clientIp = 11;
+  optional uint32 clientPort = 12;
+  optional fixed32 qzhttpIp = 13;
+  optional uint32 qzhttpPort = 14;
+  optional fixed32 sppIp = 15;
+  optional uint32 sppPort = 16;
+  optional uint32 flag = 17;
+  optional bytes key = 18;
+  optional uint32 compressType = 19;
+  optional uint32 originSize = 20;
+  optional uint32 errorCode = 21;
+  optional RedirectMsg redirect = 22;
+  optional uint32 commandId = 23;
+  optional uint32 serviceCmdid = 24;
+  optional TransOidbHead oidbhead = 25;
+}
+
+
+message LoginSig {
+  optional uint32 type = 1;
+  optional bytes sig = 2;
+}
+
+message RedirectMsg {
+  optional fixed32 lastRedirectIp = 1;
+  optional uint32 lastRedirectPort = 2;
+  optional fixed32 redirectIp = 3;
+  optional uint32 redirectPort = 4;
+  optional uint32 redirectCount = 5;
+}
+
+message S2CHead {
+  optional uint32 subMsgtype = 1;
+  optional uint32 msgType = 2;
+  optional uint64 fromUin = 3;
+  optional uint32 msgId = 4;
+  optional fixed32 relayIp = 5;
+  optional uint32 relayPort = 6;
+  optional uint64 toUin = 7;
+}
+
+message TransOidbHead {
+  optional uint32 command = 1;
+  optional uint32 serviceType = 2;
+  optional uint32 result = 3;
+  optional string errorMsg = 4;
+}

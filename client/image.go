@@ -243,7 +243,7 @@ func (c *QQClient) uploadOcrImage(img io.Reader, length int64, sum []byte) (stri
 		ActionType: proto.Uint32(0),
 		Uuid:       binary.GenUUID(r),
 	})
-	rsp, err := c.highwayUploadByBDH(img, length, 76, c.highwaySession.SigSession, sum, ext, false)
+	rsp, err := c.highwayUploadByBDH(img, length, 76, c.bigDataSession.SigSession, sum, ext, false)
 	if err != nil {
 		return "", errors.Wrap(err, "upload ocr image error")
 	}

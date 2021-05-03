@@ -107,11 +107,13 @@ type (
 		SortVersionName string
 		SdkVersion      string
 		AppId           uint32
+		SubAppId        uint32
 		BuildTime       uint32
 		SSOVersion      uint32
 		MiscBitmap      uint32
 		SubSigmap       uint32
 		MainSigMap      uint32
+		Protocol        ClientProtocol
 	}
 
 	incomingPacketInfo struct {
@@ -194,6 +196,7 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 		return &versionInfo{
 			ApkId:           "com.tencent.mobileqq",
 			AppId:           537066738,
+			SubAppId:        537066738,
 			SortVersionName: "8.5.0",
 			BuildTime:       1607689988,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
@@ -202,11 +205,13 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			MiscBitmap:      184024956,
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
+			Protocol:        p,
 		}
 	case AndroidWatch:
 		return &versionInfo{
 			ApkId:           "com.tencent.qqlite",
 			AppId:           537064446,
+			SubAppId:        537064446,
 			SortVersionName: "2.0.5",
 			BuildTime:       1559564731,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
@@ -215,11 +220,13 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			MiscBitmap:      16252796,
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
+			Protocol:        p,
 		}
 	case IPad:
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
 			AppId:           537065739,
+			SubAppId:        537065739,
 			SortVersionName: "5.8.9",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
@@ -228,11 +235,13 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			MiscBitmap:      150470524,
 			SubSigmap:       66560,
 			MainSigMap:      1970400,
+			Protocol:        p,
 		}
 	case MacOS:
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
 			AppId:           537064315,
+			SubAppId:        537064315,
 			SortVersionName: "5.8.9",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
@@ -241,6 +250,22 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 			MiscBitmap:      150470524,
 			SubSigmap:       66560,
 			MainSigMap:      1970400,
+			Protocol:        p,
+		}
+	case QiDian:
+		return &versionInfo{
+			ApkId:           "com.tencent.qidian",
+			AppId:           537061386,
+			SubAppId:        537036590,
+			SortVersionName: "3.8.6",
+			BuildTime:       1556628836,
+			ApkSign:         []byte{160, 30, 236, 171, 133, 233, 227, 186, 43, 15, 106, 21, 140, 133, 92, 41},
+			SdkVersion:      "6.0.0.2365",
+			SSOVersion:      5,
+			MiscBitmap:      49807228,
+			SubSigmap:       66560,
+			MainSigMap:      34869472,
+			Protocol:        p,
 		}
 	}
 	return nil

@@ -31,7 +31,7 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 	fh := h.Sum(nil)
 	_, _ = voice.Seek(0, io.SeekStart)
 	ext := c.buildGroupPttStoreBDHExt(groupCode, fh[:], int32(length), 0, int32(length))
-	rsp, err := c.highwayUploadByBDH(voice, length, 29, c.highwaySession.SigSession, fh, ext, false)
+	rsp, err := c.highwayUploadByBDH(voice, length, 29, c.bigDataSession.SigSession, fh, ext, false)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	fh := h.Sum(nil)
 	_, _ = voice.Seek(0, io.SeekStart)
 	ext := c.buildC2CPttStoreBDHExt(target, fh[:], int32(length), int32(length))
-	rsp, err := c.highwayUploadByBDH(voice, length, 26, c.highwaySession.SigSession, fh, ext, false)
+	rsp, err := c.highwayUploadByBDH(voice, length, 26, c.bigDataSession.SigSession, fh, ext, false)
 	if err != nil {
 		return nil, err
 	}
@@ -132,14 +132,14 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 			return err
 		}
 		if err != nil || cp() != nil {
-			hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.highwaySession.SigSession, fh, ext, true)
+			hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.bigDataSession.SigSession, fh, ext, true)
 		} else {
 			_ = file.Close()
-			hwRsp, err = c.highwayUploadFileMultiThreadingByBDH(cache, 25, 8, c.highwaySession.SigSession, ext, true)
+			hwRsp, err = c.highwayUploadFileMultiThreadingByBDH(cache, 25, 8, c.bigDataSession.SigSession, ext, true)
 			_ = os.Remove(cache)
 		}
 	} else {
-		hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.highwaySession.SigSession, fh, ext, true)
+		hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.bigDataSession.SigSession, fh, ext, true)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "upload video file error")

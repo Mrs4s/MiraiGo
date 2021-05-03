@@ -1,0 +1,73 @@
+syntax = "proto2";
+option go_package = ".;cmd0x3f6";
+
+message C3F6ReqBody {
+  optional uint32 subCmd = 1;
+  optional C3F6CRMMsgHead crmCommonHead = 2;
+  optional QDUserLoginProcessCompleteReqBody subcmdLoginProcessCompleteReqBody = 42;
+}
+
+message C3F6RspBody {
+  optional uint32 subCmd = 1;
+  optional C3F6CRMMsgHead crmCommonHead = 2;
+  optional QDUserLoginProcessCompleteRspBody subcmdLoginProcessCompleteRspBody = 42;
+}
+
+message QDUserLoginProcessCompleteReqBody {
+  optional uint64 kfext = 1;
+  optional uint32 pubno = 2;
+  optional uint32 buildno = 3;
+  optional uint32 terminalType = 4;
+  optional uint32 status = 5;
+  optional uint32 loginTime = 6;
+  optional string hardwareInfo = 7;
+  optional string softwareInfo = 8;
+  optional bytes guid = 9;
+  optional string appName = 10;
+  optional uint32 subAppId = 11;
+}
+
+message QDUserLoginProcessCompleteRspBody {
+  optional RetInfo ret = 1;
+  optional string url = 2;
+  optional string mobile = 3;
+  optional string externalMobile = 4;
+  optional bool dataAnalysisPriv = 5;
+  optional bool deviceLock = 6;
+  optional uint64 modulePrivilege = 7;
+  repeated uint32 moduleSubPrivilege = 8;
+  optional uint32 masterSet = 9;
+  optional uint32 extSet = 10;
+  optional uint64 corpConfProperty = 11;
+  optional uint64 corpuin = 12;
+  optional uint64 kfaccount = 13;
+  optional uint32 securityLevel = 14;
+  optional string msgTitle = 15;
+  optional string succNoticeMsg = 16;
+  optional uint64 nameAccount = 17;
+  optional uint32 crmMigrateFlag = 18;
+  optional string extuinName = 19;
+  optional uint32 openAccountTime = 20;
+}
+
+message RetInfo {
+  optional uint32 retCode = 1;
+  optional string errorMsg = 2;
+}
+
+message C3F6CRMMsgHead {
+  optional uint32 crmSubCmd = 1;
+  optional uint32 headLen = 2;
+  optional uint32 verNo = 3;
+  optional uint64 kfUin = 4;
+  optional uint32 seq = 5;
+  optional uint32 packNum = 6;
+  optional uint32 curPack = 7;
+  optional string bufSig = 8;
+  optional uint32 clienttype = 9;
+  optional uint64 laborUin = 10;
+  optional string laborName = 11;
+  optional uint64 kfaccount = 12;
+  optional string traceId = 13;
+  optional uint32 appId = 14;
+}

@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"math/big"
 	"reflect"
+	"strconv"
+	"strings"
 	"unsafe"
 )
 
@@ -60,6 +62,11 @@ func ChineseLength(str string, limit int) int {
 		}
 	}
 	return sum
+}
+
+func ConvertSubVersionToInt(str string) int32 {
+	i, _ := strconv.ParseInt(strings.Join(strings.Split(str, "."), ""), 10, 64)
+	return int32(i) * 10
 }
 
 // B2S converts byte slice to a string without memory allocation.

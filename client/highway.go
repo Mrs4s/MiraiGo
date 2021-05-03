@@ -111,10 +111,10 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
 	if encrypt {
-		if c.highwaySession == nil || len(c.highwaySession.SessionKey) == 0 {
+		if c.bigDataSession == nil || len(c.bigDataSession.SessionKey) == 0 {
 			return nil, errors.New("session key not found. maybe miss some packet?")
 		}
-		ext = binary.NewTeaCipher(c.highwaySession.SessionKey).Encrypt(ext)
+		ext = binary.NewTeaCipher(c.bigDataSession.SessionKey).Encrypt(ext)
 	}
 	const chunkSize = 8192 * 16
 	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
@@ -202,10 +202,10 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
 	if encrypt {
-		if c.highwaySession == nil || len(c.highwaySession.SessionKey) == 0 {
+		if c.bigDataSession == nil || len(c.bigDataSession.SessionKey) == 0 {
 			return nil, errors.New("session key not found. maybe miss some packet?")
 		}
-		ext = binary.NewTeaCipher(c.highwaySession.SessionKey).Encrypt(ext)
+		ext = binary.NewTeaCipher(c.bigDataSession.SessionKey).Encrypt(ext)
 	}
 	stat, err := os.Stat(path)
 	if err != nil {

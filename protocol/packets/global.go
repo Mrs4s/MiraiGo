@@ -72,12 +72,12 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 	})
 }
 
-func BuildSsoPacket(seq uint16, appID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
+func BuildSsoPacket(seq uint16, appID, subAppID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
 	return binary.NewWriterF(func(p *binary.Writer) {
 		p.WriteIntLvPacket(4, func(writer *binary.Writer) {
 			writer.WriteUInt32(uint32(seq))
 			writer.WriteUInt32(appID)
-			writer.WriteUInt32(appID)
+			writer.WriteUInt32(subAppID)
 			writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
 			if len(extData) == 0 || len(extData) == 4 {
 				writer.WriteUInt32(0x04)

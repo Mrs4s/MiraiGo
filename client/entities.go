@@ -279,7 +279,7 @@ type (
 		Msg  *message.GroupMessage
 	}
 
-	highwaySessionInfo struct {
+	bigDataSessionInfo struct {
 		SigSession []byte
 		SessionKey []byte
 	}
@@ -335,6 +335,7 @@ const (
 	IPad         ClientProtocol = 2
 	AndroidWatch ClientProtocol = 3
 	MacOS        ClientProtocol = 4
+	QiDian       ClientProtocol = 5
 )
 
 func (r *UserJoinGroupRequest) Accept() {

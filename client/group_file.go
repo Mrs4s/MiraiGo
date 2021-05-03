@@ -234,7 +234,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		},
 		Unknown3: proto.Int32(0),
 	})
-	if _, err = fs.client.excitingUploadStream(file, 71, fs.client.highwaySession.SigSession, ext); err != nil {
+	if _, err = fs.client.excitingUploadStream(file, 71, fs.client.bigDataSession.SigSession, ext); err != nil {
 		return errors.Wrap(err, "upload failed")
 	}
 	_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId, rsp.BusId, rand.Int31())

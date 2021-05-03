@@ -1,0 +1,119 @@
+syntax = "proto2";
+option go_package = ".;cmd0x6ff";
+
+message C519CRMMsgHead {
+  optional uint32 crmSubCmd = 1;
+  optional uint32 headLen = 2;
+  optional uint32 verNo = 3;
+  optional uint64 kfUin = 4;
+  optional uint32 seq = 5;
+  optional uint32 packNum = 6;
+  optional uint32 curPack = 7;
+  optional string bufSig = 8;
+  optional uint64 pubQq = 9;
+  optional uint32 clienttype = 10;
+  optional uint64 laborUin = 11;
+  optional string laborName = 12;
+  optional uint64 puin = 13;
+}
+
+message GetNavigationMenuReqBody {
+  optional uint64 puin = 1;
+  optional uint64 uin = 2;
+  optional uint32 verNo = 3;
+}
+
+message GetNavigationMenuRspBody {
+  optional C519RetInfo ret = 1;
+  optional int32 isShow = 2;
+  optional string uctMsg = 3;
+  optional uint32 verNo = 4;
+}
+
+message C519ReqBody {
+  optional uint32 subCmd = 1;
+  optional C519CRMMsgHead crmCommonHead = 2;
+  optional GetAddressDetailListReqBody getAddressDetailListReqBody = 33;
+  optional GetNavigationMenuReqBody getNavigationMenuReq = 35;
+}
+
+message C519RetInfo {
+  optional uint32 retCode = 1;
+  optional string errorMsg = 2;
+}
+
+message C519RspBody {
+  optional uint32 subCmd = 1;
+  optional C519CRMMsgHead crmCommonHead = 2;
+  optional GetAddressDetailListRspBody getAddressDetailListRspBody = 33;
+  optional GetNavigationMenuRspBody getNavigationMenuRsp = 35;
+}
+
+message GetAddressDetailListReqBody {
+  optional fixed32 timestamp = 1;
+  optional fixed64 timestamp2 = 2;
+}
+
+message GetAddressDetailListRspBody {
+  optional C519RetInfo ret = 1;
+  optional fixed32 timestamp = 2;
+  optional bool full = 3;
+  repeated AddressDetail addressDetail = 4;
+  optional fixed64 timestamp2 = 5;
+}
+
+message AddressDetail {
+  optional uint32 aid = 1;
+  optional fixed32 modifyTime = 2;
+  optional fixed32 createTime = 3;
+  optional uint32 status = 4;
+  optional uint32 groupid = 5;
+  optional bytes addGroupName = 6;
+  optional bytes name = 7;
+  optional uint32 gender = 8;
+  optional fixed32 birthday = 9;
+  optional bytes company0 = 10;
+  optional bytes companyPosition0 = 11;
+  optional bytes company1 = 12;
+  optional bytes companyPosition1 = 13;
+  optional bytes fixedPhone0 = 14;
+  optional bytes fixedPhone1 = 15;
+  optional bytes email0 = 16;
+  optional bytes email1 = 17;
+  optional bytes fax0 = 18;
+  optional bytes fax1 = 19;
+  optional bytes comment = 20;
+  optional bytes headUrl = 21;
+  repeated AddressMobileInfo mobilePhone = 22;
+  optional bool mobilePhoneUpdated = 23;
+  repeated AddressQQinfo qq = 24;
+  optional bool qqPhoneUpdated = 25;
+  optional fixed64 modifyTime2 = 26;
+  optional NewBizClientRegion clientRegion = 27;
+  optional NewBizClientRegionCode clientRegionCode = 28;
+}
+
+message AddressMobileInfo {
+  optional uint32 index = 1;
+  optional bytes account = 2;
+  optional bytes formattedAccount = 5;
+}
+
+message AddressQQinfo {
+  optional uint32 index = 1;
+  optional uint64 account = 2;
+}
+
+message NewBizClientRegion {
+  optional string clientNation = 1;
+  optional string clientProvince = 2;
+  optional string clientCity = 3;
+  optional string clientRegion = 4;
+}
+
+message NewBizClientRegionCode {
+  optional uint64 nationid = 1;
+  optional uint64 provinceid = 2;
+  optional uint64 cityid = 3;
+  optional uint64 regionid = 4;
+}

@@ -43,6 +43,7 @@ type QQClient struct {
 	GroupList     []*GroupInfo
 	OnlineClients []*OtherClientInfo
 	Online        bool
+	QiDian        *QiDianAccountInfo
 	// NetLooping    bool
 
 	SequenceId              int32
@@ -75,7 +76,7 @@ type QQClient struct {
 	randSeed         []byte // t403
 	timeDiff         int64
 	sigInfo          *loginSigInfo
-	highwaySession   *highwaySessionInfo
+	bigDataSession   *bigDataSessionInfo
 	srvSsoAddrs      []string
 	otherSrvAddrs    []string
 	fileStorageInfo  *jce.FileStoragePushFSSvcList
@@ -120,6 +121,15 @@ type loginSigInfo struct {
 
 	psKeyMap    map[string][]byte
 	pt4TokenMap map[string][]byte
+}
+
+type QiDianAccountInfo struct {
+	MasterUin  int64
+	ExtName    string
+	CreateTime int64
+
+	bigDataReqAddrs   []string
+	bigDataReqSession *bigDataSessionInfo
 }
 
 type handlerInfo struct {
@@ -410,6 +420,10 @@ func (c *QQClient) init(tokenLogin bool) error {
 		go c.doHeartbeat()
 	}
 	_ = c.RefreshStatus()
+	if c.version.Protocol == QiDian {
+		_, _ = c.sendAndWait(c.buildLoginExtraPacket())     // 小登录
+		_, _ = c.sendAndWait(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
+	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
 	c.stat.once.Do(func() {
@@ -536,8 +550,17 @@ func (c *QQClient) ReloadFriendList() error {
 	return nil
 }
 
-// GetFriendList request friend list
+// GetFriendList
+// 当使用普通QQ时: 请求好友列表
+// 当使用企点QQ时: 请求外部联系人列表
 func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
+	if c.version.Protocol == QiDian {
+		rsp, err := c.getQiDianAddressDetailList()
+		if err != nil {
+			return nil, err
+		}
+		return &FriendListResponse{TotalCount: int32(len(rsp)), List: rsp}, nil
+	}
 	curFriendCount := 0
 	r := &FriendListResponse{}
 	for {
@@ -1110,7 +1133,7 @@ func (c *QQClient) doHeartbeat() {
 	for c.Online {
 		time.Sleep(time.Second * 30)
 		seq := c.nextSeq()
-		sso := packets.BuildSsoPacket(seq, c.version.AppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
+		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
 		if errors.Is(err, utils.ErrConnectionClosed) {

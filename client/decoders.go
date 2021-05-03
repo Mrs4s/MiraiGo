@@ -346,7 +346,7 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 			c.fileStorageInfo = list
 			rsp := cmd0x6ff.C501RspBody{}
 			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {
-				c.highwaySession = &highwaySessionInfo{
+				c.bigDataSession = &bigDataSessionInfo{
 					SigSession: rsp.RspBody.SigSession,
 					SessionKey: rsp.RspBody.SessionKey,
 				}
