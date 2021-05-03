@@ -3,14 +3,12 @@ package binary
 import (
 	"encoding/binary"
 	"math/rand"
-	"reflect"
 	"unsafe"
 )
 
 func xorQ(a, b []byte, c []byte) { // MAGIC
-	*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&c)).Data)) =
-		*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&a)).Data)) ^
-			*(*uint64)(unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(&b)).Data))
+	*(*uint64)(unsafe.Pointer(&c[0])) =
+		*(*uint64)(unsafe.Pointer(&a[0])) ^ *(*uint64)(unsafe.Pointer(&b[0]))
 }
 
 type TEA [4]uint32
