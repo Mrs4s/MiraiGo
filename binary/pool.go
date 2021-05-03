@@ -90,38 +90,3 @@ func releaseZlibWriter(w *zlibWriter) {
 		zlibPool.Put(w)
 	}
 }
-
-const size128k = 128 * 1024
-
-var b128kPool = sync.Pool{
-	New: func() interface{} {
-		return make128kSlicePointer()
-	},
-}
-
-// Get128KBytes 获取一个128k大小 []byte
-func Get128KBytes() *[]byte {
-	buf := b128kPool.Get().(*[]byte)
-	if buf == nil {
-		return make128kSlicePointer()
-	}
-	if cap(*buf) < size128k {
-		return make128kSlicePointer()
-	}
-	*buf = (*buf)[:size128k]
-	return buf
-}
-
-// Put128KBytes 放回一个128k大小 []byte
-func Put128KBytes(b *[]byte) {
-	if cap(*b) < size128k || cap(*b) > 2*size128k { // 太大或太小的 []byte 不要放入
-		return
-	}
-	*b = (*b)[:cap(*b)]
-	b128kPool.Put(b)
-}
-
-func make128kSlicePointer() *[]byte {
-	data := make([]byte, size128k)
-	return &data
-}
