@@ -32,6 +32,8 @@ type (
 		RequesterNick string `json:"requester_nick"`
 		GroupCode     int64  `json:"group_id"`
 		GroupName     string `json:"group_name"`
+		ActionUinNick string `json:"action_uin_nick"`
+		ActionUin     int64  `json:"action_uin"`
 
 		Checked    bool  `json:"checked"`
 		Actor      int64 `json:"actor"`
@@ -249,6 +251,8 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 					Actor:         st.Msg.ActorUin,
 					Suspicious:    len(st.Msg.WarningTips) > 0,
 					client:        c,
+					ActionUin:     st.Msg.ActionUin,
+					ActionUinNick: st.Msg.ActionUinQqNick,
 				})
 			default:
 				c.Error("unknown group message type: %v", st.Msg.GroupMsgType)
