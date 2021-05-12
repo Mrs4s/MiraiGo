@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const faceDownloadUrl = `https://downv6.qq.com/qqface/config/face_config_8.5.0.15.zip?mType=Other` //? 好像是会自动更新的
+const faceDownloadUrl = `https://downv6.qq.com/qqface/config/face_config_8.7.5.5.zip?mType=Other` //? 好像是会自动更新的
 
 type config struct {
 	SystemFace []face `json:"sysface"`

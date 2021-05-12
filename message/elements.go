@@ -9,7 +9,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 )
 
-//todo: github actions
 //go:generate go run generate.go
 
 type TextElement struct {
