@@ -15,7 +15,7 @@ import (
 
 func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *message.PrivateMessage {
 	mr := int32(rand.Uint32())
-	seq := c.nextFriendSeq()
+	var seq int32
 	t := time.Now().Unix()
 	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
 	msgLen := message.EstimateLength(m.Elements, 703)
@@ -26,10 +26,15 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
-			_, pkt := c.buildFriendSendingPacket(target, c.nextFriendSeq(), mr, int32(len(fragmented)), int32(i), div, t, elems)
+			fseq := c.nextFriendSeq()
+			if i == 0 {
+				seq = fseq
+			}
+			_, pkt := c.buildFriendSendingPacket(target, fseq, mr, int32(len(fragmented)), int32(i), div, t, elems)
 			_ = c.send(pkt)
 		}
 	} else {
+		seq = c.nextFriendSeq()
 		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
 		_ = c.send(pkt)
 	}

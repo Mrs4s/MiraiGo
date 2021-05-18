@@ -8,11 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/golang/protobuf/proto"
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
-	jsoniter "github.com/json-iterator/go"
 )
 
 var json = jsoniter.ConfigFastest
@@ -364,16 +365,14 @@ func ToSrcProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 	var res []IMessageElement
 	for _, elem := range elems {
-		if elem.SrcMsg != nil {
-			if len(elem.SrcMsg.OrigSeqs) != 0 {
-				r := &ReplyElement{
-					ReplySeq: elem.SrcMsg.OrigSeqs[0],
-					Time:     elem.SrcMsg.GetTime(),
-					Sender:   elem.SrcMsg.GetSenderUin(),
-					Elements: ParseMessageElems(elem.SrcMsg.Elems),
-				}
-				res = append(res, r)
+		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
+			r := &ReplyElement{
+				ReplySeq: elem.SrcMsg.OrigSeqs[0],
+				Time:     elem.SrcMsg.GetTime(),
+				Sender:   elem.SrcMsg.GetSenderUin(),
+				Elements: ParseMessageElems(elem.SrcMsg.Elems),
 			}
+			res = append(res, r)
 		}
 		if elem.TransElemInfo != nil {
 			if elem.TransElemInfo.GetElemType() == 24 { // QFile
