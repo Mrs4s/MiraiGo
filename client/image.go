@@ -91,7 +91,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
 		}
 	}
-	if _, err = c.highwayUploadFileMultiThreadingByBDH(path, 2, 4, rsp.UploadKey, EmptyBytes, false); err == nil {
+	if _, err = c.highwayUploadFileMultiThreadingByBDH(path, 2, 1, rsp.UploadKey, EmptyBytes, false); err == nil {
 		goto ok
 	}
 	return nil, errors.Wrap(err, "upload failed")
