@@ -92,10 +92,6 @@ func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
 }
 
 func (c *QQClient) SetModelShow(modelName string, modelShow string) error {
-	recover := false
-	if modelShow == "" {
-		recover = true
-	}
 	req := ModelSet{
 		Req: ModelReq{
 			Req: ModelReqData{
@@ -105,7 +101,7 @@ func (c *QQClient) SetModelShow(modelName string, modelShow string) error {
 				IMei:           SystemDeviceInfo.IMEI,
 				ShowInfo:       true,
 				ModelShow:      strings.ReplaceAll(url.QueryEscape(modelShow), "+", "%20"),
-				RecoverDefault: recover,
+				RecoverDefault: modelShow == "",
 			},
 		},
 	}
