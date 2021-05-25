@@ -119,6 +119,11 @@ func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *incomingPacketInfo)
 		return
 	}
 	c.msgSvcCache.Add(strKey, "", time.Hour)
+	if c.lastC2CMsgTime > int64(pMsg.Head.GetMsgTime()) && (c.lastC2CMsgTime-int64(pMsg.Head.GetMsgTime())) > 60*10 {
+		c.Debug("c2c msg filtered by time. lastMsgTime: %v  msgTime: %v", c.lastC2CMsgTime, pMsg.Head.GetMsgTime())
+		return
+	}
+	c.lastC2CMsgTime = int64(pMsg.Head.GetMsgTime())
 	if info.Params.bool("init") {
 		return
 	}

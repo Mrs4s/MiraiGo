@@ -85,6 +85,7 @@ type QQClient struct {
 	lastMessageSeq int32
 	// lastMessageSeqTmp      sync.Map
 	msgSvcCache            *utils.Cache
+	lastC2CMsgTime         int64
 	transCache             *utils.Cache
 	lastLostMsg            string
 	groupSysMsgCache       *GroupSystemMessages
