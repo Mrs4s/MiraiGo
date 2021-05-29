@@ -71,3 +71,12 @@ qq-android协议的golang实现 移植于mirai
 - [x] T出群成员
 - [x] 戳一戳群友
 - [x] 获取陌生人信息
+
+#### 敏感操作
+> 由于[QQ钱包支付用户服务协议](https://www.tenpay.com/v2/html5/basic/public/agreement/protocol_mqq_pay.shtml), 将不支持一切有关QQ钱包的协议
+
+>4.13 您不得利用本服务实施下列任一的行为：
+>\
+>     （9） **侵害QQ钱包支付服务系統；**
+
+- [ ] ~~QQ钱包协议(收款/付款等)~~
