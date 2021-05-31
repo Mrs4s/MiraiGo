@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
@@ -20,8 +23,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 type (
@@ -506,12 +507,12 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		sender = &message.Sender{
 			Uin:      msg.Head.GetFromUin(),
 			Nickname: msg.Head.GetFromNick(),
-			IsFriend: false,
 		}
 	} else {
 		sender = &message.Sender{
 			Uin:      friend.Uin,
 			Nickname: friend.Nickname,
+			IsFriend: true,
 		}
 	}
 	ret := &message.PrivateMessage{
