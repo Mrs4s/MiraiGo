@@ -596,7 +596,7 @@ func (forMsg *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode 
 				FromUin: &node.SenderId,
 				MsgSeq:  &seq,
 				MsgTime: &node.Time,
-				MsgUid:  proto.Int64(0x01000000000000000 | (int64(random) & 0xFFFFFFFF)),
+				MsgUid:  proto.Int64(0x0100_0000_0000_0000 | (int64(random) & 0xFFFFFFFF)),
 				MutiltransHead: &msg.MutilTransHead{
 					MsgId: proto.Int32(1),
 				},
