@@ -37,52 +37,71 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	h := md5.New()
 	length, _ := io.Copy(h, stream)
 	fh := h.Sum(nil)
+	const chunkSize = 8192 * 8
 	_, _ = stream.Seek(0, io.SeekStart)
 	conn, err := net.DialTCP("tcp", nil, &addr)
 	if err != nil {
 		return errors.Wrap(err, "connect error")
 	}
 	defer conn.Close()
+	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-		MsgBasehead: &pb.DataHighwayHead{
-			Version:   1,
-			Uin:       strconv.FormatInt(c.Uin, 10),
-			Command:   "PicUp.DataUp",
-			Seq:       c.nextGroupDataTransSeq(),
-			Appid:     int32(c.version.AppId),
-			Dataflag:  4096,
-			CommandId: cmdId,
-			LocaleId:  2052,
-		},
-		MsgSeghead: &pb.SegHead{
-			Filesize:      length,
-			Dataoffset:    int64(0),
-			Datalength:    int32(length),
-			Serviceticket: updKey,
-			Md5:           fh,
-			FileMd5:       fh,
-		},
-		ReqExtendinfo: EmptyBytes,
-	})
+	chunk := *binary.Get128KBytes()
+	defer func() { // 延迟捕获 chunk
+		binary.Put128KBytes(&chunk)
+	}()
 	w := binary.NewWriter()
 	defer binary.PutBuffer(w)
-	w.WriteByte(40)
-	w.WriteUInt32(uint32(len(head)))
-	w.WriteUInt32(uint32(length))
-	w.Write(head)
-	_, _ = conn.Write(w.Bytes())
-	_, _ = conn.ReadFrom(stream)
-	_, err = conn.Write([]byte{41})
-	if err != nil {
-		return errors.Wrap(err, "write conn error")
-	}
-	rspHead, _, err := highwayReadResponse(reader)
-	if err != nil {
-		return errors.Wrap(err, "highway upload error")
-	}
-	if rspHead.ErrorCode != 0 {
-		return errors.New("upload failed")
+	for {
+		chunk = chunk[:chunkSize]
+		rl, err := io.ReadFull(stream, chunk)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if errors.Is(err, io.ErrUnexpectedEOF) {
+			chunk = chunk[:rl]
+		}
+		ch := md5.Sum(chunk)
+		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
+			MsgBasehead: &pb.DataHighwayHead{
+				Version:   1,
+				Uin:       strconv.FormatInt(c.Uin, 10),
+				Command:   "PicUp.DataUp",
+				Seq:       c.nextGroupDataTransSeq(),
+				Appid:     int32(c.version.AppId),
+				Dataflag:  4096,
+				CommandId: cmdId,
+				LocaleId:  2052,
+			},
+			MsgSeghead: &pb.SegHead{
+				Filesize:      length,
+				Dataoffset:    int64(offset),
+				Datalength:    int32(rl),
+				Serviceticket: updKey,
+				Md5:           ch[:],
+				FileMd5:       fh,
+			},
+			ReqExtendinfo: EmptyBytes,
+		})
+		offset += rl
+		w.Reset()
+		w.WriteByte(40)
+		w.WriteUInt32(uint32(len(head)))
+		w.WriteUInt32(uint32(len(chunk)))
+		w.Write(head)
+		w.Write(chunk)
+		w.WriteByte(41)
+		_, err = conn.Write(w.Bytes())
+		if err != nil {
+			return errors.Wrap(err, "write conn error")
+		}
+		rspHead, _, err := highwayReadResponse(reader)
+		if err != nil {
+			return errors.Wrap(err, "highway upload error")
+		}
+		if rspHead.ErrorCode != 0 {
+			return errors.New("upload failed")
+		}
 	}
 	return nil
 }
@@ -97,11 +116,13 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		}
 		ext = binary.NewTeaCipher(c.bigDataSession.SessionKey).Encrypt(ext)
 	}
+	const chunkSize = 8192 * 16
 	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 	if err != nil {
 		return nil, errors.Wrap(err, "connect error")
 	}
 	defer conn.Close()
+	offset := 0
 	reader := binary.NewNetworkReader(conn)
 	if err = c.highwaySendHeartbreak(conn); err != nil {
 		return nil, errors.Wrap(err, "echo error")
@@ -110,52 +131,68 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		return nil, errors.Wrap(err, "echo error")
 	}
 	var rspExt []byte
-	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-		MsgBasehead: &pb.DataHighwayHead{
-			Version:   1,
-			Uin:       strconv.FormatInt(c.Uin, 10),
-			Command:   "PicUp.DataUp",
-			Seq:       c.nextGroupDataTransSeq(),
-			Appid:     int32(c.version.AppId),
-			Dataflag:  4096,
-			CommandId: cmdId,
-			LocaleId:  2052,
-		},
-		MsgSeghead: &pb.SegHead{
-			Filesize:      length,
-			Dataoffset:    int64(0),
-			Datalength:    int32(length),
-			Serviceticket: ticket,
-			Md5:           sum,
-			FileMd5:       sum,
-		},
-		ReqExtendinfo: ext,
-	})
+	chunk := *binary.Get128KBytes()
+	defer func() { // 延迟捕获 chunk
+		binary.Put128KBytes(&chunk)
+	}()
 	w := binary.NewWriter()
 	defer binary.PutBuffer(w)
-	w.Reset()
-	w.WriteByte(40)
-	w.WriteUInt32(uint32(len(head)))
-	w.WriteUInt32(uint32(length))
-	w.Write(head)
-	_, _ = conn.Write(w.Bytes())
-	_, _ = io.Copy(conn, stream)
-	_, err = conn.Write([]byte{41})
-	if err != nil {
-		return nil, errors.Wrap(err, "write conn error")
-	}
-	rspHead, _, err := highwayReadResponse(reader)
-	if err != nil {
-		return nil, errors.Wrap(err, "highway upload error")
-	}
-	if rspHead.ErrorCode != 0 {
-		return nil, errors.Errorf("upload failed: %d", rspHead.ErrorCode)
-	}
-	if rspHead.RspExtendinfo != nil {
-		rspExt = rspHead.RspExtendinfo
-	}
-	if rspHead.MsgSeghead != nil && rspHead.MsgSeghead.Serviceticket != nil {
-		ticket = rspHead.MsgSeghead.Serviceticket
+	for {
+		chunk = chunk[:chunkSize]
+		rl, err := io.ReadFull(stream, chunk)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		if errors.Is(err, io.ErrUnexpectedEOF) {
+			chunk = chunk[:rl]
+		}
+		ch := md5.Sum(chunk)
+		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
+			MsgBasehead: &pb.DataHighwayHead{
+				Version:   1,
+				Uin:       strconv.FormatInt(c.Uin, 10),
+				Command:   "PicUp.DataUp",
+				Seq:       c.nextGroupDataTransSeq(),
+				Appid:     int32(c.version.AppId),
+				Dataflag:  4096,
+				CommandId: cmdId,
+				LocaleId:  2052,
+			},
+			MsgSeghead: &pb.SegHead{
+				Filesize:      length,
+				Dataoffset:    int64(offset),
+				Datalength:    int32(rl),
+				Serviceticket: ticket,
+				Md5:           ch[:],
+				FileMd5:       sum,
+			},
+			ReqExtendinfo: ext,
+		})
+		offset += rl
+		w.Reset()
+		w.WriteByte(40)
+		w.WriteUInt32(uint32(len(head)))
+		w.WriteUInt32(uint32(len(chunk)))
+		w.Write(head)
+		w.Write(chunk)
+		w.WriteByte(41)
+		_, err = conn.Write(w.Bytes())
+		if err != nil {
+			return nil, errors.Wrap(err, "write conn error")
+		}
+		rspHead, _, err := highwayReadResponse(reader)
+		if err != nil {
+			return nil, errors.Wrap(err, "highway upload error")
+		}
+		if rspHead.ErrorCode != 0 {
+			return nil, errors.Errorf("upload failed: %d", rspHead.ErrorCode)
+		}
+		if rspHead.RspExtendinfo != nil {
+			rspExt = rspHead.RspExtendinfo
+		}
+		if rspHead.MsgSeghead != nil && rspHead.MsgSeghead.Serviceticket != nil {
+			ticket = rspHead.MsgSeghead.Serviceticket
+		}
 	}
 	return rspExt, nil
 }
