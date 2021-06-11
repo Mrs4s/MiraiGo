@@ -25,7 +25,7 @@ func HttpGetBytes(url, cookie string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return io.ReadAll(body)
+	return ioutil.ReadAll(body)
 }
 
 func HttpPostBytes(url string, data []byte) ([]byte, error) {
