@@ -1,9 +1,10 @@
 package client
 
 import (
+	"github.com/pkg/errors"
+
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -248,8 +249,8 @@ type (
 
 	imageUploadResponse struct {
 		UploadKey  []byte
-		UploadIp   []int32
-		UploadPort []int32
+		UploadIp   []uint32
+		UploadPort []uint32
 		ResourceId string
 		Message    string
 		FileId     int64

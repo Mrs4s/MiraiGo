@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/golang/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -20,7 +22,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/protocol/tlv"
-	"github.com/golang/protobuf/proto"
 )
 
 var (
@@ -821,22 +822,22 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, svrip int32, pushToken
 func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &cmd0x352.ReqBody{
-		Subcmd: 1,
-		MsgTryupImgReq: []*cmd0x352.D352TryUpImgReq{
+		Subcmd: proto.Uint32(1),
+		TryupImgReq: []*cmd0x352.D352TryUpImgReq{
 			{
-				SrcUin:       int32(c.Uin),
-				DstUin:       int32(target),
+				SrcUin:       proto.Uint64(uint64(c.Uin)),
+				DstUin:       proto.Uint64(uint64(target)),
 				FileMd5:      md5,
-				FileSize:     size,
-				Filename:     hex.EncodeToString(md5) + ".jpg",
-				SrcTerm:      5,
-				PlatformType: 9,
-				BuType:       1,
-				ImgOriginal:  1,
-				ImgType:      1000,
-				BuildVer:     "8.2.7.4410",
+				FileSize:     proto.Uint64(uint64(size)),
+				FileName:     []byte(hex.EncodeToString(md5) + ".jpg"),
+				SrcTerm:      proto.Uint32(5),
+				PlatformType: proto.Uint32(9),
+				BuType:       proto.Uint32(1),
+				PicOriginal:  proto.Bool(true),
+				PicType:      proto.Uint32(1000),
+				BuildVer:     []byte("8.2.7.4410"),
 				FileIndex:    EmptyBytes,
-				SrvUpload:    1,
+				SrvUpload:    proto.Uint32(1),
 				TransferUrl:  EmptyBytes,
 			},
 		},

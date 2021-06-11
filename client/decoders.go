@@ -10,6 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -21,8 +24,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -603,35 +604,35 @@ func decodeOffPicUpResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.FailMsg != "" {
+	if rsp.GetFailMsg() != nil {
 		return imageUploadResponse{
 			ResultCode: -1,
-			Message:    rsp.FailMsg,
+			Message:    string(rsp.FailMsg),
 		}, nil
 	}
-	if rsp.Subcmd != 1 || len(rsp.MsgTryupImgRsp) == 0 {
+	if rsp.GetSubcmd() != 1 || len(rsp.GetTryupImgRsp()) == 0 {
 		return imageUploadResponse{
 			ResultCode: -2,
 		}, nil
 	}
-	imgRsp := rsp.MsgTryupImgRsp[0]
-	if imgRsp.Result != 0 {
+	imgRsp := rsp.GetTryupImgRsp()[0]
+	if imgRsp.GetResult() != 0 {
 		return imageUploadResponse{
-			ResultCode: imgRsp.Result,
-			Message:    imgRsp.FailMsg,
+			ResultCode: int32(*imgRsp.Result),
+			Message:    string(imgRsp.GetFailMsg()),
 		}, nil
 	}
-	if imgRsp.BoolFileExit {
+	if imgRsp.GetFileExit() {
 		return imageUploadResponse{
 			IsExists:   true,
-			ResourceId: imgRsp.UpResid,
+			ResourceId: string(imgRsp.GetUpResid()),
 		}, nil
 	}
 	return imageUploadResponse{
-		ResourceId: imgRsp.UpResid,
-		UploadKey:  imgRsp.UpUkey,
-		UploadIp:   imgRsp.Uint32UpIp,
-		UploadPort: imgRsp.Uint32UpPort,
+		ResourceId: string(imgRsp.GetUpResid()),
+		UploadKey:  imgRsp.GetUpUkey(),
+		UploadIp:   imgRsp.GetUpIp(),
+		UploadPort: imgRsp.GetUpPort(),
 	}, nil
 }
 

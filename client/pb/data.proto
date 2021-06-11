@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;pb";
+option go_package = "./;pb";
 
 
 message DeviceInfo {
@@ -170,8 +170,8 @@ message TryUpImgResp {
   string failMsg = 3;
   bool boolFileExit = 4;
   ImgInfo msgImgInfo = 5;
-  repeated int32 uint32UpIp = 6;
-  repeated int32 uint32UpPort = 7;
+  repeated uint32 uint32UpIp = 6;
+  repeated uint32 uint32UpPort = 7;
   bytes upUkey = 8;
   int64 fid = 9;
 }
