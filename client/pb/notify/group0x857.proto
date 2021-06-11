@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;notify";
+option go_package = "./;notify";
 
 message NotifyMsgBody {
   AIOGrayTipsInfo optMsgGrayTips = 5;

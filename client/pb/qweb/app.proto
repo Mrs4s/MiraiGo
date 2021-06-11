@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;qweb";
+option go_package = "./;qweb";
 
 message GetAppInfoByIdReq {
   //CommonExt ExtInfo = 1;

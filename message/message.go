@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
 	jsoniter "github.com/json-iterator/go"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"

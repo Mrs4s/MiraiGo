@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;cmd0x346";
+option go_package = "./;cmd0x346";
 
 message ApplyCleanTrafficRsp {
   int32 retCode = 10;

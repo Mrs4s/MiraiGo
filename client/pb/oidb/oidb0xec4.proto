@@ -1,5 +1,5 @@
 syntax = "proto2";
-option go_package = ".;oidb";
+option go_package = "./;oidb";
 
 message Comment {
   optional string id = 1;

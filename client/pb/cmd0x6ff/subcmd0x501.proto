@@ -1,5 +1,5 @@
 syntax = "proto2";
-option go_package = ".;cmd0x6ff";
+option go_package = "./;cmd0x6ff";
 
 message C501ReqBody {
   optional SubCmd0x501ReqBody ReqBody = 1281;

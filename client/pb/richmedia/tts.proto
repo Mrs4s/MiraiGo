@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;richmedia";
+option go_package = "./;richmedia";
 
 message TtsRspBody {
   uint32 ret_code = 1;

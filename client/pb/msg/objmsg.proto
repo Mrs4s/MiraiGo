@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;msg";
+option go_package = "./;msg";
 
 message MsgPic {
   bytes smallPicUrl = 1;

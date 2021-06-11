@@ -1,9 +1,10 @@
 package client
 
 import (
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
-	"google.golang.org/protobuf/proto"
 )
 
 type (

@@ -1,5 +1,5 @@
 syntax = "proto2";
-option go_package = ".;cmd0x3f6";
+option go_package = "./;cmd0x3f6";
 
 message C3F6ReqBody {
   optional uint32 subCmd = 1;

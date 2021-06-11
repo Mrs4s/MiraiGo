@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;structmsg";
+option go_package = "./;structmsg";
 
 message AddFrdSNInfo {
   int32 notSeeDynamic = 1;

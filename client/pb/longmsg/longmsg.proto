@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;longmsg";
+option go_package = "./;longmsg";
 
 message LongMsgDeleteReq {
   bytes msgResid = 1;

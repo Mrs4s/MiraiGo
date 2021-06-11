@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;multimsg";
+option go_package = "./;multimsg";
 
 message ExternMsg {
   int32 channelType = 1;

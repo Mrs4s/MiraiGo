@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-option go_package = ".;msg";
+option go_package = "./;msg";
 
 message GetMessageRequest {
   optional SyncFlag syncFlag = 1;

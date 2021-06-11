@@ -46,9 +46,9 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	defer conn.Close()
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	chunk := *binary.Get128KBytes()
+	chunk := *binary.Get256KBytes()
 	defer func() { // 延迟捕获 chunk
-		binary.Put128KBytes(&chunk)
+		binary.Put256KBytes(&chunk)
 	}()
 	w := binary.NewWriter()
 	defer binary.PutBuffer(w)
@@ -116,7 +116,7 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		}
 		ext = binary.NewTeaCipher(c.bigDataSession.SessionKey).Encrypt(ext)
 	}
-	const chunkSize = 8192 * 16
+	const chunkSize = 256 * 1024
 	conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 	if err != nil {
 		return nil, errors.Wrap(err, "connect error")
@@ -131,9 +131,9 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		return nil, errors.Wrap(err, "echo error")
 	}
 	var rspExt []byte
-	chunk := *binary.Get128KBytes()
+	chunk := *binary.Get256KBytes()
 	defer func() { // 延迟捕获 chunk
-		binary.Put128KBytes(&chunk)
+		binary.Put256KBytes(&chunk)
 	}()
 	w := binary.NewWriter()
 	defer binary.PutBuffer(w)

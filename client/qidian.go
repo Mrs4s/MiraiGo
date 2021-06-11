@@ -7,14 +7,15 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x3f6"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/golang/protobuf/proto"
-	"github.com/pkg/errors"
 )
 
 func init() {

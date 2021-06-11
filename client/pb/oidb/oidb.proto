@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;oidb";
+option go_package = "./;oidb";
 
 message OIDBSSOPkg {
   int32 command = 1;

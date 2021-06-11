@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-option go_package = ".;faceroam";
+option go_package = "./;faceroam";
 
 message PlatInfo {
   optional int64 implat = 1;

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = ".;oidb";
+option go_package = "./;oidb";
 
 message DE07ReqBody {
   int32 version = 1;
