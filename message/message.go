@@ -100,19 +100,20 @@ const (
 	KuwoMusic         // 酷我音乐
 )
 
+//go:generate stringer -type ElementType -linecomment
 const (
-	Text ElementType = iota
-	Image
-	Face
-	At
-	Reply
-	Service
-	Forward
-	File
-	Voice
-	Video
-	LightApp
-	RedBag
+	Text     ElementType = iota // 文本
+	Image                       // 图片
+	Face                        // 表情
+	At                          // 艾特
+	Reply                       // 回复
+	Service                     // 服务
+	Forward                     // 转发
+	File                        // 文件
+	Voice                       // 语音
+	Video                       // 视频
+	LightApp                    // 轻应用
+	RedBag                      // 红包
 
 	HoldingYourHand GroupGift = 280
 	CuteCat         GroupGift = 281
