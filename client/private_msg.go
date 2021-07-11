@@ -2,6 +2,7 @@ package client
 
 import (
 	"math/rand"
+	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -37,7 +38,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
 		_ = c.send(pkt)
 	}
-	c.stat.MessageSent++
+	atomic.AddUint64(&c.stat.MessageSent, 1)
 	ret := &message.PrivateMessage{
 		Id:         seq,
 		InternalId: mr,
@@ -76,7 +77,7 @@ func (c *QQClient) SendGroupTempMessage(groupCode, target int64, m *message.Send
 	t := time.Now().Unix()
 	_, pkt := c.buildGroupTempSendingPacket(group.Uin, target, seq, mr, t, m)
 	_ = c.send(pkt)
-	c.stat.MessageSent++
+	atomic.AddUint64(&c.stat.MessageSent, 1)
 	return &message.TempMessage{
 		Id:        seq,
 		GroupCode: group.Code,
@@ -97,7 +98,7 @@ func (c *QQClient) sendWPATempMessage(target int64, sig []byte, m *message.Sendi
 	t := time.Now().Unix()
 	_, pkt := c.buildWPATempSendingPacket(target, sig, seq, mr, t, m)
 	_ = c.send(pkt)
-	c.stat.MessageSent++
+	atomic.AddUint64(&c.stat.MessageSent, 1)
 	return &message.TempMessage{
 		Id:   seq,
 		Self: c.Uin,

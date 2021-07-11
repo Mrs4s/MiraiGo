@@ -98,7 +98,7 @@ type QQClient struct {
 	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
-	stat                   *Statistics
+	stat                   Statistics
 
 	groupListLock sync.Mutex
 }
@@ -201,7 +201,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		onlinePushCache:         utils.NewCache(time.Second * 15),
 		version:                 genVersionInfo(SystemDeviceInfo.Protocol),
 		servers:                 []*net.TCPAddr{},
-		stat:                    &Statistics{},
 	}
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
@@ -429,19 +428,19 @@ func (c *QQClient) init(tokenLogin bool) error {
 	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
 	c.stat.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
-			c.stat.MessageReceived++
-			c.stat.LastMessageTime = time.Now().Unix()
+			atomic.AddUint64(&c.stat.MessageReceived, 1)
+			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
 		})
 		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
-			c.stat.MessageReceived++
-			c.stat.LastMessageTime = time.Now().Unix()
+			atomic.AddUint64(&c.stat.MessageReceived, 1)
+			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
 		})
 		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
-			c.stat.MessageReceived++
-			c.stat.LastMessageTime = time.Now().Unix()
+			atomic.AddUint64(&c.stat.MessageReceived, 1)
+			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
 		})
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
-			c.stat.MessageSent++
+			atomic.AddUint64(&c.stat.MessageSent, 1)
 		})
 	})
 	return nil
@@ -917,9 +916,9 @@ func (c *QQClient) nextHighwayApplySeq() int32 {
 func (c *QQClient) send(pkt []byte) error {
 	err := c.TCP.Write(pkt)
 	if err != nil {
-		c.stat.PacketLost++
+		atomic.AddUint64(&c.stat.PacketLost, 1)
 	} else {
-		c.stat.PacketSent++
+		atomic.AddUint64(&c.stat.PacketSent, 1)
 	}
 	return errors.Wrap(err, "Packet failed to send")
 }
@@ -1023,13 +1022,13 @@ func (c *QQClient) Disconnect() {
 
 func (c *QQClient) plannedDisconnect(_ *utils.TCPListener) {
 	c.Debug("planned disconnect.")
-	c.stat.DisconnectTimes++
+	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
 	c.Online = false
 }
 
 func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
 	c.Error("unexpected disconnect: %v", e)
-	c.stat.DisconnectTimes++
+	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
 	c.Online = false
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
@@ -1079,7 +1078,7 @@ func (c *QQClient) netLoop() {
 		}
 		errCount = 0
 		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
-		c.stat.PacketReceived++
+		atomic.AddUint64(&c.stat.PacketReceived, 1)
 		go func() {
 			defer func() {
 				if pan := recover(); pan != nil {

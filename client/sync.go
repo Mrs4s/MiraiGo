@@ -3,6 +3,7 @@ package client
 import (
 	"math/rand"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -150,10 +151,11 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		C2CMsg: &jce.SvcReqGetMsgV2{
 			Uin: c.Uin,
 			DateTime: func() int32 {
-				if c.stat.LastMessageTime == 0 {
+				t := atomic.LoadInt64(&c.stat.LastMessageTime)
+				if t == 0 {
 					return 1
 				}
-				return int32(c.stat.LastMessageTime)
+				return int32(t)
 			}(),
 			RecivePic:        1,
 			Ability:          15,
@@ -218,10 +220,11 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		C2CMsg: &jce.SvcReqGetMsgV2{
 			Uin: c.Uin,
 			DateTime: func() int32 {
-				if c.stat.LastMessageTime == 0 {
+				t := atomic.LoadInt64(&c.stat.LastMessageTime)
+				if t == 0 {
 					return 1
 				}
-				return int32(c.stat.LastMessageTime)
+				return int32(t)
 			}(),
 			RecivePic:        1,
 			Ability:          15,
