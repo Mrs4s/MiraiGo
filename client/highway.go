@@ -51,7 +51,7 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 		binary.Put256KBytes(&chunk)
 	}()
 	w := binary.NewWriter()
-	defer binary.PutBuffer(w)
+	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(stream, chunk)
@@ -136,7 +136,7 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		binary.Put256KBytes(&chunk)
 	}()
 	w := binary.NewWriter()
-	defer binary.PutBuffer(w)
+	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(stream, chunk)
@@ -384,7 +384,7 @@ func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {
 	w.Write(head)
 	w.WriteByte(41)
 	_, err := conn.Write(w.Bytes())
-	binary.PutBuffer(w)
+	binary.PutWriter(w)
 	return err
 }
 

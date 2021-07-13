@@ -39,11 +39,11 @@ func BuildUniPacket(uin int64, seq uint16, commandName string, encryptType byte,
 			w3 := binary.NewWriter()
 			w3.WriteUniPacket(commandName, sessionID, extraData, body)
 			w2.EncryptAndWrite(key, w3.Bytes())
-			binary.PutBuffer(w3)
+			binary.PutWriter(w3)
 		}
 		data := w2.Bytes()
 		w.WriteUInt32(uint32(len(data) + 4))
 		w.Write(data)
-		binary.PutBuffer(w2)
+		binary.PutWriter(w2)
 	})
 }
