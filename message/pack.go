@@ -145,23 +145,6 @@ func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	return
 }
 
-func (e *ForwardElement) Pack() (r []*msg.Elem) {
-	r = []*msg.Elem{}
-	r = append(r, &msg.Elem{
-		RichMsg: &msg.RichMsg{
-			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			ServiceId: proto.Int32(35),
-			MsgResId:  []byte{},
-		},
-	})
-	r = append(r, &msg.Elem{
-		Text: &msg.Text{
-			Str: proto.String("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。"),
-		},
-	})
-	return
-}
-
 func (e *LightAppElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
 	r = append(r, &msg.Elem{

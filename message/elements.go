@@ -105,13 +105,6 @@ type ServiceElement struct {
 	SubType string
 }
 
-type ForwardElement struct {
-	FileName string
-	Content  string
-	ResId    string
-	Items    []*msg.PbMultiMsgItem
-}
-
 type LightAppElement struct {
 	Content string
 }
@@ -332,10 +325,6 @@ func (e *ServiceElement) Type() ElementType {
 
 func (e *ReplyElement) Type() ElementType {
 	return Reply
-}
-
-func (e *ForwardElement) Type() ElementType {
-	return Forward
 }
 
 func (e *GroupFileElement) Type() ElementType {
