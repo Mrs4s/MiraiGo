@@ -17,12 +17,21 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	mr := int32(rand.Uint32())
 	var seq int32
 	t := time.Now().Unix()
-	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
+	imgCount := 0
+	frag := true
+	for _, e := range m.Elements {
+		switch e.Type() {
+		case message.Image:
+			imgCount++
+		case message.Reply:
+			frag = false
+		}
+	}
 	msgLen := message.EstimateLength(m.Elements)
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if msgLen > 300 || imgCount > 2 {
+	if frag && (msgLen > 300 || imgCount > 2) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {

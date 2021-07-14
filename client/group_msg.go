@@ -106,8 +106,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	})
 	defer c.onGroupMessageReceipt(eid)
 	imgCount := 0
-	frag := false
-L:
+	frag := true
 	for _, e := range m.Elements {
 		switch e.Type() {
 		case message.Image:
@@ -116,11 +115,10 @@ L:
 			forward = true
 			fallthrough
 		case message.Reply, message.Voice, message.Service:
-			frag = true
-			break L
+			frag = false
 		}
 	}
-	if !forward && !frag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
+	if !forward && frag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
