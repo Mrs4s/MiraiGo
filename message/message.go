@@ -1,7 +1,6 @@
 package message
 
 import (
-	"math"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -237,24 +236,20 @@ func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
 	return fragmented
 }
 
-func EstimateLength(elems []IMessageElement, limit int) int {
+func EstimateLength(elems []IMessageElement) int {
 	sum := 0
 	for _, elem := range elems {
-		if sum > limit {
-			break
-		}
-		left := int(math.Max(float64(limit-sum), 0))
 		switch e := elem.(type) {
 		case *TextElement:
-			sum += utils.ChineseLength(e.Content, left)
+			sum += len(e.Content)
 		case *AtElement:
-			sum += utils.ChineseLength(e.Display, left)
+			sum += len(e.Display)
 		case *ReplyElement:
-			sum += 444 + EstimateLength(e.Elements, left)
+			sum += 444 + EstimateLength(e.Elements)
 		case *ImageElement, *GroupImageElement, *FriendImageElement:
 			sum += 100
 		default:
-			sum += utils.ChineseLength(ToReadableString([]IMessageElement{elem}), left)
+			sum += len(ToReadableString([]IMessageElement{elem}))
 		}
 	}
 	return sum

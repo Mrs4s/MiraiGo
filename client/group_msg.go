@@ -36,17 +36,20 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 	if len(f) > 0 {
 		useFram = f[0]
 	}
-	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
-	if useFram {
-		if m.Any(func(e message.IMessageElement) bool { return e.Type() == message.Reply }) {
+	imgCount := 0
+	for _, e := range m.Elements {
+		switch e.Type() {
+		case message.Image:
+			imgCount++
+		case message.Reply:
 			useFram = false
 		}
 	}
-	msgLen := message.EstimateLength(m.Elements, 5000)
+	msgLen := message.EstimateLength(m.Elements)
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if (msgLen > 100 || imgCount > 2) && !useFram {
+	if !useFram && (msgLen > 100 || imgCount > 2) {
 		ret := c.sendGroupMessage(groupCode, false,
 			&message.SendingMessage{Elements: []message.IMessageElement{
 				c.uploadGroupLongMessage(groupCode,
@@ -61,14 +64,8 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				),
 			}},
 		)
-		return &message.GroupMessage{
-			Id:         ret.Id,
-			InternalId: ret.InternalId,
-			GroupCode:  ret.GroupCode,
-			Sender:     ret.Sender,
-			Time:       ret.Time,
-			Elements:   m.Elements,
-		}
+		ret.Elements = m.Elements
+		return ret
 	}
 	return c.sendGroupMessage(groupCode, false, m)
 }
@@ -101,25 +98,29 @@ func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
 func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
-	ch := make(chan int32)
+	ch := make(chan int32, 1)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
-		if e.Rand == mr && !utils.IsChanClosed(ch) {
+		if e.Rand == mr {
 			ch <- e.Seq
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
-	msgLen := message.EstimateLength(m.Elements, 703)
-	if (msgLen > 100 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
-		_, ok := e.(*message.GroupVoiceElement)
-		_, ok2 := e.(*message.ServiceElement)
-		_, ok3 := e.(*message.ReplyElement)
-		if _, ok4 := e.(*message.ForwardElement); ok4 {
+	imgCount := 0
+	frag := false
+L:
+	for _, e := range m.Elements {
+		switch e.Type() {
+		case message.Image:
+			imgCount++
+		case message.Forward:
 			forward = true
-			return true
+			fallthrough
+		case message.Reply, message.Voice, message.Service:
+			frag = true
+			break L
 		}
-		return ok || ok2 || ok3
-	}) {
+	}
+	if !forward && !frag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
