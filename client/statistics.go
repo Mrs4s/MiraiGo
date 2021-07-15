@@ -20,6 +20,7 @@ type Statistics struct {
 func (s *Statistics) MarshalJSON() ([]byte, error) {
 	var w bytes.Buffer
 	w.Grow(256)
+	w.WriteString(`{"packet_received":`)
 	w.WriteString(strconv.FormatUint(atomic.LoadUint64(&s.PacketReceived), 10))
 	w.WriteString(`,"packet_sent":`)
 	w.WriteString(strconv.FormatUint(atomic.LoadUint64(&s.PacketSent), 10))
