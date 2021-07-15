@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"strconv"
-	"sync"
 	"sync/atomic"
 )
 
@@ -13,11 +12,9 @@ type Statistics struct {
 	PacketLost      uint64
 	MessageReceived uint64
 	MessageSent     uint64
+	LastMessageTime int64
 	DisconnectTimes uint32
 	LostTimes       uint32
-	LastMessageTime int64
-
-	once sync.Once
 }
 
 func (s *Statistics) MarshalJSON() ([]byte, error) {

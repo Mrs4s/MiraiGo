@@ -34,6 +34,10 @@ var json = jsoniter.ConfigFastest
 type QQClient struct {
 	Uin         int64
 	PasswordMd5 [16]byte
+
+	stat Statistics
+	once sync.Once
+
 	AllowSlider bool
 
 	Nickname      string
@@ -98,7 +102,6 @@ type QQClient struct {
 	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
-	stat                   Statistics
 
 	groupListLock sync.Mutex
 }
@@ -426,7 +429,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
-	c.stat.once.Do(func() {
+	c.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
 			atomic.AddUint64(&c.stat.MessageReceived, 1)
 			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
