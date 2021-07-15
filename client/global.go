@@ -395,8 +395,10 @@ func (info *DeviceInfo) GenNewGuid() {
 func (info *DeviceInfo) GenNewTgtgtKey() {
 	r := make([]byte, 16)
 	rand.Read(r)
-	t := md5.Sum(append(r, info.Guid...))
-	info.TgtgtKey = t[:]
+	h := md5.New()
+	h.Write(r)
+	h.Write(info.Guid)
+	info.TgtgtKey = h.Sum(nil)
 }
 
 func (info *DeviceInfo) GenDeviceInfoData() []byte {

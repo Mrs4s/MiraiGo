@@ -31,7 +31,7 @@ func ComputeMd5AndLength(r io.Reader) ([]byte, int64) {
 	h := md5.New()
 	length, _ := io.Copy(h, r)
 	fh := h.Sum(nil)
-	return fh[:], length
+	return fh, length
 }
 
 func (r *multiReadSeeker) Read(p []byte) (int, error) {

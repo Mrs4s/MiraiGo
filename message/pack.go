@@ -230,7 +230,6 @@ func (e *GroupShowPicElement) Pack() (r []*msg.Elem) {
 			Size:      &e.Size,
 			Md5:       e.Md5,
 			Flag:      []byte{0x11, 0x00, 0x00, 0x00},
-			// OldData:  imgOld,
 			PbReserve: reserve,
 		},
 	})

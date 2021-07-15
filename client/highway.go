@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"crypto/md5"
 	binary2 "encoding/binary"
-	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -46,10 +44,10 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	defer conn.Close()
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	chunk := *binary.Get256KBytes()
-	defer func() { // 延迟捕获 chunk
-		binary.Put256KBytes(&chunk)
-	}()
+	buf := binary.Get256KBytes()
+	chunk := *buf
+	defer binary.Put256KBytes(buf)
+
 	w := binary.NewWriter()
 	defer binary.PutWriter(w)
 	for {
@@ -131,10 +129,10 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 		return nil, errors.Wrap(err, "echo error")
 	}
 	var rspExt []byte
-	chunk := *binary.Get256KBytes()
-	defer func() { // 延迟捕获 chunk
-		binary.Put256KBytes(&chunk)
-	}()
+	buf := binary.Get256KBytes()
+	chunk := *buf
+	defer binary.Put256KBytes(buf)
+
 	w := binary.NewWriter()
 	defer binary.PutWriter(w)
 	for {
@@ -466,7 +464,8 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 		if err != nil {
 			return nil, errors.Wrap(err, "request error")
 		}
-		body, _ := ioutil.ReadAll(rsp.Body)
+		body, _ := io.ReadAll(rsp.Body)
+		_ = rsp.Body.Close()
 		r := binary.NewReader(body)
 		r.ReadByte()
 		hl := r.ReadInt32()
@@ -485,32 +484,6 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 		}
 	}
 	return rspExt, nil
-}
-
-// 只是为了写的跟上面一样长(bushi，当然也应该是最快的玩法
-func (c *QQClient) uploadPtt(ip string, port int32, updKey, fileKey, data, md5 []byte) error {
-	url := make([]byte, 512)[:0]
-	url = append(url, "http://"...)
-	url = append(url, ip...)
-	url = append(url, ':')
-	url = strconv.AppendInt(url, int64(port), 10)
-	url = append(url, "/?ver=4679&ukey="...)
-	p := len(url)
-	url = url[:p+len(updKey)*2]
-	hex.Encode(url[p:], updKey)
-	url = append(url, "&filekey="...)
-	p = len(url)
-	url = url[:p+len(fileKey)*2]
-	hex.Encode(url[p:], fileKey)
-	url = append(url, "&filesize="...)
-	url = strconv.AppendInt(url, int64(len(data)), 10)
-	url = append(url, "&bmd5="...)
-	p = len(url)
-	url = url[:p+32]
-	hex.Encode(url[p:], md5)
-	url = append(url, "&mType=pttDu&voice_encodec=1"...)
-	_, err := utils.HttpPostBytes(string(url), data)
-	return errors.Wrap(err, "failed to upload ptt")
 }
 
 func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {

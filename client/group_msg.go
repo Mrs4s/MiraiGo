@@ -350,15 +350,12 @@ func decodeMsgSendResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.GetResult() != 0 {
-		switch rsp.GetResult() {
-		case 55:
-			c.Error("send msg error: %v Bot has blocked target's content", rsp.GetResult())
-			break
-		default:
-			c.Error("send msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
-			break
-		}
+	switch rsp.GetResult() {
+	case 0: // OK.
+	case 55:
+		c.Error("send msg error: %v Bot has blocked target's content", rsp.GetResult())
+	default:
+		c.Error("send msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
 	}
 	return nil, nil
 }

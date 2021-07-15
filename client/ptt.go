@@ -353,19 +353,3 @@ func decodeGroupShortVideoUploadResponse(_ *QQClient, _ *incomingPacketInfo, pay
 	}
 	return rsp.PttShortVideoUploadRsp, nil
 }
-
-func constructPTTExtraInfo(codec, length int32) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteByte(3)
-		w.WriteByte(8)
-		w.WriteUInt16(4)
-		w.WriteUInt32(uint32(codec))
-		w.WriteByte(9)
-		w.WriteUInt16(4)
-		w.WriteUInt32(uint32(14)) // length 时间
-		w.WriteByte(10)
-		info := []byte{0x08, 0x00, 0x28, 0x00, 0x38, 0x00} // todo
-		w.WriteUInt16(uint16(len(info)))
-		w.Write(info)
-	})
-}

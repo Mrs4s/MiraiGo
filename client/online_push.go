@@ -229,35 +229,37 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 	if err := proto.Unmarshal(protobuf, &s44); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if s44.GroupSyncMsg != nil {
-		func() {
-			groupJoinLock.Lock()
-			defer groupJoinLock.Unlock()
-			if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
-				c.Debug("syncing members.")
-				if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
-					group.Update(func(_ *GroupInfo) {
-						var lastJoinTime int64 = 0
-						for _, m := range group.Members {
-							if lastJoinTime < m.JoinTime {
-								lastJoinTime = m.JoinTime
-							}
-						}
-						if newMem, err := c.GetGroupMembers(group); err == nil {
-							group.Members = newMem
-							for _, m := range newMem {
-								if lastJoinTime < m.JoinTime {
-									go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-										Group:  group,
-										Member: m,
-									})
-								}
-							}
-						}
+	if s44.GroupSyncMsg == nil {
+		return nil
+	}
+	groupJoinLock.Lock()
+	defer groupJoinLock.Unlock()
+	if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
+		return errors.New("invalid group code")
+	}
+	c.Debug("syncing members.")
+	if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
+		group.lock.Lock()
+		defer group.lock.Unlock()
+
+		var lastJoinTime int64 = 0
+		for _, m := range group.Members {
+			if lastJoinTime < m.JoinTime {
+				lastJoinTime = m.JoinTime
+			}
+		}
+
+		if newMem, err := c.GetGroupMembers(group); err == nil {
+			group.Members = newMem
+			for _, m := range newMem {
+				if lastJoinTime < m.JoinTime {
+					go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+						Group:  group,
+						Member: m,
 					})
 				}
 			}
-		}()
+		}
 	}
 	return nil
 }

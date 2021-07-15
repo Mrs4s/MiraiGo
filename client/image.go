@@ -47,7 +47,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	}
 	if len(c.srvSsoAddrs) == 0 {
 		for i, addr := range rsp.UploadIp {
-			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
+			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr), rsp.UploadPort[i]))
 		}
 	}
 	if _, err = c.highwayUploadByBDH(img, length, 2, rsp.UploadKey, fh, EmptyBytes, false); err == nil {
@@ -74,7 +74,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	}
 	defer func() { _ = img.Close() }()
 	fh, length := utils.ComputeMd5AndLength(img)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
+	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ ok:
 	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
