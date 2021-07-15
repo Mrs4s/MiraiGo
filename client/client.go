@@ -1,7 +1,6 @@
 package client
 
 import (
-	"bytes"
 	"crypto/md5"
 	"fmt"
 	"math"
@@ -9,8 +8,6 @@ import (
 	"net"
 	"runtime/debug"
 	"sort"
-	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -470,54 +467,6 @@ func (c *QQClient) SetOnlineStatus(s UserOnlineStatus) {
 		return
 	}
 	_, _ = c.sendAndWait(c.buildStatusSetPacket(11, int32(s)))
-}
-
-func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), c.getCookiesWithDomain("h5.vip.qq.com"))
-	if err != nil {
-		return nil, err
-	}
-	ret := VipInfo{Uin: target}
-	b = b[bytes.Index(b, []byte(`<span class="ui-nowrap">`))+24:]
-	t := b[:bytes.Index(b, []byte(`</span>`))]
-	ret.Name = string(t)
-	b = b[bytes.Index(b, []byte(`<small>LV</small>`))+17:]
-	t = b[:bytes.Index(b, []byte(`</p>`))]
-	ret.Level, _ = strconv.Atoi(string(t))
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	t = b[:bytes.Index(b, []byte(`<small>倍`))]
-	ret.LevelSpeed, _ = strconv.ParseFloat(string(t), 64)
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	st := string(b[:bytes.Index(b, []byte(`</p>`))])
-	st = strings.Replace(st, "<small>", "", 1)
-	st = strings.Replace(st, "</small>", "", 1)
-	ret.VipLevel = st
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	t = b[:bytes.Index(b, []byte(`</p>`))]
-	ret.VipGrowthSpeed, _ = strconv.Atoi(string(t))
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	t = b[:bytes.Index(b, []byte(`</p>`))]
-	ret.VipGrowthTotal, _ = strconv.Atoi(string(t))
-	return &ret, nil
-}
-
-func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://qun.qq.com/interactive/honorlist?gc=%d&type=%d", groupCode, honorType), c.getCookiesWithDomain("qun.qq.com"))
-	if err != nil {
-		return nil, err
-	}
-	b = b[bytes.Index(b, []byte(`window.__INITIAL_STATE__=`))+25:]
-	b = b[:bytes.Index(b, []byte("</script>"))]
-	ret := GroupHonorInfo{}
-	err = json.Unmarshal(b, &ret)
-	if err != nil {
-		return nil, err
-	}
-	return &ret, nil
 }
 
 func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
