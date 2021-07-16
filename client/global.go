@@ -27,29 +27,29 @@ import (
 
 type (
 	DeviceInfo struct {
-		Display      []byte
-		Product      []byte
-		Device       []byte
-		Board        []byte
-		Brand        []byte
-		Model        []byte
-		Bootloader   []byte
-		FingerPrint  []byte
-		BootId       []byte
-		ProcVersion  []byte
-		BaseBand     []byte
-		SimInfo      []byte
-		OSType       []byte
-		MacAddress   []byte
+		Display      string
+		Product      string
+		Device       string
+		Board        string
+		Brand        string
+		Model        string
+		Bootloader   string
+		FingerPrint  string
+		BootId       string
+		ProcVersion  string
+		BaseBand     string
+		SimInfo      string
+		OSType       string
+		MacAddress   string
 		IpAddress    []byte
-		WifiBSSID    []byte
-		WifiSSID     []byte
+		WifiBSSID    string
+		WifiSSID     string
 		IMSIMd5      []byte
 		IMEI         string
-		AndroidId    []byte
-		APN          []byte
-		VendorName   []byte
-		VendorOSName []byte
+		AndroidId    string
+		APN          string
+		VendorName   string
+		VendorOSName string
 		Guid         []byte
 		TgtgtKey     []byte
 		Protocol     ClientProtocol
@@ -57,9 +57,9 @@ type (
 	}
 
 	Version struct {
-		Incremental []byte
-		Release     []byte
-		CodeName    []byte
+		Incremental string
+		Release     string
+		CodeName    string
 		Sdk         uint32
 	}
 
@@ -126,69 +126,71 @@ type (
 	requestParams map[string]interface{}
 )
 
-// default
-var SystemDeviceInfo = &DeviceInfo{
-	Display:      []byte("MIRAI.123456.001"),
-	Product:      []byte("mirai"),
-	Device:       []byte("mirai"),
-	Board:        []byte("mirai"),
-	Brand:        []byte("mamoe"),
-	Model:        []byte("mirai"),
-	Bootloader:   []byte("unknown"),
-	FingerPrint:  []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/1234567:user/release-keys"),
-	BootId:       []byte("cb886ae2-00b6-4d68-a230-787f111d12c7"),
-	ProcVersion:  []byte("Linux version 3.0.31-cb886ae2 (android-build@xxx.xxx.xxx.xxx.com)"),
-	BaseBand:     []byte{},
-	SimInfo:      []byte("T-Mobile"),
-	OSType:       []byte("android"),
-	MacAddress:   []byte("00:50:56:C0:00:08"),
-	IpAddress:    []byte{10, 0, 1, 3}, // 10.0.1.3
-	WifiBSSID:    []byte("00:50:56:C0:00:08"),
-	WifiSSID:     []byte("<unknown ssid>"),
-	IMEI:         "468356291846738",
-	AndroidId:    []byte("MIRAI.123456.001"),
-	APN:          []byte("wifi"),
-	VendorName:   []byte("MIUI"),
-	VendorOSName: []byte("mirai"),
-	Protocol:     IPad,
-	Version: &Version{
-		Incremental: []byte("5891938"),
-		Release:     []byte("10"),
-		CodeName:    []byte("REL"),
-		Sdk:         29,
-	},
-}
-
 var (
 	EmptyBytes  = []byte{}
 	NumberRange = "0123456789"
 )
 
 func init() {
-	r := make([]byte, 16)
-	rand.Read(r)
-	t := md5.Sum(r)
-	SystemDeviceInfo.IMSIMd5 = t[:]
-	SystemDeviceInfo.GenNewGuid()
-	SystemDeviceInfo.GenNewTgtgtKey()
+	rand.Seed(time.Now().UnixNano())
 }
 
-func GenRandomDevice() {
+func NewDeviceInfo() *DeviceInfo {
+	info := &DeviceInfo{
+		Display:      "MIRAI.123456.001",
+		Product:      "mirai",
+		Device:       "mirai",
+		Board:        "mirai",
+		Brand:        "mamoe",
+		Model:        "mirai",
+		Bootloader:   "unknown",
+		FingerPrint:  "mamoe/mirai/mirai:10/MIRAI.200122.001/1234567:user/release-keys",
+		BootId:       "cb886ae2-00b6-4d68-a230-787f111d12c7",
+		ProcVersion:  "Linux version 3.0.31-cb886ae2 (android-build@xxx.xxx.xxx.xxx.com)",
+		BaseBand:     "",
+		SimInfo:      "T-Mobile",
+		OSType:       "android",
+		MacAddress:   "00:50:56:C0:00:08",
+		IpAddress:    []byte{10, 0, 1, 3}, // 10.0.1.3
+		WifiBSSID:    "00:50:56:C0:00:08",
+		WifiSSID:     "<unknown ssid>",
+		IMEI:         "468356291846738",
+		AndroidId:    "MIRAI.123456.001",
+		APN:          "wifi",
+		VendorName:   "MIUI",
+		VendorOSName: "mirai",
+		Protocol:     IPad,
+		Version: &Version{
+			Incremental: "5891938",
+			Release:     "10",
+			CodeName:    "REL",
+			Sdk:         29,
+		},
+	}
 	r := make([]byte, 16)
 	rand.Read(r)
-	SystemDeviceInfo.Display = []byte("MIRAI." + utils.RandomStringRange(6, NumberRange) + ".001")
-	SystemDeviceInfo.FingerPrint = []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, NumberRange) + ":user/release-keys")
-	SystemDeviceInfo.BootId = binary.GenUUID(r)
-	SystemDeviceInfo.ProcVersion = []byte("Linux version 3.0.31-" + utils.RandomString(8) + " (android-build@xxx.xxx.xxx.xxx.com)")
+	t := md5.Sum(r)
+	info.IMSIMd5 = t[:]
+	info.RandomDevice()
+	return info
+}
+
+func (info *DeviceInfo) RandomDevice() {
+	r := make([]byte, 16)
+	rand.Read(r)
+	info.Display = "MIRAI." + utils.RandomStringRange(6, NumberRange) + ".001"
+	info.FingerPrint = "mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, NumberRange) + ":user/release-keys"
+	info.BootId = string(binary.GenUUID(r))
+	info.ProcVersion = "Linux version 3.0.31-" + utils.RandomString(8) + " (android-build@xxx.xxx.xxx.xxx.com)"
 	rand.Read(r)
 	t := md5.Sum(r)
-	SystemDeviceInfo.IMSIMd5 = t[:]
-	SystemDeviceInfo.IMEI = GenIMEI()
+	info.IMSIMd5 = t[:]
+	info.IMEI = GenIMEI()
 	r = make([]byte, 8)
 	rand.Read(r)
-	hex.Encode(SystemDeviceInfo.AndroidId, r)
-	SystemDeviceInfo.GenNewGuid()
-	SystemDeviceInfo.GenNewTgtgtKey()
+	hex.Encode([]byte(info.AndroidId), r)
+	info.GenNewGuid()
+	info.GenNewTgtgtKey()
 }
 
 func genVersionInfo(p ClientProtocol) *versionInfo {
@@ -274,10 +276,10 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 
 func (info *DeviceInfo) ToJson() []byte {
 	f := &DeviceInfoFile{
-		Display:     string(info.Display),
-		Product:     string(info.Product),
-		Device:      string(info.Device),
-		Board:       string(info.Board),
+		Display:     info.Display,
+		Product:     info.Product,
+		Device:      info.Device,
+		Board:       info.Board,
 		Model:       string(info.Model),
 		FingerPrint: string(info.FingerPrint),
 		BootId:      string(info.BootId),
@@ -328,9 +330,10 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	if err := json.Unmarshal(d, &f); err != nil {
 		return errors.Wrap(err, "failed to unmarshal json message")
 	}
-	SetIfNotEmpty := func(trg *[]byte, str string) {
+
+	SetIfNotEmpty := func(trg *string, str string) {
 		if str != "" {
-			*trg = []byte(str)
+			*trg = str
 		}
 	}
 	SetIfNotEmpty(&info.Display, f.Display)
@@ -382,13 +385,13 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 	default:
 		info.Protocol = IPad
 	}
-	SystemDeviceInfo.GenNewGuid()
-	SystemDeviceInfo.GenNewTgtgtKey()
+	info.GenNewGuid()
+	info.GenNewTgtgtKey()
 	return nil
 }
 
 func (info *DeviceInfo) GenNewGuid() {
-	t := md5.Sum(append(info.AndroidId, info.MacAddress...))
+	t := md5.Sum([]byte(info.AndroidId + info.MacAddress))
 	info.Guid = t[:]
 }
 
@@ -403,15 +406,15 @@ func (info *DeviceInfo) GenNewTgtgtKey() {
 
 func (info *DeviceInfo) GenDeviceInfoData() []byte {
 	m := &devinfo.DeviceInfo{
-		Bootloader:   string(info.Bootloader),
-		ProcVersion:  string(info.ProcVersion),
-		Codename:     string(info.Version.CodeName),
-		Incremental:  string(info.Version.Incremental),
-		Fingerprint:  string(info.FingerPrint),
-		BootId:       string(info.BootId),
-		AndroidId:    string(info.AndroidId),
-		BaseBand:     string(info.BaseBand),
-		InnerVersion: string(info.Version.Incremental),
+		Bootloader:   info.Bootloader,
+		ProcVersion:  info.ProcVersion,
+		Codename:     info.Version.CodeName,
+		Incremental:  info.Version.Incremental,
+		Fingerprint:  info.FingerPrint,
+		BootId:       info.BootId,
+		AndroidId:    info.AndroidId,
+		BaseBand:     info.BaseBand,
+		InnerVersion: info.Version.Incremental,
 	}
 	data, err := proto.Marshal(m)
 	if err != nil {
@@ -424,11 +427,8 @@ func GenIMEI() string {
 	sum := 0 // the control sum of digits
 	var final strings.Builder
 
-	randSrc := rand.NewSource(time.Now().UnixNano())
-	randGen := rand.New(randSrc)
-
 	for i := 0; i < 14; i++ { // generating all the base digits
-		toAdd := randGen.Intn(10)
+		toAdd := rand.Intn(10)
 		if (i+1)%2 == 0 { // special proc for every 2nd one
 			toAdd *= 2
 			if toAdd >= 10 {
@@ -443,15 +443,15 @@ func GenIMEI() string {
 	return final.String()
 }
 
-func getSSOAddress() ([]*net.TCPAddr, error) {
-	protocol := genVersionInfo(SystemDeviceInfo.Protocol)
+func getSSOAddress(deviceInfo *DeviceInfo) ([]*net.TCPAddr, error) {
+	protocol := genVersionInfo(deviceInfo.Protocol)
 	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")
 	payload := jce.NewJceWriter(). // see ServerConfig.d
-					WriteInt64(0, 1).WriteInt64(0, 2).WriteByte(1, 3).
-					WriteString("00000", 4).WriteInt32(100, 5).
-					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
-					WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
-					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).WriteByte(1, 14).Bytes()
+		WriteInt64(0, 1).WriteInt64(0, 2).WriteByte(1, 3).
+		WriteString("00000", 4).WriteInt32(100, 5).
+		WriteInt32(int32(protocol.AppId), 6).WriteString(deviceInfo.IMEI, 7).
+		WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
+		WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).WriteByte(1, 14).Bytes()
 	buf := &jce.RequestDataVersion3{
 		Map: map[string][]byte{"HttpServerListReq": packUniRequestData(payload)},
 	}

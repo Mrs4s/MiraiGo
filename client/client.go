@@ -101,6 +101,8 @@ type QQClient struct {
 	eventHandlers          *eventHandlers
 
 	groupListLock sync.Mutex
+
+	SystemDeviceInfo *DeviceInfo
 }
 
 type loginSigInfo struct {
@@ -171,15 +173,21 @@ func init() {
 }
 
 // NewClient create new qq client
-func NewClient(uin int64, password string) *QQClient {
-	return NewClientMd5(uin, md5.Sum([]byte(password)))
+func NewClient(uin int64, password string, d ...*DeviceInfo) *QQClient {
+	return NewClientMd5(uin, md5.Sum([]byte(password)), d...)
 }
 
-func NewClientEmpty() *QQClient {
-	return NewClient(0, "")
+func NewClientEmpty(d ...*DeviceInfo) *QQClient {
+	return NewClient(0, "", d...)
 }
 
-func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
+func NewClientMd5(uin int64, passwordMd5 [16]byte, d ...*DeviceInfo) *QQClient {
+	var deviceInfo *DeviceInfo
+	if len(d) == 0 {
+		deviceInfo = NewDeviceInfo()
+	} else {
+		deviceInfo = d[0]
+	}
 	crypto.ECDH.FetchPubKey(uin)
 	cli := &QQClient{
 		Uin:                     uin,
@@ -194,15 +202,16 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		groupSeq:                int32(rand.Intn(20000)),
 		friendSeq:               22911,
 		highwayApplyUpSeq:       77918,
-		ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
+		ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", deviceInfo.IMEI)),
 		eventHandlers:           &eventHandlers{},
 		msgSvcCache:             utils.NewCache(time.Second * 15),
 		transCache:              utils.NewCache(time.Second * 15),
 		onlinePushCache:         utils.NewCache(time.Second * 15),
-		version:                 genVersionInfo(SystemDeviceInfo.Protocol),
+		version:                 genVersionInfo(deviceInfo.Protocol),
 		servers:                 []*net.TCPAddr{},
+		SystemDeviceInfo:        deviceInfo,
 	}
-	sso, err := getSSOAddress()
+	sso, err := getSSOAddress(deviceInfo)
 	if err == nil && len(sso) > 0 {
 		cli.servers = append(sso, cli.servers...)
 	}
@@ -295,7 +304,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		c.sigInfo.encryptedA1 = r.ReadBytesShort()
 		c.sigInfo.wtSessionTicketKey = r.ReadBytesShort()
 		c.OutGoingPacketSessionId = r.ReadBytesShort()
-		SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
+		c.SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 	}
 	_, err = c.sendAndWait(c.buildRequestChangeSigPacket())
 	if err != nil {
@@ -457,7 +466,7 @@ func (c *QQClient) GenToken() []byte {
 		w.WriteBytesShort(c.sigInfo.encryptedA1)
 		w.WriteBytesShort(c.sigInfo.wtSessionTicketKey)
 		w.WriteBytesShort(c.OutGoingPacketSessionId)
-		w.WriteBytesShort(SystemDeviceInfo.TgtgtKey)
+		w.WriteBytesShort(c.SystemDeviceInfo.TgtgtKey)
 	})
 }
 
@@ -1085,7 +1094,7 @@ func (c *QQClient) doHeartbeat() {
 	for c.Online {
 		time.Sleep(time.Second * 30)
 		seq := c.nextSeq()
-		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
+		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", c.SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
 		if errors.Is(err, utils.ErrConnectionClosed) {
