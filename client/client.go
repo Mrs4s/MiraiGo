@@ -59,6 +59,7 @@ type QQClient struct {
 	currServerIndex int
 	retryTimes      int
 	version         *versionInfo
+	deviceInfo      *DeviceInfo
 
 	dpwd             []byte
 	syncCookie       []byte
@@ -194,14 +195,15 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		groupSeq:                int32(rand.Intn(20000)),
 		friendSeq:               22911,
 		highwayApplyUpSeq:       77918,
-		ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
-		eventHandlers:           &eventHandlers{},
-		msgSvcCache:             utils.NewCache(time.Second * 15),
-		transCache:              utils.NewCache(time.Second * 15),
-		onlinePushCache:         utils.NewCache(time.Second * 15),
-		version:                 genVersionInfo(SystemDeviceInfo.Protocol),
-		servers:                 []*net.TCPAddr{},
+		// ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
+		eventHandlers:   &eventHandlers{},
+		msgSvcCache:     utils.NewCache(time.Second * 15),
+		transCache:      utils.NewCache(time.Second * 15),
+		onlinePushCache: utils.NewCache(time.Second * 15),
+		// version:                 genVersionInfo(SystemDeviceInfo.Protocol),
+		servers: []*net.TCPAddr{},
 	}
+	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
 		cli.servers = append(sso, cli.servers...)
@@ -255,6 +257,12 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	return cli
 }
 
+func (c *QQClient) UseDevice(info *DeviceInfo) {
+	c.version = genVersionInfo(info.Protocol)
+	c.ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
+	c.deviceInfo = info
+}
+
 // Login send login request
 func (c *QQClient) Login() (*LoginResponse, error) {
 	if c.Online {
@@ -295,7 +303,8 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		c.sigInfo.encryptedA1 = r.ReadBytesShort()
 		c.sigInfo.wtSessionTicketKey = r.ReadBytesShort()
 		c.OutGoingPacketSessionId = r.ReadBytesShort()
-		SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
+		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
+		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
 	}
 	_, err = c.sendAndWait(c.buildRequestChangeSigPacket())
 	if err != nil {
@@ -457,7 +466,7 @@ func (c *QQClient) GenToken() []byte {
 		w.WriteBytesShort(c.sigInfo.encryptedA1)
 		w.WriteBytesShort(c.sigInfo.wtSessionTicketKey)
 		w.WriteBytesShort(c.OutGoingPacketSessionId)
-		w.WriteBytesShort(SystemDeviceInfo.TgtgtKey)
+		w.WriteBytesShort(c.deviceInfo.TgtgtKey)
 	})
 }
 
@@ -1085,7 +1094,7 @@ func (c *QQClient) doHeartbeat() {
 	for c.Online {
 		time.Sleep(time.Second * 30)
 		seq := c.nextSeq()
-		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", SystemDeviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
+		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
 		_, err := c.sendAndWait(seq, packet)
 		if errors.Is(err, utils.ErrConnectionClosed) {

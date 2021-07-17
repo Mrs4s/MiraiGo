@@ -6,16 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"math/rand"
-	"net"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
-
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
@@ -23,6 +13,14 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+	"math/rand"
+	"net"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type (
@@ -126,7 +124,6 @@ type (
 	requestParams map[string]interface{}
 )
 
-// default
 var SystemDeviceInfo = &DeviceInfo{
 	Display:      []byte("MIRAI.123456.001"),
 	Product:      []byte("mirai"),
