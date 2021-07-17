@@ -881,11 +881,6 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 		Error    error
 	}
 
-	err := c.send(pkt)
-	if err != nil {
-		return nil, err
-	}
-
 	ch := make(chan T)
 	defer close(ch)
 
@@ -902,6 +897,12 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 			Error:    err,
 		}
 	}, params: p})
+
+	err := c.send(pkt)
+	if err != nil {
+		c.handlers.Delete(seq)
+		return nil, err
+	}
 
 	retry := 0
 	for {
