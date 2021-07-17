@@ -6,6 +6,13 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
+	"math/rand"
+	"net"
+	"sort"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
@@ -15,12 +22,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"math/rand"
-	"net"
-	"sort"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type (
