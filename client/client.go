@@ -35,8 +35,10 @@ type QQClient struct {
 	stat Statistics
 	once sync.Once
 
+	// option
 	AllowSlider bool
 
+	// account info
 	Nickname      string
 	Age           uint16
 	Gender        uint16
@@ -45,14 +47,15 @@ type QQClient struct {
 	OnlineClients []*OtherClientInfo
 	Online        bool
 	QiDian        *QiDianAccountInfo
-	// NetLooping    bool
 
+	// protocol public field
 	SequenceId              int32
 	OutGoingPacketSessionId []byte
 	RandomKey               []byte
 	TCP                     *utils.TCPListener
 	ConnectTime             time.Time
 
+	// internal state
 	handlers        HandlerMap
 	waiters         sync.Map
 	servers         []*net.TCPAddr
@@ -61,31 +64,38 @@ type QQClient struct {
 	version         *versionInfo
 	deviceInfo      *DeviceInfo
 
-	dpwd             []byte
+	// tlv cache
+	t104        []byte
+	t174        []byte
+	g           []byte
+	t402        []byte
+	t150        []byte
+	t149        []byte
+	t528        []byte
+	t530        []byte
+	randSeed    []byte // t403
+	rollbackSig []byte
+
+	// sync info
 	syncCookie       []byte
 	pubAccountCookie []byte
 	msgCtrlBuf       []byte
 	ksid             []byte
-	t104             []byte
-	t174             []byte
-	g                []byte
-	t402             []byte
-	t150             []byte
-	t149             []byte
-	t528             []byte
-	t530             []byte
-	rollbackSig      []byte
-	randSeed         []byte // t403
-	timeDiff         int64
-	sigInfo          *loginSigInfo
-	bigDataSession   *bigDataSessionInfo
-	srvSsoAddrs      []string
-	otherSrvAddrs    []string
-	fileStorageInfo  *jce.FileStoragePushFSSvcList
-	pwdFlag          bool
 
-	lastMessageSeq int32
-	// lastMessageSeqTmp      sync.Map
+	// session info
+	sigInfo        *loginSigInfo
+	bigDataSession *bigDataSessionInfo
+	dpwd           []byte
+	timeDiff       int64
+	pwdFlag        bool
+
+	// address
+	srvSsoAddrs     []string
+	otherSrvAddrs   []string
+	fileStorageInfo *jce.FileStoragePushFSSvcList
+
+	// message state
+	lastMessageSeq         int32
 	msgSvcCache            *utils.Cache
 	lastC2CMsgTime         int64
 	transCache             *utils.Cache
