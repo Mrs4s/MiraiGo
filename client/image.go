@@ -302,6 +302,9 @@ func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.Wording != "" {
+		if strings.Contains(rsp.Wording, "服务忙") {
+			return nil, errors.New("未识别到文本")
+		}
 		return nil, errors.New(rsp.Wording)
 	}
 	if rsp.RetCode != 0 {
