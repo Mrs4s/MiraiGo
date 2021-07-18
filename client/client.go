@@ -63,6 +63,7 @@ type QQClient struct {
 	retryTimes      int
 	version         *versionInfo
 	deviceInfo      *DeviceInfo
+	alive           bool
 
 	// tlv cache
 	t104        []byte
@@ -212,6 +213,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		onlinePushCache: utils.NewCache(time.Second * 15),
 		// version:                 genVersionInfo(SystemDeviceInfo.Protocol),
 		servers: []*net.TCPAddr{},
+		alive:   true,
 	}
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
@@ -271,6 +273,13 @@ func (c *QQClient) UseDevice(info *DeviceInfo) {
 	c.version = genVersionInfo(info.Protocol)
 	c.ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
 	c.deviceInfo = info
+}
+
+func (c *QQClient) Release() {
+	if c.Online {
+		c.Disconnect()
+	}
+	c.alive = false
 }
 
 // Login send login request
@@ -1016,9 +1025,8 @@ func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
 }
 
 func (c *QQClient) netLoop() {
-	// todo: release this
 	errCount := 0
-	for {
+	for c.alive {
 		l, err := c.TCP.ReadInt32()
 		if err != nil {
 			time.Sleep(time.Millisecond * 500)
