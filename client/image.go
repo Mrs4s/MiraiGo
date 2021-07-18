@@ -150,19 +150,6 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 			return nil, err
 		}
 		return rsp.(*OcrResponse), nil
-	case *message.ImageElement:
-		url = e.Url
-		if b, err := utils.HTTPGetReadCloser(e.Url, ""); err == nil {
-			if url, err = c.uploadOcrImage(b, int64(e.Size), e.Md5); err != nil {
-				url = e.Url
-			}
-			_ = b.Close()
-		}
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
-		if err != nil {
-			return nil, err
-		}
-		return rsp.(*OcrResponse), nil
 	}
 	return nil, errors.New("image error")
 }

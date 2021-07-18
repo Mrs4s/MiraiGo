@@ -3,9 +3,7 @@ package message
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
-	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 )
 
@@ -13,27 +11,6 @@ import (
 
 type TextElement struct {
 	Content string
-}
-
-type ImageElement struct {
-	Filename string
-	Size     int32
-	Width    int32
-	Height   int32
-	Url      string
-	Md5      []byte
-	Data     []byte
-}
-
-type GroupImageElement struct {
-	ImageId   string
-	FileId    int64
-	ImageType int32
-	Size      int32
-	Width     int32
-	Height    int32
-	Md5       []byte
-	Url       string
 }
 
 type VoiceElement struct {
@@ -54,12 +31,6 @@ type GroupVoiceElement struct {
 type PrivateVoiceElement struct {
 	Data []byte
 	Ptt  *msg.Ptt
-}
-
-type FriendImageElement struct {
-	ImageId string
-	Md5     []byte
-	Url     string
 }
 
 type FaceElement struct {
@@ -127,29 +98,6 @@ type MusicShareElement struct {
 	MusicUrl   string // 音乐播放链接
 }
 
-// TODO: 总之就是非常傻逼
-
-type GroupFlashImgElement struct {
-	ImageElement
-}
-
-type GroupFlashPicElement struct {
-	GroupImageElement
-}
-
-type GroupShowPicElement struct {
-	GroupImageElement
-	EffectId int32
-}
-
-type FriendFlashImgElement struct {
-	ImageElement
-}
-
-type FriendFlashPicElement struct {
-	FriendImageElement
-}
-
 type RedBagMessageType int
 
 // /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
@@ -178,25 +126,6 @@ const (
 
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
-}
-
-func NewImage(data []byte) *ImageElement {
-	return &ImageElement{
-		Data: data,
-	}
-}
-
-func NewGroupImage(id string, md5 []byte, fid int64, size, width, height, imageType int32) *GroupImageElement {
-	return &GroupImageElement{
-		ImageId:   id,
-		FileId:    fid,
-		Md5:       md5,
-		Size:      size,
-		ImageType: imageType,
-		Width:     width,
-		Height:    height,
-		Url:       "https://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
-	}
 }
 
 func NewFace(index int32) *FaceElement {
@@ -291,28 +220,8 @@ func (e *TextElement) Type() ElementType {
 	return Text
 }
 
-func (e *ImageElement) Type() ElementType {
-	return Image
-}
-
-func (e *GroupFlashImgElement) Type() ElementType {
-	return Image
-}
-
-func (e *FriendFlashImgElement) Type() ElementType {
-	return Image
-}
-
 func (e *FaceElement) Type() ElementType {
 	return Face
-}
-
-func (e *GroupImageElement) Type() ElementType {
-	return Image
-}
-
-func (e *FriendImageElement) Type() ElementType {
-	return Image
 }
 
 func (e *AtElement) Type() ElementType {

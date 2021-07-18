@@ -131,11 +131,6 @@ func (msg *PrivateMessage) ToString() (res string) {
 		switch e := elem.(type) {
 		case *TextElement:
 			res += e.Content
-		case *ImageElement:
-			res += "[Image:" + e.Filename + "]"
-		case *FriendFlashImgElement:
-			// NOTE: ignore other components
-			return "[Image (flash):" + e.Filename + "]"
 		case *FaceElement:
 			res += "[" + e.Name + "]"
 		case *AtElement:
@@ -150,8 +145,6 @@ func (msg *TempMessage) ToString() (res string) {
 		switch e := elem.(type) {
 		case *TextElement:
 			res += e.Content
-		case *ImageElement:
-			res += "[Image:" + e.Filename + "]"
 		case *FaceElement:
 			res += "[" + e.Name + "]"
 		case *AtElement:
@@ -166,15 +159,10 @@ func (msg *GroupMessage) ToString() (res string) {
 		switch e := elem.(type) {
 		case *TextElement:
 			res += e.Content
-		case *ImageElement:
-			res += "[Image:" + e.Filename + "]"
 		case *FaceElement:
 			res += "[" + e.Name + "]"
 		case *GroupImageElement:
 			res += "[Image: " + e.ImageId + "]"
-		case *GroupFlashImgElement:
-			// NOTE: ignore other components
-			return "[Image (flash):" + e.Filename + "]"
 		case *AtElement:
 			res += e.Display
 		case *RedBagElement:
@@ -246,7 +234,7 @@ func EstimateLength(elems []IMessageElement) int {
 			sum += len(e.Display)
 		case *ReplyElement:
 			sum += 444 + EstimateLength(e.Elements)
-		case *ImageElement, *GroupImageElement, *FriendImageElement:
+		case *GroupImageElement, *FriendImageElement:
 			sum += 100
 		default:
 			sum += len(ToReadableString([]IMessageElement{elem}))
@@ -332,15 +320,15 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 
 func ToSrcProtoElems(elems []IMessageElement) (r []*msg.Elem) {
 	for _, elem := range elems {
-		switch e := elem.(type) {
-		case *ImageElement, *GroupImageElement, *FriendImageElement:
+		switch elem.Type() {
+		case Image:
 			r = append(r, &msg.Elem{
 				Text: &msg.Text{
 					Str: proto.String("[图片]"),
 				},
 			})
 		default:
-			r = append(r, ToProtoElems([]IMessageElement{e}, false)...)
+			r = append(r, ToProtoElems([]IMessageElement{elem}, false)...)
 		}
 	}
 	return
@@ -456,11 +444,11 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			if len(elem.CustomFace.Md5) == 0 {
 				continue
 			}
-			res = append(res, &ImageElement{
-				Filename: elem.CustomFace.GetFilePath(),
-				Size:     elem.CustomFace.GetSize(),
-				Width:    elem.CustomFace.GetWidth(),
-				Height:   elem.CustomFace.GetHeight(),
+			res = append(res, &GroupImageElement{
+				ImageId: elem.CustomFace.GetFilePath(),
+				Size:    elem.CustomFace.GetSize(),
+				Width:   elem.CustomFace.GetWidth(),
+				Height:  elem.CustomFace.GetHeight(),
 				Url: func() string {
 					if elem.CustomFace.GetOrigUrl() == "" {
 						return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
@@ -477,11 +465,11 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			} else {
 				img = "https://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.GetResId() + "/0?term=2"
 			}
-			res = append(res, &ImageElement{
-				Filename: elem.NotOnlineImage.GetFilePath(),
-				Size:     elem.NotOnlineImage.GetFileLen(),
-				Url:      img,
-				Md5:      elem.NotOnlineImage.PicMd5,
+			res = append(res, &FriendImageElement{
+				ImageId: elem.NotOnlineImage.GetFilePath(),
+				Size:    elem.NotOnlineImage.GetFileLen(),
+				Url:     img,
+				Md5:     elem.NotOnlineImage.PicMd5,
 			})
 		}
 		if elem.QQWalletMsg != nil && elem.QQWalletMsg.AioBody != nil {
@@ -505,24 +493,22 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				flash := &msg.MsgElemInfoServtype3{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, flash)
 				if flash.FlashTroopPic != nil {
-					res = append(res, &GroupFlashImgElement{
-						ImageElement{
-							Filename: flash.FlashTroopPic.GetFilePath(),
-							Size:     flash.FlashTroopPic.GetSize(),
-							Width:    flash.FlashTroopPic.GetWidth(),
-							Height:   flash.FlashTroopPic.GetHeight(),
-							Md5:      flash.FlashTroopPic.Md5,
-						},
+					res = append(res, &GroupImageElement{
+						ImageId: flash.FlashTroopPic.GetFilePath(),
+						Size:    flash.FlashTroopPic.GetSize(),
+						Width:   flash.FlashTroopPic.GetWidth(),
+						Height:  flash.FlashTroopPic.GetHeight(),
+						Md5:     flash.FlashTroopPic.Md5,
+						Flash:   true,
 					})
 					return res
 				}
 				if flash.FlashC2CPic != nil {
-					res = append(res, &GroupFlashImgElement{
-						ImageElement{
-							Filename: flash.FlashC2CPic.GetFilePath(),
-							Size:     flash.FlashC2CPic.GetFileLen(),
-							Md5:      flash.FlashC2CPic.PicMd5,
-						},
+					res = append(res, &FriendImageElement{
+						ImageId: flash.FlashC2CPic.GetFilePath(),
+						Size:    flash.FlashC2CPic.GetFileLen(),
+						Md5:     flash.FlashC2CPic.PicMd5,
+						Flash:   true,
 					})
 					return res
 				}
@@ -536,19 +522,19 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 	return res
 }
 
-func ToReadableString(m []IMessageElement) (r string) {
+func ToReadableString(m []IMessageElement) string {
+	sb := new(strings.Builder)
 	for _, elem := range m {
 		switch e := elem.(type) {
 		case *TextElement:
-			r += e.Content
-		case *ImageElement:
-			r += "[图片]"
+			sb.WriteString(e.Content)
+		case *GroupImageElement, *FriendImageElement:
+			sb.WriteString("[图片]")
 		case *FaceElement:
-			r += "/" + e.Name
-		case *GroupImageElement:
-			r += "[图片]"
+			sb.WriteByte('/')
+			sb.WriteString(e.Name)
 		case *ForwardElement:
-			r += "[聊天记录]"
+			sb.WriteString("[聊天记录]")
 		// NOTE: flash pic is singular
 		// To be clarified
 		// case *GroupFlashImgElement:
@@ -556,10 +542,10 @@ func ToReadableString(m []IMessageElement) (r string) {
 		// case *FriendFlashImgElement:
 		// 	return "[闪照]"
 		case *AtElement:
-			r += e.Display
+			sb.WriteString(e.Display)
 		}
 	}
-	return
+	return sb.String()
 }
 
 func FaceNameById(id int) string {
