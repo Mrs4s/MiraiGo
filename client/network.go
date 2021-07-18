@@ -1,12 +1,13 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/protocol/packets"
-	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
 	"runtime/debug"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/protocol/packets"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"github.com/pkg/errors"
 )
 
 // connect 连接到 QQClient.servers 中的服务器
