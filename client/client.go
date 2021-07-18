@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"runtime/debug"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -206,14 +205,12 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		groupSeq:                int32(rand.Intn(20000)),
 		friendSeq:               22911,
 		highwayApplyUpSeq:       77918,
-		// ksid:                    []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", SystemDeviceInfo.IMEI)),
-		eventHandlers:   &eventHandlers{},
-		msgSvcCache:     utils.NewCache(time.Second * 15),
-		transCache:      utils.NewCache(time.Second * 15),
-		onlinePushCache: utils.NewCache(time.Second * 15),
-		// version:                 genVersionInfo(SystemDeviceInfo.Protocol),
-		servers: []*net.TCPAddr{},
-		alive:   true,
+		eventHandlers:           &eventHandlers{},
+		msgSvcCache:             utils.NewCache(time.Second * 15),
+		transCache:              utils.NewCache(time.Second * 15),
+		onlinePushCache:         utils.NewCache(time.Second * 15),
+		servers:                 []*net.TCPAddr{},
+		alive:                   true,
 	}
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
@@ -762,16 +759,16 @@ func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reas
 				return 1
 			}
 		}(), false, accept, block, reason)
-		_ = c.send(pkt)
+		_ = c.sendPacket(pkt)
 	case *GroupInvitedRequest:
 		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, 1, true, accept, block, reason)
-		_ = c.send(pkt)
+		_ = c.sendPacket(pkt)
 	}
 }
 
 func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_, pkt := c.buildSystemMsgFriendActionPacket(req.RequestId, req.RequesterUin, accept)
-	_ = c.send(pkt)
+	_ = c.sendPacket(pkt)
 }
 
 func (c *QQClient) getSKey() string {
@@ -858,7 +855,7 @@ func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 
 func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift message.GroupGift) {
 	_, packet := c.sendGroupGiftPacket(groupCode, uin, gift)
-	_ = c.send(packet)
+	_ = c.sendPacket(packet)
 }
 
 func (c *QQClient) registerClient() error {
@@ -891,220 +888,6 @@ func (c *QQClient) nextGroupDataTransSeq() int32 {
 
 func (c *QQClient) nextHighwayApplySeq() int32 {
 	return atomic.AddInt32(&c.highwayApplyUpSeq, 2)
-}
-
-func (c *QQClient) send(pkt []byte) error {
-	err := c.TCP.Write(pkt)
-	if err != nil {
-		atomic.AddUint64(&c.stat.PacketLost, 1)
-	} else {
-		atomic.AddUint64(&c.stat.PacketSent, 1)
-	}
-	return errors.Wrap(err, "Packet failed to send")
-}
-
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) (interface{}, error) {
-	type T struct {
-		Response interface{}
-		Error    error
-	}
-
-	ch := make(chan T)
-	defer close(ch)
-
-	p := func() requestParams {
-		if len(params) == 0 {
-			return nil
-		}
-		return params[0]
-	}()
-
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
-		ch <- T{
-			Response: i,
-			Error:    err,
-		}
-	}, params: p})
-
-	err := c.send(pkt)
-	if err != nil {
-		c.handlers.Delete(seq)
-		return nil, err
-	}
-
-	retry := 0
-	for {
-		select {
-		case rsp := <-ch:
-			return rsp.Response, rsp.Error
-		case <-time.After(time.Second * 15):
-			retry++
-			if retry < 2 {
-				_ = c.send(pkt)
-				continue
-			}
-			c.handlers.Delete(seq)
-			// c.Error("packet timed out, seq: %v", seq)
-			// println("Packet Timed out")
-			return nil, errors.New("Packet timed out")
-		}
-	}
-}
-
-// 等待一个或多个数据包解析, 优先级低于 sendAndWait
-// 返回终止解析函数
-func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
-	c.waiters.Store(cmd, f)
-	return func() {
-		c.waiters.Delete(cmd)
-	}
-}
-
-func (c *QQClient) connect() error {
-	c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
-	err := c.TCP.Connect(c.servers[c.currServerIndex])
-	c.currServerIndex++
-	if c.currServerIndex == len(c.servers) {
-		c.currServerIndex = 0
-	}
-	if err != nil {
-		c.retryTimes++
-		if c.retryTimes > len(c.servers) {
-			return errors.New("All servers are unreachable")
-		}
-		c.Error("connect server error: %v", err)
-		return err
-	}
-	c.retryTimes = 0
-	c.ConnectTime = time.Now()
-	return nil
-}
-
-func (c *QQClient) quickReconnect() {
-	c.Disconnect()
-	time.Sleep(time.Millisecond * 200)
-	if err := c.connect(); err != nil {
-		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "quick reconnect failed"})
-		return
-	}
-	if err := c.registerClient(); err != nil {
-		c.Error("register client failed: %v", err)
-		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
-		return
-	}
-}
-
-func (c *QQClient) Disconnect() {
-	c.Online = false
-	c.TCP.Close()
-}
-
-func (c *QQClient) plannedDisconnect(_ *utils.TCPListener) {
-	c.Debug("planned disconnect.")
-	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
-	c.Online = false
-}
-
-func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
-	c.Error("unexpected disconnect: %v", e)
-	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
-	c.Online = false
-	if err := c.connect(); err != nil {
-		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
-		return
-	}
-	if err := c.registerClient(); err != nil {
-		c.Error("register client failed: %v", err)
-		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
-		return
-	}
-}
-
-func (c *QQClient) netLoop() {
-	errCount := 0
-	for c.alive {
-		l, err := c.TCP.ReadInt32()
-		if err != nil {
-			time.Sleep(time.Millisecond * 500)
-			continue
-		}
-		data, _ := c.TCP.ReadBytes(int(l) - 4)
-		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
-		if err != nil {
-			c.Error("parse incoming packet error: %v", err)
-			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
-				c.Disconnect()
-				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
-				continue
-			}
-			errCount++
-			if errCount > 2 {
-				go c.quickReconnect()
-				continue
-			}
-			continue
-		}
-		payload := pkt.Payload
-		if pkt.Flag2 == 2 {
-			payload, err = pkt.DecryptPayload(c.RandomKey, c.sigInfo.wtSessionTicketKey)
-			if err != nil {
-				c.Error("decrypt payload error: %v", err)
-				continue
-			}
-		}
-		errCount = 0
-		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
-		atomic.AddUint64(&c.stat.PacketReceived, 1)
-		go func() {
-			defer func() {
-				if pan := recover(); pan != nil {
-					c.Error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
-				}
-			}()
-
-			if decoder, ok := decoders[pkt.CommandName]; ok {
-				// found predefined decoder
-				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
-				rsp, err := decoder(c, &incomingPacketInfo{
-					SequenceId:  pkt.SequenceId,
-					CommandName: pkt.CommandName,
-					Params: func() requestParams {
-						if !ok {
-							return nil
-						}
-						return info.params
-					}(),
-				}, payload)
-				if err != nil {
-					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
-				}
-				if ok {
-					info.fun(rsp, err)
-				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
-					f.(func(interface{}, error))(rsp, err)
-				}
-			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
-				// does not need decoder
-				f.fun(nil, nil)
-			} else {
-				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
-			}
-		}()
-	}
-	/*
-		c.NetLooping = false
-		c.Online = false
-		_ = c.TCP.Close()
-		if c.lastLostMsg == "" {
-			c.lastLostMsg = "Connection lost."
-		}
-		c.stat.LostTimes++
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: c.lastLostMsg})
-	*/
 }
 
 func (c *QQClient) doHeartbeat() {

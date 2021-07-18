@@ -40,12 +40,12 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 				seq = fseq
 			}
 			_, pkt := c.buildFriendSendingPacket(target, fseq, mr, int32(len(fragmented)), int32(i), div, t, elems)
-			_ = c.send(pkt)
+			_ = c.sendPacket(pkt)
 		}
 	} else {
 		seq = c.nextFriendSeq()
 		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
-		_ = c.send(pkt)
+		_ = c.sendPacket(pkt)
 	}
 	atomic.AddUint64(&c.stat.MessageSent, 1)
 	ret := &message.PrivateMessage{
@@ -85,7 +85,7 @@ func (c *QQClient) SendGroupTempMessage(groupCode, target int64, m *message.Send
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
 	_, pkt := c.buildGroupTempSendingPacket(group.Uin, target, seq, mr, t, m)
-	_ = c.send(pkt)
+	_ = c.sendPacket(pkt)
 	atomic.AddUint64(&c.stat.MessageSent, 1)
 	return &message.TempMessage{
 		Id:        seq,
@@ -106,7 +106,7 @@ func (c *QQClient) sendWPATempMessage(target int64, sig []byte, m *message.Sendi
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
 	_, pkt := c.buildWPATempSendingPacket(target, sig, seq, mr, t, m)
-	_ = c.send(pkt)
+	_ = c.sendPacket(pkt)
 	atomic.AddUint64(&c.stat.MessageSent, 1)
 	return &message.TempMessage{
 		Id:   seq,

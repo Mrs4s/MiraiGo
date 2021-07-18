@@ -369,7 +369,7 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 
 	seq := r.ReadInt64(3)
 	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
-	return nil, c.send(pkt)
+	return nil, c.sendPacket(pkt)
 }
 
 // MessageSvc.PbGetMsg
@@ -401,7 +401,7 @@ func decodeSvcNotify(c *QQClient, _ *incomingPacketInfo, payload []byte) (interf
 	}
 	if _, ok := sysMsgDecoders[notify.MsgType]; ok {
 		_, pkt := c.buildSystemMsgNewFriendPacket()
-		return nil, c.send(pkt)
+		return nil, c.sendPacket(pkt)
 	}
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err

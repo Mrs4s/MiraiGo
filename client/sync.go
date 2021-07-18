@@ -98,7 +98,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		}
 	})
 	_, pkt := c.buildSyncMsgRequestPacket()
-	if err := c.send(pkt); err != nil {
+	if err := c.sendPacket(pkt); err != nil {
 		stop()
 		return nil, err
 	}
@@ -414,7 +414,7 @@ func decodeC2CSyncPacket(c *QQClient, info *incomingPacketInfo, payload []byte) 
 	if err := proto.Unmarshal(payload, &m); err != nil {
 		return nil, err
 	}
-	_ = c.send(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
 	c.commMsgProcessor(m.Msg, info)
 	return nil, nil
 }

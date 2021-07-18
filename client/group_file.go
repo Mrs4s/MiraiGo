@@ -192,7 +192,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	rsp := i.(*oidb.UploadFileRspBody)
 	if rsp.BoolFileExist {
 		_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId, rsp.BusId, rand.Int31())
-		return fs.client.send(pkt)
+		return fs.client.sendPacket(pkt)
 	}
 	if len(rsp.UploadIpLanV4) == 0 {
 		return errors.New("server requires unsupported ftn upload")
@@ -238,7 +238,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		return errors.Wrap(err, "upload failed")
 	}
 	_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId, rsp.BusId, rand.Int31())
-	return fs.client.send(pkt)
+	return fs.client.sendPacket(pkt)
 }
 
 func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {

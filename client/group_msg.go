@@ -123,11 +123,11 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
 			_, pkt := c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
-			_ = c.send(pkt)
+			_ = c.sendPacket(pkt)
 		}
 	} else {
 		_, pkt := c.buildGroupSendingPacket(groupCode, mr, 1, 0, 0, forward, m.Elements)
-		_ = c.send(pkt)
+		_ = c.sendPacket(pkt)
 	}
 	var mid int32
 	ret := &message.GroupMessage{
@@ -353,9 +353,9 @@ func decodeMsgSendResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 	switch rsp.GetResult() {
 	case 0: // OK.
 	case 55:
-		c.Error("send msg error: %v Bot has blocked target's content", rsp.GetResult())
+		c.Error("sendPacket msg error: %v Bot has blocked target's content", rsp.GetResult())
 	default:
-		c.Error("send msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
+		c.Error("sendPacket msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
 	}
 	return nil, nil
 }
