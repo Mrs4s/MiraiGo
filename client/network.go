@@ -5,9 +5,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
 )
 
 // connect 连接到 QQClient.servers 中的服务器
@@ -60,16 +61,12 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 		Response interface{}
 		Error    error
 	}
+	ch := make(chan T, 1)
+	var p requestParams
 
-	ch := make(chan T)
-	defer close(ch)
-
-	p := func() requestParams {
-		if len(params) == 0 {
-			return nil
-		}
-		return params[0]
-	}()
+	if len(params) != 0 {
+		p = params[0]
+	}
 
 	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
 		ch <- T{
@@ -96,8 +93,6 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 				continue
 			}
 			c.handlers.Delete(seq)
-			// c.Error("packet timed out, seq: %v", seq)
-			// println("Packet Timed out")
 			return nil, errors.New("Packet timed out")
 		}
 	}
@@ -174,9 +169,8 @@ func (c *QQClient) netLoop() {
 			}
 			continue
 		}
-		payload := pkt.Payload
 		if pkt.Flag2 == 2 {
-			payload, err = pkt.DecryptPayload(c.RandomKey, c.sigInfo.wtSessionTicketKey)
+			pkt.Payload, err = pkt.DecryptPayload(c.RandomKey, c.sigInfo.wtSessionTicketKey)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
 				continue
@@ -185,7 +179,7 @@ func (c *QQClient) netLoop() {
 		errCount = 0
 		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
 		atomic.AddUint64(&c.stat.PacketReceived, 1)
-		go func() {
+		go func(pkt *packets.IncomingPacket) {
 			defer func() {
 				if pan := recover(); pan != nil {
 					c.Error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
@@ -204,7 +198,7 @@ func (c *QQClient) netLoop() {
 						}
 						return info.params
 					}(),
-				}, payload)
+				}, pkt.Payload)
 				if err != nil {
 					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
 				}
@@ -219,6 +213,6 @@ func (c *QQClient) netLoop() {
 			} else {
 				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}
-		}()
+		}(pkt)
 	}
 }
