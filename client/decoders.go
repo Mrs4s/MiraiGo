@@ -475,7 +475,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 			FaceId:   f.FaceId,
 		})
 	}
-	rsp := FriendListResponse{
+	rsp := &FriendListResponse{
 		TotalCount: int32(totalFriendCount),
 		List:       l,
 	}

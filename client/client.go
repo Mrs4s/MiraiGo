@@ -545,7 +545,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		if err != nil {
 			return nil, err
 		}
-		list := rsp.(FriendListResponse)
+		list := rsp.(*FriendListResponse)
 		r.TotalCount = list.TotalCount
 		r.List = append(r.List, list.List...)
 		curFriendCount += len(list.List)
@@ -736,9 +736,8 @@ func (c *QQClient) FindGroupByUin(uin int64) *GroupInfo {
 
 func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	for _, g := range c.GroupList {
-		f := g
-		if f.Code == code {
-			return f
+		if g.Code == code {
+			return g
 		}
 	}
 	return nil
@@ -795,7 +794,7 @@ func (c *QQClient) getCookiesWithDomain(domain string) string {
 
 func (c *QQClient) getCSRFToken() int {
 	accu := 5381
-	for _, b := range c.sigInfo.sKey {
+	for _, b := range []byte(c.getSKey()) {
 		accu = accu + (accu << 5) + int(b)
 	}
 	return 2147483647 & accu
