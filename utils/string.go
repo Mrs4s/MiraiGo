@@ -5,13 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"time"
 	"unsafe"
 )
-
-func init() {
-	rand.Seed(time.Now().Unix())
-}
 
 func RandomString(len int) string {
 	return RandomStringRange(len, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")

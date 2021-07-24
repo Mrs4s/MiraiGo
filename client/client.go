@@ -262,7 +262,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
 	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
 	rand.Read(cli.RandomKey)
-	go cli.netLoop()
 	return cli
 }
 
@@ -451,23 +450,6 @@ func (c *QQClient) init(tokenLogin bool) error {
 	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
-	c.once.Do(func() {
-		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
-		})
-		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
-		})
-		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
-		})
-		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
-			atomic.AddUint64(&c.stat.MessageSent, 1)
-		})
-	})
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -27,6 +28,24 @@ func (c *QQClient) connect() error {
 		c.Error("connect server error: %v", err)
 		return err
 	}
+	c.once.Do(func() {
+		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
+			atomic.AddUint64(&c.stat.MessageReceived, 1)
+			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+		})
+		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
+			atomic.AddUint64(&c.stat.MessageReceived, 1)
+			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+		})
+		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
+			atomic.AddUint64(&c.stat.MessageReceived, 1)
+			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+		})
+		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
+			atomic.AddUint64(&c.stat.MessageSent, 1)
+		})
+		go c.netLoop()
+	})
 	c.retryTimes = 0
 	c.ConnectTime = time.Now()
 	return nil
