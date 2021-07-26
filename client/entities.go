@@ -196,13 +196,13 @@ type (
 
 	// GroupDigest 群精华消息
 	GroupDigest struct {
-		GroupCode         string `json:"group_code"`
+		GroupCode         int64  `json:"group_code,string"`
 		MessageID         uint32 `json:"msg_seq"`
 		InternalMessageID uint32 `json:"msg_random"`
-		SenderUin         string `json:"sender_uin"`
+		SenderUin         int64  `json:"sender_uin,string"`
 		SenderNick        string `json:"sender_nick"`
 		SenderTime        int64  `json:"sender_time"`
-		AddDigestUin      string `json:"add_digest_uin"`
+		AddDigestUin      int64  `json:"add_digest_uin,string"`
 		AddDigestNick     string `json:"add_digest_nick"`
 		AddDigestTime     int64  `json:"add_digest_time"`
 	}
