@@ -1108,7 +1108,7 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.
 		Version:   "V 8.4.5.4745",
 		Sig: &oidb.DADLoginSig{
 			Type: 1,
-			Sig:  []byte(c.getSKey()),
+			Sig:  []byte(c.GetSKey()),
 		},
 	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)

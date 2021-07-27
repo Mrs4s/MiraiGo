@@ -752,7 +752,7 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_ = c.sendPacket(pkt)
 }
 
-func (c *QQClient) getSKey() string {
+func (c *QQClient) GetSKey() string {
 	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() && len(c.g) > 0 {
 		c.Debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
@@ -761,7 +761,7 @@ func (c *QQClient) getSKey() string {
 }
 
 func (c *QQClient) getCookies() string {
-	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.getSKey())
+	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.GetSKey())
 }
 
 func (c *QQClient) getCookiesWithDomain(domain string) string {
@@ -776,7 +776,7 @@ func (c *QQClient) getCookiesWithDomain(domain string) string {
 
 func (c *QQClient) getCSRFToken() int {
 	accu := 5381
-	for _, b := range []byte(c.getSKey()) {
+	for _, b := range []byte(c.GetSKey()) {
 		accu = accu + (accu << 5) + int(b)
 	}
 	return 2147483647 & accu

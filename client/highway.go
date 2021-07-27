@@ -489,7 +489,7 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
 	url := fmt.Sprintf(
 		"http://htdata3.qq.com/cgi-bin/httpconn?htcmd=0x6ff0072&ver=5520&ukey=%v&range=0&uin=%v&seq=23&groupuin=%v&filetype=3&imagetype=5&userdata=0&subcmd=1&subver=101&clip=0_0_0_0&filesize=%v",
-		c.getSKey(),
+		c.GetSKey(),
 		c.Uin,
 		groupCode,
 		len(img),
