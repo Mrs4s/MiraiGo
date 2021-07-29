@@ -31,7 +31,7 @@ func ChunkString(s string, chunkSize int) []string {
 		chunkLen++
 	}
 
-	var chunks = make([]string, 0, chunkLen)
+	chunks := make([]string, 0, chunkLen)
 	for i := 0; i < len(runes); i += chunkSize {
 		nn := i + chunkSize
 		if nn > len(runes) {

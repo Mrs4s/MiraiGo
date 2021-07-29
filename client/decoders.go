@@ -605,30 +605,30 @@ func decodeOffPicUpResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.GetFailMsg() != nil {
-		return imageUploadResponse{
+		return &imageUploadResponse{
 			ResultCode: -1,
 			Message:    string(rsp.FailMsg),
 		}, nil
 	}
 	if rsp.GetSubcmd() != 1 || len(rsp.GetTryupImgRsp()) == 0 {
-		return imageUploadResponse{
+		return &imageUploadResponse{
 			ResultCode: -2,
 		}, nil
 	}
 	imgRsp := rsp.GetTryupImgRsp()[0]
 	if imgRsp.GetResult() != 0 {
-		return imageUploadResponse{
+		return &imageUploadResponse{
 			ResultCode: int32(*imgRsp.Result),
 			Message:    string(imgRsp.GetFailMsg()),
 		}, nil
 	}
 	if imgRsp.GetFileExit() {
-		return imageUploadResponse{
+		return &imageUploadResponse{
 			IsExists:   true,
 			ResourceId: string(imgRsp.GetUpResid()),
 		}, nil
 	}
-	return imageUploadResponse{
+	return &imageUploadResponse{
 		ResourceId: string(imgRsp.GetUpResid()),
 		UploadKey:  imgRsp.GetUpUkey(),
 		UploadIp:   imgRsp.GetUpIp(),

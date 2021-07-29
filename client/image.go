@@ -29,16 +29,23 @@ func init() {
 	decoders["OidbSvc.0xe07_0"] = decodeImageOcrResponse
 }
 
+var imgWaiter = utils.NewUploadWaiter()
+
 func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
+
+	key := hex.EncodeToString(fh)
+	imgWaiter.Wait(key)
+	defer imgWaiter.Done(key)
+
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(imageUploadResponse)
+	rsp := r.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -74,12 +81,17 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	}
 	defer func() { _ = img.Close() }()
 	fh, length := utils.ComputeMd5AndLength(img)
+
+	key := hex.EncodeToString(fh)
+	imgWaiter.Wait(key)
+	defer imgWaiter.Done(key)
+
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(imageUploadResponse)
+	rsp := r.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -159,7 +171,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(imageUploadResponse)
+	rsp := r.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -174,7 +186,7 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 	if err != nil {
 		return nil, err
 	}
-	rsp := i.(imageUploadResponse)
+	rsp := i.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -272,18 +284,18 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	}
 	rsp := pkt.MsgTryUpImgRsp[0]
 	if rsp.Result != 0 {
-		return imageUploadResponse{
+		return &imageUploadResponse{
 			ResultCode: rsp.Result,
 			Message:    rsp.FailMsg,
 		}, nil
 	}
 	if rsp.BoolFileExit {
 		if rsp.MsgImgInfo != nil {
-			return imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
+			return &imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
 		}
-		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
+		return &imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
 	}
-	return imageUploadResponse{
+	return &imageUploadResponse{
 		FileId:     rsp.Fid,
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.Uint32UpIp,

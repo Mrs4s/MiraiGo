@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"html"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -218,7 +218,7 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 		return nil, errors.Wrap(err, "post error")
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "read body error")
 	}
