@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -232,7 +233,6 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		rspExt        []byte
 		BlockId       = ^uint32(0) // -1
 		uploadedCount uint32
-		lastErr       error
 		cond          = sync.NewCond(&sync.Mutex{})
 	)
 	// Init Blocks
@@ -253,6 +253,8 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		})
 	}
 	doUpload := func() error {
+		defer cond.Signal()
+
 		conn, err := net.DialTimeout("tcp", c.srvSsoAddrs[0], time.Second*20)
 		if err != nil {
 			return errors.Wrap(err, "connect error")
@@ -279,13 +281,10 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			block := blocks[nextId]
 			if block.Id == len(blocks)-1 {
 				cond.L.Lock()
-				for atomic.LoadUint32(&uploadedCount) != uint32(len(blocks)-1) && lastErr == nil {
+				for atomic.LoadUint32(&uploadedCount) != uint32(len(blocks))-1 {
 					cond.Wait()
 				}
 				cond.L.Unlock()
-				if lastErr != nil {
-					break
-				}
 			}
 			buffer = buffer[:blockSize]
 			_, _ = chunk.Seek(block.BeginOffset, io.SeekStart)
@@ -347,19 +346,13 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 		}
 		return nil
 	}
-	wg := sync.WaitGroup{}
-	wg.Add(threadCount)
+
+	group := errgroup.Group{}
 	for i := 0; i < threadCount; i++ {
-		go func() {
-			defer wg.Done()
-			defer cond.Signal()
-			if err := doUpload(); err != nil {
-				lastErr = err
-			}
-		}()
+		group.Go(doUpload)
 	}
-	wg.Wait()
-	return rspExt, lastErr
+	err = group.Wait()
+	return rspExt, err
 }
 
 func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {
