@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/xml"
 	"math/rand"
 	"reflect"
 	"strconv"
@@ -65,4 +66,11 @@ func S2B(s string) (b []byte) {
 	bh.Cap = sh.Len
 	bh.Len = sh.Len
 	return
+}
+
+// XmlEscape xml escape string
+func XmlEscape(c string) string {
+	buf := new(strings.Builder)
+	_ = xml.EscapeText(buf, []byte(c))
+	return buf.String()
 }

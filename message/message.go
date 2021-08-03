@@ -418,7 +418,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 			if content != "" {
 				if elem.RichMsg.GetServiceId() == 35 {
-					reg := regexp.MustCompile(`m_resid="(.+)"`)
+					reg := regexp.MustCompile(`m_resid="(.*?)"`)
 					sub := reg.FindAllStringSubmatch(content, -1)
 					if len(sub) > 0 && len(sub[0]) > 1 {
 						res = append(res, &ForwardElement{ResId: reg.FindAllStringSubmatch(content, -1)[0][1]})

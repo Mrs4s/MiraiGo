@@ -178,8 +178,7 @@ func NewPrivateReply(m *PrivateMessage) *ReplyElement {
 
 func NewUrlShare(url, title, content, image string) *ServiceElement {
 	template := fmt.Sprintf(`<?xml version="1.0" encoding="utf-8"?><msg templateID="12345" action="web" brief="[分享] %s" serviceID="1" url="%s"><item layout="2"><picture cover="%v"/><title>%v</title><summary>%v</summary></item><source/></msg>`,
-		title, url, image, title, content,
-	)
+		title, url, image, title, content)
 	/*
 		template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes'?><msg templateID="123" url="%s" serviceID="33" action="web" actionData="" brief="【链接】%s" flag="8"><item layout="2"><picture cover="%s"/><title>%s</title><summary>%s</summary></item></msg>`,
 			url, url, image, title, content,

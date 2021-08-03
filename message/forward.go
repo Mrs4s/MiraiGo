@@ -1,18 +1,22 @@
 package message
 
 import (
+	"bytes"
 	"crypto/md5"
 
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 // *----- Definitions -----* //
 
+// ForwardMessage 添加 Node 请用 AddNode 方法
 type ForwardMessage struct {
 	Nodes []*ForwardNode
+	items []*msg.PbMultiMsgItem
 }
 
 type ForwardNode struct {
@@ -36,26 +40,67 @@ func (e *ForwardElement) Type() ElementType {
 	return Forward
 }
 
-func (e *ForwardElement) Pack() (r []*msg.Elem) {
-	r = []*msg.Elem{}
-	r = append(r, &msg.Elem{
+func (e *ForwardElement) Pack() []*msg.Elem {
+	rich := &msg.Elem{
 		RichMsg: &msg.RichMsg{
-			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
+			Template1: append([]byte{1}, binary.ZlibCompress(utils.S2B(e.Content))...),
 			ServiceId: proto.Int32(35),
 			MsgResId:  []byte{},
 		},
-	})
-	r = append(r, &msg.Elem{
+	}
+	txt := &msg.Elem{
 		Text: &msg.Text{
 			Str: proto.String("你的QQ暂不支持查看[转发多条消息]，请期待后续版本。"),
 		},
-	})
-	return
+	}
+	return []*msg.Elem{rich, txt}
 }
 
-// Type impl IMessageElement
-func (f *ForwardMessage) Type() ElementType {
-	return Forward
+func NewForwardMessage() *ForwardMessage {
+	return &ForwardMessage{}
+}
+
+// AddNode adds a node to the forward message. return for method chaining.
+func (f *ForwardMessage) AddNode(node *ForwardNode) *ForwardMessage {
+	f.Nodes = append(f.Nodes, node)
+	for _, item := range node.Message {
+		if item.Type() != Forward { // quick path
+			continue
+		}
+		if forward, ok := item.(*ForwardElement); ok {
+			f.items = append(f.items, forward.Items...)
+		}
+	}
+	return f
+}
+
+// Length return the length of Nodes.
+func (f *ForwardMessage) Length() int { return len(f.Nodes) }
+
+func (f *ForwardMessage) Brief() string {
+	var brief bytes.Buffer
+	for _, n := range f.Nodes {
+		brief.WriteString(ToReadableString(n.Message))
+		if brief.Len() >= 27 {
+			break
+		}
+	}
+	return brief.String()
+}
+
+func (f *ForwardMessage) Preview() string {
+	var pv bytes.Buffer
+	for i, node := range f.Nodes {
+		if i >= 4 {
+			break
+		}
+		pv.WriteString(`<title size="26" color="#777777">`)
+		pv.WriteString(utils.XmlEscape(node.SenderName))
+		pv.WriteString(": ")
+		pv.WriteString(utils.XmlEscape(ToReadableString(node.Message)))
+		pv.WriteString("</title>")
+	}
+	return pv.String()
 }
 
 func (f *ForwardMessage) CalculateValidationData(seq, random int32, groupCode int64) ([]byte, []byte) {
@@ -81,13 +126,7 @@ func (f *ForwardMessage) CalculateValidationDataForward(seq, random int32, group
 			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
 		},
 	}}
-	for _, node := range f.Nodes {
-		for _, message := range node.Message {
-			if forwardElement, ok := message.(*ForwardElement); ok {
-				trans.PbItemList = append(trans.PbItemList, forwardElement.Items...)
-			}
-		}
-	}
+	trans.PbItemList = append(trans.PbItemList, f.items...)
 	b, _ := proto.Marshal(trans)
 	data := binary.GZipCompress(b)
 	hash := md5.Sum(data)
@@ -95,9 +134,9 @@ func (f *ForwardMessage) CalculateValidationDataForward(seq, random int32, group
 }
 
 func (f *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
-	msgs := make([]*msg.Message, 0, len(f.Nodes))
+	ml := make([]*msg.Message, 0, len(f.Nodes))
 	for _, node := range f.Nodes {
-		msgs = append(msgs, &msg.Message{
+		ml = append(ml, &msg.Message{
 			Head: &msg.MessageHead{
 				FromUin: &node.SenderId,
 				MsgSeq:  &seq,
@@ -121,5 +160,5 @@ func (f *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64
 			},
 		})
 	}
-	return msgs
+	return ml
 }
