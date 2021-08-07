@@ -464,7 +464,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["FLRESP"][1:])
 	totalFriendCount := r.ReadInt16(5)
-	friends := []jce.FriendInfo{}
+	friends := make([]jce.FriendInfo, 0)
 	r.ReadSlice(&friends, 7)
 	l := make([]*FriendInfo, 0, len(friends))
 	for _, f := range friends {
@@ -536,7 +536,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	data := &jce.RequestDataVersion3{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["GTMLRESP"][1:])
-	members := []jce.TroopMemberInfo{}
+	members := make([]jce.TroopMemberInfo, 0)
 	r.ReadSlice(&members, 3)
 	next := r.ReadInt64(4)
 	l := make([]*GroupMemberInfo, 0, len(members))
@@ -551,6 +551,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 			LastSpeakTime:          m.LastSpeakTime,
 			SpecialTitle:           m.SpecialTitle,
 			SpecialTitleExpireTime: m.SpecialTitleExpireTime,
+			ShutUpTimestamp:        m.ShutUpTimestap,
 			Permission: func() MemberPermission {
 				if m.Flag == 1 {
 					return Administrator
@@ -559,7 +560,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 			}(),
 		})
 	}
-	return groupMemberListResponse{
+	return &groupMemberListResponse{
 		NextUin: next,
 		list:    l,
 	}, nil

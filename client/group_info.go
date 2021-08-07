@@ -50,6 +50,7 @@ type (
 		LastSpeakTime          int64
 		SpecialTitle           string
 		SpecialTitleExpireTime int64
+		ShutUpTimestamp        int64
 		Permission             MemberPermission
 	}
 
