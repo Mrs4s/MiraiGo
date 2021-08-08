@@ -33,6 +33,7 @@ type eventHandlers struct {
 	serverUpdatedHandlers            []func(*QQClient, *ServerUpdatedEvent) bool
 	groupNotifyHandlers              []func(*QQClient, INotifyEvent)
 	friendNotifyHandlers             []func(*QQClient, INotifyEvent)
+	memberTitleUpdatedHandlers       []func(*QQClient, *MemberSpecialTitleUpdatedEvent)
 	offlineFileHandlers              []func(*QQClient, *OfflineFileEvent)
 	otherClientStatusChangedHandlers []func(*QQClient, *OtherClientStatusChangedEvent)
 	groupDigestHandlers              []func(*QQClient, *GroupDigestEvent)
@@ -149,6 +150,10 @@ func (c *QQClient) OnGroupNotify(f func(*QQClient, INotifyEvent)) {
 
 func (c *QQClient) OnFriendNotify(f func(*QQClient, INotifyEvent)) {
 	c.eventHandlers.friendNotifyHandlers = append(c.eventHandlers.friendNotifyHandlers, f)
+}
+
+func (c *QQClient) OnMemberSpecialTitleUpdated(f func(*QQClient, *MemberSpecialTitleUpdatedEvent)) {
+	c.eventHandlers.memberTitleUpdatedHandlers = append(c.eventHandlers.memberTitleUpdatedHandlers, f)
 }
 
 // OnGroupDigest 群精华消息事件注册
@@ -402,6 +407,17 @@ func (c *QQClient) dispatchFriendNotifyEvent(e INotifyEvent) {
 		return
 	}
 	for _, f := range c.eventHandlers.friendNotifyHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchMemberSpecialTitleUpdateEvent(e *MemberSpecialTitleUpdatedEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.memberTitleUpdatedHandlers {
 		cover(func() {
 			f(c, e)
 		})

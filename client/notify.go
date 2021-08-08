@@ -2,7 +2,9 @@ package client
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"strconv"
+	"strings"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 )
@@ -30,6 +32,13 @@ type (
 		Nick      string
 	}
 
+	// MemberSpecialTitleUpdatedEvent 群成员头衔更新事件
+	MemberSpecialTitleUpdatedEvent struct {
+		GroupCode int64
+		Uin       int64
+		NewTitle  string
+	}
+
 	// FriendPokeNotifyEvent 好友戳一戳提示事件
 	FriendPokeNotifyEvent struct {
 		Sender   int64
@@ -38,7 +47,7 @@ type (
 )
 
 // grayTipProcessor 提取出来专门用于处理群内 notify tips
-func (c *QQClient) grayTipProcessor(groupID int64, tipInfo *notify.GeneralGrayTipInfo) {
+func (c *QQClient) grayTipProcessor(groupCode int64, tipInfo *notify.GeneralGrayTipInfo) {
 	if tipInfo.BusiType == 12 && tipInfo.BusiId == 1061 {
 		sender := int64(0)
 		receiver := c.Uin
@@ -52,7 +61,7 @@ func (c *QQClient) grayTipProcessor(groupID int64, tipInfo *notify.GeneralGrayTi
 		}
 		if sender != 0 {
 			c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
-				GroupCode: groupID,
+				GroupCode: groupCode,
 				Sender:    sender,
 				Receiver:  receiver,
 			})
@@ -71,7 +80,7 @@ func (c *QQClient) grayTipProcessor(groupID int64, tipInfo *notify.GeneralGrayTi
 			}
 		}
 		c.dispatchGroupNotifyEvent(&MemberHonorChangedNotifyEvent{
-			GroupCode: groupID,
+			GroupCode: groupCode,
 			Honor: func() HonorType {
 				switch tipInfo.TemplId {
 				case 1052:
@@ -87,6 +96,51 @@ func (c *QQClient) grayTipProcessor(groupID int64, tipInfo *notify.GeneralGrayTi
 			Uin:  uin,
 			Nick: nick,
 		})
+	}
+}
+
+// msgGrayTipProcessor 用于处理群内 aio notify tips
+func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayTipsInfo) {
+	if len(tipInfo.Content) == 0 {
+		return
+	}
+	type tipCommand struct {
+		Command int    `json:"cmd"`
+		Data    string `json:"data"`
+		Text    string `json:"text"`
+	}
+	content := utils.B2S(tipInfo.Content)
+	var tipCmds []*tipCommand
+	start := -1
+	for i := 0; i < len(content); i++ {
+		if content[i] == '<' && len(content) > i+1 && content[i+1] == '{' {
+			start = i + 1
+		}
+		if content[i] == '>' && content[i-1] == '}' && start != -1 {
+			tip := &tipCommand{}
+			if err := json.Unmarshal(utils.S2B(content[start:i]), tip); err == nil {
+				tipCmds = append(tipCmds, tip)
+			}
+			start = -1
+		}
+	}
+	// 好像只能这么判断
+	switch {
+	case strings.Contains(content, "头衔"):
+		event := &MemberSpecialTitleUpdatedEvent{GroupCode: groupCode}
+		for _, cmd := range tipCmds {
+			if cmd.Command == 5 {
+				event.Uin, _ = strconv.ParseInt(cmd.Data, 10, 64)
+			}
+			if cmd.Command == 1 {
+				event.NewTitle = cmd.Text
+			}
+		}
+		if event.Uin == 0 {
+			c.Error("process special title updated tips error: missing cmd")
+			return
+		}
+		c.dispatchMemberSpecialTitleUpdateEvent(event)
 	}
 }
 

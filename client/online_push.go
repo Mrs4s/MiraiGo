@@ -42,7 +42,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 		// 0x2dc
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
-			groupID := int64(uint32(r.ReadInt32()))
+			groupCode := int64(uint32(r.ReadInt32()))
 			iType := r.ReadByte()
 			r.ReadByte()
 			switch iType {
@@ -55,7 +55,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 				target := int64(uint32(r.ReadInt32()))
 				t := r.ReadInt32()
 				c.dispatchGroupMuteEvent(&GroupMuteEvent{
-					GroupCode:   groupID,
+					GroupCode:   groupCode,
 					OperatorUin: operator,
 					TargetUin:   target,
 					Time:        t,
@@ -70,7 +70,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 							continue
 						}
 						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
-							GroupCode:   groupID,
+							GroupCode:   groupCode,
 							OperatorUin: b.OptMsgRecall.Uin,
 							AuthorUin:   rm.AuthorUin,
 							MessageId:   rm.Seq,
@@ -79,12 +79,12 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 					}
 				}
 				if b.OptGeneralGrayTip != nil {
-					c.grayTipProcessor(groupID, b.OptGeneralGrayTip)
+					c.grayTipProcessor(groupCode, b.OptGeneralGrayTip)
 				}
 				if b.OptMsgRedTips != nil {
 					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
 						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
-							GroupCode: groupID,
+							GroupCode: groupCode,
 							Sender:    int64(b.OptMsgRedTips.SenderUin),
 							LuckyKing: int64(b.OptMsgRedTips.LuckyUin),
 						})
@@ -103,6 +103,9 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 						SenderNick:        string(digest.SenderNick),
 						OperatorNick:      string(digest.OperNick),
 					})
+				}
+				if b.OptMsgGrayTips != nil {
+					c.msgGrayTipProcessor(groupCode, b.OptMsgGrayTips)
 				}
 			}
 		}
