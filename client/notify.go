@@ -2,9 +2,10 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"strconv"
 	"strings"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
 )
