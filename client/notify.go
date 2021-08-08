@@ -141,6 +141,9 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 			c.Error("process special title updated tips error: missing cmd")
 			return
 		}
+		if mem := c.FindGroup(groupCode).FindMember(event.Uin); mem != nil {
+			mem.SpecialTitle = event.NewTitle
+		}
 		c.dispatchMemberSpecialTitleUpdateEvent(event)
 	}
 }
