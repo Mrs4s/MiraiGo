@@ -1,12 +1,10 @@
 package utils
 
 import (
+	"github.com/pkg/errors"
 	"io"
 	"net"
 	"sync"
-	"time"
-
-	"github.com/pkg/errors"
 )
 
 type TCPListener struct {
@@ -47,36 +45,31 @@ func (t *TCPListener) Write(buf []byte) error {
 	}
 	t.lock.RLock()
 	_, err := t.conn.Write(buf)
-	if err != nil {
-		t.lock.RUnlock()
-		if t.conn != nil {
-			t.close()
-			t.invokeUnexpectedDisconnect(err)
-		}
-		return ErrConnectionClosed
-	}
 	t.lock.RUnlock()
-	return nil
+	if err == nil {
+		return nil
+	}
+
+	t.unexpectedClose(err)
+	return ErrConnectionClosed
 }
 
 func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
 	if t.conn == nil {
 		return nil, ErrConnectionClosed
 	}
+
 	t.lock.RLock()
 	buf := make([]byte, len)
 	_, err := io.ReadFull(t.conn, buf)
-	if err != nil {
-		t.lock.RUnlock()
-		time.Sleep(time.Millisecond * 100) // 服务器会发送offline包后立即断开连接, 此时还没解析, 可能还是得加锁
-		if t.conn != nil {
-			t.close()
-			t.invokeUnexpectedDisconnect(err)
-		}
-		return nil, ErrConnectionClosed
-	}
 	t.lock.RUnlock()
-	return buf, nil
+	if err == nil {
+		return buf, nil
+	}
+
+	//time.Sleep(time.Millisecond * 100) // 服务器会发送offline包后立即断开连接, 此时还没解析, 可能还是得加锁
+	t.unexpectedClose(err)
+	return nil, ErrConnectionClosed
 }
 
 func (t *TCPListener) ReadInt32() (int32, error) {
@@ -88,23 +81,32 @@ func (t *TCPListener) ReadInt32() (int32, error) {
 }
 
 func (t *TCPListener) Close() {
+	if t.conn == nil {
+		return
+	}
 	t.close()
 	t.invokePlannedDisconnect()
 }
 
 func (t *TCPListener) close() {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	if t.conn == nil {
-		return
+	if t.conn != nil {
+		t.lock.Lock()
+		_ = t.conn.Close()
+		t.conn = nil
+		t.lock.Unlock()
 	}
-	_ = t.conn.Close()
-	t.conn = nil
 }
 
 func (t *TCPListener) invokePlannedDisconnect() {
 	if t.plannedDisconnect != nil {
 		go t.plannedDisconnect(t)
+	}
+}
+
+func (t *TCPListener) unexpectedClose(err error) {
+	if t.conn != nil {
+		t.close()
+		t.invokeUnexpectedDisconnect(err)
 	}
 }
 
