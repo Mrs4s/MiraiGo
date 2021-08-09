@@ -24,12 +24,19 @@ func init() {
 	decoders["PttCenterSvr.GroupShortVideoUpReq"] = decodeGroupShortVideoUploadResponse
 }
 
+var pttWaiter = utils.NewUploadWaiter()
+
 // UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
 func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*message.GroupVoiceElement, error) {
 	h := md5.New()
 	length, _ := io.Copy(h, voice)
 	fh := h.Sum(nil)
 	_, _ = voice.Seek(0, io.SeekStart)
+
+	key := hex.EncodeToString(fh)
+	pttWaiter.Wait(key)
+	defer pttWaiter.Done(key)
+
 	ext := c.buildGroupPttStoreBDHExt(groupCode, fh[:], int32(length), 0, int32(length))
 	rsp, err := c.highwayUploadByBDH(voice, length, 29, c.bigDataSession.SigSession, fh, ext, false)
 	if err != nil {
@@ -65,6 +72,11 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	length, _ := io.Copy(h, voice)
 	fh := h.Sum(nil)
 	_, _ = voice.Seek(0, io.SeekStart)
+
+	key := hex.EncodeToString(fh)
+	pttWaiter.Wait(key)
+	defer pttWaiter.Done(key)
+
 	ext := c.buildC2CPttStoreBDHExt(target, fh[:], int32(length), int32(length))
 	rsp, err := c.highwayUploadByBDH(voice, length, 26, c.bigDataSession.SigSession, fh, ext, false)
 	if err != nil {
@@ -103,6 +115,11 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	if len(combinedCache) > 0 {
 		cache = combinedCache[0]
 	}
+
+	key := string(videoHash) + string(thumbHash)
+	pttWaiter.Wait(key)
+	defer pttWaiter.Done(key)
+
 	i, err := c.sendAndWait(c.buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash, groupCode, videoLen, thumbLen))
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
@@ -352,20 +369,4 @@ func decodeGroupShortVideoUploadResponse(_ *QQClient, _ *incomingPacketInfo, pay
 		return nil, errors.Errorf("ret code error: %v", rsp.PttShortVideoUploadRsp.RetCode)
 	}
 	return rsp.PttShortVideoUploadRsp, nil
-}
-
-func constructPTTExtraInfo(codec, length int32) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteByte(3)
-		w.WriteByte(8)
-		w.WriteUInt16(4)
-		w.WriteUInt32(uint32(codec))
-		w.WriteByte(9)
-		w.WriteUInt16(4)
-		w.WriteUInt32(uint32(14)) // length 时间
-		w.WriteByte(10)
-		info := []byte{0x08, 0x00, 0x28, 0x00, 0x38, 0x00} // todo
-		w.WriteUInt16(uint16(len(info)))
-		w.Write(info)
-	})
 }

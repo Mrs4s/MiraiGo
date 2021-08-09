@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"bytes"
-	"crypto/rand"
-	"math/big"
+	"encoding/xml"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -14,26 +13,26 @@ func RandomString(len int) string {
 	return RandomStringRange(len, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 }
 
-func RandomStringRange(len int, str string) string {
-	var res string
-	b := bytes.NewBufferString(str)
-	length := b.Len()
-	bigInt := big.NewInt(int64(length))
-	for i := 0; i < len; i++ {
-		randomInt, _ := rand.Int(rand.Reader, bigInt)
-		res += string(str[randomInt.Int64()])
+func RandomStringRange(length int, str string) string {
+	sb := strings.Builder{}
+	for i := 0; i < length; i++ {
+		sb.WriteByte(str[rand.Intn(len(str))])
 	}
-	return res
+	return sb.String()
 }
 
 func ChunkString(s string, chunkSize int) []string {
-	var chunks []string
 	runes := []rune(s)
-
 	if len(runes) == 0 || len(runes) <= chunkSize {
 		return []string{s}
 	}
 
+	chunkLen := len(runes) / chunkSize
+	if len(runes)%chunkSize != 0 {
+		chunkLen++
+	}
+
+	chunks := make([]string, 0, chunkLen)
 	for i := 0; i < len(runes); i += chunkSize {
 		nn := i + chunkSize
 		if nn > len(runes) {
@@ -42,26 +41,6 @@ func ChunkString(s string, chunkSize int) []string {
 		chunks = append(chunks, string(runes[i:nn]))
 	}
 	return chunks
-}
-
-func ChineseLength(str string, limit int) int {
-	sum := 0
-	for _, r := range str {
-		switch {
-		case r >= '\u0000' && r <= '\u007F':
-			sum += 1
-		case r >= '\u0080' && r <= '\u07FF':
-			sum += 2
-		case r >= '\u0800' && r <= '\uFFFF':
-			sum += 3
-		default:
-			sum += 4
-		}
-		if sum > limit {
-			break
-		}
-	}
-	return sum
 }
 
 func ConvertSubVersionToInt(str string) int32 {
@@ -87,4 +66,11 @@ func S2B(s string) (b []byte) {
 	bh.Cap = sh.Len
 	bh.Len = sh.Len
 	return
+}
+
+// XmlEscape xml escape string
+func XmlEscape(c string) string {
+	buf := new(strings.Builder)
+	_ = xml.EscapeText(buf, []byte(c))
+	return buf.String()
 }

@@ -25,6 +25,9 @@ jobs:
       run: |
         go get -v -t -d ./...
 
+    - name: Vet
+      run: go vet -stdmethods=false ./...
+
     - name: Build
       run: go build -v ./...
 

@@ -2,8 +2,11 @@ package binary
 
 import (
 	"bytes"
+	"encoding/binary"
 	"io"
 	"net"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 type Reader struct {
@@ -49,37 +52,33 @@ func (r *Reader) ReadBytesShort() []byte {
 }
 
 func (r *Reader) ReadUInt16() uint16 {
-	f, _ := r.buf.ReadByte()
-	s, err := r.buf.ReadByte()
-	if err != nil {
-		panic(err)
-	}
-	return uint16((int32(f) << 8) + int32(s))
+	b := r.ReadBytes(2)
+	return binary.BigEndian.Uint16(b)
 }
 
 func (r *Reader) ReadInt32() int32 {
 	b := r.ReadBytes(4)
-	return (int32(b[0]) << 24) | (int32(b[1]) << 16) | (int32(b[2]) << 8) | int32(b[3])
+	return int32(binary.BigEndian.Uint32(b))
 }
 
 func (r *Reader) ReadInt64() int64 {
 	b := r.ReadBytes(8)
-	return ((int64(b[0]) << 56) | (int64(b[1]) << 48) | (int64(b[2]) << 40) | (int64(b[3]) << 32) | int64(b[4])<<24) | (int64(b[5]) << 16) | (int64(b[6]) << 8) | int64(b[7])
+	return int64(binary.BigEndian.Uint64(b))
 }
 
 func (r *Reader) ReadString() string {
 	data := r.ReadBytes(int(r.ReadInt32() - 4))
-	return string(data)
+	return utils.B2S(data)
 }
 
 func (r *Reader) ReadStringShort() string {
 	data := r.ReadBytes(int(r.ReadUInt16()))
-	return string(data)
+	return utils.B2S(data)
 }
 
 func (r *Reader) ReadStringLimit(limit int) string {
 	data := r.ReadBytes(limit)
-	return string(data)
+	return utils.B2S(data)
 }
 
 func (r *Reader) ReadAvailable() []byte {
@@ -142,13 +141,6 @@ func (r *NetworkReader) ReadByte() (byte, error) {
 func (r *NetworkReader) ReadBytes(len int) ([]byte, error) {
 	buf := make([]byte, len)
 	_, err := io.ReadFull(r.conn, buf)
-	// for i := 0; i < len; i++ {
-	//	 b, err := r.ReadByte()
-	//	 if err != nil {
-	//		return nil, err
-	//	 }
-	// 	 buf[i] = b
-	// }
 	return buf, err
 }
 
@@ -157,5 +149,5 @@ func (r *NetworkReader) ReadInt32() (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	return (int32(b[0]) << 24) | (int32(b[1]) << 16) | (int32(b[2]) << 8) | int32(b[3]), nil
+	return int32(binary.BigEndian.Uint32(b)), nil
 }

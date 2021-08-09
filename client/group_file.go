@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"os"
 	"runtime/debug"
-	"sync"
 
 	"google.golang.org/protobuf/proto"
 
@@ -56,7 +55,7 @@ type (
 	}
 )
 
-var fileSingleFlight = sync.Map{}
+var fsWaiter = utils.NewUploadWaiter()
 
 func init() {
 	decoders["OidbSvc.0x6d8_1"] = decodeOIDB6d81Response
@@ -164,15 +163,8 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderID string) ([]*GroupFile, []*G
 
 func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	// 同文件等待其他线程上传
-	if wg, ok := fileSingleFlight.Load(p); ok {
-		wg.(*sync.WaitGroup).Wait()
-	} else {
-		wg := &sync.WaitGroup{}
-		wg.Add(1)
-		fileSingleFlight.Store(p, wg)
-		defer wg.Done()
-		defer fileSingleFlight.Delete(p)
-	}
+	fsWaiter.Wait(p)
+	defer fsWaiter.Done(p)
 
 	file, err := os.OpenFile(p, os.O_RDONLY, 0o666)
 	if err != nil {
@@ -192,7 +184,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	rsp := i.(*oidb.UploadFileRspBody)
 	if rsp.BoolFileExist {
 		_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId, rsp.BusId, rand.Int31())
-		return fs.client.send(pkt)
+		return fs.client.sendPacket(pkt)
 	}
 	if len(rsp.UploadIpLanV4) == 0 {
 		return errors.New("server requires unsupported ftn upload")
@@ -238,7 +230,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		return errors.Wrap(err, "upload failed")
 	}
 	_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId, rsp.BusId, rand.Int31())
-	return fs.client.send(pkt)
+	return fs.client.sendPacket(pkt)
 }
 
 func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {

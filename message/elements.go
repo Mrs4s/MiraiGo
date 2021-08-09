@@ -3,9 +3,7 @@ package message
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
-	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 )
 
@@ -13,27 +11,6 @@ import (
 
 type TextElement struct {
 	Content string
-}
-
-type ImageElement struct {
-	Filename string
-	Size     int32
-	Width    int32
-	Height   int32
-	Url      string
-	Md5      []byte
-	Data     []byte
-}
-
-type GroupImageElement struct {
-	ImageId   string
-	FileId    int64
-	ImageType int32
-	Size      int32
-	Width     int32
-	Height    int32
-	Md5       []byte
-	Url       string
 }
 
 type VoiceElement struct {
@@ -54,12 +31,6 @@ type GroupVoiceElement struct {
 type PrivateVoiceElement struct {
 	Data []byte
 	Ptt  *msg.Ptt
-}
-
-type FriendImageElement struct {
-	ImageId string
-	Md5     []byte
-	Url     string
 }
 
 type FaceElement struct {
@@ -105,13 +76,6 @@ type ServiceElement struct {
 	SubType string
 }
 
-type ForwardElement struct {
-	FileName string
-	Content  string
-	ResId    string
-	Items    []*msg.PbMultiMsgItem
-}
-
 type LightAppElement struct {
 	Content string
 }
@@ -132,29 +96,6 @@ type MusicShareElement struct {
 	Url        string // 点击跳转链接
 	PictureUrl string // 显示图片链接
 	MusicUrl   string // 音乐播放链接
-}
-
-// TODO: 总之就是非常傻逼
-
-type GroupFlashImgElement struct {
-	ImageElement
-}
-
-type GroupFlashPicElement struct {
-	GroupImageElement
-}
-
-type GroupShowPicElement struct {
-	GroupImageElement
-	EffectId int32
-}
-
-type FriendFlashImgElement struct {
-	ImageElement
-}
-
-type FriendFlashPicElement struct {
-	FriendImageElement
 }
 
 type RedBagMessageType int
@@ -185,25 +126,6 @@ const (
 
 func NewText(s string) *TextElement {
 	return &TextElement{Content: s}
-}
-
-func NewImage(data []byte) *ImageElement {
-	return &ImageElement{
-		Data: data,
-	}
-}
-
-func NewGroupImage(id string, md5 []byte, fid int64, size, width, height, imageType int32) *GroupImageElement {
-	return &GroupImageElement{
-		ImageId:   id,
-		FileId:    fid,
-		Md5:       md5,
-		Size:      size,
-		ImageType: imageType,
-		Width:     width,
-		Height:    height,
-		Url:       "https://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
-	}
 }
 
 func NewFace(index int32) *FaceElement {
@@ -256,8 +178,7 @@ func NewPrivateReply(m *PrivateMessage) *ReplyElement {
 
 func NewUrlShare(url, title, content, image string) *ServiceElement {
 	template := fmt.Sprintf(`<?xml version="1.0" encoding="utf-8"?><msg templateID="12345" action="web" brief="[分享] %s" serviceID="1" url="%s"><item layout="2"><picture cover="%v"/><title>%v</title><summary>%v</summary></item><source/></msg>`,
-		title, url, image, title, content,
-	)
+		title, url, image, title, content)
 	/*
 		template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes'?><msg templateID="123" url="%s" serviceID="33" action="web" actionData="" brief="【链接】%s" flag="8"><item layout="2"><picture cover="%s"/><title>%s</title><summary>%s</summary></item></msg>`,
 			url, url, image, title, content,
@@ -298,28 +219,8 @@ func (e *TextElement) Type() ElementType {
 	return Text
 }
 
-func (e *ImageElement) Type() ElementType {
-	return Image
-}
-
-func (e *GroupFlashImgElement) Type() ElementType {
-	return Image
-}
-
-func (e *FriendFlashImgElement) Type() ElementType {
-	return Image
-}
-
 func (e *FaceElement) Type() ElementType {
 	return Face
-}
-
-func (e *GroupImageElement) Type() ElementType {
-	return Image
-}
-
-func (e *FriendImageElement) Type() ElementType {
-	return Image
 }
 
 func (e *AtElement) Type() ElementType {
@@ -332,10 +233,6 @@ func (e *ServiceElement) Type() ElementType {
 
 func (e *ReplyElement) Type() ElementType {
 	return Reply
-}
-
-func (e *ForwardElement) Type() ElementType {
-	return Forward
 }
 
 func (e *GroupFileElement) Type() ElementType {

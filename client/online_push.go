@@ -32,7 +32,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 	msgInfos := []jce.PushMessageInfo{}
 	uin := jr.ReadInt64(0)
 	jr.ReadSlice(&msgInfos, 2)
-	_ = c.send(c.buildDeleteOnlinePushPacket(uin, 0, nil, info.SequenceId, msgInfos))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(uin, 0, nil, info.SequenceId, msgInfos))
 	for _, m := range msgInfos {
 		k := fmt.Sprintf("%v%v%v", m.MsgSeq, m.MsgTime, m.MsgUid)
 		if _, ok := c.onlinePushCache.Get(k); ok {
@@ -42,7 +42,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 		// 0x2dc
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
-			groupID := int64(uint32(r.ReadInt32()))
+			groupCode := int64(uint32(r.ReadInt32()))
 			iType := r.ReadByte()
 			r.ReadByte()
 			switch iType {
@@ -55,7 +55,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 				target := int64(uint32(r.ReadInt32()))
 				t := r.ReadInt32()
 				c.dispatchGroupMuteEvent(&GroupMuteEvent{
-					GroupCode:   groupID,
+					GroupCode:   groupCode,
 					OperatorUin: operator,
 					TargetUin:   target,
 					Time:        t,
@@ -70,7 +70,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 							continue
 						}
 						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
-							GroupCode:   groupID,
+							GroupCode:   groupCode,
 							OperatorUin: b.OptMsgRecall.Uin,
 							AuthorUin:   rm.AuthorUin,
 							MessageId:   rm.Seq,
@@ -79,12 +79,12 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 					}
 				}
 				if b.OptGeneralGrayTip != nil {
-					c.grayTipProcessor(groupID, b.OptGeneralGrayTip)
+					c.grayTipProcessor(groupCode, b.OptGeneralGrayTip)
 				}
 				if b.OptMsgRedTips != nil {
 					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
 						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
-							GroupCode: groupID,
+							GroupCode: groupCode,
 							Sender:    int64(b.OptMsgRedTips.SenderUin),
 							LuckyKing: int64(b.OptMsgRedTips.LuckyUin),
 						})
@@ -103,6 +103,9 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 						SenderNick:        string(digest.SenderNick),
 						OperatorNick:      string(digest.OperNick),
 					})
+				}
+				if b.OptMsgGrayTips != nil {
+					c.msgGrayTipProcessor(groupCode, b.OptMsgGrayTips)
 				}
 			}
 		}
@@ -229,35 +232,37 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 	if err := proto.Unmarshal(protobuf, &s44); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if s44.GroupSyncMsg != nil {
-		func() {
-			groupJoinLock.Lock()
-			defer groupJoinLock.Unlock()
-			if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
-				c.Debug("syncing members.")
-				if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
-					group.Update(func(_ *GroupInfo) {
-						var lastJoinTime int64 = 0
-						for _, m := range group.Members {
-							if lastJoinTime < m.JoinTime {
-								lastJoinTime = m.JoinTime
-							}
-						}
-						if newMem, err := c.GetGroupMembers(group); err == nil {
-							group.Members = newMem
-							for _, m := range newMem {
-								if lastJoinTime < m.JoinTime {
-									go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
-										Group:  group,
-										Member: m,
-									})
-								}
-							}
-						}
+	if s44.GroupSyncMsg == nil {
+		return nil
+	}
+	groupJoinLock.Lock()
+	defer groupJoinLock.Unlock()
+	if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
+		return errors.New("invalid group code")
+	}
+	c.Debug("syncing members.")
+	if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
+		group.lock.Lock()
+		defer group.lock.Unlock()
+
+		var lastJoinTime int64 = 0
+		for _, m := range group.Members {
+			if lastJoinTime < m.JoinTime {
+				lastJoinTime = m.JoinTime
+			}
+		}
+
+		if newMem, err := c.GetGroupMembers(group); err == nil {
+			group.Members = newMem
+			for _, m := range newMem {
+				if lastJoinTime < m.JoinTime {
+					go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+						Group:  group,
+						Member: m,
 					})
 				}
 			}
-		}()
+		}
 	}
 	return nil
 }

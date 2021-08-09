@@ -739,6 +739,7 @@ func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.Flag = r.ReadInt64(18)
 	pkt.SpecialTitle = r.ReadString(23)
 	pkt.SpecialTitleExpireTime = r.ReadInt64(24)
+	pkt.ShutUpTimestap = r.ReadInt64(30)
 }
 
 func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {

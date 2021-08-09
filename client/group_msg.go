@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
@@ -36,47 +37,42 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 	if len(f) > 0 {
 		useFram = f[0]
 	}
-	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
-	if useFram {
-		if m.Any(func(e message.IMessageElement) bool { return e.Type() == message.Reply }) {
+	imgCount := 0
+	for _, e := range m.Elements {
+		switch e.Type() {
+		case message.Image:
+			imgCount++
+		case message.Reply:
 			useFram = false
 		}
 	}
-	msgLen := message.EstimateLength(m.Elements, 5000)
+	msgLen := message.EstimateLength(m.Elements)
 	if msgLen > 5000 || imgCount > 50 {
 		return nil
 	}
-	if (msgLen > 100 || imgCount > 2) && !useFram {
+	if !useFram && (msgLen > 100 || imgCount > 2) {
 		ret := c.sendGroupMessage(groupCode, false,
 			&message.SendingMessage{Elements: []message.IMessageElement{
 				c.uploadGroupLongMessage(groupCode,
-					&message.ForwardMessage{Nodes: []*message.ForwardNode{
-						{
-							SenderId:   c.Uin,
-							SenderName: c.Nickname,
-							Time:       int32(time.Now().Unix()),
-							Message:    m.Elements,
-						},
-					}},
+					message.NewForwardMessage().AddNode(&message.ForwardNode{
+						SenderId:   c.Uin,
+						SenderName: c.Nickname,
+						Time:       int32(time.Now().Unix()),
+						Message:    m.Elements,
+					}),
 				),
 			}},
 		)
-		return &message.GroupMessage{
-			Id:         ret.Id,
-			InternalId: ret.InternalId,
-			GroupCode:  ret.GroupCode,
-			Sender:     ret.Sender,
-			Time:       ret.Time,
-			Elements:   m.Elements,
-		}
+		ret.Elements = m.Elements
+		return ret
 	}
 	return c.sendGroupMessage(groupCode, false, m)
 }
 
 // SendGroupForwardMessage 发送群合并转发消息
-func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.GroupMessage {
+func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardElement) *message.GroupMessage {
 	return c.sendGroupMessage(groupCode, true,
-		&message.SendingMessage{Elements: []message.IMessageElement{c.UploadGroupForwardMessage(groupCode, m)}},
+		&message.SendingMessage{Elements: []message.IMessageElement{m}},
 	)
 }
 
@@ -101,34 +97,36 @@ func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
 func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
-	ch := make(chan int32)
+	ch := make(chan int32, 1)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
-		if e.Rand == mr && !utils.IsChanClosed(ch) {
+		if e.Rand == mr {
 			ch <- e.Seq
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	imgCount := m.Count(func(e message.IMessageElement) bool { return e.Type() == message.Image })
-	msgLen := message.EstimateLength(m.Elements, 703)
-	if (msgLen > 100 || imgCount > 1) && !forward && !m.Any(func(e message.IMessageElement) bool {
-		_, ok := e.(*message.GroupVoiceElement)
-		_, ok2 := e.(*message.ServiceElement)
-		_, ok3 := e.(*message.ReplyElement)
-		if _, ok4 := e.(*message.ForwardElement); ok4 {
+	imgCount := 0
+	serviceFlag := true
+	for _, e := range m.Elements {
+		switch e.Type() {
+		case message.Image:
+			imgCount++
+		case message.Forward:
 			forward = true
-			return true
+			fallthrough
+		case message.Reply, message.Voice, message.Service:
+			serviceFlag = false
 		}
-		return ok || ok2 || ok3
-	}) {
+	}
+	if !forward && serviceFlag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
 			_, pkt := c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
-			_ = c.send(pkt)
+			_ = c.sendPacket(pkt)
 		}
 	} else {
 		_, pkt := c.buildGroupSendingPacket(groupCode, mr, 1, 0, 0, forward, m.Elements)
-		_ = c.send(pkt)
+		_ = c.sendPacket(pkt)
 	}
 	var mid int32
 	ret := &message.GroupMessage{
@@ -162,7 +160,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 }
 
 func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMessage) *message.ServiceElement {
-	if len(m.Nodes) >= 200 {
+	if m.Length() >= 200 {
 		return nil
 	}
 	ts := time.Now().UnixNano()
@@ -174,25 +172,16 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 	}
 	for i, ip := range rsp.Uint32UpIp {
 		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
-		if err == nil {
-			bri := func() string {
-				var r string
-				for _, n := range m.Nodes {
-					r += message.ToReadableString(n.Message)
-					if len(r) >= 27 {
-						break
-					}
-				}
-				return r
-			}()
-			return genLongTemplate(rsp.MsgResid, bri, ts)
+		if err != nil {
+			continue
 		}
+		return genLongTemplate(rsp.MsgResid, m.Brief(), ts)
 	}
 	return nil
 }
 
 func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.ForwardElement {
-	if len(m.Nodes) > 200 {
+	if m.Length() > 200 {
 		return nil
 	}
 	ts := time.Now().UnixNano()
@@ -204,13 +193,10 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 	}
 	for i, ip := range rsp.Uint32UpIp {
 		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
-		if err == nil {
-			var pv string
-			for i := 0; i < int(math.Min(4, float64(len(m.Nodes)))); i++ {
-				pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`, XmlEscape(m.Nodes[i].SenderName), XmlEscape(message.ToReadableString(m.Nodes[i].Message)))
-			}
-			return genForwardTemplate(rsp.MsgResid, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", len(m.Nodes)), ts, items)
+		if err != nil {
+			continue
 		}
+		return genForwardTemplate(rsp.MsgResid, m.Preview(), "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", m.Length()), ts, items)
 	}
 	return nil
 }
@@ -351,15 +337,12 @@ func decodeMsgSendResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.GetResult() != 0 {
-		switch rsp.GetResult() {
-		case 55:
-			c.Error("send msg error: %v Bot has blocked target's content", rsp.GetResult())
-			break
-		default:
-			c.Error("send msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
-			break
-		}
+	switch rsp.GetResult() {
+	case 0: // OK.
+	case 55:
+		c.Error("sendPacket msg error: %v Bot has blocked target's content", rsp.GetResult())
+	default:
+		c.Error("sendPacket msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
 	}
 	return nil, nil
 }
@@ -533,10 +516,11 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb.D8FCCommCardNameBuf{}
 			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
-				groupCard = ""
+				var gcard strings.Builder
 				for _, e := range buf.RichCardName {
-					groupCard += string(e.Text)
+					gcard.Write(e.Text)
 				}
+				groupCard = gcard.String()
 			}
 		}
 		if m.Head.GroupInfo != nil && groupCard != "" && mem.CardName != groupCard {

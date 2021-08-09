@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/pkg/errors"
+	"encoding/binary"
 	"io"
 	"net"
 	"sync"
@@ -77,7 +78,7 @@ func (t *TCPListener) ReadInt32() (int32, error) {
 	if err != nil {
 		return 0, err
 	}
-	return (int32(b[0]) << 24) | (int32(b[1]) << 16) | (int32(b[2]) << 8) | int32(b[3]), nil
+	return int32(binary.BigEndian.Uint32(b)), nil
 }
 
 func (t *TCPListener) Close() {

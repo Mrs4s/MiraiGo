@@ -1,10 +1,8 @@
 package client
 
 import (
-	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/xml"
 	"fmt"
 	"math/rand"
 	"net"
@@ -126,7 +124,6 @@ type (
 	requestParams map[string]interface{}
 )
 
-// default
 var SystemDeviceInfo = &DeviceInfo{
 	Display:      []byte("MIRAI.123456.001"),
 	Product:      []byte("mirai"),
@@ -395,8 +392,10 @@ func (info *DeviceInfo) GenNewGuid() {
 func (info *DeviceInfo) GenNewTgtgtKey() {
 	r := make([]byte, 16)
 	rand.Read(r)
-	t := md5.Sum(append(r, info.Guid...))
-	info.TgtgtKey = t[:]
+	h := md5.New()
+	h.Write(r)
+	h.Write(info.Guid)
+	info.TgtgtKey = h.Sum(nil)
 }
 
 func (info *DeviceInfo) GenDeviceInfoData() []byte {
@@ -586,12 +585,6 @@ func packUniRequestData(data []byte) (r []byte) {
 	return
 }
 
-func XmlEscape(c string) string {
-	buf := new(bytes.Buffer)
-	_ = xml.EscapeText(buf, []byte(c))
-	return buf.String()
-}
-
 func genForwardTemplate(resID, preview, title, brief, source, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`,
 		brief, resID, ts, title, preview, summary, source,
@@ -617,7 +610,7 @@ func genLongTemplate(resID, brief string, ts int64) *message.ServiceElement {
 		return brief
 	}()
 	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="1"> <item layout="1"> <title>%s</title> <hr hidden="false" style="0"/> <summary>点击查看完整消息</summary> </item> <source name="聊天记录" icon="" action="" appid="-1"/> </msg>`,
-		XmlEscape(limited), resID, ts, XmlEscape(limited),
+		utils.XmlEscape(limited), resID, ts, utils.XmlEscape(limited),
 	)
 	return &message.ServiceElement{
 		Id:      35,

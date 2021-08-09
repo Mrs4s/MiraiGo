@@ -3,6 +3,7 @@ package client
 import (
 	"math/rand"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"google.golang.org/protobuf/proto"
@@ -97,7 +98,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		}
 	})
 	_, pkt := c.buildSyncMsgRequestPacket()
-	if err := c.send(pkt); err != nil {
+	if err := c.sendPacket(pkt); err != nil {
 		stop()
 		return nil, err
 	}
@@ -123,7 +124,7 @@ func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
 func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &jce.SvcReqGetDevLoginInfo{
-		Guid:           SystemDeviceInfo.Guid,
+		Guid:           c.deviceInfo.Guid,
 		LoginType:      1,
 		AppName:        "com.tencent.mobileqq",
 		RequireMax:     20,
@@ -150,10 +151,11 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		C2CMsg: &jce.SvcReqGetMsgV2{
 			Uin: c.Uin,
 			DateTime: func() int32 {
-				if c.stat.LastMessageTime == 0 {
+				t := atomic.LoadInt64(&c.stat.LastMessageTime)
+				if t == 0 {
 					return 1
 				}
-				return int32(c.stat.LastMessageTime)
+				return int32(t)
 			}(),
 			RecivePic:        1,
 			Ability:          15,
@@ -218,10 +220,11 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		C2CMsg: &jce.SvcReqGetMsgV2{
 			Uin: c.Uin,
 			DateTime: func() int32 {
-				if c.stat.LastMessageTime == 0 {
+				t := atomic.LoadInt64(&c.stat.LastMessageTime)
+				if t == 0 {
 					return 1
 				}
-				return int32(c.stat.LastMessageTime)
+				return int32(t)
 			}(),
 			RecivePic:        1,
 			Ability:          15,
@@ -411,7 +414,7 @@ func decodeC2CSyncPacket(c *QQClient, info *incomingPacketInfo, payload []byte) 
 	if err := proto.Unmarshal(payload, &m); err != nil {
 		return nil, err
 	}
-	_ = c.send(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
 	c.commMsgProcessor(m.Msg, info)
 	return nil, nil
 }

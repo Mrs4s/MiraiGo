@@ -8,14 +8,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 type (
@@ -49,6 +50,7 @@ type (
 		LastSpeakTime          int64
 		SpecialTitle           string
 		SpecialTitleExpireTime int64
+		ShutUpTimestamp        int64
 		Permission             MemberPermission
 	}
 

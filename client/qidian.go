@@ -4,7 +4,7 @@ package client
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -78,9 +78,9 @@ func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
 			TerminalType: proto.Uint32(2),
 			Status:       proto.Uint32(10),
 			LoginTime:    proto.Uint32(5),
-			HardwareInfo: proto.String(string(SystemDeviceInfo.Model)),
-			SoftwareInfo: proto.String(string(SystemDeviceInfo.Version.Release)),
-			Guid:         SystemDeviceInfo.Guid,
+			HardwareInfo: proto.String(string(c.deviceInfo.Model)),
+			SoftwareInfo: proto.String(string(c.deviceInfo.Version.Release)),
+			Guid:         c.deviceInfo.Guid,
 			AppName:      &c.version.ApkId,
 			SubAppId:     &c.version.AppId,
 		},
@@ -144,7 +144,8 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 	if err != nil {
 		return nil, errors.Wrap(err, "request error")
 	}
-	rspBody, _ := ioutil.ReadAll(rsp.Body)
+	defer rsp.Body.Close()
+	rspBody, _ := io.ReadAll(rsp.Body)
 	r := binary.NewReader(rspBody)
 	r.ReadByte()
 	l1 := int(r.ReadInt32())

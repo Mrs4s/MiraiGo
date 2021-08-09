@@ -29,16 +29,23 @@ func init() {
 	decoders["OidbSvc.0xe07_0"] = decodeImageOcrResponse
 }
 
+var imgWaiter = utils.NewUploadWaiter()
+
 func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
+
+	key := hex.EncodeToString(fh)
+	imgWaiter.Wait(key)
+	defer imgWaiter.Done(key)
+
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(imageUploadResponse)
+	rsp := r.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -47,7 +54,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	}
 	if len(c.srvSsoAddrs) == 0 {
 		for i, addr := range rsp.UploadIp {
-			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(uint32(addr)), rsp.UploadPort[i]))
+			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr), rsp.UploadPort[i]))
 		}
 	}
 	if _, err = c.highwayUploadByBDH(img, length, 2, rsp.UploadKey, fh, EmptyBytes, false); err == nil {
@@ -74,12 +81,17 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	}
 	defer func() { _ = img.Close() }()
 	fh, length := utils.ComputeMd5AndLength(img)
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh[:], int32(length))
+
+	key := hex.EncodeToString(fh)
+	imgWaiter.Wait(key)
+	defer imgWaiter.Done(key)
+
+	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(imageUploadResponse)
+	rsp := r.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -105,7 +117,7 @@ ok:
 	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh[:]), fh[:], rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
@@ -150,19 +162,6 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 			return nil, err
 		}
 		return rsp.(*OcrResponse), nil
-	case *message.ImageElement:
-		url = e.Url
-		if b, err := utils.HTTPGetReadCloser(e.Url, ""); err == nil {
-			if url, err = c.uploadOcrImage(b, int64(e.Size), e.Md5); err != nil {
-				url = e.Url
-			}
-			_ = b.Close()
-		}
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
-		if err != nil {
-			return nil, err
-		}
-		return rsp.(*OcrResponse), nil
 	}
 	return nil, errors.New("image error")
 }
@@ -172,7 +171,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 	if err != nil {
 		return nil, err
 	}
-	rsp := r.(imageUploadResponse)
+	rsp := r.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -187,7 +186,7 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 	if err != nil {
 		return nil, err
 	}
-	rsp := i.(imageUploadResponse)
+	rsp := i.(*imageUploadResponse)
 	if rsp.ResultCode != 0 {
 		return nil, errors.New(rsp.Message)
 	}
@@ -285,18 +284,18 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	}
 	rsp := pkt.MsgTryUpImgRsp[0]
 	if rsp.Result != 0 {
-		return imageUploadResponse{
+		return &imageUploadResponse{
 			ResultCode: rsp.Result,
 			Message:    rsp.FailMsg,
 		}, nil
 	}
 	if rsp.BoolFileExit {
 		if rsp.MsgImgInfo != nil {
-			return imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
+			return &imageUploadResponse{IsExists: true, FileId: rsp.Fid, Width: rsp.MsgImgInfo.FileWidth, Height: rsp.MsgImgInfo.FileHeight}, nil
 		}
-		return imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
+		return &imageUploadResponse{IsExists: true, FileId: rsp.Fid}, nil
 	}
-	return imageUploadResponse{
+	return &imageUploadResponse{
 		FileId:     rsp.Fid,
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.Uint32UpIp,
@@ -315,6 +314,9 @@ func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.Wording != "" {
+		if strings.Contains(rsp.Wording, "服务忙") {
+			return nil, errors.New("未识别到文本")
+		}
 		return nil, errors.New(rsp.Wording)
 	}
 	if rsp.RetCode != 0 {

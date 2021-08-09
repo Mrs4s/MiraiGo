@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 // Writer 写入
@@ -13,7 +15,7 @@ func NewWriterF(f func(writer *Writer)) []byte {
 	w := NewWriter()
 	f(w)
 	b := append([]byte(nil), w.Bytes()...)
-	PutBuffer(w)
+	PutWriter(w)
 	return b
 }
 
@@ -49,13 +51,13 @@ func (w *Writer) WriteUInt64(v uint64) {
 }
 
 func (w *Writer) WriteString(v string) {
-	payload := []byte(v)
+	payload := utils.S2B(v)
 	w.WriteUInt32(uint32(len(payload) + 4))
 	w.Write(payload)
 }
 
 func (w *Writer) WriteStringShort(v string) {
-	w.WriteBytesShort([]byte(v))
+	w.WriteBytesShort(utils.S2B(v))
 }
 
 func (w *Writer) WriteBool(b bool) {
@@ -94,7 +96,7 @@ func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body [
 	data := w1.Bytes()
 	w.WriteUInt32(uint32(len(data) + 4))
 	w.Write(data)
-	PutBuffer(w1)
+	PutWriter(w1)
 	w.WriteUInt32(uint32(len(body) + 4)) // WriteIntLvPacket
 	w.Write(body)
 }
