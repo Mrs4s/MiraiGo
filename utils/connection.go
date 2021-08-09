@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"github.com/pkg/errors"
 	"encoding/binary"
+	"github.com/pkg/errors"
 	"io"
 	"net"
 	"sync"
@@ -82,19 +82,26 @@ func (t *TCPListener) ReadInt32() (int32, error) {
 }
 
 func (t *TCPListener) Close() {
-	if t.conn == nil {
+	if t.connIsNil() {
 		return
 	}
 	t.close()
 	t.invokePlannedDisconnect()
 }
 
+func (t *TCPListener) unexpectedClose(err error) {
+	if t.connIsNil() {
+		t.close()
+		t.invokeUnexpectedDisconnect(err)
+	}
+}
+
 func (t *TCPListener) close() {
+	t.lock.Lock()
+	defer t.lock.Unlock()
 	if t.conn != nil {
-		t.lock.Lock()
 		_ = t.conn.Close()
 		t.conn = nil
-		t.lock.Unlock()
 	}
 }
 
@@ -104,15 +111,14 @@ func (t *TCPListener) invokePlannedDisconnect() {
 	}
 }
 
-func (t *TCPListener) unexpectedClose(err error) {
-	if t.conn != nil {
-		t.close()
-		t.invokeUnexpectedDisconnect(err)
-	}
-}
-
 func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
 	if t.unexpectedDisconnect != nil {
 		go t.unexpectedDisconnect(t, err)
 	}
+}
+
+func (t *TCPListener) connIsNil() bool {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	return t.conn == nil
 }
