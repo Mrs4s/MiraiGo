@@ -3,12 +3,14 @@ package utils
 import (
 	"io"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
 type TCPListener struct {
+	lock                 sync.RWMutex
 	conn                 net.Conn
 	plannedDisconnect    func(*TCPListener)
 	unexpectedDisconnect func(*TCPListener, error)
@@ -33,6 +35,8 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 	if err != nil {
 		return errors.Wrap(err, "dial tcp error")
 	}
+	t.lock.Lock()
+	defer t.lock.Unlock()
 	t.conn = conn
 	return nil
 }
@@ -41,14 +45,17 @@ func (t *TCPListener) Write(buf []byte) error {
 	if t.conn == nil {
 		return ErrConnectionClosed
 	}
+	t.lock.RLock()
 	_, err := t.conn.Write(buf)
 	if err != nil {
+		t.lock.RUnlock()
 		if t.conn != nil {
 			t.close()
 			t.invokeUnexpectedDisconnect(err)
 		}
 		return ErrConnectionClosed
 	}
+	t.lock.RUnlock()
 	return nil
 }
 
@@ -56,9 +63,11 @@ func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
 	if t.conn == nil {
 		return nil, ErrConnectionClosed
 	}
+	t.lock.RLock()
 	buf := make([]byte, len)
 	_, err := io.ReadFull(t.conn, buf)
 	if err != nil {
+		t.lock.RUnlock()
 		time.Sleep(time.Millisecond * 100) // 服务器会发送offline包后立即断开连接, 此时还没解析, 可能还是得加锁
 		if t.conn != nil {
 			t.close()
@@ -66,6 +75,7 @@ func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
 		}
 		return nil, ErrConnectionClosed
 	}
+	t.lock.RUnlock()
 	return buf, nil
 }
 
@@ -78,14 +88,13 @@ func (t *TCPListener) ReadInt32() (int32, error) {
 }
 
 func (t *TCPListener) Close() {
-	if t.conn == nil {
-		return
-	}
 	t.close()
 	t.invokePlannedDisconnect()
 }
 
 func (t *TCPListener) close() {
+	t.lock.Lock()
+	defer t.lock.Unlock()
 	if t.conn == nil {
 		return
 	}
