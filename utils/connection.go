@@ -2,10 +2,11 @@ package utils
 
 import (
 	"encoding/binary"
-	"github.com/pkg/errors"
 	"io"
 	"net"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 type TCPListener struct {
@@ -41,12 +42,10 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 }
 
 func (t *TCPListener) Write(buf []byte) error {
-	if t.connIsNil() {
-		return ErrConnectionClosed
-	}
-	t.lock.RLock()
-	_, err := t.conn.Write(buf)
-	t.lock.RUnlock()
+	err := t.rLockDo(func() error {
+		_, e := t.conn.Write(buf)
+		return e
+	})
 	if err == nil {
 		return nil
 	}
@@ -56,14 +55,11 @@ func (t *TCPListener) Write(buf []byte) error {
 }
 
 func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
-	if t.connIsNil() {
-		return nil, ErrConnectionClosed
-	}
-
-	t.lock.RLock()
 	buf := make([]byte, len)
-	_, err := io.ReadFull(t.conn, buf)
-	t.lock.RUnlock()
+	err := t.rLockDo(func() error {
+		_, e := io.ReadFull(t.conn, buf)
+		return e
+	})
 	if err == nil {
 		return buf, nil
 	}
@@ -82,15 +78,14 @@ func (t *TCPListener) ReadInt32() (int32, error) {
 }
 
 func (t *TCPListener) Close() {
-	if t.connIsNil() {
-		return
+	if !t.connIsNil() {
+		t.close()
+		t.invokePlannedDisconnect()
 	}
-	t.close()
-	t.invokePlannedDisconnect()
 }
 
 func (t *TCPListener) unexpectedClose(err error) {
-	if t.connIsNil() {
+	if !t.connIsNil() {
 		t.close()
 		t.invokeUnexpectedDisconnect(err)
 	}
@@ -115,6 +110,15 @@ func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
 	if t.unexpectedDisconnect != nil {
 		go t.unexpectedDisconnect(t, err)
 	}
+}
+
+func (t *TCPListener) rLockDo(fn func() error) error {
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	if t.conn == nil {
+		return ErrConnectionClosed
+	}
+	return fn()
 }
 
 func (t *TCPListener) connIsNil() bool {
