@@ -211,10 +211,12 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 func msgType0x210Sub122Decoder(c *QQClient, protobuf []byte) error {
 	t := &notify.GeneralGrayTipInfo{}
 	_ = proto.Unmarshal(protobuf, t)
-	var sender int64
+	var sender, receiver int64
 	for _, templ := range t.MsgTemplParam {
 		if templ.Name == "uin_str1" {
 			sender, _ = strconv.ParseInt(templ.Value, 10, 64)
+		} else if templ.Name == "uin_str2" {
+			receiver, _ = strconv.ParseInt(templ.Value, 10, 64)
 		}
 	}
 	if sender == 0 {
@@ -222,7 +224,7 @@ func msgType0x210Sub122Decoder(c *QQClient, protobuf []byte) error {
 	}
 	c.dispatchFriendNotifyEvent(&FriendPokeNotifyEvent{
 		Sender:   sender,
-		Receiver: c.Uin,
+		Receiver: receiver,
 	})
 	return nil
 }
