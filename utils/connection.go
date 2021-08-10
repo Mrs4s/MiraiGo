@@ -41,7 +41,7 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 }
 
 func (t *TCPListener) Write(buf []byte) error {
-	if t.conn == nil {
+	if t.connIsNil() {
 		return ErrConnectionClosed
 	}
 	t.lock.RLock()
@@ -56,7 +56,7 @@ func (t *TCPListener) Write(buf []byte) error {
 }
 
 func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
-	if t.conn == nil {
+	if t.connIsNil() {
 		return nil, ErrConnectionClosed
 	}
 
