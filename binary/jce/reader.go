@@ -380,26 +380,26 @@ func (r *JceReader) ReadSlice(i interface{}, tag int) {
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Slice {
 		return
 	}
-	if v.IsNil() {
-		return
-	}
+	t = t.Elem()
 	if !r.skipToTag(tag) {
 		return
 	}
 	hd, _ := r.readHead()
 	if hd.Type == 9 {
 		s := r.ReadInt32(0)
+		sv := reflect.MakeSlice(t, int(s), int(s))
+		t = t.Elem()
+		val := reflect.New(t)
 		for i := 0; i < int(s); i++ {
-			val := r.readObject(t.Elem(), 0)
-			v.Set(reflect.Append(v, val))
+			r.ReadObject(val.Interface(), 0)
+			sv.Index(i).Set(val.Elem())
 		}
+		v.Set(sv)
 	}
-	if hd.Type == 13 {
+	if hd.Type == 13 && t.Elem().Kind() == reflect.Uint8 {
 		r.readHead()
 		arr := r.readBytes(int(r.ReadInt32(0)))
-		for _, b := range arr {
-			v.Set(reflect.Append(v, reflect.ValueOf(b)))
-		}
+		v.SetBytes(arr)
 	}
 }
 
@@ -427,8 +427,12 @@ func (r *JceReader) ReadObject(i interface{}, tag int) {
 		*o = r.ReadFloat64(tag)
 	case *string:
 		*o = r.ReadString(tag)
+	case *[]byte:
+		r.ReadSlice(o, tag)
 	case IJceStruct:
+		r.readHead()
 		o.ReadFrom(r)
+		r.skipToStructEnd()
 	}
 }
 
