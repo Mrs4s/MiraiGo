@@ -557,8 +557,8 @@ func (pkt *RequestPacket) ReadFrom(r *JceReader) {
 	pkt.SFuncName = r.ReadString(6)
 	r.ReadSlice(&pkt.SBuffer, 7)
 	pkt.ITimeout = r.ReadInt32(8)
-	r.ReadMapF(9, func(k interface{}, v interface{}) { pkt.Context[k.(string)] = v.(string) })
-	r.ReadMapF(10, func(k interface{}, v interface{}) { pkt.Status[k.(string)] = v.(string) })
+	r.ReadMap(pkt.Context, 9)
+	r.ReadMap(pkt.Status, 10)
 }
 
 func (pkt *RequestDataVersion3) ToBytes() []byte {
@@ -569,9 +569,7 @@ func (pkt *RequestDataVersion3) ToBytes() []byte {
 
 func (pkt *RequestDataVersion3) ReadFrom(r *JceReader) {
 	pkt.Map = make(map[string][]byte)
-	r.ReadMapF(0, func(k interface{}, v interface{}) {
-		pkt.Map[k.(string)] = v.([]byte)
-	})
+	r.ReadMap(pkt.Map, 0)
 }
 
 func (pkt *RequestDataVersion2) ToBytes() []byte {
@@ -582,7 +580,8 @@ func (pkt *RequestDataVersion2) ToBytes() []byte {
 
 func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
 	pkt.Map = make(map[string]map[string][]byte)
-	r.ReadMapF(0, func(k interface{}, v interface{}) {
+	// r.ReadMap(pkt.Map, 0)
+	r._ReadMapF(0, func(k interface{}, v interface{}) {
 		pkt.Map[k.(string)] = make(map[string][]byte)
 		for k2, v := range v.(map[interface{}]interface{}) {
 			pkt.Map[k.(string)][k2.(string)] = v.([]byte)

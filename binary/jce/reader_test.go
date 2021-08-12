@@ -41,3 +41,43 @@ func BenchmarkJceReader_ReadSlice(b *testing.B) {
 		r.ReadSlice(&result, 1)
 	}
 }
+
+var req = RequestDataVersion2{
+	Map: map[string]map[string][]byte{
+		"1": {
+			"123": []byte(`123`),
+		},
+		"2": {
+			"123": []byte(`123`),
+		},
+		"3": {
+			"123": []byte(`123`),
+		},
+		"4": {
+			"123": []byte(`123`),
+		},
+		"5": {
+			"123": []byte(`123`),
+		},
+	}}
+
+func TestRequestDataVersion2_ReadFrom(t *testing.T) {
+	// todo(wdv): fuzz test
+	w := NewJceWriter()
+	w.WriteObject(req.Map, 0)
+	src := w.Bytes()
+	result := RequestDataVersion2{}
+	result.ReadFrom(NewJceReader(src))
+	assert.Equal(t, req, result)
+}
+
+func BenchmarkRequestDataVersion2_ReadFrom(b *testing.B) {
+	w := NewJceWriter()
+	w.WriteObject(req.Map, 0)
+	src := w.Bytes()
+	b.SetBytes(int64(len(src)))
+	result := &RequestDataVersion2{}
+	for i := 0; i < b.N; i++ {
+		result.ReadFrom(NewJceReader(src))
+	}
+}

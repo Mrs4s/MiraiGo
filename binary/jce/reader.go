@@ -2,6 +2,7 @@ package jce
 
 import (
 	"bytes"
+	goBinary "encoding/binary"
 	"math"
 	"reflect"
 )
@@ -113,12 +114,12 @@ func (r *JceReader) readUInt16() uint16 {
 
 func (r *JceReader) readInt32() int32 {
 	b := r.readBytes(4)
-	return (int32(b[0]) << 24) | (int32(b[1]) << 16) | (int32(b[2]) << 8) | int32(b[3])
+	return int32(goBinary.BigEndian.Uint32(b))
 }
 
 func (r *JceReader) readInt64() int64 {
 	b := r.readBytes(8)
-	return (int64(b[0]) << 56) | (int64(b[1]) << 48) | (int64(b[2]) << 40) | (int64(b[3]) << 32) | (int64(b[4]) << 24) | (int64(b[5]) << 16) | (int64(b[6]) << 8) | int64(b[7])
+	return int64(goBinary.BigEndian.Uint64(b))
 }
 
 func (r *JceReader) readFloat32() float32 {
@@ -334,7 +335,32 @@ func (r *JceReader) ReadJceStruct(obj IJceStruct, tag int) {
 	r.skipToStructEnd()
 }
 
-func (r *JceReader) ReadMapF(tag int, f func(interface{}, interface{})) {
+func (r *JceReader) ReadMap(i interface{}, tag int) {
+	v := reflect.ValueOf(i)
+	if v.Kind() != reflect.Map {
+		return
+	}
+	if !r.skipToTag(tag) {
+		return
+	}
+	t := v.Type()
+
+	kt := t.Key()
+	kv := reflect.New(kt)
+
+	vt := t.Elem()
+	vv := reflect.New(vt)
+
+	r.readHead()
+	s := r.ReadInt32(0)
+	for i := 0; i < int(s); i++ {
+		r.ReadObject(kv.Interface(), 0)
+		r.ReadObject(vv.Interface(), 1)
+		v.SetMapIndex(kv.Elem(), vv.Elem())
+	}
+}
+
+func (r *JceReader) _ReadMapF(tag int, f func(interface{}, interface{})) {
 	if !r.skipToTag(tag) {
 		return
 	}
@@ -406,6 +432,11 @@ func (r *JceReader) ReadSlice(i interface{}, tag int) {
 func (r *JceReader) ReadObject(i interface{}, tag int) {
 	va := reflect.ValueOf(i)
 	if va.Kind() != reflect.Ptr || va.IsNil() {
+		return
+	}
+	if ve := va.Elem(); ve.Kind() == reflect.Map {
+		ve.Set(reflect.MakeMap(ve.Type()))
+		r.ReadMap(ve.Interface(), tag)
 		return
 	}
 	switch o := i.(type) {
