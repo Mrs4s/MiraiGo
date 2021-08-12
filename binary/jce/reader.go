@@ -360,21 +360,6 @@ func (r *JceReader) ReadMap(i interface{}, tag int) {
 	}
 }
 
-func (r *JceReader) _ReadMapF(tag int, f func(interface{}, interface{})) {
-	if !r.skipToTag(tag) {
-		return
-	}
-	r.readHead()
-	s := r.ReadInt32(0)
-	for i := 0; i < int(s); i++ {
-		k := r.ReadAny(0)
-		v := r.ReadAny(1)
-		if k != nil {
-			f(k, v)
-		}
-	}
-}
-
 func (r *JceReader) readObject(t reflect.Type, tag int) reflect.Value {
 	switch t.Kind() {
 	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:

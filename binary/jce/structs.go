@@ -580,13 +580,7 @@ func (pkt *RequestDataVersion2) ToBytes() []byte {
 
 func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
 	pkt.Map = make(map[string]map[string][]byte)
-	// r.ReadMap(pkt.Map, 0)
-	r._ReadMapF(0, func(k interface{}, v interface{}) {
-		pkt.Map[k.(string)] = make(map[string][]byte)
-		for k2, v := range v.(map[interface{}]interface{}) {
-			pkt.Map[k.(string)][k2.(string)] = v.([]byte)
-		}
-	})
+	r.ReadMap(pkt.Map, 0)
 }
 
 func (pkt *SsoServerInfo) ReadFrom(r *JceReader) {
