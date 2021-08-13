@@ -276,6 +276,27 @@ func (r *JceReader) ReadString(tag int) string {
 	}
 }
 
+func (r *JceReader) ReadBytes(tag int) []byte {
+	if !r.skipToTag(tag) {
+		return nil
+	}
+	hd, _ := r.readHead()
+	switch hd.Type {
+	case 9:
+		s := r.ReadInt32(0)
+		b := make([]byte, s)
+		for i := 0; i < int(s); i++ {
+			b[i] = r.ReadByte(0)
+		}
+		return b
+	case 13:
+		r.readHead()
+		return r.readBytes(int(r.ReadInt32(0)))
+	default:
+		return nil
+	}
+}
+
 // ReadAny Read any type via tag, unsupported JceStruct
 func (r *JceReader) ReadAny(tag int) interface{} {
 	if !r.skipToTag(tag) {

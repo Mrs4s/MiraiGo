@@ -81,3 +81,15 @@ func BenchmarkRequestDataVersion2_ReadFrom(b *testing.B) {
 		result.ReadFrom(NewJceReader(src))
 	}
 }
+
+func TestJceReader_ReadBytes(t *testing.T) {
+	b := make([]byte, 1024)
+	rand.Read(b)
+
+	w := NewJceWriter()
+	w.WriteBytes(b, 0)
+	r := NewJceReader(w.Bytes())
+	rb := r.ReadBytes(0)
+
+	assert.Equal(t, b, rb)
+}
