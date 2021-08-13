@@ -307,7 +307,7 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["PushReq"]["ConfigPush.PushReq"][1:])
 	t := r.ReadInt32(1)
-	jceBuf := r.ReadAny(2).([]byte)
+	jceBuf := r.ReadBytes(2)
 	if len(jceBuf) > 0 {
 		switch t {
 		case 1:
