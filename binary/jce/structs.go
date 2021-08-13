@@ -606,7 +606,7 @@ func (pkt *FileStoragePushFSSvcList) ReadFrom(r *JceReader) {
 	r.ReadJceStruct(pkt.BigDataChannel, 5)
 	r.ReadSlice(&pkt.VipEmotionList, 6)
 	r.ReadSlice(&pkt.C2CPicDownList, 7)
-	pkt.PttList = r.ReadAny(10).([]byte)
+	pkt.PttList = r.ReadBytes(10)
 }
 
 func (pkt *FileStorageServerInfo) ReadFrom(r *JceReader) {
@@ -617,11 +617,11 @@ func (pkt *FileStorageServerInfo) ReadFrom(r *JceReader) {
 func (pkt *BigDataChannel) ReadFrom(r *JceReader) {
 	pkt.IPLists = []BigDataIPList{}
 	r.ReadSlice(&pkt.IPLists, 0)
-	pkt.SigSession = r.ReadAny(1).([]byte)
-	pkt.KeySession = r.ReadAny(2).([]byte)
+	pkt.SigSession = r.ReadBytes(1)
+	pkt.KeySession = r.ReadBytes(2)
 	pkt.SigUin = r.ReadInt64(3)
 	pkt.ConnectFlag = r.ReadInt32(4)
-	pkt.PbBuf = r.ReadAny(5).([]byte)
+	pkt.PbBuf = r.ReadBytes(5)
 }
 
 func (pkt *BigDataIPList) ReadFrom(r *JceReader) {
@@ -659,7 +659,7 @@ func (pkt *SvcRespRegister) ReadFrom(r *JceReader) {
 	pkt.HelloInterval = r.ReadInt32(12)
 	pkt.LargeSeq = r.ReadInt32(13)
 	pkt.LargeSeqUpdate = r.ReadByte(14)
-	pkt.D769RspBody = r.ReadAny(15).([]byte)
+	pkt.D769RspBody = r.ReadBytes(15)
 	pkt.Status = r.ReadInt32(16)
 	pkt.ExtOnlineStatus = r.ReadInt64(17)
 }
@@ -741,8 +741,8 @@ func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
 	pkt.MsgType = r.ReadInt16(2)
 	pkt.MsgSeq = r.ReadInt16(3)
 	pkt.Msg = r.ReadString(4)
-	pkt.VMsg = r.ReadAny(6).([]byte)
-	pkt.MsgCookies = r.ReadAny(8).([]byte)
+	pkt.VMsg = r.ReadBytes(6)
+	pkt.MsgCookies = r.ReadBytes(8)
 	pkt.MsgUid = r.ReadInt64(10)
 	pkt.FromMobile = r.ReadString(16)
 	pkt.FromName = r.ReadString(17)
@@ -780,7 +780,7 @@ func (pkt *RequestPushNotify) ReadFrom(r *JceReader) {
 	pkt.Type = r.ReadByte(1)
 	pkt.Service = r.ReadString(2)
 	pkt.Cmd = r.ReadString(3)
-	pkt.NotifyCookie = r.ReadAny(4).([]byte)
+	pkt.NotifyCookie = r.ReadBytes(4)
 	pkt.MsgType = r.ReadInt32(5)
 	pkt.UserActive = r.ReadInt32(6)
 	pkt.GeneralFlag = r.ReadInt32(7)
@@ -792,7 +792,7 @@ func (pkt *OnlineInfo) ReadFrom(r *JceReader) {
 	pkt.ClientType = r.ReadInt32(1)
 	pkt.OnlineStatus = r.ReadInt32(2)
 	pkt.PlatformId = r.ReadInt32(3)
-	pkt.SubPlatform = string(r.ReadAny(4).([]byte))
+	pkt.SubPlatform = string(r.ReadBytes(4))
 	pkt.UClientType = r.ReadInt64(5)
 }
 
