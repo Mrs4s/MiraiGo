@@ -168,6 +168,7 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
 	rsp, body, err := c.multiMsgApplyUp(groupCode, data, hash, 1)
 	if err != nil {
+		c.Error("upload long message error: %v", err)
 		return nil
 	}
 	for i, ip := range rsp.Uint32UpIp {
@@ -177,6 +178,7 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 		}
 		return genLongTemplate(rsp.MsgResid, m.Brief(), ts)
 	}
+	c.Error("upload long message error: highway server list is empty")
 	return nil
 }
 
