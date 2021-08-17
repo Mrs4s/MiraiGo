@@ -160,11 +160,11 @@ func (w *JceWriter) WriteMap(m interface{}, tag int) {
 		return
 	}
 	w.writeHead(8, tag)
-	w.WriteInt32(int32(len(va.MapKeys())), 0)
-	for _, k := range va.MapKeys() {
-		v := va.MapIndex(k)
-		w.WriteObject(k.Interface(), 0)
-		w.WriteObject(v.Interface(), 1)
+	w.WriteInt32(int32(va.Len()), 0)
+	iter := va.MapRange()
+	for iter.Next() {
+		w.WriteObject(iter.Key().Interface(), 0)
+		w.WriteObject(iter.Value().Interface(), 1)
 	}
 }
 
