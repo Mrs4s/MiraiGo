@@ -35,7 +35,7 @@ func BenchmarkJceReader_ReadSlice(b *testing.B) {
 	src := w.Bytes()
 	b.SetBytes(int64(len(src)))
 	b.StartTimer()
-	var result = []BigDataIPInfo{}
+	result := make([]BigDataIPInfo, 0)
 	for i := 0; i < b.N; i++ {
 		r := NewJceReader(src)
 		r.ReadSlice(&result, 1)

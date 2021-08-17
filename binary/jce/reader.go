@@ -3,13 +3,13 @@ package jce
 import (
 	"bytes"
 	goBinary "encoding/binary"
+	"io"
 	"math"
 	"reflect"
 )
 
 type JceReader struct {
-	buf  *bytes.Reader
-	data []byte
+	buf *bytes.Reader
 }
 
 type HeadData struct {
@@ -19,7 +19,7 @@ type HeadData struct {
 
 func NewJceReader(data []byte) *JceReader {
 	buf := bytes.NewReader(data)
-	return &JceReader{buf: buf, data: data}
+	return &JceReader{buf: buf}
 }
 
 func (r *JceReader) readHead() (hd HeadData, l int32) {
@@ -34,10 +34,10 @@ func (r *JceReader) readHead() (hd HeadData, l int32) {
 	return hd, 1
 }
 
-func (r *JceReader) peakHead() (HeadData, int32) {
-	offset := r.buf.Size() - int64(r.buf.Len())
-	n := NewJceReader(r.data[offset:])
-	return n.readHead()
+func (r *JceReader) peakHead() (h HeadData, l int32) {
+	h, l = r.readHead()
+	_, _ = r.buf.Seek(int64(-l), io.SeekCurrent)
+	return
 }
 
 func (r *JceReader) skip(l int) {
@@ -99,7 +99,11 @@ func (r *JceReader) readBytes(len int) []byte {
 }
 
 func (r *JceReader) readByte() byte {
-	return r.readBytes(1)[0]
+	b, err := r.buf.ReadByte()
+	if err != nil {
+		panic(err)
+	}
+	return b
 }
 
 func (r *JceReader) readUInt16() uint16 {
