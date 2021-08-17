@@ -22,8 +22,7 @@ func NewJceReader(data []byte) *JceReader {
 	return &JceReader{buf: buf, data: data}
 }
 
-func (r *JceReader) readHead() (hd *HeadData, l int32) {
-	hd = &HeadData{}
+func (r *JceReader) readHead() (hd HeadData, l int32) {
 	b, _ := r.buf.ReadByte()
 	hd.Type = b & 0xF
 	hd.Tag = (int(b) & 0xF0) >> 4
@@ -35,7 +34,7 @@ func (r *JceReader) readHead() (hd *HeadData, l int32) {
 	return hd, 1
 }
 
-func (r *JceReader) peakHead() (hd *HeadData, l int32) {
+func (r *JceReader) peakHead() (HeadData, int32) {
 	offset := r.buf.Size() - int64(r.buf.Len())
 	n := NewJceReader(r.data[offset:])
 	return n.readHead()
