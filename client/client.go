@@ -11,7 +11,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -22,8 +21,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-var json = jsoniter.ConfigFastest
 
 //go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]*handlerInfo"
 

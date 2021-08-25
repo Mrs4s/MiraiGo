@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html"
 	"io"
@@ -124,8 +125,8 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 
 func (c *QQClient) GetTts(text string) ([]byte, error) {
 	url := "https://textts.qq.com/cgi-bin/tts"
-	text, _ = json.MarshalToString(text)
-	data := fmt.Sprintf(`{"appid": "201908021016","sendUin": %v,"text": %v}`, c.Uin, text)
+	bt, _ := json.Marshal(text)
+	data := fmt.Sprintf(`{"appid": "201908021016","sendUin": %v,"text": %s}`, c.Uin, bt)
 	rsp, err := utils.HttpPostBytesWithCookie(url, []byte(data), c.getCookies())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to post to tts server")
@@ -231,7 +232,7 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 		return nil, errors.New(res.ErrorMessage)
 	}
 	ret := &noticeImage{}
-	err = json.UnmarshalFromString(html.UnescapeString(res.ID), &ret)
+	err = json.Unmarshal([]byte(html.UnescapeString(res.ID)), &ret)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal json")
 	}

@@ -1,20 +1,18 @@
 package message
 
 import (
+	"encoding/json"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 
-	jsoniter "github.com/json-iterator/go"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-var json = jsoniter.ConfigFastest
 
 type (
 	PrivateMessage struct {

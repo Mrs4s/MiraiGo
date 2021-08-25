@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"math"
 	"math/rand"

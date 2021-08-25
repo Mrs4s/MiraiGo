@@ -5,11 +5,11 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	jsoniter "github.com/json-iterator/go"
 )
 
 type EncryptECDH struct {
@@ -97,7 +97,7 @@ func (e *EncryptECDH) FetchPubKey(uin int64) {
 	}
 	defer resp.Body.Close()
 	pubKey := pubKeyResp{}
-	err = jsoniter.NewDecoder(resp.Body).Decode(&pubKey)
+	err = json.NewDecoder(resp.Body).Decode(&pubKey)
 	if err != nil {
 		return
 	}

@@ -1,12 +1,13 @@
 package client
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
-	jsoniter "github.com/json-iterator/go"
+	"github.com/tidwall/gjson"
 
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -78,16 +79,14 @@ func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
 		return nil, err
 	}
 
-	items := jsoniter.Get(b, "13030", "data", "rsp", "vItemList")
-	size := items.Size()
-	variants := make([]*ModelVariant, size)
-	for i := 0; i < size; i++ {
-		item := items.Get(i)
-		variants[i] = &ModelVariant{
-			ModelShow: item.Get("sModelShow").ToString(),
-			NeedPay:   item.Get("bNeedPay").ToBool(),
-		}
-	}
+	variants := make([]*ModelVariant, 0)
+	gjson.ParseBytes(b).Get("13030.data.rsp.vItemList").ForEach(func(_, value gjson.Result) bool {
+		variants = append(variants, &ModelVariant{
+			ModelShow: value.Get("sModelShow").String(),
+			NeedPay:   value.Get("bNeedPay").Bool(),
+		})
+		return true
+	})
 	return variants, nil
 }
 

@@ -6,9 +6,6 @@ import (
 	"reflect"
 	"strconv"
 	"sync"
-	"unsafe"
-
-	"github.com/modern-go/reflect2"
 )
 
 type JceWriter struct {
@@ -204,29 +201,31 @@ func (w *JceWriter) WriteObject(i interface{}, tag int) {
 	}
 }
 
-type decoder []struct {
-	ty     reflect2.Type
-	offset uintptr
-	id     int
+type decoder struct {
+	index int
+	id    int
 }
 
 var decoderCache = sync.Map{}
 
 // WriteJceStructRaw 写入 Jce 结构体
-func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
-	var (
-		ty2    = reflect2.TypeOf(s)
-		jceDec decoder
-	)
-	dec, ok := decoderCache.Load(ty2)
+func (w *JceWriter) WriteJceStructRaw(s interface{}) {
+	t := reflect.TypeOf(s)
+	reflect.ValueOf(s).Interface()
+	if t.Kind() != reflect.Ptr {
+		return
+	}
+	t = t.Elem()
+	v := reflect.ValueOf(s).Elem()
+	var jceDec []decoder
+	dec, ok := decoderCache.Load(t)
 	if ok { // 从缓存中加载
-		jceDec = dec.(decoder)
+		jceDec = dec.([]decoder)
 	} else { // 初次反射
-		jceDec = decoder{}
-		t := reflect2.TypeOf(s).(reflect2.PtrType).Elem().(reflect2.StructType)
+		jceDec = make([]decoder, 0, t.NumField())
 		for i := 0; i < t.NumField(); i++ {
 			field := t.Field(i)
-			strId := field.Tag().Get("jceId")
+			strId := field.Tag.Get("jceId")
 			if strId == "" {
 				continue
 			}
@@ -234,16 +233,15 @@ func (w *JceWriter) WriteJceStructRaw(s IJceStruct) {
 			if err != nil {
 				continue
 			}
-			jceDec = append(jceDec, struct {
-				ty     reflect2.Type
-				offset uintptr
-				id     int
-			}{ty: field.Type(), offset: field.Offset(), id: id})
+			jceDec = append(jceDec, decoder{
+				index: i,
+				id:    id,
+			})
 		}
-		decoderCache.Store(ty2, jceDec) // 存入缓存
+		decoderCache.Store(t, jceDec) // 存入缓存
 	}
 	for _, dec := range jceDec {
-		obj := dec.ty.UnsafeIndirect(unsafe.Pointer(uintptr(reflect2.PtrOf(s)) + dec.offset)) // MAGIC!
+		obj := v.Field(dec.index).Interface()
 		if obj != nil {
 			w.WriteObject(obj, dec.id)
 		}
