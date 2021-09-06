@@ -741,6 +741,7 @@ enum SyncFlag {
 }
 
 message ResvAttr {
+  optional uint32 imageBizType = 1;
   optional AnimationImageShow image_show = 7;
 }
 

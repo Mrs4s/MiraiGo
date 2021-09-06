@@ -12,14 +12,15 @@ import (
 /* -------- Definitions -------- */
 
 type GroupImageElement struct {
-	ImageId   string
-	FileId    int64
-	ImageType int32
-	Size      int32
-	Width     int32
-	Height    int32
-	Md5       []byte
-	Url       string
+	ImageId      string
+	FileId       int64
+	ImageType    int32
+	ImageBizType ImageBizType
+	Size         int32
+	Width        int32
+	Height       int32
+	Md5          []byte
+	Url          string
 
 	// EffectID show pic effect id.
 	EffectID int32
@@ -34,6 +35,21 @@ type FriendImageElement struct {
 
 	Flash bool
 }
+
+type ImageBizType uint32
+
+const (
+	UnknownBizType  ImageBizType = 0
+	CustomFaceImage ImageBizType = 1
+	HotImage        ImageBizType = 2
+	DouImage        ImageBizType = 3 // 斗图
+	ZhiTuImage      ImageBizType = 4
+	StickerImage    ImageBizType = 7
+	SelfieImage     ImageBizType = 8
+	StickerAdImage  ImageBizType = 9
+	RelatedEmoImage ImageBizType = 10
+	HotSearchImage  ImageBizType = 13
+)
 
 /* ------ Implementations ------ */
 
@@ -91,15 +107,18 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 		}
 		return []*msg.Elem{flashElem, textHint}
 	}
-
+	res := &msg.ResvAttr{}
 	if e.EffectID != 0 { // resolve show pic
-		res := &msg.ResvAttr{ImageShow: &msg.AnimationImageShow{
+		res.ImageShow = &msg.AnimationImageShow{
 			EffectId:       &e.EffectID,
 			AnimationParam: []byte("{}"),
-		}}
-		cface.PbReserve, _ = proto.Marshal(res)
+		}
 		cface.Flag = []byte{0x11, 0x00, 0x00, 0x00}
 	}
+	if e.ImageBizType != UnknownBizType {
+		res.ImageBizType = proto.Uint32(uint32(e.ImageBizType))
+	}
+	cface.PbReserve, _ = proto.Marshal(res)
 	elem := &msg.Elem{CustomFace: cface}
 	return []*msg.Elem{elem}
 }

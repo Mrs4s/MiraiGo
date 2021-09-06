@@ -453,6 +453,16 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					}
 					return "https://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
 				}(),
+				ImageBizType: func() ImageBizType {
+					if len(elem.CustomFace.PbReserve) == 0 {
+						return UnknownBizType
+					}
+					attr := new(msg.ResvAttr)
+					if proto.Unmarshal(elem.CustomFace.PbReserve, attr) != nil {
+						return UnknownBizType
+					}
+					return ImageBizType(attr.GetImageBizType())
+				}(),
 				Md5: elem.CustomFace.Md5,
 			})
 		}
