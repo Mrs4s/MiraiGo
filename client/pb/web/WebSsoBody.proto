@@ -1,0 +1,36 @@
+syntax = "proto2";
+
+option go_package = "./;web";
+
+message STServiceMonitItem {
+  optional string cmd = 1;
+  optional string url = 2;
+  optional int32 errcode = 3;
+  optional uint32 cost = 4;
+  optional uint32 src = 5;
+}
+
+message STServiceMonitReq {
+  repeated STServiceMonitItem list = 1;
+}
+
+message WebSsoControlData {
+  optional uint32 frequency = 1;
+  optional uint32 packageSize = 2;
+}
+
+message WebSsoRequestBody {
+  optional uint32 version = 1;
+  optional uint32 type = 2;
+  optional string data = 3;
+  optional string webData = 4;
+}
+
+message WebSsoResponseBody {
+  optional uint32 version = 1;
+  optional uint32 type = 2;
+  optional uint32 ret = 3;
+  optional string data = 4;
+  optional WebSsoControlData controlData = 5;
+}
+

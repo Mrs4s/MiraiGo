@@ -142,8 +142,9 @@ type QiDianAccountInfo struct {
 }
 
 type handlerInfo struct {
-	fun    func(i interface{}, err error)
-	params requestParams
+	fun     func(i interface{}, err error)
+	dynamic bool
+	params  requestParams
 }
 
 var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){

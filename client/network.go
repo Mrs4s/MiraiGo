@@ -92,7 +92,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 			Response: i,
 			Error:    err,
 		}
-	}, params: p})
+	}, params: p, dynamic: false})
 
 	err := c.sendPacket(pkt)
 	if err != nil {
@@ -135,6 +135,25 @@ func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
 	c.waiters.Store(cmd, f)
 	return func() {
 		c.waiters.Delete(cmd)
+	}
+}
+
+// sendAndWaitDynamic
+// 发送数据包并返回需要解析的 response
+func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
+	ch := make(chan []byte, 1)
+	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) { ch <- i.([]byte) }, dynamic: true})
+	err := c.sendPacket(pkt)
+	if err != nil {
+		c.handlers.Delete(seq)
+		return nil, err
+	}
+	select {
+	case rsp := <-ch:
+		return rsp, nil
+	case <-time.After(time.Second * 15):
+		c.handlers.Delete(seq)
+		return nil, errors.New("Packet timed out")
 	}
 }
 
@@ -208,27 +227,31 @@ func (c *QQClient) netLoop() {
 			if decoder, ok := decoders[pkt.CommandName]; ok {
 				// found predefined decoder
 				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
-				rsp, err := decoder(c, &incomingPacketInfo{
-					SequenceId:  pkt.SequenceId,
-					CommandName: pkt.CommandName,
-					Params: func() requestParams {
-						if !ok {
-							return nil
-						}
-						return info.params
-					}(),
-				}, pkt.Payload)
-				if err != nil {
-					c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
+				var decoded interface{}
+				decoded = pkt.Payload
+				if info != nil && !info.dynamic {
+					decoded, err = decoder(c, &incomingPacketInfo{
+						SequenceId:  pkt.SequenceId,
+						CommandName: pkt.CommandName,
+						Params: func() requestParams {
+							if !ok {
+								return nil
+							}
+							return info.params
+						}(),
+					}, pkt.Payload)
+					if err != nil {
+						c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
+					}
 				}
 				if ok {
-					info.fun(rsp, err)
+					info.fun(decoded, err)
 				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
-					f.(func(interface{}, error))(rsp, err)
+					f.(func(interface{}, error))(decoded, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder
-				f.fun(nil, nil)
+				f.fun(pkt.Payload, nil)
 			} else {
 				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}
