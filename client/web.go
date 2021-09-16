@@ -58,6 +58,23 @@ func (c *QQClient) GetUnidirectionalFriendList() (ret []*UnidirectionalFriendInf
 	return
 }
 
+func (c *QQClient) DeleteUnidirectionalFriend(uin int64) error {
+	webRsp := &struct {
+		ErrorCode int32 `json:"ErrorCode"`
+	}{}
+	rsp, err := c.webSsoRequest("ti.qq.com", "OidbSvc.0x5d4_0", fmt.Sprintf(`{"uin_list":[%v]}`, uin))
+	if err != nil {
+		return err
+	}
+	if err = json.Unmarshal(utils.S2B(rsp), webRsp); err != nil {
+		return errors.Wrap(err, "unmarshal json error")
+	}
+	if webRsp.ErrorCode != 0 {
+		return errors.Errorf("web sso request error: %v", webRsp.ErrorCode)
+	}
+	return nil
+}
+
 func (c *QQClient) webSsoRequest(host, webCmd, data string) (string, error) {
 	s := strings.Split(host, `.`)
 	sub := ""
