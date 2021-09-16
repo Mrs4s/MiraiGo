@@ -229,7 +229,7 @@ func (c *QQClient) netLoop() {
 				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
 				var decoded interface{}
 				decoded = pkt.Payload
-				if info != nil && !info.dynamic {
+				if info == nil || !info.dynamic {
 					decoded, err = decoder(c, &incomingPacketInfo{
 						SequenceId:  pkt.SequenceId,
 						CommandName: pkt.CommandName,
