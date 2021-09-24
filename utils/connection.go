@@ -26,7 +26,7 @@ func (t *TCPListener) PlannedDisconnect(f func(*TCPListener)) {
 	t.plannedDisconnect = f
 }
 
-// UnexpectedDisconnect 未预料钟的断开连接
+// UnexpectedDisconnect 未预料的断开连接
 func (t *TCPListener) UnexpectedDisconnect(f func(*TCPListener, error)) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
