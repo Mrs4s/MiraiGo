@@ -222,6 +222,9 @@ func (msg *SendingMessage) ToFragmented() [][]IMessageElement {
 	return fragmented
 }
 
+// 单条消息发送的大小限制（预估）
+const MaxMessageSize = 5000
+
 func EstimateLength(elems []IMessageElement) int {
 	sum := 0
 	for _, elem := range elems {

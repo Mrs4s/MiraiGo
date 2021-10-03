@@ -28,7 +28,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		}
 	}
 	msgLen := message.EstimateLength(m.Elements)
-	if msgLen > 5000 || imgCount > 50 {
+	if msgLen > message.MaxMessageSize || imgCount > 50 {
 		return nil
 	}
 	if frag && (msgLen > 300 || imgCount > 2) {
