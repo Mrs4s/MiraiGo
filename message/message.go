@@ -583,7 +583,7 @@ func mergeContinuousTextMessages(sendingMessage *SendingMessage) *SendingMessage
 	lastIsText := false
 	hasContinuousText := false
 	for _, message := range sendingMessage.Elements {
-		if _, ok := message.(*TextElement); ok {
+		if message.Type() == Text {
 			if lastIsText {
 				// 有连续的文本消息，需要进行处理
 				hasContinuousText = true
@@ -602,10 +602,9 @@ func mergeContinuousTextMessages(sendingMessage *SendingMessage) *SendingMessage
 	}
 
 	// 存在连续的文本消息，需要进行合并处理
-	mergeContinuousTextMessages := NewSendingMessage()
-
 	textBuffer := strings.Builder{}
 	lastIsText = false
+	totalMessageCount := 0
 	for _, message := range sendingMessage.Elements {
 		if msgVal, ok := message.(*TextElement); ok {
 			// 遇到文本元素先存放起来，方便将连续的文本元素合并
@@ -616,21 +615,25 @@ func mergeContinuousTextMessages(sendingMessage *SendingMessage) *SendingMessage
 
 		// 如果之前的是文本元素（可能是多个合并起来的），则在这里将其实际放入消息中
 		if lastIsText {
-			mergeContinuousTextMessages.Append(NewText(textBuffer.String()))
+			sendingMessage.Elements[totalMessageCount] = NewText(textBuffer.String())
+			totalMessageCount += 1
 			textBuffer.Reset()
 		}
 		lastIsText = false
 
 		// 非文本元素则直接处理
-		mergeContinuousTextMessages.Append(message)
+		sendingMessage.Elements[totalMessageCount] = message
+		totalMessageCount += 1
 	}
 	// 处理最后几个元素是文本的情况
 	if textBuffer.Len() != 0 {
-		mergeContinuousTextMessages.Append(NewText(textBuffer.String()))
+		sendingMessage.Elements[totalMessageCount] = NewText(textBuffer.String())
+		totalMessageCount += 1
 		textBuffer.Reset()
 	}
+	sendingMessage.Elements = sendingMessage.Elements[:totalMessageCount]
 
-	return mergeContinuousTextMessages
+	return sendingMessage
 }
 
 // splitElements 将原有消息的各个元素先尝试处理，如过长的文本消息按需分割为多个元素
@@ -697,22 +700,18 @@ func splitPlainMessage(content string) []IMessageElement {
 		return []IMessageElement{NewText(content)}
 	}
 
-	var splittedMessage []IMessageElement
+	splittedMessage := make([]IMessageElement, 0, (len(content)+MaxMessageSize-1)/MaxMessageSize)
 
-	var part string
-	remainingText := content
-	for len(remainingText) != 0 {
-		partSize := 0
-		for _, runeValue := range remainingText {
-			runeSize := len(string(runeValue))
-			if partSize+runeSize > MaxMessageSize {
-				break
-			}
-			partSize += runeSize
+	last := 0
+	for runeIndex, runeValue := range content {
+		// 如果加上新的这个字符后，会超出大小，则从这个字符前分一次片
+		if runeIndex+len(string(runeValue))-last > MaxMessageSize {
+			splittedMessage = append(splittedMessage, NewText(content[last:runeIndex]))
+			last = runeIndex
 		}
-
-		part, remainingText = remainingText[:partSize], remainingText[partSize:]
-		splittedMessage = append(splittedMessage, NewText(part))
+	}
+	if last != len(content) {
+		splittedMessage = append(splittedMessage, NewText(content[last:len(content)]))
 	}
 
 	return splittedMessage
