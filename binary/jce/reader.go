@@ -384,31 +384,6 @@ func (r *JceReader) ReadMap(i interface{}, tag int) {
 	}
 }
 
-func (r *JceReader) readObject(t reflect.Type, tag int) reflect.Value {
-	switch t.Kind() {
-	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
-		var i int64
-		r.ReadObject(&i, tag)
-		return reflect.ValueOf(i)
-	case reflect.String:
-		var s string
-		r.ReadObject(&s, tag)
-		return reflect.ValueOf(s)
-	case reflect.Slice:
-		if _, ok := reflect.New(t.Elem()).Interface().(*[]byte); ok {
-			arr := &[]byte{}
-			r.ReadSlice(arr, tag)
-			return reflect.ValueOf(arr).Elem()
-		}
-		s := reflect.New(t.Elem()).Interface().(IJceStruct)
-		r.readHead()
-		s.ReadFrom(r)
-		r.skipToStructEnd()
-		return reflect.ValueOf(s).Elem()
-	}
-	return reflect.ValueOf(nil)
-}
-
 func (r *JceReader) ReadSlice(i interface{}, tag int) {
 	t := reflect.TypeOf(i)
 	v := reflect.ValueOf(i).Elem()
