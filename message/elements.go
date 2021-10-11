@@ -53,6 +53,7 @@ type GroupFileElement struct {
 type ReplyElement struct {
 	ReplySeq int32
 	Sender   int64
+	GroupID  int64 // 私聊回复群聊时
 	Time     int32
 	Elements []IMessageElement
 

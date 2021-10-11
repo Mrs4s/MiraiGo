@@ -340,6 +340,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				ReplySeq: elem.SrcMsg.OrigSeqs[0],
 				Time:     elem.SrcMsg.GetTime(),
 				Sender:   elem.SrcMsg.GetSenderUin(),
+				GroupID:  elem.SrcMsg.GetToUin(),
 				Elements: ParseMessageElems(elem.SrcMsg.Elems),
 			}
 			res = append(res, r)
