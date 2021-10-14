@@ -191,7 +191,7 @@ func (c *QQClient) netLoop() {
 			time.Sleep(time.Millisecond * 500)
 			continue
 		}
-		if l <= 0 || l > 1024*1024*10 { // max 10MB
+		if l < 4 || l > 1024*1024*10 { // max 10MB
 			c.Error("parse incoming packet error: invalid packet length %v", l)
 			errCount++
 			if errCount > 2 {
