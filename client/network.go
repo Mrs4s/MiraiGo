@@ -191,6 +191,14 @@ func (c *QQClient) netLoop() {
 			time.Sleep(time.Millisecond * 500)
 			continue
 		}
+		if l <= 0 || l > 1024*1024*10 { // max 10MB
+			c.Error("parse incoming packet error: invalid packet length %v", l)
+			errCount++
+			if errCount > 2 {
+				go c.quickReconnect()
+			}
+			continue
+		}
 		data, _ := c.TCP.ReadBytes(int(l) - 4)
 		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
 		if err != nil {
@@ -203,7 +211,6 @@ func (c *QQClient) netLoop() {
 			errCount++
 			if errCount > 2 {
 				go c.quickReconnect()
-				continue
 			}
 			continue
 		}
