@@ -20,10 +20,10 @@ var client = &http.Client{
 // HttpGetBytes 带 cookie 的 GET 请求
 func HttpGetBytes(url, cookie string) ([]byte, error) {
 	body, err := HTTPGetReadCloser(url, cookie)
-	defer func() { _ = body.Close() }()
 	if err != nil {
 		return nil, err
 	}
+	defer func() { _ = body.Close() }()
 	return io.ReadAll(body)
 }
 
