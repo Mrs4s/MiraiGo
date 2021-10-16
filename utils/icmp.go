@@ -1,12 +1,13 @@
 package utils
 
 import (
-	"github.com/pkg/errors"
-	"golang.org/x/net/icmp"
-	"golang.org/x/net/ipv4"
 	"math/rand"
 	"net"
 	"time"
+
+	"github.com/pkg/errors"
+	"golang.org/x/net/icmp"
+	"golang.org/x/net/ipv4"
 )
 
 type ICMPPingResult struct {
