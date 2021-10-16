@@ -2,12 +2,13 @@ package binary
 
 import (
 	"bytes"
-	"compress/gzip"
-	"compress/zlib"
 	binary2 "encoding/binary"
 	"encoding/hex"
 	"io"
 	"net"
+
+	"github.com/klauspost/compress/gzip"
+	"github.com/klauspost/compress/zlib"
 
 	"github.com/Mrs4s/MiraiGo/utils"
 )
