@@ -1,7 +1,10 @@
 package client
 
 import (
+	"net"
 	"runtime/debug"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -11,6 +14,74 @@ import (
 	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
+
+// ConnectionQualityInfo 客户端连接质量测试结果
+// 延迟单位为 ms 如为 9999 则测试失败 测试方法为 TCP 连接测试
+// 丢包测试方法为 ICMP. 总共发送 10 个包, 记录丢包数
+type ConnectionQualityInfo struct {
+	// ChatServerLatency 聊天服务器延迟
+	ChatServerLatency int64
+	// ChatServerPacketLoss 聊天服务器ICMP丢包数
+	ChatServerPacketLoss int
+	// LongMessageServerLatency 长消息服务器延迟. 涉及长消息以及合并转发消息下载
+	LongMessageServerLatency int64
+	// LongMessageServerResponseLatency 长消息服务器返回延迟
+	LongMessageServerResponseLatency int64
+	// SrvServerLatency Highway服务器延迟. 涉及媒体以及群文件上传
+	SrvServerLatency int64
+	// SrvServerPacketLoss Highway服务器ICMP丢包数.
+	SrvServerPacketLoss int
+}
+
+func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
+	if !c.Online {
+		return nil
+	}
+	r := &ConnectionQualityInfo{}
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+	go func(w *sync.WaitGroup) {
+		var err error
+
+		if r.ChatServerLatency, err = qualityTest(c.servers[c.currServerIndex].String()); err != nil {
+			c.Error("test chat server latency error: %v", err)
+			r.ChatServerLatency = 9999
+		}
+
+		if addr, err := net.ResolveIPAddr("ip", "ssl.htdata.qq.com"); err == nil {
+			if r.LongMessageServerLatency, err = qualityTest((&net.TCPAddr{IP: addr.IP, Port: 443}).String()); err != nil {
+				c.Error("test long message server latency error: %v", err)
+				r.LongMessageServerLatency = 9999
+			}
+		} else {
+			c.Error("resolve long message server error: %v", err)
+			r.LongMessageServerLatency = 9999
+		}
+
+		if r.SrvServerLatency, err = qualityTest(c.srvSsoAddrs[0]); err != nil {
+			c.Error("test srv server latency error: %v", err)
+			r.SrvServerLatency = 9999
+		}
+
+		w.Done()
+	}(&wg)
+	go func(w *sync.WaitGroup) {
+		res := utils.RunICMPPingLoop(&net.IPAddr{IP: c.servers[c.currServerIndex].IP}, 10)
+		r.ChatServerPacketLoss = res.PacketsLoss
+		res = utils.RunICMPPingLoop(&net.IPAddr{IP: net.ParseIP(strings.Split(c.srvSsoAddrs[0], ":")[0])}, 10)
+		r.SrvServerPacketLoss = res.PacketsLoss
+		w.Done()
+	}(&wg)
+	start := time.Now()
+	if _, err := utils.HttpGetBytes("https://ssl.htdata.qq.com", ""); err == nil {
+		r.LongMessageServerResponseLatency = time.Now().Sub(start).Milliseconds()
+	} else {
+		c.Error("test long message server response latency error: %v", err)
+		r.LongMessageServerResponseLatency = 9999
+	}
+	wg.Wait()
+	return r
+}
 
 // connect 连接到 QQClient.servers 中的服务器
 func (c *QQClient) connect() error {

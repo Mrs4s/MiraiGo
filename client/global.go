@@ -488,10 +488,10 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	return adds, nil
 }
 
-func qualityTest(addr *net.TCPAddr) (int64, error) {
+func qualityTest(addr string) (int64, error) {
 	// see QualityTestManager
 	start := time.Now()
-	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*5)
+	conn, err := net.DialTimeout("tcp", addr, time.Second*5)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to connect to server during quality test")
 	}
