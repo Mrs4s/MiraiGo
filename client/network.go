@@ -57,10 +57,11 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 			c.Error("resolve long message server error: %v", err)
 			r.LongMessageServerLatency = 9999
 		}
-
-		if r.SrvServerLatency, err = qualityTest(c.srvSsoAddrs[0]); err != nil {
-			c.Error("test srv server latency error: %v", err)
-			r.SrvServerLatency = 9999
+		if len(c.srvSsoAddrs) > 0 {
+			if r.SrvServerLatency, err = qualityTest(c.srvSsoAddrs[0]); err != nil {
+				c.Error("test srv server latency error: %v", err)
+				r.SrvServerLatency = 9999
+			}
 		}
 
 		w.Done()
@@ -68,8 +69,10 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	go func(w *sync.WaitGroup) {
 		res := utils.RunICMPPingLoop(&net.IPAddr{IP: c.servers[c.currServerIndex].IP}, 10)
 		r.ChatServerPacketLoss = res.PacketsLoss
-		res = utils.RunICMPPingLoop(&net.IPAddr{IP: net.ParseIP(strings.Split(c.srvSsoAddrs[0], ":")[0])}, 10)
-		r.SrvServerPacketLoss = res.PacketsLoss
+		if len(c.srvSsoAddrs) > 0 {
+			res = utils.RunICMPPingLoop(&net.IPAddr{IP: net.ParseIP(strings.Split(c.srvSsoAddrs[0], ":")[0])}, 10)
+			r.SrvServerPacketLoss = res.PacketsLoss
+		}
 		w.Done()
 	}(&wg)
 	start := time.Now()
