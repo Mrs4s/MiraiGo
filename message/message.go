@@ -472,7 +472,15 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			if elem.NotOnlineImage.GetOrigUrl() != "" {
 				img = "https://c2cpicdw.qpic.cn" + elem.NotOnlineImage.GetOrigUrl()
 			} else {
-				img = "https://c2cpicdw.qpic.cn/offpic_new/0/" + elem.NotOnlineImage.GetResId() + "/0?term=2"
+				img = "https://c2cpicdw.qpic.cn/offpic_new/0"
+				downloadPath := elem.NotOnlineImage.GetResId()
+				if elem.NotOnlineImage.GetDownloadPath() != "" {
+					downloadPath = elem.NotOnlineImage.GetDownloadPath()
+				}
+				if !strings.HasPrefix(downloadPath, "/") {
+					img += "/"
+				}
+				img += downloadPath + "/0?term=3"
 			}
 			res = append(res, &FriendImageElement{
 				ImageId: elem.NotOnlineImage.GetFilePath(),
