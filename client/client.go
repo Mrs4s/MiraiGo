@@ -414,7 +414,7 @@ func (c *QQClient) RequestSMS() bool {
 
 func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.g) == 0 {
-		c.Warning("device lock is disable. http api may fail.")
+		c.Warning("device lock is disabled. http api may fail.")
 	}
 	if err := c.registerClient(); err != nil {
 		return errors.Wrap(err, "register error")
