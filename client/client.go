@@ -872,8 +872,11 @@ func (c *QQClient) nextHighwayApplySeq() int32 {
 func (c *QQClient) doHeartbeat() {
 	c.heartbeatEnabled = true
 	times := 0
-	for c.Online {
-		time.Sleep(time.Second * 30)
+	ticker := time.NewTicker(time.Second * 30)
+	for range ticker.C {
+		if !c.Online {
+			break
+		}
 		seq := c.nextSeq()
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, []byte{}, sso, []byte{})
@@ -887,5 +890,6 @@ func (c *QQClient) doHeartbeat() {
 			times = 0
 		}
 	}
+	ticker.Stop()
 	c.heartbeatEnabled = false
 }
