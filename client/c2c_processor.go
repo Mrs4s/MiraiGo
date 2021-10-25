@@ -13,30 +13,26 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var privateMsgDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
+var c2cDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
+	// privateMsgDecoders
 	9: privateMessageDecoder, 10: privateMessageDecoder, 31: privateMessageDecoder,
 	79: privateMessageDecoder, 97: privateMessageDecoder, 120: privateMessageDecoder,
 	132: privateMessageDecoder, 133: privateMessageDecoder, 166: privateMessageDecoder,
 	167: privateMessageDecoder, 140: tempSessionDecoder, 141: tempSessionDecoder,
 	208: privatePttDecoder,
-}
 
-var troopSystemMsgDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
+	// troopSystemMsgDecoders
 	35: troopSystemMessageDecoder, 36: troopSystemMessageDecoder, 37: troopSystemMessageDecoder,
 	45: troopSystemMessageDecoder, 46: troopSystemMessageDecoder, 84: troopSystemMessageDecoder,
 	85: troopSystemMessageDecoder, 86: troopSystemMessageDecoder, 87: troopSystemMessageDecoder,
-}
 
-var sysMsgDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
+	// sysMsgDecoders
 	187: systemMessageDecoder, 188: systemMessageDecoder, 189: systemMessageDecoder,
 	190: systemMessageDecoder, 191: systemMessageDecoder,
-}
 
-var otherDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
+	// otherDecoders
 	33: troopAddMemberBroadcastDecoder, 529: msgType0x211Decoder,
 }
-
-var c2cDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){}
 
 type (
 	TempSessionInfo struct {
@@ -61,18 +57,6 @@ const (
 	DateSource          TempSessionSource = 8 // 来自约会
 	AddressBookSource   TempSessionSource = 9 // 来自通讯录
 )
-
-func init() {
-	merge := func(m map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo)) {
-		for k, v := range m {
-			c2cDecoders[k] = v
-		}
-	}
-	merge(privateMsgDecoders)
-	merge(troopSystemMsgDecoders)
-	merge(sysMsgDecoders)
-	merge(otherDecoders)
-}
 
 func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *incomingPacketInfo) {
 	c.syncCookie = rsp.SyncCookie
