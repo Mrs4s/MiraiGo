@@ -7,7 +7,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -24,11 +23,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/utils"
-)
-
-var (
-	groupJoinLock  sync.Mutex
-	groupLeaveLock sync.Mutex
 )
 
 // wtlogin.login
@@ -657,8 +651,8 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []b
 		typ := int32(data.ReadByte())
 		operator := int64(uint32(data.ReadInt32()))
 		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
-			groupLeaveLock.Lock()
-			defer groupLeaveLock.Unlock()
+			c.groupLeaveLock.Lock()
+			defer c.groupLeaveLock.Unlock()
 			switch typ {
 			case 0x02:
 				if target == c.Uin {

@@ -235,8 +235,8 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 }
 
 func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
-	groupJoinLock.Lock()
-	defer groupJoinLock.Unlock()
+	c.groupJoinLock.Lock()
+	defer c.groupJoinLock.Unlock()
 	group := c.FindGroupByUin(pMsg.Head.GetFromUin())
 	if pMsg.Head.GetAuthUin() == c.Uin {
 		if group == nil && c.ReloadGroupList() == nil {

@@ -162,15 +162,15 @@ func msgType0x210SubD4Decoder(c *QQClient, protobuf []byte) error {
 	if err := proto.Unmarshal(protobuf, &d4); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	groupLeaveLock.Lock()
+	c.groupLeaveLock.Lock()
 	if g := c.FindGroup(d4.Uin); g != nil {
 		if err := c.ReloadGroupList(); err != nil {
-			groupLeaveLock.Unlock()
+			c.groupLeaveLock.Unlock()
 			return err
 		}
 		c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
 	}
-	groupLeaveLock.Unlock()
+	c.groupLeaveLock.Unlock()
 	return nil
 }
 
@@ -237,8 +237,8 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 	if s44.GroupSyncMsg == nil {
 		return nil
 	}
-	groupJoinLock.Lock()
-	defer groupJoinLock.Unlock()
+	c.groupJoinLock.Lock()
+	defer c.groupJoinLock.Unlock()
 	if s44.GroupSyncMsg.GetGrpCode() != 0 { // member sync
 		return errors.New("invalid group code")
 	}

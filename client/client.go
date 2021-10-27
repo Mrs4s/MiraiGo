@@ -108,7 +108,9 @@ type QQClient struct {
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
 
-	groupListLock sync.Mutex
+	groupListLock  sync.Mutex
+	groupJoinLock  sync.Mutex
+	groupLeaveLock sync.Mutex
 }
 
 type loginSigInfo struct {
