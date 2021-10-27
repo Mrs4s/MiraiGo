@@ -59,7 +59,7 @@ func main() {
 	var sf switchFile
 
 	fset := token.NewFileSet()
-	astF, err := parser.ParseFile(fset, "c2c_decoders.go", nil, parser.AllErrors|parser.ParseComments)
+	astF, err := parser.ParseFile(fset, "_c2c_decoders.go", nil, parser.AllErrors|parser.ParseComments)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,7 @@ func main() {
 	sf.Consts = make([]string, 0, len(astF.Scope.Objects))
 	for _, obj := range astF.Scope.Objects {
 		if obj.Kind != ast.Var {
-			panic(`unknown non-variable in "c2c_decoders.go"`)
+			panic(`unknown non-variable in "_c2c_decoders.go"`)
 		}
 		value := obj.Decl.(*ast.ValueSpec)
 		sf.Consts = append(sf.Consts, obj.Name)
@@ -88,17 +88,17 @@ func main() {
 							DecoderType: obj.Name,
 						})
 					} else {
-						panic(`unknown key value in ` + obj.Name + ` in "c2c_decoders.go"`)
+						panic(`unknown key value in ` + obj.Name + ` in "_c2c_decoders.go"`)
 					}
 				}
 			} else {
-				panic(`unknown non-map value in "c2c_decoders.go"`)
+				panic(`unknown non-map value in "_c2c_decoders.go"`)
 			}
 		}
 	}
 	sort.Sort(sf.Decoders)
 
-	f, _ := os.OpenFile("c2c_switch.go", os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0o755)
+	f, _ := os.OpenFile("c2c_switch.go", os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0o644)
 	tmpl, err := template.New("template").Parse(codeTemplate)
 	if err != nil {
 		panic(err)

@@ -1,6 +1,3 @@
-//go:build ignore
-// +build ignore
-
 package client
 
 import "github.com/Mrs4s/MiraiGo/client/pb/msg"
