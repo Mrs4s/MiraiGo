@@ -18,17 +18,13 @@ type EncryptECDH struct {
 	PublicKeyVer    uint16
 }
 
-type EncryptSession struct {
-	T133 []byte
-}
-
-var ECDH = &EncryptECDH{}
+type T133 []byte
+type EncryptSession T133
 
 const serverPublicKey = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E"
 
-func init() {
-	ECDH.PublicKeyVer = 1
-	ECDH.generateKey(serverPublicKey)
+func (e *EncryptECDH) InitWithDefaultKey() {
+	e.generateKey(serverPublicKey)
 }
 
 func (e *EncryptECDH) generateKey(sPubKey string) {
@@ -55,9 +51,9 @@ func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 	w.Write(k)
 	w.WriteUInt16(0x01_31)
 	w.WriteUInt16(e.PublicKeyVer)
-	w.WriteUInt16(uint16(len(ECDH.PublicKey)))
-	w.Write(ECDH.PublicKey)
-	w.EncryptAndWrite(ECDH.InitialShareKey, d)
+	w.WriteUInt16(uint16(len(e.PublicKey)))
+	w.Write(e.PublicKey)
+	w.EncryptAndWrite(e.InitialShareKey, d)
 	return w.Bytes()
 }
 
@@ -66,14 +62,14 @@ func (e *EncryptECDH) Id() byte {
 }
 
 func NewEncryptSession(t133 []byte) *EncryptSession {
-	return &EncryptSession{T133: t133}
+	return (*EncryptSession)(&t133)
 }
 
 func (e *EncryptSession) DoEncrypt(d, k []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		encrypt := binary.NewTeaCipher(k).Encrypt(d)
-		w.WriteUInt16(uint16(len(e.T133)))
-		w.Write(e.T133)
+		w.WriteUInt16(uint16(len(*(*[]byte)(e))))
+		w.Write(*(*[]byte)(e))
 		w.Write(encrypt)
 	})
 }

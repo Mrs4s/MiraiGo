@@ -31,7 +31,7 @@ var (
 
 func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		if c.AllowSlider {
 			w.WriteUInt16(0x17)
@@ -99,7 +99,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 
 func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(20)
 		w.WriteUInt16(4)
 
@@ -116,7 +116,7 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(0, 0x812, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteHex(`0001110000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
 		w.Write(packets.BuildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
@@ -143,7 +143,7 @@ func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
 	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(0, 0x812, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteHex(`0000620000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
 		w.Write(packets.BuildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
@@ -165,7 +165,7 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 
 func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		w.WriteUInt16(24)
 
@@ -233,7 +233,7 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(2) // sub command
 		w.WriteUInt16(4)
 
@@ -249,7 +249,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 
 func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(8)
 		w.WriteUInt16(6)
 
@@ -267,7 +267,7 @@ func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 
 func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(7)
 		w.WriteUInt16(7)
 
@@ -286,7 +286,7 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 
 func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(2)
 		w.WriteUInt16(4)
 
@@ -356,7 +356,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 
 func (c *QQClient) buildRequestChangeSigPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.ECDH, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(11)
 		w.WriteUInt16(17)
 

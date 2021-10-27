@@ -190,7 +190,7 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	}, nil
 }
 
-func (pkt *IncomingPacket) DecryptPayload(random, sessionKey []byte) ([]byte, error) {
+func (pkt *IncomingPacket) DecryptPayload(ecdh *crypto.EncryptECDH, random, sessionKey []byte) ([]byte, error) {
 	reader := binary.NewReader(pkt.Payload)
 	if reader.ReadByte() != 2 {
 		return nil, ErrUnknownFlag
@@ -211,7 +211,7 @@ func (pkt *IncomingPacket) DecryptPayload(random, sessionKey []byte) ([]byte, er
 					decrypted = tea.Decrypt(d)
 				}
 			}()
-			tea := binary.NewTeaCipher(crypto.ECDH.InitialShareKey)
+			tea := binary.NewTeaCipher(ecdh.InitialShareKey)
 			decrypted = tea.Decrypt(d)
 			return
 		}()

@@ -112,6 +112,8 @@ type QQClient struct {
 	groupJoinLock   sync.Mutex
 	groupLeaveLock  sync.Mutex
 	loginNotifyLock sync.Mutex
+
+	ecdh *crypto.EncryptECDH
 }
 
 type loginSigInfo struct {
@@ -192,7 +194,6 @@ func NewClientEmpty() *QQClient {
 }
 
 func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
-	crypto.ECDH.FetchPubKey(uin)
 	cli := &QQClient{
 		Uin:                     uin,
 		PasswordMd5:             passwordMd5,
@@ -213,6 +214,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		servers:                 []*net.TCPAddr{},
 		alive:                   true,
 	}
+	cli.ecdh = &crypto.EncryptECDH{}
+	cli.ecdh.InitWithDefaultKey()
+	cli.ecdh.FetchPubKey(uin)
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {

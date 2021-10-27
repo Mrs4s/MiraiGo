@@ -289,7 +289,7 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		if pkt.Flag2 == 2 {
-			pkt.Payload, err = pkt.DecryptPayload(c.RandomKey, c.sigInfo.wtSessionTicketKey)
+			pkt.Payload, err = pkt.DecryptPayload(c.ecdh, c.RandomKey, c.sigInfo.wtSessionTicketKey)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
 				continue
