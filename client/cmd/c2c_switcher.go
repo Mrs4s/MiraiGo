@@ -1,6 +1,3 @@
-//go:build ignore
-// +build ignore
-
 package main
 
 import (
@@ -109,8 +106,8 @@ func main() {
 		panic(err)
 	}
 	source, _ := format.Source(buffer.Bytes())
-	f.Write(source)
-	f.Close()
+	_, _ = f.Write(source)
+	_ = f.Close()
 }
 
 func mustParseInt(s string) int64 {

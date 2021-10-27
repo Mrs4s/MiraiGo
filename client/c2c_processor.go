@@ -1,6 +1,6 @@
 package client
 
-//go:generate go run c2c_switcher.go
+//go:generate go run cmd/c2c_switcher.go
 
 import (
 	"fmt"
