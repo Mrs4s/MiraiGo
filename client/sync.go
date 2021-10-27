@@ -2,7 +2,6 @@ package client
 
 import (
 	"math/rand"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -430,8 +429,6 @@ func decodeMsgReadedResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte)
 	return nil, nil
 }
 
-var loginNotifyLock sync.Mutex
-
 // StatSvc.SvcReqMSFLoginNotify
 func decodeLoginNotifyPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
@@ -441,8 +438,8 @@ func decodeLoginNotifyPacket(c *QQClient, _ *incomingPacketInfo, payload []byte)
 	reader := jce.NewJceReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])
 	notify := &jce.SvcReqMSFLoginNotify{}
 	notify.ReadFrom(reader)
-	loginNotifyLock.Lock()
-	defer loginNotifyLock.Unlock()
+	c.loginNotifyLock.Lock()
+	defer c.loginNotifyLock.Unlock()
 	if notify.Status == 1 {
 		found := false
 		for _, oc := range c.OnlineClients {
