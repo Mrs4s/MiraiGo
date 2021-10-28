@@ -467,6 +467,28 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				Md5: elem.CustomFace.Md5,
 			})
 		}
+		if elem.MarketFace != nil {
+			face := &MarketFaceElement{
+				Name:       utils.B2S(elem.MarketFace.GetFaceName()),
+				ItemType:   int32(elem.MarketFace.GetItemType()),
+				SubType:    int32(elem.MarketFace.GetSubType()),
+				EncryptKey: elem.MarketFace.GetKey(),
+				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
+			}
+			if face.Name == "[骰子]" {
+				return []IMessageElement{
+					&DiceElement{
+						MarketFaceElement: face,
+						Value: func() int32 {
+							v := strings.SplitN(face.MagicValue, "=", 2)[1]
+							t, _ := strconv.ParseInt(v, 10, 32)
+							return int32(t) + 1
+						}(),
+					},
+				}
+			}
+			return []IMessageElement{face}
+		}
 		if elem.NotOnlineImage != nil {
 			var img string
 			if elem.NotOnlineImage.GetOrigUrl() != "" {

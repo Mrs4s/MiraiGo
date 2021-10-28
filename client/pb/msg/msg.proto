@@ -196,10 +196,10 @@ message Elem {
   optional OnlineImage onlineImage = 3;
   optional NotOnlineImage notOnlineImage = 4;
   optional TransElem transElemInfo = 5;
-  //MarketFace marketFace = 6;
+  optional MarketFace marketFace = 6;
   //ElemFlags elemFlags = 7;
   optional CustomFace customFace = 8;
-  //ElemFlags2 elemFlags2 = 9;
+  optional ElemFlags2 elemFlags2 = 9;
   //FunFace funFace = 10;
   //SecretFileMsg secretFile = 11;
   optional RichMsg richMsg = 12;
@@ -244,6 +244,53 @@ message Elem {
   optional LightAppElem lightApp = 51;
   //EIMInfo? eimInfo = 52;
   optional CommonElem commonElem = 53;
+}
+
+message MarketFace {
+  optional bytes faceName = 1;
+  optional uint32 itemType = 2;
+  optional uint32 faceInfo = 3;
+  optional bytes faceId = 4;
+  optional uint32 tabId = 5;
+  optional uint32 subType = 6;
+  optional bytes key = 7;
+  optional bytes param = 8;
+  optional uint32 mediaType = 9;
+  optional uint32 imageWidth = 10;
+  optional uint32 imageHeight = 11;
+  optional bytes mobileparam = 12;
+  optional bytes pbReserve = 13;
+}
+
+message ElemFlags2 {
+  optional uint32 colorTextId = 1;
+  optional uint64 msgId = 2;
+  optional uint32 whisperSessionId = 3;
+  optional uint32 pttChangeBit = 4;
+  optional uint32 vipStatus = 5;
+  optional uint32 compatibleId = 6;
+  repeated Inst insts = 7;
+  optional uint32 msgRptCnt = 8;
+  optional Inst srcInst = 9;
+  optional uint32 longtitude = 10;
+  optional uint32 latitude = 11;
+  optional uint32 customFont = 12;
+  optional PcSupportDef pcSupportDef = 13;
+  optional uint32 crmFlags = 14;
+
+  message Inst {
+    optional uint32 appId = 1;
+    optional uint32 instId = 2;
+  }
+}
+
+message PcSupportDef {
+  optional uint32 pcPtlBegin = 1;
+  optional uint32 pcPtlEnd = 2;
+  optional uint32 macPtlBegin = 3;
+  optional uint32 macPtlEnd = 4;
+  repeated uint32 ptlsSupport = 5;
+  repeated uint32 ptlsNotSupport = 6;
 }
 
 message CommonElem {
