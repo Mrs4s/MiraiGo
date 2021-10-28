@@ -113,8 +113,8 @@ func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []
 		if m.MsgType == 528 {
 			vr := jce.NewJceReader(m.VMsg)
 			subType := vr.ReadInt64(0)
-			protobuf := vr.ReadBytes(10)
 			if decoder, ok := msg0x210Decoders[subType]; ok {
+				protobuf := vr.ReadBytes(10)
 				if err := decoder(c, protobuf); err != nil {
 					return nil, errors.Wrap(err, "decode online push 0x210 error")
 				}

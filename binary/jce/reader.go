@@ -90,6 +90,9 @@ func (r *JceReader) SkipField(c int) {
 }
 
 func (r *JceReader) readBytes(len int) []byte {
+	if len == 0 {
+		return nil
+	}
 	b := make([]byte, len)
 	_, err := r.buf.Read(b)
 	if err != nil {

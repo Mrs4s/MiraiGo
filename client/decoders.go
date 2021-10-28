@@ -395,13 +395,16 @@ func decodeSvcNotify(c *QQClient, _ *incomingPacketInfo, payload []byte) (interf
 	}
 	notify := &jce.RequestPushNotify{}
 	notify.ReadFrom(jce.NewJceReader(data.Map["req_PushNotify"]["PushNotifyPack.RequestPushNotify"][1:]))
-	if _, ok := troopSystemMsgDecoders[notify.MsgType]; ok && notify.MsgType != 85 && notify.MsgType != 36 {
-		c.exceptAndDispatchGroupSysMsg()
-		return nil, nil
-	}
-	if _, ok := sysMsgDecoders[notify.MsgType]; ok {
-		_, pkt := c.buildSystemMsgNewFriendPacket()
-		return nil, c.sendPacket(pkt)
+	if decoder, typ := peekC2CDecoder(notify.MsgType); decoder != nil {
+		// notify.MsgType != 85 && notify.MsgType != 36 moves to _c2c_decoders.go [nonSvcNotifyTroopSystemMsgDecoders]
+		if typ == troopSystemMsgDecoders {
+			c.exceptAndDispatchGroupSysMsg()
+			return nil, nil
+		}
+		if typ == sysMsgDecoders {
+			_, pkt := c.buildSystemMsgNewFriendPacket()
+			return nil, c.sendPacket(pkt)
+		}
 	}
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
