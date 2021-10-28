@@ -38,19 +38,6 @@ type FaceElement struct {
 	Name  string
 }
 
-type MarketFaceElement struct {
-	Name       string
-	ItemType   int32
-	SubType    int32
-	EncryptKey []byte // tea + xor, see EMosmUtils.class::a maybe useful?
-	MagicValue string
-}
-
-type DiceElement struct {
-	*MarketFaceElement
-	Value int32
-}
-
 type AtElement struct {
 	Target  int64
 	Display string
@@ -234,10 +221,6 @@ func (e *TextElement) Type() ElementType {
 }
 
 func (e *FaceElement) Type() ElementType {
-	return Face
-}
-
-func (e *MarketFaceElement) Type() ElementType {
 	return Face
 }
 

@@ -470,8 +470,11 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
 				Name:       utils.B2S(elem.MarketFace.GetFaceName()),
+				FaceId:     elem.MarketFace.FaceId,
+				TabId:      int32(elem.MarketFace.GetTabId()),
 				ItemType:   int32(elem.MarketFace.GetItemType()),
 				SubType:    int32(elem.MarketFace.GetSubType()),
+				MediaType:  int32(elem.MarketFace.GetMediaType()),
 				EncryptKey: elem.MarketFace.GetKey(),
 				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
 			}
