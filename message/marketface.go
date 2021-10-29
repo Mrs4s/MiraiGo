@@ -12,8 +12,8 @@ type MarketFaceElement struct {
 	FaceId     []byte // decoded = mediaType == 2 ? string(FaceId) : hex.EncodeToString(FaceId).toLower().trimSpace(); download url param?
 	TabId      int32
 	ItemType   int32
-	SubType    int32
-	MediaType  int32
+	SubType    int32  // image type, 0 -> None 1 -> Magic Face 2 -> GIF 3 -> PNG
+	MediaType  int32  // 1 -> Voice Face 2 -> dynamic face
 	EncryptKey []byte // tea + xor, see EMosmUtils.class::a maybe useful?
 	MagicValue string
 }
