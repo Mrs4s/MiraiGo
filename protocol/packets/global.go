@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/protocol/crypto"
 )
 
 var (
@@ -190,7 +189,7 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	}, nil
 }
 
-func (pkt *IncomingPacket) DecryptPayload(random, sessionKey []byte) ([]byte, error) {
+func (pkt *IncomingPacket) DecryptPayload(ecdhShareKey, random, sessionKey []byte) ([]byte, error) {
 	reader := binary.NewReader(pkt.Payload)
 	if reader.ReadByte() != 2 {
 		return nil, ErrUnknownFlag
@@ -211,7 +210,7 @@ func (pkt *IncomingPacket) DecryptPayload(random, sessionKey []byte) ([]byte, er
 					decrypted = tea.Decrypt(d)
 				}
 			}()
-			tea := binary.NewTeaCipher(crypto.ECDH.InitialShareKey)
+			tea := binary.NewTeaCipher(ecdhShareKey)
 			decrypted = tea.Decrypt(d)
 			return
 		}()

@@ -22,13 +22,14 @@ type EncryptSession struct {
 	T133 []byte
 }
 
-var ECDH = &EncryptECDH{}
-
 const serverPublicKey = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E"
 
-func init() {
-	ECDH.PublicKeyVer = 1
-	ECDH.generateKey(serverPublicKey)
+func NewEcdh() *EncryptECDH {
+	e := &EncryptECDH{
+		PublicKeyVer: 1,
+	}
+	e.generateKey(serverPublicKey)
+	return e
 }
 
 func (e *EncryptECDH) generateKey(sPubKey string) {
@@ -55,9 +56,9 @@ func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 	w.Write(k)
 	w.WriteUInt16(0x01_31)
 	w.WriteUInt16(e.PublicKeyVer)
-	w.WriteUInt16(uint16(len(ECDH.PublicKey)))
-	w.Write(ECDH.PublicKey)
-	w.EncryptAndWrite(ECDH.InitialShareKey, d)
+	w.WriteUInt16(uint16(len(e.PublicKey)))
+	w.Write(e.PublicKey)
+	w.EncryptAndWrite(e.InitialShareKey, d)
 	return w.Bytes()
 }
 
