@@ -3,9 +3,10 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"io"
 	"os"
+
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
