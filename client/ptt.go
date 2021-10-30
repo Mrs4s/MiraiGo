@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"io"
 	"os"
 
@@ -10,7 +11,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
@@ -45,11 +45,11 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 	if len(rsp) == 0 {
 		return nil, errors.New("miss rsp")
 	}
-	pkt := pb.D388RespBody{}
+	pkt := cmd0x388.D388RspBody{}
 	if err = proto.Unmarshal(rsp, &pkt); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if len(pkt.MsgTryUpPttRsp) == 0 {
+	if len(pkt.TryupPttRsp) == 0 {
 		return nil, errors.New("miss try up rsp")
 	}
 	return &message.GroupVoiceElement{
@@ -59,7 +59,7 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 			FileMd5:      fh[:],
 			FileName:     proto.String(hex.EncodeToString(fh[:]) + ".amr"),
 			FileSize:     proto.Int32(int32(length)),
-			GroupFileKey: pkt.MsgTryUpPttRsp[0].FileKey,
+			GroupFileKey: pkt.TryupPttRsp[0].FileKey,
 			BoolValid:    proto.Bool(true),
 			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
 		},
@@ -194,25 +194,25 @@ func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, c
 }
 
 func (c *QQClient) buildGroupPttStoreBDHExt(groupCode int64, md5 []byte, size, codec, voiceLength int32) []byte {
-	req := &pb.D388ReqBody{
-		NetType: 3,
-		Subcmd:  3,
-		MsgTryUpPttReq: []*pb.TryUpPttReq{
+	req := &cmd0x388.D388ReqBody{
+		NetType: proto.Uint32(3),
+		Subcmd:  proto.Uint32(3),
+		TryupPttReq: []*cmd0x388.TryUpPttReq{
 			{
-				GroupCode:     groupCode,
-				SrcUin:        c.Uin,
-				FileMd5:       md5,
-				FileSize:      int64(size),
-				FileName:      md5,
-				SrcTerm:       5,
-				PlatformType:  9,
-				BuType:        4,
-				InnerIp:       0,
-				BuildVer:      "6.5.5.663",
-				VoiceLength:   voiceLength,
-				Codec:         codec,
-				VoiceType:     1,
-				BoolNewUpChan: true,
+				GroupCode:    proto.Uint64(uint64(groupCode)),
+				SrcUin:       proto.Uint64(uint64(c.Uin)),
+				FileMd5:      md5,
+				FileSize:     proto.Uint64(uint64(size)),
+				FileName:     md5,
+				SrcTerm:      proto.Uint32(5),
+				PlatformType: proto.Uint32(9),
+				BuType:       proto.Uint32(4),
+				InnerIp:      proto.Uint32(0),
+				BuildVer:     utils.S2B("6.5.5.663"),
+				VoiceLength:  proto.Uint32(uint32(voiceLength)),
+				Codec:        proto.Uint32(uint32(codec)),
+				VoiceType:    proto.Uint32(1),
+				NewUpChan:    proto.Bool(true),
 			},
 		},
 	}
@@ -288,31 +288,31 @@ func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash [
 
 // PttStore.GroupPttUp
 func decodeGroupPttStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
-	pkt := pb.D388RespBody{}
+	pkt := cmd0x388.D388RspBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	rsp := pkt.MsgTryUpPttRsp[0]
-	if rsp.Result != 0 {
+	rsp := pkt.TryupPttRsp[0]
+	if rsp.GetResult() != 0 {
 		return pttUploadResponse{
-			ResultCode: rsp.Result,
-			Message:    rsp.FailMsg,
+			ResultCode: int32(rsp.GetResult()),
+			Message:    utils.B2S(rsp.GetFailMsg()),
 		}, nil
 	}
-	if rsp.BoolFileExit {
+	if rsp.GetFileExit() {
 		return pttUploadResponse{IsExists: true}, nil
 	}
-	ip := make([]string, 0, len(rsp.Uint32UpIp))
-	for _, i := range rsp.Uint32UpIp {
-		ip = append(ip, binary.UInt32ToIPV4Address(uint32(i)))
+	ip := make([]string, 0, len(rsp.GetUpIp()))
+	for _, i := range rsp.GetUpIp() {
+		ip = append(ip, binary.UInt32ToIPV4Address(i))
 	}
 	return pttUploadResponse{
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   ip,
-		UploadPort: rsp.Uint32UpPort,
+		UploadPort: rsp.GetUpPort(),
 		FileKey:    rsp.FileKey,
-		FileId:     rsp.FileId2,
+		FileId:     int64(rsp.GetFileid()),
 	}, nil
 }
 

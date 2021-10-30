@@ -1,0 +1,255 @@
+syntax = "proto2";
+
+option go_package = "./;cmd0x388";
+
+  message DelImgReq {  
+    optional uint64 srcUin = 1;
+    optional uint64 dstUin = 2;
+    optional uint32 reqTerm = 3;
+    optional uint32 reqPlatformType = 4;
+    optional uint32 buType = 5;
+    optional bytes buildVer = 6;
+    optional bytes fileResid = 7;
+    optional uint32 picWidth = 8;
+    optional uint32 picHeight = 9;
+  }
+
+  message DelImgRsp {  
+    optional uint32 result = 1;
+    optional bytes failMsg = 2;
+    optional bytes fileResid = 3;
+  }
+
+  message ExpRoamExtendInfo {  
+    optional bytes resid = 1;
+  }
+
+  message ExpRoamPicInfo {  
+    optional uint32 shopFlag = 1;
+    optional uint32 pkgId = 2;
+    optional bytes picId = 3;
+  }
+
+  message ExtensionCommPicTryUp {  
+    repeated bytes extinfo = 1;
+  }
+
+  message ExtensionExpRoamTryUp {  
+    repeated ExpRoamPicInfo exproamPicInfo = 1;
+  }
+
+  message GetImgUrlReq {  
+    optional uint64 groupCode = 1;
+    optional uint64 dstUin = 2;
+    optional uint64 fileid = 3;
+    optional bytes fileMd5 = 4;
+    optional uint32 urlFlag = 5;
+    optional uint32 urlType = 6;
+    optional uint32 reqTerm = 7;
+    optional uint32 reqPlatformType = 8;
+    optional uint32 innerIp = 9;
+    optional uint32 buType = 10;
+    optional bytes buildVer = 11;
+    optional uint64 fileId = 12;
+    optional uint64 fileSize = 13;
+    optional uint32 originalPic = 14;
+    optional uint32 retryReq = 15;
+    optional uint32 fileHeight = 16;
+    optional uint32 fileWidth = 17;
+    optional uint32 picType = 18;
+    optional uint32 picUpTimestamp = 19;
+    optional uint32 reqTransferType = 20;
+    optional uint64 qqmeetGuildId = 21;
+    optional uint64 qqmeetChannelId = 22;
+    optional bytes downloadIndex = 23;
+  }
+
+  message GetImgUrlRsp {  
+    optional uint64 fileid = 1;
+    optional bytes fileMd5 = 2;
+    optional uint32 result = 3;
+    optional bytes failMsg = 4;
+    optional ImgInfo imgInfo = 5;
+    repeated bytes thumbDownUrl = 6;
+    repeated bytes originalDownUrl = 7;
+    repeated bytes bigDownUrl = 8;
+    repeated uint32 downIp = 9;
+    repeated uint32 downPort = 10;
+    optional bytes downDomain = 11;
+    optional bytes thumbDownPara = 12;
+    optional bytes originalDownPara = 13;
+    optional bytes bigDownPara = 14;
+    optional uint64 fileId = 15;
+    optional uint32 autoDownType = 16;
+    repeated uint32 orderDownType = 17;
+    optional bytes bigThumbDownPara = 19;
+    optional uint32 httpsUrlFlag = 20;
+    repeated IPv6Info downIp6 = 26;
+    optional bytes clientIp6 = 27;
+  }
+
+  message GetPttUrlReq {  
+    optional uint64 groupCode = 1;
+    optional uint64 dstUin = 2;
+    optional uint64 fileid = 3;
+    optional bytes fileMd5 = 4;
+    optional uint32 reqTerm = 5;
+    optional uint32 reqPlatformType = 6;
+    optional uint32 innerIp = 7;
+    optional uint32 buType = 8;
+    optional bytes buildVer = 9;
+    optional uint64 fileId = 10;
+    optional bytes fileKey = 11;
+    optional uint32 codec = 12;
+    optional uint32 buId = 13;
+    optional uint32 reqTransferType = 14;
+    optional uint32 isAuto = 15;
+  }
+
+  message GetPttUrlRsp {  
+    optional uint64 fileid = 1;
+    optional bytes fileMd5 = 2;
+    optional uint32 result = 3;
+    optional bytes failMsg = 4;
+    repeated bytes downUrl = 5;
+    repeated uint32 downIp = 6;
+    repeated uint32 downPort = 7;
+    optional bytes downDomain = 8;
+    optional bytes downPara = 9;
+    optional uint64 fileId = 10;
+    optional uint32 transferType = 11;
+    optional uint32 allowRetry = 12;
+    repeated IPv6Info downIp6 = 26;
+    optional bytes clientIp6 = 27;
+    optional string domain = 28;
+  }
+
+  message IPv6Info {  
+    optional bytes ip6 = 1;
+    optional uint32 port = 2;
+  }
+
+  message ImgInfo {  
+    optional bytes fileMd5 = 1;
+    optional uint32 fileType = 2;
+    optional uint64 fileSize = 3;
+    optional uint32 fileWidth = 4;
+    optional uint32 fileHeight = 5;
+  }
+
+  message PicSize {  
+    optional uint32 original = 1;
+    optional uint32 thumb = 2;
+    optional uint32 high = 3;
+  }
+
+  message D388ReqBody {  
+    optional uint32 netType = 1;
+    optional uint32 subcmd = 2;
+    repeated TryUpImgReq tryupImgReq = 3;
+    repeated GetImgUrlReq getimgUrlReq = 4;
+    repeated TryUpPttReq tryupPttReq = 5;
+    repeated GetPttUrlReq getpttUrlReq = 6;
+    optional uint32 commandId = 7;
+    repeated DelImgReq delImgReq = 8;
+    optional bytes extension = 1001;
+  }
+
+  message D388RspBody {  
+    optional uint32 clientIp = 1;
+    optional uint32 subcmd = 2;
+    repeated D388TryUpImgRsp tryupImgRsp = 3;
+    repeated GetImgUrlRsp getimgUrlRsp = 4;
+    repeated TryUpPttRsp tryupPttRsp = 5;
+    repeated GetPttUrlRsp getpttUrlRsp = 6;
+    repeated DelImgRsp delImgRsp = 7;
+  }
+
+  message TryUpImgReq {  
+    optional uint64 groupCode = 1;
+    optional uint64 srcUin = 2;
+    optional uint64 fileId = 3;
+    optional bytes fileMd5 = 4;
+    optional uint64 fileSize = 5;
+    optional bytes fileName = 6;
+    optional uint32 srcTerm = 7;
+    optional uint32 platformType = 8;
+    optional uint32 buType = 9;
+    optional uint32 picWidth = 10;
+    optional uint32 picHeight = 11;
+    optional uint32 picType = 12;
+    optional bytes buildVer = 13;
+    optional uint32 innerIp = 14;
+    optional uint32 appPicType = 15;
+    optional uint32 originalPic = 16;
+    optional bytes fileIndex = 17;
+    optional uint64 dstUin = 18;
+    optional uint32 srvUpload = 19;
+    optional bytes transferUrl = 20;
+    optional uint64 qqmeetGuildId = 21;
+    optional uint64 qqmeetChannelId = 22;
+  }
+
+  message D388TryUpImgRsp {
+    optional uint64 fileId = 1;
+    optional uint32 result = 2;
+    optional bytes failMsg = 3;
+    optional bool fileExit = 4;
+    optional ImgInfo imgInfo = 5;
+    repeated uint32 upIp = 6;
+    repeated uint32 upPort = 7;
+    optional bytes upUkey = 8;
+    optional uint64 fileid = 9;
+    optional uint64 upOffset = 10;
+    optional uint64 blockSize = 11;
+    optional bool newBigChan = 12;
+    repeated IPv6Info upIp6 = 26;
+    optional bytes clientIp6 = 27;
+    optional bytes downloadIndex = 28;
+    optional TryUpInfo4Busi info4Busi = 1001;
+  }
+
+  message TryUpInfo4Busi {  
+    optional bytes downDomain = 1;
+    optional bytes thumbDownUrl = 2;
+    optional bytes originalDownUrl = 3;
+    optional bytes bigDownUrl = 4;
+    optional bytes fileResid = 5;
+  }
+
+  message TryUpPttReq {  
+    optional uint64 groupCode = 1;
+    optional uint64 srcUin = 2;
+    optional uint64 fileId = 3;
+    optional bytes fileMd5 = 4;
+    optional uint64 fileSize = 5;
+    optional bytes fileName = 6;
+    optional uint32 srcTerm = 7;
+    optional uint32 platformType = 8;
+    optional uint32 buType = 9;
+    optional bytes buildVer = 10;
+    optional uint32 innerIp = 11;
+    optional uint32 voiceLength = 12;
+    optional bool newUpChan = 13;
+    optional uint32 codec = 14;
+    optional uint32 voiceType = 15;
+    optional uint32 buId = 16;
+  }
+
+  message TryUpPttRsp {  
+    optional uint64 fileId = 1;
+    optional uint32 result = 2;
+    optional bytes failMsg = 3;
+    optional bool fileExit = 4;
+    repeated uint32 upIp = 5;
+    repeated uint32 upPort = 6;
+    optional bytes upUkey = 7;
+    optional uint64 fileid = 8;
+    optional uint64 upOffset = 9;
+    optional uint64 blockSize = 10;
+    optional bytes fileKey = 11;
+    optional uint32 channelType = 12;
+    repeated IPv6Info upIp6 = 26;
+    optional bytes clientIp6 = 27;
+  }
+

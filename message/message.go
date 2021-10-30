@@ -444,6 +444,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				continue
 			}
 			res = append(res, &GroupImageElement{
+				FileId:  int64(elem.CustomFace.GetFileId()),
 				ImageId: elem.CustomFace.GetFilePath(),
 				Size:    elem.CustomFace.GetSize(),
 				Width:   elem.CustomFace.GetWidth(),
@@ -536,6 +537,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, flash)
 				if flash.FlashTroopPic != nil {
 					res = append(res, &GroupImageElement{
+						FileId:  int64(flash.FlashTroopPic.GetFileId()),
 						ImageId: flash.FlashTroopPic.GetFilePath(),
 						Size:    flash.FlashTroopPic.GetSize(),
 						Width:   flash.FlashTroopPic.GetWidth(),

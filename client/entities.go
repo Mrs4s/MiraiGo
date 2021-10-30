@@ -269,7 +269,7 @@ type (
 		ResourceId string
 		UploadKey  []byte
 		UploadIp   []string
-		UploadPort []int32
+		UploadPort []uint32
 		FileKey    []byte
 		FileId     int64
 	}
