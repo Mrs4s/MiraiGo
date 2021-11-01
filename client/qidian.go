@@ -4,6 +4,7 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"io"
 	"net/http"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x3f6"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -144,7 +144,7 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 	if err != nil {
 		return nil, errors.Wrap(err, "request error")
 	}
-	defer rsp.Body.Close()
+	defer func() { _ = rsp.Body.Close() }()
 	rspBody, _ := io.ReadAll(rsp.Body)
 	r := binary.NewReader(rspBody)
 	r.ReadByte()

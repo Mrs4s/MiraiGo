@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"net"
 	"runtime/debug"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/protocol/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 

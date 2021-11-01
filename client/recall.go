@@ -1,12 +1,12 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/protocol/packets"
 )
 
 // 撤回相关处理逻辑
