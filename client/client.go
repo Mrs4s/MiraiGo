@@ -60,6 +60,7 @@ type QQClient struct {
 	version         *versionInfo
 	deviceInfo      *DeviceInfo
 	alive           bool
+	ecdh            *crypto.EncryptECDH
 
 	// tlv cache
 	t104        []byte
@@ -189,7 +190,6 @@ func NewClientEmpty() *QQClient {
 }
 
 func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
-	crypto.ECDH.FetchPubKey(uin)
 	cli := &QQClient{
 		Uin:                     uin,
 		PasswordMd5:             passwordMd5,
@@ -209,7 +209,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		onlinePushCache:         utils.NewCache(time.Second * 15),
 		servers:                 []*net.TCPAddr{},
 		alive:                   true,
+		ecdh:                    crypto.NewEcdh(),
 	}
+	cli.ecdh.FetchPubKey(uin)
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
