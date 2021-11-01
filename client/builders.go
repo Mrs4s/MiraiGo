@@ -4,11 +4,12 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	packets2 "github.com/Mrs4s/MiraiGo/internal/packets"
 	tlv2 "github.com/Mrs4s/MiraiGo/internal/tlv"
-	"math/rand"
-	"time"
 
 	"google.golang.org/protobuf/proto"
 

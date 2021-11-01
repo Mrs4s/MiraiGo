@@ -1,9 +1,10 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"math/rand"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"

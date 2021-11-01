@@ -4,9 +4,10 @@ package client
 import (
 	"bytes"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"io"
 	"net/http"
+
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
