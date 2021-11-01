@@ -96,7 +96,7 @@ func (e *EncryptECDH) FetchPubKey(uin int64) {
 	if err != nil {
 		return
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	pubKey := pubKeyResp{}
 	err = json.NewDecoder(resp.Body).Decode(&pubKey)
 	if err != nil {
