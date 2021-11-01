@@ -3,6 +3,9 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x88d"
+	"go.dedis.ch/protobuf"
+	"google.golang.org/protobuf/proto"
 	"math/rand"
 	"net/url"
 	"sort"
@@ -12,7 +15,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
@@ -80,12 +82,12 @@ func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
 // OidbSvc.0x88d_0
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D88DReqBody{
-		AppId: proto.Uint32(c.version.AppId),
-		ReqGroupInfo: []*oidb.ReqGroupInfo{
+	body := &oidb0x88d.ReqBody{
+		Appid: proto.Uint32(c.version.AppId),
+		Stzreqgroupinfo: []*oidb0x88d.ReqGroupInfo{
 			{
 				GroupCode: proto.Uint64(uint64(groupCode)),
-				Stgroupinfo: &oidb.D88DGroupInfo{
+				Stgroupinfo: &oidb0x88d.GroupInfo{
 					GroupOwner:           proto.Uint64(0),
 					GroupUin:             proto.Uint64(0),
 					GroupCreateTime:      proto.Uint32(0),
@@ -105,8 +107,8 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 					GroupGrade:           proto.Uint32(0),
 					ActiveMemberNum:      proto.Uint32(0),
 					HeadPortraitSeq:      proto.Uint32(0),
-					MsgHeadPortrait:      &oidb.D88DGroupHeadPortrait{},
-					StGroupExInfo:        &oidb.D88DGroupExInfoOnly{},
+					HeadPortrait:         &oidb0x88d.GroupHeadPortrait{},
+					StGroupExInfo:        &oidb0x88d.GroupExInfoOnly{},
 					GroupSecLevel:        proto.Uint32(0),
 					CmduinPrivilege:      proto.Uint32(0),
 					NoFingerOpenFlag:     proto.Uint32(0),
@@ -116,12 +118,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 		},
 		PcClientVersion: proto.Uint32(0),
 	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2189,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(2189, 0, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x88d_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -230,32 +227,32 @@ func decodeGroupSearchResponse(_ *QQClient, _ *incomingPacketInfo, payload []byt
 // OidbSvc.0x88d_0
 func decodeGroupInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D88DRspBody{}
+	rsp := oidb0x88d.RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if len(rsp.RspGroupInfo) == 0 {
-		return nil, errors.New(string(rsp.StrErrorInfo))
+	if len(rsp.GetStzrspgroupinfo()) == 0 {
+		return nil, errors.New(string(rsp.Errorinfo))
 	}
-	info := rsp.RspGroupInfo[0]
-	if info.GroupInfo == nil {
+	info := rsp.Stzrspgroupinfo[0]
+	if info.Stgroupinfo == nil {
 		return nil, errors.New("group info not found")
 	}
 	return &GroupInfo{
-		Uin:             int64(*info.GroupInfo.GroupUin),
+		Uin:             int64(*info.Stgroupinfo.GroupUin),
 		Code:            int64(*info.GroupCode),
-		Name:            string(info.GroupInfo.GroupName),
-		Memo:            string(info.GroupInfo.GroupMemo),
-		GroupCreateTime: *info.GroupInfo.GroupCreateTime,
-		GroupLevel:      *info.GroupInfo.GroupLevel,
-		OwnerUin:        int64(*info.GroupInfo.GroupOwner),
-		MemberCount:     uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount:  uint16(*info.GroupInfo.GroupMemberMaxNum),
+		Name:            string(info.Stgroupinfo.GroupName),
+		Memo:            string(info.Stgroupinfo.GroupMemo),
+		GroupCreateTime: *info.Stgroupinfo.GroupCreateTime,
+		GroupLevel:      *info.Stgroupinfo.GroupLevel,
+		OwnerUin:        int64(*info.Stgroupinfo.GroupOwner),
+		MemberCount:     uint16(*info.Stgroupinfo.GroupMemberNum),
+		MaxMemberCount:  uint16(*info.Stgroupinfo.GroupMemberMaxNum),
 		Members:         []*GroupMemberInfo{},
-		LastMsgSeq:      int64(info.GroupInfo.GetGroupCurMsgSeq()),
+		LastMsgSeq:      int64(info.Stgroupinfo.GetGroupCurMsgSeq()),
 		client:          c,
 	}, nil
 }

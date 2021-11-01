@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	proto2 "github.com/Mrs4s/MiraiGo/internal/protobuf/proto"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 
@@ -656,6 +657,11 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 
 func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Message) []byte {
 	b, _ := proto.Marshal(msg)
+	return c.packOIDBPackage(cmd, serviceType, b)
+}
+
+func (c *QQClient) packOIDBPackageProto2(cmd, serviceType int32, msg proto2.Message) []byte {
+	b, _ := msg.Marshal()
 	return c.packOIDBPackage(cmd, serviceType, b)
 }
 
