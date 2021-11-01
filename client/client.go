@@ -469,12 +469,19 @@ func (c *QQClient) GenToken() []byte {
 	})
 }
 
-func (c *QQClient) SetOnlineStatus(s UserOnlineStatus) {
+func (c *QQClient) SetOnlineStatus(s UserOnlineStatus) error {
+	var (
+		status    int32
+		extStatus int64
+	)
 	if s < 1000 {
-		_, _ = c.sendAndWait(c.buildStatusSetPacket(int32(s), 0))
-		return
+		status = int32(s)
+	} else {
+		status = 11
+		extStatus = int64(s)
 	}
-	_, _ = c.sendAndWait(c.buildStatusSetPacket(11, int32(s)))
+	_, err := c.sendAndWait(c.buildStatusSetPacket(status, extStatus))
+	return err
 }
 
 func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
@@ -604,12 +611,14 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 	)
 }
 
-func (c *QQClient) SendGroupPoke(groupCode, target int64) {
-	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
+func (c *QQClient) SendGroupPoke(groupCode, target int64) error {
+	_, err := c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
+	return err
 }
 
-func (c *QQClient) SendFriendPoke(target int64) {
-	_, _ = c.sendAndWait(c.buildFriendPokePacket(target))
+func (c *QQClient) SendFriendPoke(target int64) error {
+	_, err := c.sendAndWait(c.buildFriendPokePacket(target))
+	return err
 }
 
 func (c *QQClient) ReloadGroupList() error {
@@ -753,70 +762,89 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_ = c.sendPacket(pkt)
 }
 
-func (c *QQClient) getSKey() string {
+func (c *QQClient) getSKey() (string, error) {
 	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() && len(c.g) > 0 {
 		c.Debug("skey expired. refresh...")
-		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
+		_, err := c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
+		if err != nil {
+			return "", errors.Wrap(err, "sKey refresh error")
+		}
 	}
-	return string(c.sigInfo.sKey)
+	return string(c.sigInfo.sKey), nil
 }
 
-func (c *QQClient) getCookies() string {
-	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, c.getSKey())
+func (c *QQClient) getCookies() (string, error) {
+	sKey, err := c.getSKey()
+	if err != nil {
+		return sKey, err
+	}
+	return fmt.Sprintf("uin=o%d; skey=%s;", c.Uin, sKey), nil
 }
 
-func (c *QQClient) getCookiesWithDomain(domain string) string {
-	cookie := c.getCookies()
+func (c *QQClient) getCookiesWithDomain(domain string) (string, error) {
+	cookie, err := c.getCookies()
+	if err != nil {
+		return cookie, err
+	}
 
 	if psKey, ok := c.sigInfo.psKeyMap[domain]; ok {
-		return fmt.Sprintf("%s p_uin=o%d; p_skey=%s;", cookie, c.Uin, psKey)
+		return fmt.Sprintf("%s p_uin=o%d; p_skey=%s;", cookie, c.Uin, psKey), nil
 	} else {
-		return cookie
+		return cookie, nil
 	}
 }
 
-func (c *QQClient) getCSRFToken() int {
-	accu := 5381
-	for _, b := range []byte(c.getSKey()) {
-		accu = accu + (accu << 5) + int(b)
+func (c *QQClient) getCSRFToken() (int, error) {
+	sKey, err := c.getSKey()
+	if err != nil {
+		return 0, err
 	}
-	return 2147483647 & accu
+	return utils.ComputeDjb2Hash(utils.S2B(sKey)), nil
 }
 
-func (c *QQClient) editMemberCard(groupCode, memberUin int64, card string) {
-	_, _ = c.sendAndWait(c.buildEditGroupTagPacket(groupCode, memberUin, card))
+func (c *QQClient) editMemberCard(groupCode, memberUin int64, card string) error {
+	_, err := c.sendAndWait(c.buildEditGroupTagPacket(groupCode, memberUin, card))
+	return err
 }
 
-func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title string) {
-	_, _ = c.sendAndWait(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
+func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title string) error {
+	_, err := c.sendAndWait(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
+	return err
 }
 
-func (c *QQClient) setGroupAdmin(groupCode, memberUin int64, flag bool) {
-	_, _ = c.sendAndWait(c.buildGroupAdminSetPacket(groupCode, memberUin, flag))
+func (c *QQClient) setGroupAdmin(groupCode, memberUin int64, flag bool) error {
+	_, err := c.sendAndWait(c.buildGroupAdminSetPacket(groupCode, memberUin, flag))
+	return err
 }
 
-func (c *QQClient) updateGroupName(groupCode int64, newName string) {
-	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
+func (c *QQClient) updateGroupName(groupCode int64, newName string) error {
+	_, err := c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
+	return err
 }
 
-func (c *QQClient) updateGroupMemo(groupCode int64, newMemo string) {
-	_, _ = c.sendAndWait(c.buildGroupMemoUpdatePacket(groupCode, newMemo))
+func (c *QQClient) updateGroupMemo(groupCode int64, newMemo string) error {
+	_, err := c.sendAndWait(c.buildGroupMemoUpdatePacket(groupCode, newMemo))
+	return err
 }
 
-func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {
-	_, _ = c.sendAndWait(c.buildGroupMuteAllPacket(groupCode, mute))
+func (c *QQClient) groupMuteAll(groupCode int64, mute bool) error {
+	_, err := c.sendAndWait(c.buildGroupMuteAllPacket(groupCode, mute))
+	return err
 }
 
-func (c *QQClient) groupMute(groupCode, memberUin int64, time uint32) {
-	_, _ = c.sendAndWait(c.buildGroupMutePacket(groupCode, memberUin, time))
+func (c *QQClient) groupMute(groupCode, memberUin int64, time uint32) error {
+	_, err := c.sendAndWait(c.buildGroupMutePacket(groupCode, memberUin, time))
+	return err
 }
 
-func (c *QQClient) quitGroup(groupCode int64) {
-	_, _ = c.sendAndWait(c.buildQuitGroupPacket(groupCode))
+func (c *QQClient) quitGroup(groupCode int64) error {
+	_, err := c.sendAndWait(c.buildQuitGroupPacket(groupCode))
+	return err
 }
 
-func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string, block bool) {
-	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg, block))
+func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string, block bool) error {
+	_, err := c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg, block))
+	return err
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
@@ -835,9 +863,9 @@ func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 	c.servers = append(servers, c.servers...)
 }
 
-func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift message.GroupGift) {
+func (c *QQClient) SendGroupGift(groupCode, uin uint64, gift message.GroupGift) error {
 	_, packet := c.sendGroupGiftPacket(groupCode, uin, gift)
-	_ = c.sendPacket(packet)
+	return c.sendPacket(packet)
 }
 
 func (c *QQClient) registerClient() error {

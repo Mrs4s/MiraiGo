@@ -87,8 +87,9 @@ func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElem
 }
 
 // SendFriendMusicShare 发送好友音乐卡片
-func (c *QQClient) SendFriendMusicShare(target int64, msg *message.MusicShareElement) {
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, msg, 0))
+func (c *QQClient) SendFriendMusicShare(target int64, msg *message.MusicShareElement) error {
+	_, err := c.sendAndWait(c.buildRichMsgSendingPacket(target, msg, 0))
+	return err
 }
 
 // OidbSvc.0xb77_9

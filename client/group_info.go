@@ -260,35 +260,56 @@ func decodeGroupInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte)
 	}, nil
 }
 
-func (g *GroupInfo) UpdateName(newName string) {
-	if g.AdministratorOrOwner() && newName != "" && strings.Count(newName, "") <= 20 {
-		g.client.updateGroupName(g.Code, newName)
-		g.Name = newName
+func (g *GroupInfo) UpdateName(newName string) error {
+	if !g.AdministratorOrOwner() {
+		return errors.New("not manageable")
 	}
+	if newName == "" || strings.Count(newName, "") > 20 {
+		return errors.New("group name length should be between 1 and 20 unicode runes")
+	}
+	if err := g.client.updateGroupName(g.Code, newName); err != nil {
+		return err
+	}
+	g.Name = newName
+	return nil
 }
 
-func (g *GroupInfo) UpdateMemo(newMemo string) {
-	if g.AdministratorOrOwner() {
-		g.client.updateGroupMemo(g.Code, newMemo)
-		g.Memo = newMemo
+func (g *GroupInfo) UpdateMemo(newMemo string) error {
+	if !g.AdministratorOrOwner() {
+		return errors.New("not manageable")
 	}
+	if err := g.client.updateGroupMemo(g.Code, newMemo); err != nil {
+		return err
+	}
+	g.Memo = newMemo
+	return nil
 }
 
-func (g *GroupInfo) UpdateGroupHeadPortrait(img []byte) {
-	if g.AdministratorOrOwner() {
-		_ = g.client.uploadGroupHeadPortrait(g.Uin, img)
+func (g *GroupInfo) UpdateGroupHeadPortrait(img []byte) error {
+	if !g.AdministratorOrOwner() {
+		return errors.New("not manageable")
 	}
+	return g.client.uploadGroupHeadPortrait(g.Uin, img)
 }
 
-func (g *GroupInfo) MuteAll(mute bool) {
-	if g.AdministratorOrOwner() {
-		g.client.groupMuteAll(g.Code, mute)
+func (g *GroupInfo) MuteAll(mute bool) error {
+	if !g.AdministratorOrOwner() {
+		return errors.New("not manageable")
 	}
+	return g.client.groupMuteAll(g.Code, mute)
 }
 
 func (g *GroupInfo) MuteAnonymous(id, nick string, seconds int32) error {
-	payload := fmt.Sprintf("anony_id=%v&group_code=%v&seconds=%v&anony_nick=%v&bkn=%v", url.QueryEscape(id), g.Code, seconds, nick, g.client.getCSRFToken())
-	rsp, err := utils.HttpPostBytesWithCookie("https://qqweb.qq.com/c/anonymoustalk/blacklist", []byte(payload), g.client.getCookies(), "application/x-www-form-urlencoded")
+	token, err := g.client.getCSRFToken()
+	if err != nil {
+		return err
+	}
+	payload := fmt.Sprintf("anony_id=%v&group_code=%v&seconds=%v&anony_nick=%v&bkn=%v", url.QueryEscape(id), g.Code, seconds, nick, token)
+	cookies, err := g.client.getCookies()
+	if err != nil {
+		return err
+	}
+	rsp, err := utils.HttpPostBytesWithCookie("https://qqweb.qq.com/c/anonymoustalk/blacklist", []byte(payload), cookies, "application/x-www-form-urlencoded")
 	if err != nil {
 		return errors.Wrap(err, "failed to request blacklist")
 	}
@@ -309,10 +330,11 @@ func (g *GroupInfo) MuteAnonymous(id, nick string, seconds int32) error {
 	return nil
 }
 
-func (g *GroupInfo) Quit() {
-	if g.SelfPermission() != Owner {
-		g.client.quitGroup(g.Code)
+func (g *GroupInfo) Quit() error {
+	if g.SelfPermission() == Owner {
+		return errors.Errorf("group owner cannot quit group")
 	}
+	return g.client.quitGroup(g.Code)
 }
 
 func (g *GroupInfo) SelfPermission() MemberPermission {
@@ -369,46 +391,55 @@ func (m *GroupMemberInfo) DisplayName() string {
 	return m.CardName
 }
 
-func (m *GroupMemberInfo) EditCard(card string) {
-	if m.CardChangable() && len(card) <= 60 {
-		m.Group.client.editMemberCard(m.Group.Code, m.Uin, card)
-		m.CardName = card
+func (m *GroupMemberInfo) EditCard(card string) error {
+	if !m.CardChangable() {
+		return errors.Errorf("card name not changable")
 	}
+	if len(card) > 60 {
+		return errors.Errorf("card name length must not exceed 60 bytes")
+	}
+	if err := m.Group.client.editMemberCard(m.Group.Code, m.Uin, card); err != nil {
+		return err
+	}
+	m.CardName = card
+	return nil
 }
 
-func (m *GroupMemberInfo) Poke() {
-	m.Group.client.SendGroupPoke(m.Group.Code, m.Uin)
+func (m *GroupMemberInfo) Poke() error {
+	return m.Group.client.SendGroupPoke(m.Group.Code, m.Uin)
 }
 
-func (m *GroupMemberInfo) SetAdmin(flag bool) {
+func (m *GroupMemberInfo) SetAdmin(flag bool) error {
 	if m.Group.OwnerUin == m.Group.client.Uin {
-		m.Group.client.setGroupAdmin(m.Group.Code, m.Uin, flag)
+		return m.Group.client.setGroupAdmin(m.Group.Code, m.Uin, flag)
 	}
+	return errors.New("not manageable")
 }
 
-func (m *GroupMemberInfo) EditSpecialTitle(title string) {
+func (m *GroupMemberInfo) EditSpecialTitle(title string) error {
 	if m.Group.SelfPermission() == Owner && len(title) <= 18 {
-		m.Group.client.editMemberSpecialTitle(m.Group.Code, m.Uin, title)
+		if err := m.Group.client.editMemberSpecialTitle(m.Group.Code, m.Uin, title); err != nil {
+			return err
+		}
 		m.SpecialTitle = title
 	}
+	return nil
 }
 
 func (m *GroupMemberInfo) Kick(msg string, block bool) error {
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
-		return nil
+		return m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
 	} else {
 		return errors.New("not manageable")
 	}
 }
 
 func (m *GroupMemberInfo) Mute(time uint32) error {
-	if time >= 2592000 {
-		return errors.New("time is not in range")
+	if time >= 30*24*60*60 {
+		return errors.New("time must be less than 30 days")
 	}
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		m.Group.client.groupMute(m.Group.Code, m.Uin, time)
-		return nil
+		return m.Group.client.groupMute(m.Group.Code, m.Uin, time)
 	} else {
 		return errors.New("not manageable")
 	}

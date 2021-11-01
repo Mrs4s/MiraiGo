@@ -614,7 +614,11 @@ func decodeEssenceMsgResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte
 // GetGroupEssenceMsgList 获取群精华消息列表
 func (c *QQClient) GetGroupEssenceMsgList(groupCode int64) ([]GroupDigest, error) {
 	essenceURL := "https://qun.qq.com/essence/index?gc=" + strconv.FormatInt(groupCode, 10) + "&_wv=3&_wwv=128&_wvx=2&_wvxBclr=f5f6fa"
-	rsp, err := utils.HttpGetBytes(essenceURL, c.getCookiesWithDomain("qun.qq.com"))
+	cookies, err := c.getCookiesWithDomain("qun.qq.com")
+	if err != nil {
+		return nil, err
+	}
+	rsp, err := utils.HttpGetBytes(essenceURL, cookies)
 	if err != nil {
 		return nil, errors.Wrap(err, "get essence msg network error")
 	}

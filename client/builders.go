@@ -450,7 +450,7 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 	return seq, packet
 }
 
-func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte) {
+func (c *QQClient) buildStatusSetPacket(status int32, extStatus int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	svc := &jce.SvcReqRegister{
 		ConnType:        0,
@@ -471,7 +471,7 @@ func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte
 		OSVer:           string(c.deviceInfo.Version.Release),
 		OpenPush:        1,
 		LargeSeq:        1551,
-		ExtOnlineStatus: int64(extStatus),
+		ExtOnlineStatus: extStatus,
 	}
 	buf := &jce.RequestDataVersion3{
 		Map: map[string][]byte{"SvcReqRegister": packUniRequestData(svc.ToBytes())},
@@ -1101,6 +1101,7 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 // OidbSvc.0xdad_1
 func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.GroupGift) (uint16, []byte) {
 	seq := c.nextSeq()
+	sKey, _ := c.getSKey()
 	payload := c.packOIDBPackageProto(3501, 1, &oidb.DADReqBody{
 		Client:    1,
 		ProductId: uint64(productID),
@@ -1109,7 +1110,7 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.
 		Version:   "V 8.4.5.4745",
 		Sig: &oidb.DADLoginSig{
 			Type: 1,
-			Sig:  []byte(c.getSKey()),
+			Sig:  []byte(sKey),
 		},
 	})
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)

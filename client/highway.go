@@ -480,12 +480,13 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 }
 
 func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
+	sKey, err := c.getSKey()
+	if err != nil {
+		return err
+	}
 	url := fmt.Sprintf(
 		"http://htdata3.qq.com/cgi-bin/httpconn?htcmd=0x6ff0072&ver=5520&ukey=%v&range=0&uin=%v&seq=23&groupuin=%v&filetype=3&imagetype=5&userdata=0&subcmd=1&subver=101&clip=0_0_0_0&filesize=%v",
-		c.getSKey(),
-		c.Uin,
-		groupCode,
-		len(img),
+		sKey, c.Uin, groupCode, len(img),
 	)
 	req, _ := http.NewRequest("POST", url, bytes.NewReader(img))
 	req.Header["User-Agent"] = []string{"Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)"}

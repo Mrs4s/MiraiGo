@@ -34,6 +34,14 @@ func ComputeMd5AndLength(r io.Reader) ([]byte, int64) {
 	return fh, length
 }
 
+func ComputeDjb2Hash(data []byte) int {
+	accu := 5381
+	for _, b := range data {
+		accu += (accu << 5) + int(b)
+	}
+	return (1<<31 - 1) & accu
+}
+
 func (r *multiReadSeeker) Read(p []byte) (int, error) {
 	if r.multiReader == nil {
 		var readers []io.Reader

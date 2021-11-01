@@ -34,7 +34,11 @@ type VipInfo struct {
 }
 
 func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), c.getCookiesWithDomain("h5.vip.qq.com"))
+	cookies, err := c.getCookiesWithDomain("h5.vip.qq.com")
+	if err != nil {
+		return nil, err
+	}
+	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), cookies)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +111,11 @@ const (
 )
 
 func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://qun.qq.com/interactive/honorlist?gc=%d&type=%d", groupCode, honorType), c.getCookiesWithDomain("qun.qq.com"))
+	cookie, err := c.getCookiesWithDomain("qun.qq.com")
+	if err != nil {
+		return nil, err
+	}
+	b, err := utils.HttpGetBytes(fmt.Sprintf("https://qun.qq.com/interactive/honorlist?gc=%d&type=%d", groupCode, honorType), cookie)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +135,11 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 	url := "https://textts.qq.com/cgi-bin/tts"
 	bt, _ := json.Marshal(text)
 	data := fmt.Sprintf(`{"appid": "201908021016","sendUin": %v,"text": %s}`, c.Uin, bt)
-	rsp, err := utils.HttpPostBytesWithCookie(url, []byte(data), c.getCookies())
+	cookies, err := c.getCookies()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get cookies")
+	}
+	rsp, err := utils.HttpPostBytesWithCookie(url, []byte(data), cookies)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to post to tts server")
 	}
@@ -181,7 +193,11 @@ type noticeImage struct {
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 	buf := new(bytes.Buffer)
 	w := multipart.NewWriter(buf)
-	err := w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
+	token, err := c.getCSRFToken()
+	if err != nil {
+		return nil, errors.Wrap(err, "get csrf token failed")
+	}
+	err = w.WriteField("bkn", strconv.Itoa(token))
 	if err != nil {
 		return nil, errors.Wrap(err, "write multipart<bkn> failed")
 	}
@@ -213,7 +229,11 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 		return nil, errors.Wrap(err, "new request error")
 	}
 	req.Header.Set("Content-Type", w.FormDataContentType())
-	req.Header.Set("Cookie", c.getCookies())
+	cookies, err := c.getCookies()
+	if err != nil {
+		return nil, errors.Wrap(err, "refresh cookies error")
+	}
+	req.Header.Set("Cookie", cookies)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "post error")
@@ -241,12 +261,17 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 
 // AddGroupNoticeSimple 发群公告
 func (c *QQClient) AddGroupNoticeSimple(groupCode int64, text string) error {
-	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}`, groupCode, c.getCSRFToken(), url.QueryEscape(text))
-	_, err := utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), c.getCookiesWithDomain("qun.qq.com"))
+	token, err := c.getCSRFToken()
 	if err != nil {
-		return errors.Wrap(err, "request error")
+		return err
 	}
-	return nil
+	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}`, groupCode, token, url.QueryEscape(text))
+	cookies, err := c.getCookiesWithDomain("qun.qq.com")
+	if err != nil {
+		return err
+	}
+	_, err = utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), cookies)
+	return err
 }
 
 // AddGroupNoticeWithPic 发群公告带图片
@@ -255,8 +280,16 @@ func (c *QQClient) AddGroupNoticeWithPic(groupCode int64, text string, pic []byt
 	if err != nil {
 		return err
 	}
-	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}&pic=%v&imgWidth=%v&imgHeight=%v`, groupCode, c.getCSRFToken(), url.QueryEscape(text), img.ID, img.Width, img.Height)
-	_, err = utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), c.getCookiesWithDomain("qun.qq.com"))
+	token, err := c.getCSRFToken()
+	if err != nil {
+		return err
+	}
+	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}&pic=%v&imgWidth=%v&imgHeight=%v`, groupCode, token, url.QueryEscape(text), img.ID, img.Width, img.Height)
+	cookies, err := c.getCookiesWithDomain("qun.qq.com")
+	if err != nil {
+		return err
+	}
+	_, err = utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), cookies)
 	if err != nil {
 		return errors.Wrap(err, "request error")
 	}

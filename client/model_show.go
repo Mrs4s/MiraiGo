@@ -43,11 +43,7 @@ type (
 
 func (c *QQClient) getGtk(domain string) int {
 	if psKey, ok := c.sigInfo.psKeyMap[domain]; ok {
-		accu := 5381
-		for _, b := range psKey {
-			accu = accu + (accu << 5) + int(b)
-		}
-		return 2147483647 & accu
+		return utils.ComputeDjb2Hash(psKey)
 	} else {
 		return 0
 	}
@@ -71,9 +67,13 @@ func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
 	ts := time.Now().UnixNano() / 1e6
 	g_tk := c.getGtk("vip.qq.com")
 	data, _ := json.Marshal(req)
+	cookies, err := c.getCookiesWithDomain("vip.qq.com")
+	if err != nil {
+		return nil, err
+	}
 	b, err := utils.HttpGetBytes(
 		fmt.Sprintf("https://proxy.vip.qq.com/cgi-bin/srfentry.fcgi?ts=%d&daid=18&g_tk=%d&pt4_token=&data=%s", ts, g_tk, url.QueryEscape(string(data))),
-		c.getCookiesWithDomain("vip.qq.com"),
+		cookies,
 	)
 	if err != nil {
 		return nil, err
@@ -108,12 +108,13 @@ func (c *QQClient) SetModelShow(modelName string, modelShow string) error {
 	ts := time.Now().UnixNano() / 1e6
 	g_tk := c.getGtk("vip.qq.com")
 	data, _ := json.Marshal(req)
-	_, err := utils.HttpGetBytes(
-		fmt.Sprintf("https://proxy.vip.qq.com/cgi-bin/srfentry.fcgi?ts=%d&daid=18&g_tk=%d&pt4_token=&data=%s", ts, g_tk, url.QueryEscape(string(data))),
-		c.getCookiesWithDomain("vip.qq.com"),
-	)
+	cookies, err := c.getCookiesWithDomain("vip.qq.com")
 	if err != nil {
 		return err
 	}
-	return nil
+	_, err = utils.HttpGetBytes(
+		fmt.Sprintf("https://proxy.vip.qq.com/cgi-bin/srfentry.fcgi?ts=%d&daid=18&g_tk=%d&pt4_token=&data=%s", ts, g_tk, url.QueryEscape(string(data))),
+		cookies,
+	)
+	return err
 }

@@ -112,12 +112,14 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 }
 
 // MarkGroupMessageReaded 标记群消息已读, 适当调用应该能减少风控
-func (c *QQClient) MarkGroupMessageReaded(groupCode, seq int64) {
-	_, _ = c.sendAndWait(c.buildGroupMsgReadedPacket(groupCode, seq))
+func (c *QQClient) MarkGroupMessageReaded(groupCode, seq int64) error {
+	_, err := c.sendAndWait(c.buildGroupMsgReadedPacket(groupCode, seq))
+	return err
 }
 
-func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
-	_, _ = c.sendAndWait(c.buildPrivateMsgReadedPacket(uin, time))
+func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) error {
+	_, err := c.sendAndWait(c.buildPrivateMsgReadedPacket(uin, time))
+	return err
 }
 
 // StatSvc.GetDevLoginInfo
