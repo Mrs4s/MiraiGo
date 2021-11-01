@@ -1,11 +1,12 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"math/rand"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"google.golang.org/protobuf/proto"
 

@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/pkg/errors"

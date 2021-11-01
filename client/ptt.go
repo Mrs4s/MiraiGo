@@ -3,9 +3,10 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"io"
 	"os"
+
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 
