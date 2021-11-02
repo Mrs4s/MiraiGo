@@ -4,6 +4,8 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d8"
+	"go.dedis.ch/protobuf"
 	"io"
 	"math/rand"
 	"os"
@@ -85,8 +87,8 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 		return nil, e
 	}
 	fs = &GroupFileSystem{
-		FileCount:  rsp.(*oidb.D6D8RspBody).FileCountRsp.GetAllFileCount(),
-		LimitCount: rsp.(*oidb.D6D8RspBody).FileCountRsp.GetLimitCount(),
+		FileCount:  rsp.(*oidb0x6d8.RspBody).GroupFileCntRsp.GetAllFileCount(),
+		LimitCount: rsp.(*oidb0x6d8.RspBody).GroupFileCntRsp.GetLimitCount(),
 		GroupCode:  groupCode,
 		client:     c,
 	}
@@ -94,8 +96,8 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 	if err != nil {
 		return nil, err
 	}
-	fs.TotalSpace = rsp.(*oidb.D6D8RspBody).GroupSpaceRsp.GetTotalSpace()
-	fs.UsedSpace = rsp.(*oidb.D6D8RspBody).GroupSpaceRsp.GetUsedSpace()
+	fs.TotalSpace = rsp.(*oidb0x6d8.RspBody).GroupSpaceRsp.GetTotalSpace()
+	fs.UsedSpace = rsp.(*oidb0x6d8.RspBody).GroupSpaceRsp.GetUsedSpace()
 	return fs, nil
 }
 
@@ -122,7 +124,7 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderID string) ([]*GroupFile, []*G
 		if err != nil {
 			return nil, nil, err
 		}
-		rsp := i.(*oidb.D6D8RspBody)
+		rsp := i.(*oidb0x6d8.RspBody)
 		if rsp.FileListInfoRsp == nil {
 			break
 		}
@@ -314,7 +316,7 @@ func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, bu
 // OidbSvc.0x6d8_1
 func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID string, startIndex uint32) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D6D8ReqBody{FileListInfoReq: &oidb.GetFileListReqBody{
+	body := &oidb0x6d8.ReqBody{FileListInfoReq: &oidb0x6d8.GetFileListReqBody{
 		GroupCode:    proto.Uint64(uint64(groupCode)),
 		AppId:        proto.Uint32(3),
 		FolderId:     &folderID,
@@ -327,7 +329,7 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 		StartIndex:   &startIndex,
 		Context:      EmptyBytes,
 	}}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	req := &oidb.OIDBSSOPkg{
 		Command:       1752,
 		ServiceType:   1,
@@ -341,12 +343,12 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 
 func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D6D8ReqBody{GroupFileCountReq: &oidb.GetFileCountReqBody{
+	body := &oidb0x6d8.ReqBody{GroupFileCntReq: &oidb0x6d8.GetFileCountReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 		BusId:     proto.Uint32(0),
 	}}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	req := &oidb.OIDBSSOPkg{
 		Command:       1752,
 		ServiceType:   2,
@@ -360,11 +362,11 @@ func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []
 
 func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D6D8ReqBody{GroupSpaceReq: &oidb.GetSpaceReqBody{
+	body := &oidb0x6d8.ReqBody{GroupSpaceReq: &oidb0x6d8.GetSpaceReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 	}}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	req := &oidb.OIDBSSOPkg{
 		Command:       1752,
 		ServiceType:   3,
@@ -456,11 +458,11 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 
 func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D6D8RspBody{}
+	rsp := oidb0x6d8.RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return &rsp, nil
