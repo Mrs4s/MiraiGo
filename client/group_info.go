@@ -234,7 +234,7 @@ func decodeGroupInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte)
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if len(rsp.GetStzrspgroupinfo()) == 0 {
+	if len(rsp.Stzrspgroupinfo) == 0 {
 		return nil, errors.New(string(rsp.Errorinfo))
 	}
 	info := rsp.Stzrspgroupinfo[0]

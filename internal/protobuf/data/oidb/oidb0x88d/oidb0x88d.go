@@ -204,20 +204,6 @@ type (
 	}
 )
 
-func (x *GroupCardPrefix) GetIntroduction() []byte {
-	if x != nil {
-		return x.Introduction
-	}
-	return nil
-}
-
-func (x *GroupCardPrefix) GetPrefix() [][]byte {
-	if x != nil {
-		return x.Prefix
-	}
-	return nil
-}
-
 func (x *GroupCardPrefix) Marshal() ([]byte, error) {
 	if x == nil {
 		return nil, errors.New("nil pointer error")
@@ -281,13 +267,6 @@ func (x *GroupGeoInfo) GetLatitude() int64 {
 	return 0
 }
 
-func (x *GroupGeoInfo) GetGeocontent() []byte {
-	if x != nil {
-		return x.Geocontent
-	}
-	return nil
-}
-
 func (x *GroupGeoInfo) GetPoiId() uint64 {
 	if x != nil && x.PoiId != nil {
 		return *x.PoiId
@@ -309,13 +288,6 @@ func (x *GroupHeadPortrait) GetPicCnt() uint32 {
 	return 0
 }
 
-func (x *GroupHeadPortrait) GetInfo() []*GroupHeadPortraitInfo {
-	if x != nil {
-		return x.Info
-	}
-	return nil
-}
-
 func (x *GroupHeadPortrait) GetDefaultId() uint32 {
 	if x != nil && x.DefaultId != nil {
 		return *x.DefaultId
@@ -328,13 +300,6 @@ func (x *GroupHeadPortrait) GetVerifyingPicCnt() uint32 {
 		return *x.VerifyingPicCnt
 	}
 	return 0
-}
-
-func (x *GroupHeadPortrait) GetVerifyingpicInfo() []*GroupHeadPortraitInfo {
-	if x != nil {
-		return x.VerifyingpicInfo
-	}
-	return nil
 }
 
 func (x *GroupHeadPortrait) Marshal() ([]byte, error) {
@@ -484,41 +449,6 @@ func (x *GroupInfo) GetGroupRoamingTime() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetGroupName() []byte {
-	if x != nil {
-		return x.GroupName
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupMemo() []byte {
-	if x != nil {
-		return x.GroupMemo
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupFingerMemo() []byte {
-	if x != nil {
-		return x.GroupFingerMemo
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupClassText() []byte {
-	if x != nil {
-		return x.GroupClassText
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupAllianceCode() []*uint32 {
-	if x != nil {
-		return x.GroupAllianceCode
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetGroupExtraAdmNum() uint32 {
 	if x != nil && x.GroupExtraAdmNum != nil {
 		return *x.GroupExtraAdmNum
@@ -545,20 +475,6 @@ func (x *GroupInfo) GetGroupLastMsgTime() uint32 {
 		return *x.GroupLastMsgTime
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetGroupQuestion() []byte {
-	if x != nil {
-		return x.GroupQuestion
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupAnswer() []byte {
-	if x != nil {
-		return x.GroupAnswer
-	}
-	return nil
 }
 
 func (x *GroupInfo) GetGroupVisitorMaxNum() uint32 {
@@ -603,32 +519,11 @@ func (x *GroupInfo) GetGroupBoardSkinTimestamp() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetGroupAioSkinUrl() []byte {
-	if x != nil {
-		return x.GroupAioSkinUrl
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupBoardSkinUrl() []byte {
-	if x != nil {
-		return x.GroupBoardSkinUrl
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetGroupCoverSkinTimestamp() uint32 {
 	if x != nil && x.GroupCoverSkinTimestamp != nil {
 		return *x.GroupCoverSkinTimestamp
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetGroupCoverSkinUrl() []byte {
-	if x != nil {
-		return x.GroupCoverSkinUrl
-	}
-	return nil
 }
 
 func (x *GroupInfo) GetGroupGrade() uint32 {
@@ -652,46 +547,11 @@ func (x *GroupInfo) GetCertificationType() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetCertificationText() []byte {
-	if x != nil {
-		return x.CertificationText
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupRichFingerMemo() []byte {
-	if x != nil {
-		return x.GroupRichFingerMemo
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetTagRecord() []*TagRecord {
-	if x != nil {
-		return x.TagRecord
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetGroupGeoInfo() *GroupGeoInfo {
-	if x != nil {
-		return x.GroupGeoInfo
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetHeadPortraitSeq() uint32 {
 	if x != nil && x.HeadPortraitSeq != nil {
 		return *x.HeadPortraitSeq
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetHeadPortrait() *GroupHeadPortrait {
-	if x != nil {
-		return x.HeadPortrait
-	}
-	return nil
 }
 
 func (x *GroupInfo) GetShutupTimestamp() uint32 {
@@ -778,13 +638,6 @@ func (x *GroupInfo) GetAppPrivilegeFlag() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetStGroupExInfo() *GroupExInfoOnly {
-	if x != nil {
-		return x.StGroupExInfo
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetGroupSecLevel() uint32 {
 	if x != nil && x.GroupSecLevel != nil {
 		return *x.GroupSecLevel
@@ -804,13 +657,6 @@ func (x *GroupInfo) GetCmduinPrivilege() uint32 {
 		return *x.CmduinPrivilege
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetPoidInfo() []byte {
-	if x != nil {
-		return x.PoidInfo
-	}
-	return nil
 }
 
 func (x *GroupInfo) GetCmduinFlagEx2() uint32 {
@@ -1002,13 +848,6 @@ func (x *GroupInfo) GetIsAllowConfGroupMemberModifyGroupName() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetLongGroupName() []byte {
-	if x != nil {
-		return x.LongGroupName
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetCmduinJoinRealMsgSeq() uint32 {
 	if x != nil && x.CmduinJoinRealMsgSeq != nil {
 		return *x.CmduinJoinRealMsgSeq
@@ -1028,13 +867,6 @@ func (x *GroupInfo) GetMsgLimitFrequency() uint32 {
 		return *x.MsgLimitFrequency
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetJoinGroupAuth() []byte {
-	if x != nil {
-		return x.JoinGroupAuth
-	}
-	return nil
 }
 
 func (x *GroupInfo) GetHlGuildAppid() uint32 {
@@ -1100,25 +932,11 @@ func (x *GroupInfo) GetImportantMsgLatestSeq() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetGroupSchoolInfo() []byte {
-	if x != nil {
-		return x.GroupSchoolInfo
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetAppealDeadline() uint32 {
 	if x != nil && x.AppealDeadline != nil {
 		return *x.AppealDeadline
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetStGroupCardPrefix() *GroupCardPrefix {
-	if x != nil {
-		return x.StGroupCardPrefix
-	}
-	return nil
 }
 
 func (x *GroupInfo) GetAllianceId() uint64 {
@@ -1142,20 +960,6 @@ func (x *GroupInfo) GetGroupInfoExtSeq() uint32 {
 	return 0
 }
 
-func (x *GroupInfo) GetStGroupInfoExt() *GroupInfoExt {
-	if x != nil {
-		return x.StGroupInfoExt
-	}
-	return nil
-}
-
-func (x *GroupInfo) GetCmduinGroupRemarkName() []byte {
-	if x != nil {
-		return x.CmduinGroupRemarkName
-	}
-	return nil
-}
-
 func (x *GroupInfo) Marshal() ([]byte, error) {
 	if x == nil {
 		return nil, errors.New("nil pointer error")
@@ -1168,13 +972,6 @@ func (x *ReqBody) GetAppid() uint32 {
 		return *x.Appid
 	}
 	return 0
-}
-
-func (x *ReqBody) GetStzreqgroupinfo() []*ReqGroupInfo {
-	if x != nil {
-		return x.Stzreqgroupinfo
-	}
-	return nil
 }
 
 func (x *ReqBody) GetPcClientVersion() uint32 {
@@ -1198,13 +995,6 @@ func (x *ReqGroupInfo) GetGroupCode() uint64 {
 	return 0
 }
 
-func (x *ReqGroupInfo) GetStgroupinfo() *GroupInfo {
-	if x != nil {
-		return x.Stgroupinfo
-	}
-	return nil
-}
-
 func (x *ReqGroupInfo) GetLastGetGroupNameTime() uint32 {
 	if x != nil && x.LastGetGroupNameTime != nil {
 		return *x.LastGetGroupNameTime
@@ -1217,20 +1007,6 @@ func (x *ReqGroupInfo) Marshal() ([]byte, error) {
 		return nil, errors.New("nil pointer error")
 	}
 	return protobuf.Encode(x)
-}
-
-func (x *RspBody) GetStzrspgroupinfo() []*RspGroupInfo {
-	if x != nil {
-		return x.Stzrspgroupinfo
-	}
-	return nil
-}
-
-func (x *RspBody) GetErrorinfo() []byte {
-	if x != nil {
-		return x.Errorinfo
-	}
-	return nil
 }
 
 func (x *RspBody) Marshal() ([]byte, error) {
@@ -1254,13 +1030,6 @@ func (x *RspGroupInfo) GetResult() uint32 {
 	return 0
 }
 
-func (x *RspGroupInfo) GetStgroupinfo() *GroupInfo {
-	if x != nil {
-		return x.Stgroupinfo
-	}
-	return nil
-}
-
 func (x *RspGroupInfo) Marshal() ([]byte, error) {
 	if x == nil {
 		return nil, errors.New("nil pointer error")
@@ -1280,13 +1049,6 @@ func (x *TagRecord) GetGroupCode() uint64 {
 		return *x.GroupCode
 	}
 	return 0
-}
-
-func (x *TagRecord) GetTagId() []byte {
-	if x != nil {
-		return x.TagId
-	}
-	return nil
 }
 
 func (x *TagRecord) GetSetTime() uint64 {
@@ -1317,13 +1079,6 @@ func (x *TagRecord) GetTagLen() uint32 {
 	return 0
 }
 
-func (x *TagRecord) GetTagValue() []byte {
-	if x != nil {
-		return x.TagValue
-	}
-	return nil
-}
-
 func (x *TagRecord) Marshal() ([]byte, error) {
 	if x == nil {
 		return nil, errors.New("nil pointer error")
@@ -1350,13 +1105,6 @@ func (x *GroupInfoExt) GetLightCharNum() uint32 {
 		return *x.LightCharNum
 	}
 	return 0
-}
-
-func (x *GroupInfoExt) GetLuckyWord() []byte {
-	if x != nil {
-		return x.LuckyWord
-	}
-	return nil
 }
 
 func (x *GroupInfoExt) GetStarId() uint32 {
