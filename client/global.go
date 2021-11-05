@@ -224,9 +224,9 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 	case IPad:
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537065739,
-			SubAppId:        537065739,
-			SortVersionName: "5.8.9",
+			AppId:           537097188,
+			SubAppId:        537097188,
+			SortVersionName: "8.8.35",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
 			SdkVersion:      "6.0.0.2433",
