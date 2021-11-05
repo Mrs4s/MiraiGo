@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a7"
+	"go.dedis.ch/protobuf"
 	"math"
 	"math/rand"
 	"strconv"
@@ -284,7 +286,7 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 
 func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload := c.packOIDBPackageProto(2215, 0, &oidb.D8A7ReqBody{
+	payload := c.packOIDBPackageProto2(2215, 0, &oidb0x8a7.ReqBody{
 		SubCmd:                    proto.Uint32(1),
 		LimitIntervalTypeForUin:   proto.Uint32(2),
 		LimitIntervalTypeForGroup: proto.Uint32(1),
@@ -403,11 +405,11 @@ func decodeGetGroupMsgResponse(c *QQClient, info *incomingPacketInfo, payload []
 
 func decodeAtAllRemainResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
-	rsp := oidb.D8A7RspBody{}
+	rsp := oidb0x8a7.RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
+	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return &AtAllRemainInfo{
