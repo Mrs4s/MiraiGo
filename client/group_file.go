@@ -7,6 +7,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d6"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d7"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d8"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d9"
 	"go.dedis.ch/protobuf"
 	"io"
 	"math/rand"
@@ -302,10 +303,10 @@ func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string
 
 func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, busId, msgRand int32) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := c.packOIDBPackageProto(1753, 4, &oidb.D6D9ReqBody{FeedsInfoReq: &oidb.FeedsReqBody{
+	req := c.packOIDBPackageProto2(1753, 4, &oidb0x6d9.ReqBody{FeedsInfoReq: &oidb0x6d9.FeedsReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
-		FeedsInfoList: []*oidb.GroupFileFeedsInfo{{
+		FeedsInfoList: []*oidb0x6d9.GroupFileFeedsInfo{{
 			FileId:    &fileID,
 			FeedFlag:  proto.Uint32(1),
 			BusId:     proto.Uint32(uint32(busId)),
