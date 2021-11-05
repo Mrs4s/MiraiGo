@@ -1,9 +1,11 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xbcb"
 	"github.com/pkg/errors"
+	"go.dedis.ch/protobuf"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -30,8 +32,8 @@ func (c *QQClient) CheckUrlSafely(url string) UrlSecurityLevel {
 
 func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload := c.packOIDBPackageProto(3019, 0, &oidb.DBCBReqBody{
-		CheckUrlReq: &oidb.CheckUrlReq{
+	payload := c.packOIDBPackageProto2(3019, 0, &oidb0xbcb.ReqBody{
+		CheckUrlReq: &oidb0xbcb.CheckUrlReq{
 			Url:         []string{url},
 			QqPfTo:      proto.String("mqq.group"),
 			Type:        proto.Uint32(2),
@@ -51,11 +53,11 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 
 func decodeUrlCheckResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := &oidb.OIDBSSOPkg{}
-	rsp := &oidb.DBCBRspBody{}
-	if err := proto.Unmarshal(payload, pkg); err != nil {
+	rsp := &oidb0xbcb.RspBody{}
+	if err := protobuf.Decode(payload, pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+	if err := protobuf.Decode(pkg.Bodybuffer, rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.CheckUrlRsp == nil || len(rsp.CheckUrlRsp.Results) == 0 {

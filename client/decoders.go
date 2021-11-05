@@ -4,6 +4,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
+	"go.dedis.ch/protobuf"
 	"net"
 	"strconv"
 	"strings"
@@ -19,7 +22,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
@@ -790,11 +792,11 @@ func decodeMSFOfflinePacket(c *QQClient, _ *incomingPacketInfo, _ []byte) (inter
 // OidbSvc.0xd79
 func decodeWordSegmentation(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
-	rsp := &oidb.D79RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	rsp := &oidb0xd79.RspBody{}
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+	if err := protobuf.Decode(pkg.Bodybuffer, rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.Content != nil {

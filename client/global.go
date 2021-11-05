@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"math/rand"
 	"net"
 	"sort"
@@ -20,7 +21,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -644,23 +644,23 @@ func (p requestParams) int32(k string) int32 {
 	return i.(int32)
 }
 
-func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
+func (c *QQClient) packOIDBPackage(cmd, serviceType uint32, body []byte) []byte {
 	pkg := &oidb.OIDBSSOPkg{
-		Command:       cmd,
-		ServiceType:   serviceType,
+		Command:       &cmd,
+		ServiceType:   &serviceType,
 		Bodybuffer:    body,
-		ClientVersion: "Android " + c.version.SortVersionName,
+		ClientVersion: proto.String("Android " + c.version.SortVersionName),
 	}
-	r, _ := proto.Marshal(pkg)
+	r, _ := pkg.Marshal()
 	return r
 }
 
-func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Message) []byte {
+func (c *QQClient) packOIDBPackageProto(cmd, serviceType uint32, msg proto.Message) []byte {
 	b, _ := proto.Marshal(msg)
 	return c.packOIDBPackage(cmd, serviceType, b)
 }
 
-func (c *QQClient) packOIDBPackageProto2(cmd, serviceType int32, msg proto2.Message) []byte {
+func (c *QQClient) packOIDBPackageProto2(cmd, serviceType uint32, msg proto2.Message) []byte {
 	b, _ := msg.Marshal()
 	return c.packOIDBPackage(cmd, serviceType, b)
 }

@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a7"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xeac"
 	"go.dedis.ch/protobuf"
 	"math"
 	"math/rand"
@@ -19,7 +21,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 
@@ -407,7 +408,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *incomingPacketInfo, payload []
 func decodeAtAllRemainResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x8a7.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
@@ -569,7 +570,7 @@ func (c *QQClient) SetEssenceMessage(groupCode int64, msgID, msgInternalId int32
 	if err != nil {
 		return errors.Wrap(err, "set essence msg network")
 	}
-	rsp := r.(*oidb.EACRspBody)
+	rsp := r.(*oidb0xeac.RspBody)
 	if rsp.GetErrorCode() != 0 {
 		return errors.New(rsp.GetWording())
 	}
@@ -582,7 +583,7 @@ func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgID, msgInternalId in
 	if err != nil {
 		return errors.Wrap(err, "set essence msg networ")
 	}
-	rsp := r.(*oidb.EACRspBody)
+	rsp := r.(*oidb0xeac.RspBody)
 	if rsp.GetErrorCode() != 0 {
 		return errors.New(rsp.GetWording())
 	}
@@ -592,7 +593,7 @@ func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgID, msgInternalId in
 func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand, opType uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	commandName := "OidbSvc.0xeac_" + strconv.FormatInt(int64(opType), 10)
-	payload := c.packOIDBPackageProto(3756, int32(opType), &oidb.EACReqBody{ // serviceType 2 取消
+	payload := c.packOIDBPackageProto2(3756, opType, &oidb0xeac.ReqBody{ // serviceType 2 取消
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		Seq:       proto.Uint32(msgSeq),
 		Random:    proto.Uint32(msgRand),
@@ -604,11 +605,11 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 // OidbSvc.0xeac_1/2
 func decodeEssenceMsgResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
-	rsp := &oidb.EACRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	rsp := &oidb0xeac.RspBody{}
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
+	if err := protobuf.Decode(pkg.Bodybuffer, rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return rsp, nil

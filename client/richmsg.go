@@ -1,12 +1,12 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xb77"
 	"math/rand"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
@@ -95,34 +95,34 @@ func (c *QQClient) SendFriendMusicShare(target int64, msg *message.MusicShareEle
 func (c *QQClient) buildRichMsgSendingPacket(target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	tp := musicType[msg.MusicType] // MusicType
-	body := &oidb.DB77ReqBody{
-		AppId:   tp.appID,
-		AppType: tp.appType,
-		MsgStyle: func() uint32 {
+	body := &oidb0xb77.ReqBody{
+		AppId:   &tp.appID,
+		AppType: &tp.appType,
+		MsgStyle: proto.Uint32(func() uint32 {
 			if msg.MusicUrl == "" {
 				return 0
 			}
 			return 4
-		}(),
-		ClientInfo: &oidb.DB77ClientInfo{
-			Platform:           tp.platform,
-			SdkVersion:         tp.sdkVersion,
-			AndroidPackageName: tp.packageName,
-			AndroidSignature:   tp.signature,
+		}()),
+		ClientInfo: &oidb0xb77.ClientInfo{
+			Platform:           &tp.platform,
+			SdkVersion:         &tp.sdkVersion,
+			AndroidPackageName: &tp.packageName,
+			AndroidSignature:   &tp.signature,
 		},
-		ExtInfo:  &oidb.DB77ExtInfo{MsgSeq: rand.Uint64()},
-		SendType: sendType,
-		RecvUin:  uint64(target),
-		RichMsgBody: &oidb.DB77RichMsgBody{
-			Title:      msg.Title,
-			Summary:    msg.Summary,
-			Brief:      msg.Brief,
-			Url:        msg.Url,
-			PictureUrl: msg.PictureUrl,
-			MusicUrl:   msg.MusicUrl,
+		ExtInfo:  &oidb0xb77.ExtInfo{MsgSeq: proto.Uint64(rand.Uint64())},
+		SendType: &sendType,
+		RecvUin:  proto.Uint64(uint64(target)),
+		RichMsgBody: &oidb0xb77.RichMsgBody{
+			Title:      &msg.Title,
+			Summary:    &msg.Summary,
+			Brief:      &msg.Brief,
+			Url:        &msg.Url,
+			PictureUrl: &msg.PictureUrl,
+			MusicUrl:   &msg.MusicUrl,
 		},
 	}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2935, 9, b)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xb77_9", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet

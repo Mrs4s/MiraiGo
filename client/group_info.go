@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x88d"
 	"go.dedis.ch/protobuf"
 	"google.golang.org/protobuf/proto"
@@ -18,7 +19,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -228,7 +228,7 @@ func decodeGroupSearchResponse(_ *QQClient, _ *incomingPacketInfo, payload []byt
 func decodeGroupInfoResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x88d.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {

@@ -4,7 +4,11 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x89a"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a0"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xed3"
 	"math/rand"
 	"time"
 
@@ -19,11 +23,9 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/message"
 )
 
 var (
@@ -918,9 +920,9 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 }
 
 // OidbSvc.0x89a_0
-func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) (uint16, []byte) {
+func (c *QQClient) buildGroupOperationPacket(body *oidb0x89a.ReqBody) (uint16, []byte) {
 	seq := c.nextSeq()
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2202, 0, b)
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x89a_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
@@ -928,9 +930,9 @@ func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) (uint16, []
 
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupNameUpdatePacket(groupCode int64, newName string) (uint16, []byte) {
-	body := &oidb.D89AReqBody{
-		GroupCode: groupCode,
-		StGroupInfo: &oidb.D89AGroupinfo{
+	body := &oidb0x89a.ReqBody{
+		GroupCode: &groupCode,
+		StGroupInfo: &oidb0x89a.GroupInfo{
 			IngGroupName: []byte(newName),
 		},
 	}
@@ -938,9 +940,9 @@ func (c *QQClient) buildGroupNameUpdatePacket(groupCode int64, newName string) (
 }
 
 func (c *QQClient) buildGroupMemoUpdatePacket(groupCode int64, newMemo string) (uint16, []byte) {
-	body := &oidb.D89AReqBody{
-		GroupCode: groupCode,
-		StGroupInfo: &oidb.D89AGroupinfo{
+	body := &oidb0x89a.ReqBody{
+		GroupCode: &groupCode,
+		StGroupInfo: &oidb0x89a.GroupInfo{
 			IngGroupMemo: []byte(newMemo),
 		},
 	}
@@ -949,15 +951,15 @@ func (c *QQClient) buildGroupMemoUpdatePacket(groupCode int64, newMemo string) (
 
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, []byte) {
-	body := &oidb.D89AReqBody{
-		GroupCode: groupCode,
-		StGroupInfo: &oidb.D89AGroupinfo{
-			ShutupTime: &oidb.D89AGroupinfo_Val{Val: func() int32 {
+	body := &oidb0x89a.ReqBody{
+		GroupCode: &groupCode,
+		StGroupInfo: &oidb0x89a.GroupInfo{
+			ShutupTime: proto.Int32(func() int32 {
 				if mute {
 					return 268435455
 				}
 				return 0
-			}()},
+			}()),
 		},
 	}
 	return c.buildGroupOperationPacket(body)
@@ -970,18 +972,18 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 	if block {
 		flagBlock = 1
 	}
-	body := &oidb.D8A0ReqBody{
-		OptUint64GroupCode: groupCode,
-		MsgKickList: []*oidb.D8A0KickMemberInfo{
+	body := &oidb0x8a0.ReqBody{
+		OptUint64GroupCode: &groupCode,
+		MsgKickList: []*oidb0x8a0.KickMemberInfo{
 			{
-				OptUint32Operate:   5,
-				OptUint64MemberUin: memberUin,
-				OptUint32Flag:      int32(flagBlock),
+				OptUint32Operate:   proto.Int32(5),
+				OptUint64MemberUin: &memberUin,
+				OptUint32Flag:      proto.Int32(int32(flagBlock)),
 			},
 		},
 		KickMsg: []byte(kickMsg),
 	}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2208, 0, b)
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
@@ -1004,11 +1006,11 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 // OidbSvc.0xed3
 func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.DED3ReqBody{
-		ToUin:     target,
-		GroupCode: groupCode,
+	body := &oidb0xed3.ReqBody{
+		ToUin:     &target,
+		GroupCode: &groupCode,
 	}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(3795, 1, b)
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
@@ -1017,11 +1019,11 @@ func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte
 // OidbSvc.0xed3
 func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.DED3ReqBody{
-		ToUin:  target,
-		AioUin: target,
+	body := &oidb0xed3.ReqBody{
+		ToUin:  &target,
+		AioUin: &target,
 	}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(3795, 1, b)
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
@@ -1090,8 +1092,8 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 
 func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload := c.packOIDBPackageProto(3449, 1, &oidb.D79ReqBody{
-		Uin:     uint64(c.Uin),
+	payload := c.packOIDBPackageProto2(3449, 1, &oidb0xd79.ReqBody{
+		Uin:     proto.Uint64(uint64(c.Uin)),
 		Content: data,
 		Qua:     []byte("and_537065262_8.4.5"),
 	})
@@ -1099,10 +1101,11 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	return seq, packet
 }
 
+/*
 // OidbSvc.0xdad_1
 func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.GroupGift) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload := c.packOIDBPackageProto(3501, 1, &oidb.DADReqBody{
+	payload := c.packOIDBPackageProto2(3501, 1, &oidb0xdad.ReqBody{
 		Client:    1,
 		ProductId: uint64(productID),
 		ToUin:     uin,
@@ -1116,3 +1119,4 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+*/

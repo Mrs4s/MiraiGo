@@ -1,6 +1,8 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x769"
+	"go.dedis.ch/protobuf"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -13,7 +15,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/msf"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/pkg/errors"
 )
@@ -202,8 +203,8 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 // RegPrxySvc.PbSyncMsg
 func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	oidbReq, _ := proto.Marshal(&oidb.D769RspBody{
-		ConfigList: []*oidb.D769ConfigSeq{
+	oidbReq, _ := protobuf.Encode(&oidb0x769.RspBody{
+		ConfigList: []*oidb0x769.ConfigSeq{
 			{
 				Type:    proto.Uint32(46),
 				Version: proto.Uint32(0),

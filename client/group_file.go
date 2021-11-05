@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d6"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d7"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x6d8"
@@ -21,7 +22,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -289,14 +289,7 @@ func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string
 		Md5:                md5,
 		SupportMultiUpload: proto.Bool(true),
 	}}
-	b, _ := body.Marshal()
-	req := &oidb.OIDBSSOPkg{
-		Command:       1750,
-		ServiceType:   0,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(1750, 0, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -333,14 +326,7 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 		StartIndex:   &startIndex,
 		Context:      EmptyBytes,
 	}}
-	b, _ := body.Marshal()
-	req := &oidb.OIDBSSOPkg{
-		Command:       1752,
-		ServiceType:   1,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(1752, 1, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d8_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -352,14 +338,7 @@ func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []
 		AppId:     proto.Uint32(3),
 		BusId:     proto.Uint32(0),
 	}}
-	b, _ := body.Marshal()
-	req := &oidb.OIDBSSOPkg{
-		Command:       1752,
-		ServiceType:   2,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(1752, 2, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d8_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -370,14 +349,7 @@ func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 	}}
-	b, _ := body.Marshal()
-	req := &oidb.OIDBSSOPkg{
-		Command:       1752,
-		ServiceType:   3,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(1752, 3, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d8_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -428,13 +400,7 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 			FileId:    &fileId,
 		},
 	}
-	b, _ := body.Marshal()
-	req := &oidb.OIDBSSOPkg{
-		Command:     1750,
-		ServiceType: 2,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(1750, 2, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -448,14 +414,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 		ParentFolderId: &parentFolderId,
 		FileId:         &fileId,
 	}}
-	b, _ := body.Marshal()
-	req := &oidb.OIDBSSOPkg{
-		Command:       1750,
-		ServiceType:   3,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto2(1750, 3, body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -463,7 +422,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x6d8.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
@@ -476,7 +435,7 @@ func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 func decodeOIDB6d62Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x6d6.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
@@ -493,7 +452,7 @@ func decodeOIDB6d62Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 func decodeOIDB6d63Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x6d6.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
@@ -508,7 +467,7 @@ func decodeOIDB6d63Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 func decodeOIDB6d60Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x6d6.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
@@ -520,7 +479,7 @@ func decodeOIDB6d60Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 func decodeOIDB6d7Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x6d7.RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := protobuf.Decode(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
