@@ -1,0 +1,134 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+import "pb/channel/common.proto";
+
+message ChannelMsg {
+  optional uint64 guildId = 1;
+  optional uint64 channelId = 2;
+  optional uint32 result = 3;
+  optional uint64 rspBeginSeq = 4;
+  optional uint64 rspEndSeq = 5;
+  repeated ChannelMsgContent msgs = 6;
+}
+
+message ChannelMsgReq {
+  optional ChannelParam channelParam = 1;
+  optional uint32 withVersionFlag = 2;
+  optional uint32 directMessageFlag = 3;
+}
+
+message ChannelMsgRsp {
+  optional uint32 result = 1;
+  optional bytes errMsg = 2;
+  optional ChannelMsg channelMsg = 3;
+  optional uint32 withVersionFlag = 4;
+  optional uint64 getMsgTime = 5;
+}
+
+message ChannelNode {
+  optional uint64 channelId = 1;
+  optional uint64 seq = 2;
+  optional uint64 cntSeq = 3;
+  optional uint64 time = 4;
+  optional uint64 memberReadMsgSeq = 5;
+  optional uint64 memberReadCntSeq = 6;
+  optional uint32 notifyType = 7;
+  optional bytes channelName = 8;
+  optional uint32 channelType = 9;
+  optional bytes meta = 10;
+  optional bytes readMsgMeta = 11;
+  optional uint32 eventTime = 12;
+}
+
+message ChannelParam {
+  optional uint64 guildId = 1;
+  optional uint64 channelId = 2;
+  optional uint64 beginSeq = 3;
+  optional uint64 endSeq = 4;
+  optional uint64 time = 5;
+  repeated uint64 version = 6;
+  repeated MsgCond seqs = 7;
+}
+
+message DirectMessageSource {
+  optional uint64 tinyId = 1;
+  optional uint64 guildId = 2;
+  optional bytes guildName = 3;
+  optional bytes memberName = 4;
+  optional bytes nickName = 5;
+}
+
+message FirstViewMsg {
+  optional uint32 pushFlag = 1;
+  optional uint32 seq = 2;
+  repeated GuildNode guildNodes = 3;
+  repeated ChannelMsg channelMsgs = 4;
+  optional uint64 getMsgTime = 5;
+  repeated GuildNode directMessageGuildNodes = 6;
+}
+
+message FirstViewReq {
+  optional uint64 lastMsgTime = 1;
+  optional uint32 udcFlag = 2;
+  optional uint32 seq = 3;
+  optional uint32 directMessageFlag = 4;
+}
+
+message FirstViewRsp {
+  optional uint32 result = 1;
+  optional bytes errMsg = 2;
+  optional uint32 seq = 3;
+  optional uint32 udcFlag = 4;
+  optional uint32 guildCount = 5;
+  optional uint64 selfTinyid = 6;
+  optional uint32 directMessageSwitch = 7;
+  optional uint32 directMessageGuildCount = 8;
+}
+
+message GuildNode {
+  optional uint64 guildId = 1;
+  optional uint64 guildCode = 2;
+  repeated ChannelNode channelNodes = 3;
+  optional bytes guildName = 4;
+  optional DirectMessageSource peerSource = 5;
+}
+
+message MsgCond {
+  optional uint64 seq = 1;
+  optional uint64 eventVersion = 2;
+}
+
+message MultiChannelMsg {
+  optional uint32 pushFlag = 1;
+  optional uint32 seq = 2;
+  repeated ChannelMsg channelMsgs = 3;
+  optional uint64 getMsgTime = 4;
+}
+
+message MultiChannelMsgReq {
+  repeated ChannelParam channelParams = 1;
+  optional uint32 seq = 2;
+  optional uint32 directMessageFlag = 3;
+}
+
+message MultiChannelMsgRsp {
+  optional uint32 result = 1;
+  optional bytes errMsg = 2;
+  optional uint32 seq = 3;
+}
+
+message ReqBody {
+  optional ChannelParam channelParam = 1;
+  optional uint32 directMessageFlag = 2;
+}
+
+message RspBody {
+  optional uint32 result = 1;
+  optional bytes errMsg = 2;
+  optional ChannelMsg channelMsg = 3;
+}
+
