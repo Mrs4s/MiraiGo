@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
 	"math/rand"
 	"time"
 
@@ -899,9 +900,9 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 // OidbSvc.0x8fc_2
 func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
 	seq := c.nextSeq()
-	body := &oidb.D8FCReqBody{
+	body := &oidb0x8fc.ReqBody{
 		GroupCode: &groupCode,
-		MemLevelInfo: []*oidb.D8FCMemberInfo{
+		MemLevelInfo: []*oidb0x8fc.MemberInfo{
 			{
 				Uin:                    &memberUin,
 				UinName:                []byte(newTitle),
@@ -910,7 +911,7 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 			},
 		},
 	}
-	b, _ := proto.Marshal(body)
+	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2300, 2, b)
 	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8fc_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet

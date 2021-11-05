@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a7"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
 	"go.dedis.ch/protobuf"
 	"math"
 	"math/rand"
@@ -521,8 +522,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		mem := group.FindMember(m.Head.GetFromUin())
 		groupCard := m.Head.GroupInfo.GetGroupCard()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
-			buf := oidb.D8FCCommCardNameBuf{}
-			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
+			buf := oidb0x8fc.CommCardNameBuf{}
+			if err := protobuf.Decode(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
 				var gcard strings.Builder
 				for _, e := range buf.RichCardName {
 					gcard.Write(e.Text)
