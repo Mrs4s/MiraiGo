@@ -12,7 +12,7 @@ type encoder struct {
 	bytes.Buffer
 }
 
-func EncodeDynamicProtoMessage(msg DynamicProtoMessage) []byte {
+func (msg DynamicProtoMessage) Encode() []byte {
 	en := &encoder{}
 	for id, value := range msg {
 		key := id << 3
@@ -52,7 +52,7 @@ func EncodeDynamicProtoMessage(msg DynamicProtoMessage) []byte {
 			_, _ = en.Write(b)
 		case DynamicProtoMessage:
 			en.uvarint(key | 2)
-			b := EncodeDynamicProtoMessage(v)
+			b := v.Encode()
 			en.uvarint(uint64(len(b)))
 			_, _ = en.Write(b)
 		}

@@ -81,7 +81,7 @@ func (c *QQClient) syncChannelFirstView() {
 func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
-	payload := s.c.packOIDBPackage(3931, 1, binary.EncodeDynamicProtoMessage(binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
+	payload := s.c.packOIDBPackage(3931, 1, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
 		1: guildId, // guild id
 		2: uint32(3),
 		3: uint32(0),
@@ -91,7 +91,7 @@ func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInf
 		6:  uint32(0),
 		8:  uint32(500), // max response?
 		14: uint32(2),
-	}))
+	}.Encode())
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf5b_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
@@ -134,11 +134,11 @@ func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 	}
 	flags[99] = uint32(1)
 	flags[100] = uint32(1)
-	payload := s.c.packOIDBPackage(3976, 1, binary.EncodeDynamicProtoMessage(binary.DynamicProtoMessage{
+	payload := s.c.packOIDBPackage(3976, 1, binary.DynamicProtoMessage{
 		1: flags,
 		3: tinyId,
 		4: guildId,
-	}))
+	}.Encode())
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf88_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
