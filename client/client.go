@@ -36,15 +36,15 @@ type QQClient struct {
 	AllowSlider bool
 
 	// account info
-	Nickname      string
-	Age           uint16
-	Gender        uint16
-	FriendList    []*FriendInfo
-	GroupList     []*GroupInfo
-	OnlineClients []*OtherClientInfo
-	Online        bool
-	QiDian        *QiDianAccountInfo
-	ChannelSelf   *ChannelSelfInfo
+	Nickname       string
+	Age            uint16
+	Gender         uint16
+	FriendList     []*FriendInfo
+	GroupList      []*GroupInfo
+	OnlineClients  []*OtherClientInfo
+	Online         bool
+	QiDian         *QiDianAccountInfo
+	ChannelService *ChannelService
 
 	// protocol public field
 	SequenceId              int32
@@ -200,7 +200,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		TCP:                     &utils.TCPListener{},
-		ChannelSelf:             &ChannelSelfInfo{},
+		ChannelService:          &ChannelService{},
 		sigInfo:                 &loginSigInfo{},
 		requestPacketRequestID:  1921334513,
 		groupSeq:                int32(rand.Intn(20000)),

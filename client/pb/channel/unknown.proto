@@ -1,0 +1,26 @@
+// 存放所有未知的结构体
+syntax = "proto2";
+
+package channel;
+
+option go_package = "./;channel";
+
+message ChannelOidb0xf5bRsp {
+  optional uint64 guildId = 1;
+  repeated GuildMemberInfo bots = 4;
+  repeated GuildMemberInfo members = 5;
+  optional GuildAdminInfo adminInfo = 25;
+}
+
+message GuildAdminInfo {
+  repeated GuildMemberInfo admins = 2;
+}
+
+message GuildMemberInfo {
+  optional string title = 2;
+  optional string nickname = 3;
+  optional int64 lastSpeakTime = 4; // uncertainty
+  optional int32 role = 5; // uncertainty
+  optional uint64 tinyId = 8;
+}
+
