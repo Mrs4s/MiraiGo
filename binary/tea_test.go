@@ -75,52 +75,57 @@ func TestTEA(t *testing.T) {
 	}
 }
 
-func BenchmarkTEAen16(b *testing.B) {
-	data := make([]byte, 16)
+func benchEncrypt(b *testing.B, data []byte) {
 	_, err := rand.Read(data)
 	if err != nil {
 		panic(err)
 	}
+	b.SetBytes(int64(len(data)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		testTEA.Encrypt(data)
 	}
 }
 
-func BenchmarkTEAde16(b *testing.B) {
-	data := make([]byte, 16)
+func benchDecrypt(b *testing.B, data []byte) {
 	_, err := rand.Read(data)
 	if err != nil {
 		panic(err)
 	}
 	data = testTEA.Encrypt(data)
+	b.SetBytes(int64(len(data)))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		testTEA.Decrypt(data)
 	}
 }
 
-func BenchmarkTEAen256(b *testing.B) {
-	data := make([]byte, 256)
-	_, err := rand.Read(data)
-	if err != nil {
-		panic(err)
-	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		testTEA.Encrypt(data)
-	}
+func BenchmarkTEAen(b *testing.B) {
+	b.Run("16", func(b *testing.B) {
+		data := make([]byte, 16)
+		benchEncrypt(b, data)
+	})
+	b.Run("256", func(b *testing.B) {
+		data := make([]byte, 256)
+		benchEncrypt(b, data)
+	})
+	b.Run("4K", func(b *testing.B) {
+		data := make([]byte, 4096)
+		benchEncrypt(b, data)
+	})
 }
 
-func BenchmarkTEAde256(b *testing.B) {
-	data := make([]byte, 256)
-	_, err := rand.Read(data)
-	if err != nil {
-		panic(err)
-	}
-	data = testTEA.Encrypt(data)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		testTEA.Decrypt(data)
-	}
+func BenchmarkTEAde(b *testing.B) {
+	b.Run("16", func(b *testing.B) {
+		data := make([]byte, 16)
+		benchDecrypt(b, data)
+	})
+	b.Run("256", func(b *testing.B) {
+		data := make([]byte, 256)
+		benchDecrypt(b, data)
+	})
+	b.Run("4K", func(b *testing.B) {
+		data := make([]byte, 4096)
+		benchDecrypt(b, data)
+	})
 }
