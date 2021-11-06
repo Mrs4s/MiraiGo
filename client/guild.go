@@ -224,7 +224,7 @@ func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Guild
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
-	payload := s.c.packOIDBPackageDynamically(3927, 9, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
+	payload := s.c.packOIDBPackageDynamically(3927, 9, binary.DynamicProtoMessage{
 		1: binary.DynamicProtoMessage{
 			1: binary.DynamicProtoMessage{
 				2: u1, 4: u1, 5: u1, 6: u1, 7: u1, 8: u1, 11: u1, 12: u1, 13: u1, 14: u1, 45: u1,
