@@ -654,6 +654,10 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 	return r
 }
 
+func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg binary.DynamicProtoMessage) []byte {
+	return c.packOIDBPackage(cmd, serviceType, msg.Encode())
+}
+
 func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Message) []byte {
 	b, _ := proto.Marshal(msg)
 	return c.packOIDBPackage(cmd, serviceType, b)

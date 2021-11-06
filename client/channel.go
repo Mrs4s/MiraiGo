@@ -13,8 +13,10 @@ import (
 type (
 	// ChannelService 频道模块内自身的信息
 	ChannelService struct {
-		TinyId       uint64
-		ChannelCount uint32
+		TinyId     uint64
+		Nickname   string
+		AvatarUrl  string
+		GuildCount uint32
 		// Guilds 由服务器推送的频道列表
 		Guilds []*GuildInfo
 
@@ -40,11 +42,12 @@ type (
 		Role          int32 // 0 = member 1 = admin 2 = owner ?
 	}
 
-	GuildMemberProfile struct {
+	// GuildUserProfile 频道系统用户资料
+	GuildUserProfile struct {
 		TinyId    uint64
 		Nickname  string
 		AvatarUrl string
-		JoinTime  int64
+		JoinTime  int64 // 只有 GetGuildMemberProfileInfo 函数才会有
 	}
 
 	// ChannelInfo 子频道信息
@@ -75,13 +78,54 @@ func (c *QQClient) syncChannelFirstView() {
 		return
 	}
 	c.ChannelService.TinyId = firstViewRsp.GetSelfTinyid()
-	c.ChannelService.ChannelCount = firstViewRsp.GetGuildCount()
+	c.ChannelService.GuildCount = firstViewRsp.GetGuildCount()
+	if self, err := c.ChannelService.GetUserProfile(c.ChannelService.TinyId); err == nil {
+		c.ChannelService.Nickname = self.Nickname
+		c.ChannelService.AvatarUrl = self.AvatarUrl
+	} else {
+		c.Error("get self guild profile error: %v", err)
+	}
+}
+
+func (s *ChannelService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {
+	seq := s.c.nextSeq()
+	flags := binary.DynamicProtoMessage{}
+	for i := 3; i <= 29; i++ {
+		flags[uint64(i)] = uint32(1)
+	}
+	flags[99] = uint32(1)
+	flags[100] = uint32(1)
+	payload := s.c.packOIDBPackageDynamically(3976, 1, binary.DynamicProtoMessage{
+		1: flags,
+		3: tinyId,
+		4: uint32(0),
+	})
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xfc9_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	pkg := new(oidb.OIDBSSOPkg)
+	oidbRsp := new(channel.ChannelOidb0Xfc9Rsp)
+	if err = proto.Unmarshal(rsp, pkg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	// todo: 解析个性档案
+	return &GuildUserProfile{
+		TinyId:    tinyId,
+		Nickname:  oidbRsp.Profile.GetNickname(),
+		AvatarUrl: oidbRsp.Profile.GetAvatarUrl(),
+		JoinTime:  oidbRsp.Profile.GetJoinTime(),
+	}, nil
 }
 
 func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
-	payload := s.c.packOIDBPackage(3931, 1, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
+	payload := s.c.packOIDBPackageDynamically(3931, 1, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
 		1: guildId, // guild id
 		2: uint32(3),
 		3: uint32(0),
@@ -91,7 +135,7 @@ func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInf
 		6:  uint32(0),
 		8:  uint32(500), // max response?
 		14: uint32(2),
-	}.Encode())
+	})
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf5b_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
@@ -126,7 +170,7 @@ func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInf
 	return
 }
 
-func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildMemberProfile, error) {
+func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildUserProfile, error) {
 	seq := s.c.nextSeq()
 	flags := binary.DynamicProtoMessage{}
 	for i := 3; i <= 29; i++ {
@@ -134,11 +178,11 @@ func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 	}
 	flags[99] = uint32(1)
 	flags[100] = uint32(1)
-	payload := s.c.packOIDBPackage(3976, 1, binary.DynamicProtoMessage{
+	payload := s.c.packOIDBPackageDynamically(3976, 1, binary.DynamicProtoMessage{
 		1: flags,
 		3: tinyId,
 		4: guildId,
-	}.Encode())
+	})
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf88_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
@@ -153,7 +197,7 @@ func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	// todo: 解析个性档案
-	return &GuildMemberProfile{
+	return &GuildUserProfile{
 		TinyId:    tinyId,
 		Nickname:  oidbRsp.Profile.GetNickname(),
 		AvatarUrl: oidbRsp.Profile.GetAvatarUrl(),

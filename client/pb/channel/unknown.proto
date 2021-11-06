@@ -13,7 +13,11 @@ message ChannelOidb0xf5bRsp {
 }
 
 message ChannelOidb0xf88Rsp {
-  optional GuildMemberProfile profile = 1;
+  optional GuildUserProfile profile = 1;
+}
+
+message ChannelOidb0xfc9Rsp {
+  optional GuildUserProfile profile = 1;
 }
 
 message GuildAdminInfo {
@@ -28,7 +32,8 @@ message GuildMemberInfo {
   optional uint64 tinyId = 8;
 }
 
-message GuildMemberProfile {
+// 频道系统用户资料
+message GuildUserProfile {
   optional uint64 tinyId = 2;
   optional string nickname = 3;
   optional string avatarUrl = 6;
