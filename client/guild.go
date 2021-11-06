@@ -11,8 +11,8 @@ import (
 )
 
 type (
-	// ChannelService 频道模块内自身的信息
-	ChannelService struct {
+	// GuildService 频道模块内自身的信息
+	GuildService struct {
 		TinyId     uint64
 		Nickname   string
 		AvatarUrl  string
@@ -77,17 +77,17 @@ func (c *QQClient) syncChannelFirstView() {
 	if err = proto.Unmarshal(rsp, firstViewRsp); err != nil {
 		return
 	}
-	c.ChannelService.TinyId = firstViewRsp.GetSelfTinyid()
-	c.ChannelService.GuildCount = firstViewRsp.GetGuildCount()
-	if self, err := c.ChannelService.GetUserProfile(c.ChannelService.TinyId); err == nil {
-		c.ChannelService.Nickname = self.Nickname
-		c.ChannelService.AvatarUrl = self.AvatarUrl
+	c.GuildService.TinyId = firstViewRsp.GetSelfTinyid()
+	c.GuildService.GuildCount = firstViewRsp.GetGuildCount()
+	if self, err := c.GuildService.GetUserProfile(c.GuildService.TinyId); err == nil {
+		c.GuildService.Nickname = self.Nickname
+		c.GuildService.AvatarUrl = self.AvatarUrl
 	} else {
 		c.Error("get self guild profile error: %v", err)
 	}
 }
 
-func (s *ChannelService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {
+func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {
 	seq := s.c.nextSeq()
 	flags := binary.DynamicProtoMessage{}
 	for i := 3; i <= 29; i++ {
@@ -122,7 +122,7 @@ func (s *ChannelService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error
 	}, nil
 }
 
-func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
+func (s *GuildService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
 	payload := s.c.packOIDBPackageDynamically(3931, 1, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
@@ -170,7 +170,7 @@ func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInf
 	return
 }
 
-func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildUserProfile, error) {
+func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildUserProfile, error) {
 	seq := s.c.nextSeq()
 	flags := binary.DynamicProtoMessage{}
 	for i := 3; i <= 29; i++ {
@@ -227,7 +227,7 @@ func decodeChannelPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []by
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(firstViewMsg.GuildNodes) > 0 {
-		c.ChannelService.Guilds = []*GuildInfo{}
+		c.GuildService.Guilds = []*GuildInfo{}
 		for _, guild := range firstViewMsg.GuildNodes {
 			info := &GuildInfo{
 				GuildId:   guild.GetGuildId(),
@@ -247,8 +247,8 @@ func decodeChannelPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []by
 					AtAllSeq:    meta.GetAtAllSeq(),
 				})
 			}
-			info.Bots, info.Members, info.Admins, _ = c.ChannelService.GetGuildMembers(info.GuildId)
-			c.ChannelService.Guilds = append(c.ChannelService.Guilds, info)
+			info.Bots, info.Members, info.Admins, _ = c.GuildService.GetGuildMembers(info.GuildId)
+			c.GuildService.Guilds = append(c.GuildService.Guilds, info)
 		}
 	}
 	if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg

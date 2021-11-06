@@ -36,15 +36,15 @@ type QQClient struct {
 	AllowSlider bool
 
 	// account info
-	Nickname       string
-	Age            uint16
-	Gender         uint16
-	FriendList     []*FriendInfo
-	GroupList      []*GroupInfo
-	OnlineClients  []*OtherClientInfo
-	Online         bool
-	QiDian         *QiDianAccountInfo
-	ChannelService *ChannelService
+	Nickname      string
+	Age           uint16
+	Gender        uint16
+	FriendList    []*FriendInfo
+	GroupList     []*GroupInfo
+	OnlineClients []*OtherClientInfo
+	Online        bool
+	QiDian        *QiDianAccountInfo
+	GuildService  *GuildService
 
 	// protocol public field
 	SequenceId              int32
@@ -213,7 +213,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		alive:                   true,
 		ecdh:                    crypto.NewEcdh(),
 	}
-	cli.ChannelService = &ChannelService{c: cli}
+	cli.GuildService = &GuildService{c: cli}
 	cli.ecdh.FetchPubKey(uin)
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
