@@ -1,4 +1,4 @@
-// 存放所有未知的结构体
+// 存放所有未知的结构体, 均为手动分析复原
 syntax = "proto2";
 
 package channel;
@@ -18,6 +18,15 @@ message ChannelOidb0xf88Rsp {
 
 message ChannelOidb0xfc9Rsp {
   optional GuildUserProfile profile = 1;
+}
+
+message ChannelOidb0xf57Rsp {
+  optional GuildMetaRsp rsp = 1;
+}
+
+message GuildMetaRsp {
+  optional uint64 guildId = 3;
+  optional GuildMeta meta = 4;
 }
 
 message GuildAdminInfo {
@@ -42,6 +51,21 @@ message GuildUserProfile {
   // 22 cards
   // 23 display cards
   // 25 current cards *uncertainty
+}
+
+message GuildMeta {
+  optional uint64 guildCode = 2;
+  optional int64 createTime = 4;
+  optional int64 maxMemberCount = 5;
+  optional int64 memberCount = 6;
+  optional string name = 8;
+  optional int32 robotMaxNum = 11;
+  optional int32 adminMaxNum = 12;
+  optional string profile = 13;
+  optional int64 avatarSeq = 14;
+  optional uint64 ownerId = 18;
+  optional int64 coverSeq = 19;
+  optional int32 clientId = 20;
 }
 
 /*

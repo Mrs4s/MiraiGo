@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
@@ -28,10 +29,25 @@ type (
 		GuildId   uint64
 		GuildCode uint64
 		GuildName string
+		CoverUrl  string
+		AvatarUrl string
 		Channels  []*ChannelInfo
 		Bots      []*GuildMemberInfo
 		Members   []*GuildMemberInfo
 		Admins    []*GuildMemberInfo
+	}
+
+	// GuildMeta 频道数据
+	GuildMeta struct {
+		GuildId        uint64
+		GuildName      string
+		GuildProfile   string
+		MaxMemberCount int64
+		MemberCount    int64
+		CreateTime     int64
+		MaxRobotCount  int32
+		MaxAdminCount  int32
+		OwnerId        uint64
 	}
 
 	GuildMemberInfo struct {
@@ -205,6 +221,73 @@ func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Guild
 	}, nil
 }
 
+func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
+	seq := s.c.nextSeq()
+	u1 := uint32(1)
+	payload := s.c.packOIDBPackageDynamically(3927, 9, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
+		1: binary.DynamicProtoMessage{
+			1: binary.DynamicProtoMessage{
+				2: u1, 4: u1, 5: u1, 6: u1, 7: u1, 8: u1, 11: u1, 12: u1, 13: u1, 14: u1, 45: u1,
+				18: u1, 19: u1, 20: u1, 22: u1, 23: u1, 5002: u1, 5003: u1, 5004: u1, 5005: u1, 10007: u1,
+			},
+			2: binary.DynamicProtoMessage{
+				3: u1, 4: u1, 6: u1, 11: u1, 14: u1, 15: u1, 16: u1, 17: u1,
+			},
+		},
+		2: binary.DynamicProtoMessage{
+			1: guildId,
+		},
+	})
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf57_9", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	pkg := new(oidb.OIDBSSOPkg)
+	oidbRsp := new(channel.ChannelOidb0Xf57Rsp)
+	if err = proto.Unmarshal(rsp, pkg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return &GuildMeta{
+		GuildName:      oidbRsp.Rsp.Meta.GetName(),
+		GuildProfile:   oidbRsp.Rsp.Meta.GetProfile(),
+		MaxMemberCount: oidbRsp.Rsp.Meta.GetMaxMemberCount(),
+		MemberCount:    oidbRsp.Rsp.Meta.GetMemberCount(),
+		CreateTime:     oidbRsp.Rsp.Meta.GetCreateTime(),
+		MaxRobotCount:  oidbRsp.Rsp.Meta.GetRobotMaxNum(),
+		MaxAdminCount:  oidbRsp.Rsp.Meta.GetAdminMaxNum(),
+		OwnerId:        oidbRsp.Rsp.Meta.GetOwnerId(),
+	}, nil
+}
+
+/* need analysis
+func (s *GuildService) fetchChannelListState(guildId uint64, channels []*ChannelInfo) {
+	seq := s.c.nextSeq()
+	var ids []uint64
+	for _, info := range channels {
+		ids = append(ids, info.ChannelId)
+	}
+	payload := s.c.packOIDBPackageDynamically(4104, 1, binary.DynamicProtoMessage{
+		1: binary.DynamicProtoMessage{
+			1: guildId,
+			2: ids,
+		},
+	})
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x1008_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return
+	}
+	pkg := new(oidb.OIDBSSOPkg)
+	if err = proto.Unmarshal(rsp, pkg); err != nil {
+		return //nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+}
+*/
+
 func (c *QQClient) buildSyncChannelFirstViewPacket() (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &channel.FirstViewReq{
@@ -233,6 +316,8 @@ func decodeChannelPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []by
 				GuildId:   guild.GetGuildId(),
 				GuildCode: guild.GetGuildCode(),
 				GuildName: utils.B2S(guild.GuildName),
+				CoverUrl:  fmt.Sprintf("https://groupprocover-76483.picgzc.qpic.cn/%v", guild.GetGuildId()),
+				AvatarUrl: fmt.Sprintf("https://groupprohead-76292.picgzc.qpic.cn/%v", guild.GetGuildId()),
 			}
 			for _, node := range guild.ChannelNodes {
 				meta := new(channel.ChannelMsgMeta)
@@ -249,6 +334,7 @@ func decodeChannelPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []by
 			}
 			info.Bots, info.Members, info.Admins, _ = c.GuildService.GetGuildMembers(info.GuildId)
 			c.GuildService.Guilds = append(c.GuildService.Guilds, info)
+			c.GuildService.FetchGuestGuild(info.GuildId)
 		}
 	}
 	if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg
