@@ -17,6 +17,8 @@ type (
 		ChannelCount uint32
 		// Guilds 由服务器推送的频道列表
 		Guilds []*GuildInfo
+
+		c *QQClient
 	}
 
 	// GuildInfo 频道信息
@@ -36,6 +38,13 @@ type (
 		Nickname      string
 		LastSpeakTime int64
 		Role          int32 // 0 = member 1 = admin 2 = owner ?
+	}
+
+	GuildMemberProfile struct {
+		TinyId    uint64
+		Nickname  string
+		AvatarUrl string
+		JoinTime  int64
 	}
 
 	// ChannelInfo 子频道信息
@@ -69,10 +78,10 @@ func (c *QQClient) syncChannelFirstView() {
 	c.ChannelService.ChannelCount = firstViewRsp.GetGuildCount()
 }
 
-func (c *QQClient) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
-	seq := c.nextSeq()
+func (s *ChannelService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
+	seq := s.c.nextSeq()
 	u1 := uint32(1)
-	payload := c.packOIDBPackage(3931, 1, binary.EncodeDynamicProtoMessage(binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
+	payload := s.c.packOIDBPackage(3931, 1, binary.EncodeDynamicProtoMessage(binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
 		1: guildId, // guild id
 		2: uint32(3),
 		3: uint32(0),
@@ -83,8 +92,8 @@ func (c *QQClient) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, mem
 		8:  uint32(500), // max response?
 		14: uint32(2),
 	}))
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvcTrpcTcp.0xf5b_1", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
-	rsp, err := c.sendAndWaitDynamic(seq, packet)
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf5b_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "send packet error")
 	}
@@ -115,6 +124,41 @@ func (c *QQClient) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, mem
 		admins = append(admins, protoToMemberInfo(mem))
 	}
 	return
+}
+
+func (s *ChannelService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildMemberProfile, error) {
+	seq := s.c.nextSeq()
+	flags := binary.DynamicProtoMessage{}
+	for i := 3; i <= 29; i++ {
+		flags[uint64(i)] = uint32(1)
+	}
+	flags[99] = uint32(1)
+	flags[100] = uint32(1)
+	payload := s.c.packOIDBPackage(3976, 1, binary.EncodeDynamicProtoMessage(binary.DynamicProtoMessage{
+		1: flags,
+		3: tinyId,
+		4: guildId,
+	}))
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf88_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	pkg := new(oidb.OIDBSSOPkg)
+	oidbRsp := new(channel.ChannelOidb0Xf88Rsp)
+	if err = proto.Unmarshal(rsp, pkg); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	// todo: 解析个性档案
+	return &GuildMemberProfile{
+		TinyId:    tinyId,
+		Nickname:  oidbRsp.Profile.GetNickname(),
+		AvatarUrl: oidbRsp.Profile.GetAvatarUrl(),
+		JoinTime:  oidbRsp.Profile.GetJoinTime(),
+	}, nil
 }
 
 func (c *QQClient) buildSyncChannelFirstViewPacket() (uint16, []byte) {
@@ -159,7 +203,7 @@ func decodeChannelPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []by
 					AtAllSeq:    meta.GetAtAllSeq(),
 				})
 			}
-			info.Bots, info.Members, info.Admins, _ = c.GetGuildMembers(info.GuildId)
+			info.Bots, info.Members, info.Admins, _ = c.ChannelService.GetGuildMembers(info.GuildId)
 			c.ChannelService.Guilds = append(c.ChannelService.Guilds, info)
 		}
 	}

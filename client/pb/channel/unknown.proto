@@ -12,6 +12,10 @@ message ChannelOidb0xf5bRsp {
   optional GuildAdminInfo adminInfo = 25;
 }
 
+message ChannelOidb0xf88Rsp {
+  optional GuildMemberProfile profile = 1;
+}
+
 message GuildAdminInfo {
   repeated GuildMemberInfo admins = 2;
 }
@@ -23,4 +27,24 @@ message GuildMemberInfo {
   optional int32 role = 5; // uncertainty
   optional uint64 tinyId = 8;
 }
+
+message GuildMemberProfile {
+  optional uint64 tinyId = 2;
+  optional string nickname = 3;
+  optional string avatarUrl = 6;
+  // 15: avatar url info
+  optional int64 joinTime = 16;  // uncertainty
+  // 22 cards
+  // 23 display cards
+  // 25 current cards *uncertainty
+}
+
+/*
+// 个性档案卡片
+message GuildMemberProfileCard {
+  optional int32 appid = 1;
+  optional string name = 2;
+
+}
+ */
 
