@@ -14,6 +14,7 @@ type eventHandlers struct {
 	groupMessageHandlers             []func(*QQClient, *message.GroupMessage)
 	selfPrivateMessageHandlers       []func(*QQClient, *message.PrivateMessage)
 	selfGroupMessageHandlers         []func(*QQClient, *message.GroupMessage)
+	guildChannelMessageHandlers      []func(*QQClient, *message.GuildChannelMessage)
 	groupMuteEventHandlers           []func(*QQClient, *GroupMuteEvent)
 	groupRecalledHandlers            []func(*QQClient, *GroupMessageRecalledEvent)
 	friendRecalledHandlers           []func(*QQClient, *FriendMessageRecalledEvent)
@@ -66,6 +67,10 @@ func (c *QQClient) OnSelfPrivateMessage(f func(*QQClient, *message.PrivateMessag
 
 func (c *QQClient) OnSelfGroupMessage(f func(*QQClient, *message.GroupMessage)) {
 	c.eventHandlers.selfGroupMessageHandlers = append(c.eventHandlers.selfGroupMessageHandlers, f)
+}
+
+func (s *GuildService) OnGuildChannelMessage(f func(*QQClient, *message.GuildChannelMessage)) {
+	s.c.eventHandlers.guildChannelMessageHandlers = append(s.c.eventHandlers.guildChannelMessageHandlers, f)
 }
 
 func (c *QQClient) OnGroupMuted(f func(*QQClient, *GroupMuteEvent)) {
@@ -224,6 +229,17 @@ func (c *QQClient) dispatchGroupMessageSelf(msg *message.GroupMessage) {
 		return
 	}
 	for _, f := range c.eventHandlers.selfGroupMessageHandlers {
+		cover(func() {
+			f(c, msg)
+		})
+	}
+}
+
+func (c *QQClient) dispatchGuildChannelMessage(msg *message.GuildChannelMessage) {
+	if msg == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.guildChannelMessageHandlers {
 		cover(func() {
 			f(c, msg)
 		})

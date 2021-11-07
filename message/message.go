@@ -46,6 +46,16 @@ type (
 		// OriginalElements []*msg.Elem
 	}
 
+	GuildChannelMessage struct {
+		Id         uint64
+		InternalId int32
+		GuildId    uint64
+		ChannelId  uint64
+		Time       int64
+		Sender     *GuildSender
+		Elements   []IMessageElement
+	}
+
 	SendingMessage struct {
 		Elements []IMessageElement
 	}
@@ -56,6 +66,11 @@ type (
 		CardName      string
 		AnonymousInfo *AnonymousInfo
 		IsFriend      bool
+	}
+
+	GuildSender struct {
+		TinyId   uint64
+		Nickname string
 	}
 
 	AnonymousInfo struct {
