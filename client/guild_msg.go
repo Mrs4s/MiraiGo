@@ -1,11 +1,12 @@
 package client
 
 import (
+	"strconv"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"google.golang.org/protobuf/proto"
-	"strconv"
 )
 
 func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *message.GuildChannelMessage {
