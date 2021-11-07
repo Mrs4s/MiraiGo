@@ -4,9 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
-	"go.dedis.ch/protobuf"
 	"net"
 	"strconv"
 	"strings"
@@ -14,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -25,6 +23,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -793,10 +793,10 @@ func decodeMSFOfflinePacket(c *QQClient, _ *incomingPacketInfo, _ []byte) (inter
 func decodeWordSegmentation(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := &oidb0xd79.RspBody{}
-	if err := protobuf.Decode(payload, &pkg); err != nil {
+	if err := protobuf.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := protobuf.Decode(pkg.Bodybuffer, rsp); err != nil {
+	if err := protobuf.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.Content != nil {

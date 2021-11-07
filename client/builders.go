@@ -4,17 +4,8 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x89a"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a0"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xed3"
 	"math/rand"
 	"time"
-
-	"github.com/Mrs4s/MiraiGo/internal/crypto"
-	packets2 "github.com/Mrs4s/MiraiGo/internal/packets"
-	tlv2 "github.com/Mrs4s/MiraiGo/internal/tlv"
 
 	"google.golang.org/protobuf/proto"
 
@@ -26,6 +17,14 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/internal/crypto"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x89a"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a0"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xed3"
+	"github.com/Mrs4s/MiraiGo/internal/tlv"
 )
 
 var (
@@ -35,7 +34,7 @@ var (
 
 func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		if c.AllowSlider {
 			w.WriteUInt16(0x17)
@@ -43,87 +42,87 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 			w.WriteUInt16(0x16)
 		}
 
-		w.Write(tlv2.T18(16, uint32(c.Uin)))
-		w.Write(tlv2.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		w.Write(tlv2.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, c.deviceInfo.Guid, c.deviceInfo.TgtgtKey, 0))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T100(c.version.SSOVersion, c.version.SubAppId, c.version.MainSigMap))
-		w.Write(tlv2.T107(0))
-		w.Write(tlv2.T142(c.version.ApkId))
-		w.Write(tlv2.T144(
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
+		w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, c.deviceInfo.Guid, c.deviceInfo.TgtgtKey, 0))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T100(c.version.SSOVersion, c.version.SubAppId, c.version.MainSigMap))
+		w.Write(tlv.T107(0))
+		w.Write(tlv.T142(c.version.ApkId))
+		w.Write(tlv.T144(
 			[]byte(c.deviceInfo.IMEI),
 			c.deviceInfo.GenDeviceInfoData(),
 			c.deviceInfo.OSType,
 			c.deviceInfo.Version.Release,
 			c.deviceInfo.SimInfo,
 			c.deviceInfo.APN,
-			false, true, false, tlv2.GuidFlag(),
+			false, true, false, tlv.GuidFlag(),
 			c.deviceInfo.Model,
 			c.deviceInfo.Guid,
 			c.deviceInfo.Brand,
 			c.deviceInfo.TgtgtKey,
 		))
 
-		w.Write(tlv2.T145(c.deviceInfo.Guid))
-		w.Write(tlv2.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
+		w.Write(tlv.T145(c.deviceInfo.Guid))
+		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
 		/*
 			if (miscBitMap & 0x80) != 0{
 				w.Write(tlv.T166(1))
 			}
 		*/
-		w.Write(tlv2.T154(seq))
-		w.Write(tlv2.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T511([]string{
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
 			"qzone.qq.com", "vip.qq.com", "gamecenter.qq.com", "qun.qq.com", "game.qq.com",
 			"qqweb.qq.com", "office.qq.com", "ti.qq.com", "mail.qq.com", "mma.qq.com",
 		}))
 
-		w.Write(tlv2.T187(c.deviceInfo.MacAddress))
-		w.Write(tlv2.T188(c.deviceInfo.AndroidId))
+		w.Write(tlv.T187(c.deviceInfo.MacAddress))
+		w.Write(tlv.T188(c.deviceInfo.AndroidId))
 		if len(c.deviceInfo.IMSIMd5) != 0 {
-			w.Write(tlv2.T194(c.deviceInfo.IMSIMd5))
+			w.Write(tlv.T194(c.deviceInfo.IMSIMd5))
 		}
 		if c.AllowSlider {
-			w.Write(tlv2.T191(0x82))
+			w.Write(tlv.T191(0x82))
 		}
 		if len(c.deviceInfo.WifiBSSID) != 0 && len(c.deviceInfo.WifiSSID) != 0 {
-			w.Write(tlv2.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
+			w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
 		}
-		w.Write(tlv2.T177(c.version.BuildTime, c.version.SdkVersion))
-		w.Write(tlv2.T516())
-		w.Write(tlv2.T521(0))
-		w.Write(tlv2.T525(tlv2.T536([]byte{0x01, 0x00})))
+		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T516())
+		w.Write(tlv.T521(0))
+		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(20)
 		w.WriteUInt16(4)
 
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T104(c.t104))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T401(c.g))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T401(c.g))
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteHex(`0001110000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
-		w.Write(packets2.BuildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
+		w.Write(packets.BuildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
 			w.WriteUInt16(0)  // const
 			w.WriteUInt32(16) // app id
 			w.WriteUInt64(0)  // const
@@ -131,26 +130,26 @@ func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 			w.WriteBytesShort(EmptyBytes)
 
 			w.WriteUInt16(6)
-			w.Write(tlv2.T16(watch.SSOVersion, 16, watch.AppId, c.deviceInfo.Guid, []byte(watch.ApkId), []byte(watch.SortVersionName), watch.ApkSign))
-			w.Write(tlv2.T1B(0, 0, 3, 4, 72, 2, 2))
-			w.Write(tlv2.T1D(watch.MiscBitmap))
-			w.Write(tlv2.T1F(false, c.deviceInfo.OSType, []byte("7.1.2"), []byte("China Mobile GSM"), c.deviceInfo.APN, 2))
-			w.Write(tlv2.T33(c.deviceInfo.Guid))
-			w.Write(tlv2.T35(8))
+			w.Write(tlv.T16(watch.SSOVersion, 16, watch.AppId, c.deviceInfo.Guid, []byte(watch.ApkId), []byte(watch.SortVersionName), watch.ApkSign))
+			w.Write(tlv.T1B(0, 0, 3, 4, 72, 2, 2))
+			w.Write(tlv.T1D(watch.MiscBitmap))
+			w.Write(tlv.T1F(false, c.deviceInfo.OSType, []byte("7.1.2"), []byte("China Mobile GSM"), c.deviceInfo.APN, 2))
+			w.Write(tlv.T33(c.deviceInfo.Guid))
+			w.Write(tlv.T35(8))
 		}))
 	})
-	sso := packets2.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
 	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteHex(`0000620000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
-		w.Write(packets2.BuildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
+		w.Write(packets.BuildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
 			w.WriteUInt16(5)  // const
 			w.WriteByte(1)    // const
 			w.WriteUInt32(8)  // product type
@@ -162,246 +161,246 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 			w.WriteUInt16(0) // const
 		}))
 	})
-	sso := packets2.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		w.WriteUInt16(24)
 
-		w.Write(tlv2.T18(16, uint32(c.Uin)))
-		w.Write(tlv2.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
 		w.Write(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x106)
 			w.WriteBytesShort(t106)
 		}))
 		// w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, c.deviceInfo.Guid, c.deviceInfo.TgtgtKey, 0))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T100(c.version.SSOVersion, c.version.SubAppId, c.version.MainSigMap))
-		w.Write(tlv2.T107(0))
-		w.Write(tlv2.T142(c.version.ApkId))
-		w.Write(tlv2.T144(
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T100(c.version.SSOVersion, c.version.SubAppId, c.version.MainSigMap))
+		w.Write(tlv.T107(0))
+		w.Write(tlv.T142(c.version.ApkId))
+		w.Write(tlv.T144(
 			[]byte(c.deviceInfo.IMEI),
 			c.deviceInfo.GenDeviceInfoData(),
 			c.deviceInfo.OSType,
 			c.deviceInfo.Version.Release,
 			c.deviceInfo.SimInfo,
 			c.deviceInfo.APN,
-			false, true, false, tlv2.GuidFlag(),
+			false, true, false, tlv.GuidFlag(),
 			c.deviceInfo.Model,
 			c.deviceInfo.Guid,
 			c.deviceInfo.Brand,
 			c.deviceInfo.TgtgtKey,
 		))
 
-		w.Write(tlv2.T145(c.deviceInfo.Guid))
-		w.Write(tlv2.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
+		w.Write(tlv.T145(c.deviceInfo.Guid))
+		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
 		w.Write(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x16A)
 			w.WriteBytesShort(t16a)
 		}))
-		w.Write(tlv2.T154(seq))
-		w.Write(tlv2.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T511([]string{
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
 			"qzone.qq.com", "vip.qq.com", "gamecenter.qq.com", "qun.qq.com", "game.qq.com",
 			"qqweb.qq.com", "office.qq.com", "ti.qq.com", "mail.qq.com", "mma.qq.com",
 		}))
-		w.Write(tlv2.T187(c.deviceInfo.MacAddress))
-		w.Write(tlv2.T188(c.deviceInfo.AndroidId))
+		w.Write(tlv.T187(c.deviceInfo.MacAddress))
+		w.Write(tlv.T188(c.deviceInfo.AndroidId))
 		if len(c.deviceInfo.IMSIMd5) != 0 {
-			w.Write(tlv2.T194(c.deviceInfo.IMSIMd5))
+			w.Write(tlv.T194(c.deviceInfo.IMSIMd5))
 		}
-		w.Write(tlv2.T191(0x00))
+		w.Write(tlv.T191(0x00))
 		if len(c.deviceInfo.WifiBSSID) != 0 && len(c.deviceInfo.WifiSSID) != 0 {
-			w.Write(tlv2.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
+			w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
 		}
-		w.Write(tlv2.T177(c.version.BuildTime, c.version.SdkVersion))
-		w.Write(tlv2.T516())
-		w.Write(tlv2.T521(8))
+		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T516())
+		w.Write(tlv.T521(8))
 		// w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 		w.Write(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x318)
 			w.WriteBytesShort(t318)
 		}))
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(2) // sub command
 		w.WriteUInt16(4)
 
-		w.Write(tlv2.T2(result, sign))
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T104(c.t104))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T2(result, sign))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(8)
 		w.WriteUInt16(6)
 
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T104(c.t104))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T174(c.t174))
-		w.Write(tlv2.T17A(9))
-		w.Write(tlv2.T197())
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T174(c.t174))
+		w.Write(tlv.T17A(9))
+		w.Write(tlv.T197())
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(7)
 		w.WriteUInt16(7)
 
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T104(c.t104))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T174(c.t174))
-		w.Write(tlv2.T17C(code))
-		w.Write(tlv2.T401(c.g))
-		w.Write(tlv2.T198())
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T174(c.t174))
+		w.Write(tlv.T17C(code))
+		w.Write(tlv.T401(c.g))
+		w.Write(tlv.T198())
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(2)
 		w.WriteUInt16(4)
 
-		w.Write(tlv2.T193(ticket))
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T104(c.t104))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T193(ticket))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T104(c.t104))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
 func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.NewEncryptSession(c.sigInfo.t133), c.sigInfo.wtSessionTicketKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.NewEncryptSession(c.sigInfo.t133), c.sigInfo.wtSessionTicketKey, func(w *binary.Writer) {
 		w.WriteUInt16(15)
 		w.WriteUInt16(24)
 
-		w.Write(tlv2.T18(16, uint32(c.Uin)))
-		w.Write(tlv2.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
 		w.Write(binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x106)
 			w.WriteBytesShort(c.sigInfo.encryptedA1)
 		}))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
-		w.Write(tlv2.T107(0))
-		w.Write(tlv2.T144(
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
+		w.Write(tlv.T107(0))
+		w.Write(tlv.T144(
 			c.deviceInfo.AndroidId,
 			c.deviceInfo.GenDeviceInfoData(),
 			c.deviceInfo.OSType,
 			c.deviceInfo.Version.Release,
 			c.deviceInfo.SimInfo,
 			c.deviceInfo.APN,
-			false, true, false, tlv2.GuidFlag(),
+			false, true, false, tlv.GuidFlag(),
 			c.deviceInfo.Model,
 			c.deviceInfo.Guid,
 			c.deviceInfo.Brand,
 			c.deviceInfo.TgtgtKey,
 		))
-		w.Write(tlv2.T142(c.version.ApkId))
-		w.Write(tlv2.T145(c.deviceInfo.Guid))
-		w.Write(tlv2.T16A(c.sigInfo.srmToken))
-		w.Write(tlv2.T154(seq))
-		w.Write(tlv2.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T511([]string{
+		w.Write(tlv.T142(c.version.ApkId))
+		w.Write(tlv.T145(c.deviceInfo.Guid))
+		w.Write(tlv.T16A(c.sigInfo.srmToken))
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
 			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
 			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
 		}))
-		w.Write(tlv2.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
-		w.Write(tlv2.T177(c.version.BuildTime, c.version.SdkVersion))
-		w.Write(tlv2.T400(c.g, c.Uin, c.deviceInfo.Guid, c.dpwd, 1, 16, c.randSeed))
-		w.Write(tlv2.T187(c.deviceInfo.MacAddress))
-		w.Write(tlv2.T188(c.deviceInfo.AndroidId))
-		w.Write(tlv2.T194(c.deviceInfo.IMSIMd5))
-		w.Write(tlv2.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
-		w.Write(tlv2.T516())
-		w.Write(tlv2.T521(0))
-		w.Write(tlv2.T525(tlv2.T536([]byte{0x01, 0x00})))
+		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
+		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T400(c.g, c.Uin, c.deviceInfo.Guid, c.dpwd, 1, 16, c.randSeed))
+		w.Write(tlv.T187(c.deviceInfo.MacAddress))
+		w.Write(tlv.T188(c.deviceInfo.AndroidId))
+		w.Write(tlv.T194(c.deviceInfo.IMSIMd5))
+		w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
+		w.Write(tlv.T516())
+		w.Write(tlv.T521(0))
+		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
 	})
-	packet := packets2.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
+	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
 	return seq, packet
 }
 
 func (c *QQClient) buildRequestChangeSigPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets2.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(11)
 		w.WriteUInt16(17)
 
-		w.Write(tlv2.T100(c.version.SSOVersion, 100, c.version.MainSigMap))
-		w.Write(tlv2.T10A(c.sigInfo.tgt))
-		w.Write(tlv2.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv2.T108(c.deviceInfo.IMEI))
+		w.Write(tlv.T100(c.version.SSOVersion, 100, c.version.MainSigMap))
+		w.Write(tlv.T10A(c.sigInfo.tgt))
+		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T108(c.deviceInfo.IMEI))
 		h := md5.Sum(c.sigInfo.d2Key)
-		w.Write(tlv2.T144(
+		w.Write(tlv.T144(
 			c.deviceInfo.AndroidId,
 			c.deviceInfo.GenDeviceInfoData(),
 			c.deviceInfo.OSType,
 			c.deviceInfo.Version.Release,
 			c.deviceInfo.SimInfo,
 			c.deviceInfo.APN,
-			false, true, false, tlv2.GuidFlag(),
+			false, true, false, tlv.GuidFlag(),
 			c.deviceInfo.Model,
 			c.deviceInfo.Guid,
 			c.deviceInfo.Brand,
 			h[:],
 		))
-		w.Write(tlv2.T143(c.sigInfo.d2))
-		w.Write(tlv2.T142(c.version.ApkId))
-		w.Write(tlv2.T154(seq))
-		w.Write(tlv2.T18(16, uint32(c.Uin)))
-		w.Write(tlv2.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
-		w.Write(tlv2.T8(2052))
-		w.Write(tlv2.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
-		w.Write(tlv2.T177(c.version.BuildTime, c.version.SdkVersion))
-		w.Write(tlv2.T187(c.deviceInfo.MacAddress))
-		w.Write(tlv2.T188(c.deviceInfo.AndroidId))
-		w.Write(tlv2.T194(c.deviceInfo.IMSIMd5))
-		w.Write(tlv2.T511([]string{
+		w.Write(tlv.T143(c.sigInfo.d2))
+		w.Write(tlv.T142(c.version.ApkId))
+		w.Write(tlv.T154(seq))
+		w.Write(tlv.T18(16, uint32(c.Uin)))
+		w.Write(tlv.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
+		w.Write(tlv.T8(2052))
+		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
+		w.Write(tlv.T177(c.version.BuildTime, c.version.SdkVersion))
+		w.Write(tlv.T187(c.deviceInfo.MacAddress))
+		w.Write(tlv.T188(c.deviceInfo.AndroidId))
+		w.Write(tlv.T194(c.deviceInfo.IMSIMd5))
+		w.Write(tlv.T511([]string{
 			"tenpay.com", "openmobile.qq.com", "docs.qq.com", "connect.qq.com",
 			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
 			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
 		}))
 		// w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
 	})
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.exchange_emp", c.deviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.exchange_emp", c.deviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
 	return seq, packet
 }
 
@@ -448,8 +447,8 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	sso := packets2.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "StatSvc.register", c.deviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, pkt.ToBytes(), c.ksid)
-	packet := packets2.BuildLoginPacket(c.Uin, 1, c.sigInfo.d2Key, sso, c.sigInfo.d2)
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "StatSvc.register", c.deviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, pkt.ToBytes(), c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 1, c.sigInfo.d2Key, sso, c.sigInfo.d2)
 	return seq, packet
 }
 
@@ -487,7 +486,7 @@ func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "StatSvc.SetStatusFromClient", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "StatSvc.SetStatusFromClient", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -509,7 +508,7 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "ConfigPushSvc.PushResp", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "ConfigPushSvc.PushResp", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -567,7 +566,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "friendlist.getFriendGroupList", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.getFriendGroupList", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -652,7 +651,7 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "SummaryCard.ReqSummaryCard", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "SummaryCard.ReqSummaryCard", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -677,7 +676,7 @@ func (c *QQClient) buildFriendDeletePacket(target int64) (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "friendlist.delFriend", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.delFriend", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -708,7 +707,7 @@ func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopListReqV2", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopListReqV2", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -736,7 +735,7 @@ func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUi
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopMemberListReq", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopMemberListReq", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -751,7 +750,7 @@ func (c *QQClient) buildGroupMemberInfoRequestPacket(groupCode, uin int64) (uint
 		RichCardNameVer: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "group_member_card.get_group_member_card_info", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "group_member_card.get_group_member_card_info", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -782,7 +781,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		ServerBuf:          []byte{},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetMsg", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetMsg", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -791,7 +790,7 @@ func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint1
 	seq := c.nextSeq()
 	req := &pb.DeleteMessageRequest{Items: msg}
 	payload, _ := proto.Marshal(req)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "MessageSvc.PbDeleteMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbDeleteMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -819,7 +818,7 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, svrip int32, pushToken
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return packets2.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return packets.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
 }
 
 // LongConn.OffPicUp
@@ -847,7 +846,7 @@ func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (ui
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "LongConn.OffPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "LongConn.OffPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -868,7 +867,7 @@ func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
 		FriendMsgTypeFlag: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -895,7 +894,7 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "friendlist.ModifyGroupCardReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.ModifyGroupCardReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -903,10 +902,10 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb0x8fc.ReqBody{
-		GroupCode: &groupCode,
+		GroupCode: proto.Uint64(uint64(groupCode)),
 		MemLevelInfo: []*oidb0x8fc.MemberInfo{
 			{
-				Uin:                    &memberUin,
+				Uin:                    proto.Uint64(uint64(memberUin)),
 				UinName:                []byte(newTitle),
 				SpecialTitle:           []byte(newTitle),
 				SpecialTitleExpireTime: proto.Int32(-1),
@@ -915,7 +914,7 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 	}
 	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2300, 2, b)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8fc_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8fc_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -924,16 +923,16 @@ func (c *QQClient) buildGroupOperationPacket(body *oidb0x89a.ReqBody) (uint16, [
 	seq := c.nextSeq()
 	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2202, 0, b)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x89a_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x89a_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupNameUpdatePacket(groupCode int64, newName string) (uint16, []byte) {
 	body := &oidb0x89a.ReqBody{
-		GroupCode: &groupCode,
+		GroupCode: proto.Uint64(uint64(groupCode)),
 		StGroupInfo: &oidb0x89a.GroupInfo{
-			IngGroupName: []byte(newName),
+			GroupName: []byte(newName),
 		},
 	}
 	return c.buildGroupOperationPacket(body)
@@ -941,9 +940,9 @@ func (c *QQClient) buildGroupNameUpdatePacket(groupCode int64, newName string) (
 
 func (c *QQClient) buildGroupMemoUpdatePacket(groupCode int64, newMemo string) (uint16, []byte) {
 	body := &oidb0x89a.ReqBody{
-		GroupCode: &groupCode,
+		GroupCode: proto.Uint64(uint64(groupCode)),
 		StGroupInfo: &oidb0x89a.GroupInfo{
-			IngGroupMemo: []byte(newMemo),
+			GroupMemo: []byte(newMemo),
 		},
 	}
 	return c.buildGroupOperationPacket(body)
@@ -952,15 +951,13 @@ func (c *QQClient) buildGroupMemoUpdatePacket(groupCode int64, newMemo string) (
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, []byte) {
 	body := &oidb0x89a.ReqBody{
-		GroupCode: &groupCode,
+		GroupCode: proto.Uint64(uint64(groupCode)),
 		StGroupInfo: &oidb0x89a.GroupInfo{
-			ShutupTime: proto.Int32(func() int32 {
-				if mute {
-					return 268435455
-				}
-				return 0
-			}()),
+			ShutupTime: proto.Uint32(0),
 		},
+	}
+	if mute {
+		body.StGroupInfo.ShutupTime = proto.Uint32(268435455)
 	}
 	return c.buildGroupOperationPacket(body)
 }
@@ -973,19 +970,19 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 		flagBlock = 1
 	}
 	body := &oidb0x8a0.ReqBody{
-		OptUint64GroupCode: &groupCode,
+		GroupCode: proto.Uint64(uint64(groupCode)),
 		MsgKickList: []*oidb0x8a0.KickMemberInfo{
 			{
-				OptUint32Operate:   proto.Int32(5),
-				OptUint64MemberUin: &memberUin,
-				OptUint32Flag:      proto.Int32(int32(flagBlock)),
+				Operate:   proto.Uint32(5),
+				MemberUin: proto.Uint64(uint64(memberUin)),
+				Flag:      proto.Uint32(uint32(flagBlock)),
 			},
 		},
 		KickMsg: []byte(kickMsg),
 	}
 	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(2208, 0, b)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -999,7 +996,7 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 		w.WriteUInt32(uint32(memberUin))
 		w.WriteUInt32(time)
 	}))
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1007,12 +1004,12 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb0xed3.ReqBody{
-		ToUin:     &target,
-		GroupCode: &groupCode,
+		ToUin:     proto.Uint64(uint64(target)),
+		GroupCode: proto.Uint64(uint64(groupCode)),
 	}
 	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(3795, 1, b)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1020,12 +1017,12 @@ func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte
 func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
 	seq := c.nextSeq()
 	body := &oidb0xed3.ReqBody{
-		ToUin:  &target,
-		AioUin: &target,
+		ToUin:  proto.Uint64(uint64(target)),
+		AioUin: proto.Uint64(uint64(target)),
 	}
 	b, _ := body.Marshal()
 	payload := c.packOIDBPackage(3795, 1, b)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1042,7 +1039,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 			return 0
 		}())
 	}))
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1066,7 +1063,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := packets2.BuildUniPacket(c.Uin, seq, "ProfileService.GroupMngReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.GroupMngReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
 	return seq, packet
 }
 
@@ -1086,7 +1083,7 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 		TraceId:    fmt.Sprintf("%v_%v_%v", c.Uin, time.Now().Format("0102150405"), rand.Int63()),
 	}
 	payload, _ := proto.Marshal(body)
-	packet := packets2.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1097,7 +1094,7 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 		Content: data,
 		Qua:     []byte("and_537065262_8.4.5"),
 	})
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
@@ -1116,7 +1113,7 @@ func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.
 			Sig:  []byte(c.getSKey()),
 		},
 	})
-	packet := packets2.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 */

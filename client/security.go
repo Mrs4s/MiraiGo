@@ -1,12 +1,13 @@
 package client
 
 import (
+	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
+	"google.golang.org/protobuf/proto"
+
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xbcb"
-	"github.com/pkg/errors"
-	"go.dedis.ch/protobuf"
-	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -54,10 +55,10 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 func decodeUrlCheckResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := &oidb.OIDBSSOPkg{}
 	rsp := &oidb0xbcb.RspBody{}
-	if err := protobuf.Decode(payload, pkg); err != nil {
+	if err := protobuf.Unmarshal(payload, pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := protobuf.Decode(pkg.Bodybuffer, rsp); err != nil {
+	if err := protobuf.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.CheckUrlRsp == nil || len(rsp.CheckUrlRsp.Results) == 0 {

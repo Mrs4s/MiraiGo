@@ -1,0 +1,81 @@
+syntax = "proto2";
+
+package group_file_common;
+
+option go_package = "group_file_common;group_file_common";
+
+message FeedsInfo {
+  optional uint32 busId = 1;
+  optional string fileId = 2;
+  optional uint32 msgRandom = 3;
+  optional bytes ext = 4;
+  optional uint32 feedFlag = 5;
+  // optional msg_ctrl.MsgCtrl ctrl = 6;
+}
+
+message FeedsResult {
+  optional int32 retCode = 1;
+  optional string detail = 2;
+  optional string fileId = 3;
+  optional uint32 busId = 4;
+  optional uint32 deadTime = 5;
+}
+
+message FileInfo {
+  optional string fileId = 1;
+  optional string fileName = 2;
+  optional uint64 fileSize = 3;
+  optional uint32 busId = 4;
+  optional uint64 uploadedSize = 5;
+  optional uint32 uploadTime = 6;
+  optional uint32 deadTime = 7;
+  optional uint32 modifyTime = 8;
+  optional uint32 downloadTimes = 9;
+  optional bytes sha = 10;
+  optional bytes sha3 = 11;
+  optional bytes md5 = 12;
+  optional string localPath = 13;
+  optional string uploaderName = 14;
+  optional uint64 uploaderUin = 15;
+  optional string parentFolderId = 16;
+  optional uint32 safeType = 17;
+  optional bytes fileBlobExt = 20;
+  optional uint64 ownerUin = 21;
+  optional string feedId = 22;
+  optional bytes reservedField = 23;
+}
+
+message FileInfoTmem {
+  optional uint64 groupCode = 1;
+  repeated FileInfo files = 2;
+}
+
+message FileItem {
+  optional uint32 type = 1;
+  optional FolderInfo folderInfo = 2;
+  optional FileInfo fileInfo = 3;
+}
+
+message FolderInfo {
+  optional string folderId = 1;
+  optional string parentFolderId = 2;
+  optional string folderName = 3;
+  optional uint32 createTime = 4;
+  optional uint32 modifyTime = 5;
+  optional uint64 createUin = 6;
+  optional string creatorName = 7;
+  optional uint32 totalFileCount = 8;
+  optional uint64 modifyUin = 9;
+  optional string modifyName = 10;
+  optional uint64 usedSpace = 11;
+}
+
+message FolderInfoTmem {
+  optional uint64 groupCode = 1;
+  repeated FolderInfo folders = 2;
+}
+
+message OverwriteInfo {
+  optional string fileId = 1;
+  optional uint32 downloadTimes = 2;
+}

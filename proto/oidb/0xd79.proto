@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package oidb_0xd79;
+
+option go_package = "oidb/oidb0xd79;oidb0xd79";
+
+message ReqBody {
+  optional uint64 seq = 1;
+  optional uint64 uin = 2;
+  optional uint32 compressFlag = 3;
+  optional bytes content = 4;
+  optional uint64 senderUin = 5;
+  optional bytes qua = 6;
+  optional bytes wordExt = 7;
+}
+
+message RspBody {
+  optional uint32 ret = 1;
+  optional uint64 seq = 2;
+  optional uint64 uin = 3;
+  optional uint32 compressFlag = 4;
+  optional content content = 5;
+}
+
+message content {
+  repeated bytes sliceContent = 1;
+}

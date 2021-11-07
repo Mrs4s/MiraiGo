@@ -1,0 +1,44 @@
+syntax = "proto2";
+
+package oidb_0x990;
+
+option go_package = "oidb/oidb0x990;oidb0x990";
+
+message BatchTranslateReq {
+  optional string srcLanguage = 1;
+  optional string dstLanguage = 2;
+  repeated bytes srcBytesTextList = 3;
+}
+
+message BatchTranslateRsp {
+  optional int32 errorCode = 1;
+  optional bytes errorMsg = 2;
+  optional string srcLanguage = 3;
+  optional string dstLanguage = 4;
+  repeated bytes srcBytesTextList = 5;
+  repeated bytes dstBytesTextList = 6;
+}
+
+message ReqBody {
+  optional TranslateReq translateReq = 1;
+  optional BatchTranslateReq batchTranslateReq = 2;
+}
+
+message RspBody {
+  optional TranslateRsp translateRsp = 1;
+  optional BatchTranslateRsp batchTranslateRsp = 2;
+}
+
+message TranslateReq {
+  optional bytes text = 1;
+  optional int32 type = 2;
+  optional string srcLanguage = 3;
+  optional string dstLanguage = 4;
+}
+
+message TranslateRsp {
+  optional int32 retCode = 1;
+  optional int32 type = 2;
+  optional bytes transResult = 3;
+  optional int32 textLen = 4;
+}

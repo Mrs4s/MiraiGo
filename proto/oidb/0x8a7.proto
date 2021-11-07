@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package oidb_0x8a7;
+
+option go_package = "oidb/oidb0x8a7;oidb0x8a7";
+
+message ReqBody {
+  optional uint32 subCmd = 1;
+  optional uint32 limitIntervalTypeForUin = 2;
+  optional uint32 limitIntervalTypeForGroup = 3;
+  optional uint64 uin = 4;
+  optional uint64 groupCode = 5;
+}
+
+message RspBody {
+  optional bool canAtAll = 1;
+  optional uint32 remainAtAllCountForUin = 2;
+  optional uint32 remainAtAllCountForGroup = 3;
+  optional bytes promptMsg1 = 4;
+  optional bytes promptMsg2 = 5;
+  optional bool showAtAllLable = 6;
+}

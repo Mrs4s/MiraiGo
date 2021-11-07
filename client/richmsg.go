@@ -1,16 +1,16 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xb77"
 	"math/rand"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/internal/packets"
-
-	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xb77"
+	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 type musicTypeInfo struct {
@@ -98,7 +98,7 @@ func (c *QQClient) buildRichMsgSendingPacket(target int64, msg *message.MusicSha
 	body := &oidb0xb77.ReqBody{
 		AppId:   &tp.appID,
 		AppType: &tp.appType,
-		MsgStyle: proto.Uint32(func() uint32 {
+		Style: proto.Uint32(func() uint32 {
 			if msg.MusicUrl == "" {
 				return 0
 			}
@@ -110,7 +110,7 @@ func (c *QQClient) buildRichMsgSendingPacket(target int64, msg *message.MusicSha
 			AndroidPackageName: &tp.packageName,
 			AndroidSignature:   &tp.signature,
 		},
-		ExtInfo:  &oidb0xb77.ExtInfo{MsgSeq: proto.Uint64(rand.Uint64())},
+		ExtInfo:  &oidb0xb77.ExtInfo{Seq: proto.Uint64(rand.Uint64())},
 		SendType: &sendType,
 		RecvUin:  proto.Uint64(uint64(target)),
 		RichMsgBody: &oidb0xb77.RichMsgBody{

@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package oidb_cmd0xed3;
+
+option go_package = "oidb/oidb0xed3;oidb0xed3";
+
+message ReqBody {
+  optional uint64 toUin = 1;
+  optional uint64 groupCode = 2;
+  optional uint32 msgSeq = 3;
+  optional uint32 msgRand = 4;
+  optional uint64 aioUin = 5;
+  optional uint32 nudgeType = 6;
+}

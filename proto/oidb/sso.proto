@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package oidb;
+
+option go_package = "oidb;oidb";
+
+message OIDBSSOPkg {
+  optional uint32 command = 1;
+  optional uint32 serviceType = 2;
+  optional uint32 result = 3;
+  optional bytes bodybuffer = 4;
+  optional string errorMsg = 5;
+  optional string clientVersion = 6;
+}

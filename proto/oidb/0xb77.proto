@@ -1,0 +1,132 @@
+syntax = "proto2";
+
+package oidb_cmd0xb77;
+
+option go_package = "oidb/oidb0xb77;oidb0xb77";
+
+message ArkJsonBody {
+  optional string jsonStr = 10;
+}
+
+message ArkMsgBody {
+  optional string app = 1;
+  optional string view = 2;
+  optional string prompt = 3;
+  optional string ver = 4;
+  optional string desc = 5;
+  optional uint32 featureId = 6;
+  optional string meta = 10;
+  optional string metaUrl1 = 11;
+  optional string metaUrl2 = 12;
+  optional string metaUrl3 = 13;
+  optional string metaText1 = 14;
+  optional string metaText2 = 15;
+  optional string metaText3 = 16;
+  optional string config = 20;
+}
+
+message ArkV1MsgBody {
+  optional string app = 1;
+  optional string view = 2;
+  optional string prompt = 3;
+  optional string ver = 4;
+  optional string desc = 5;
+  optional uint32 featureId = 6;
+  optional string meta = 10;
+  repeated TemplateItem items = 11;
+  optional string config = 20;
+}
+
+message ClientInfo {
+  optional uint32 platform = 1;
+  optional string sdkVersion = 2;
+  optional string androidPackageName = 3;
+  optional string androidSignature = 4;
+  optional string iosBundleId = 5;
+  optional string pcSign = 6;
+}
+
+message ExtInfo {
+  repeated uint32 customFeatureid = 11;
+  optional string apnsWording = 12;
+  optional uint32 groupSavedbFlag = 13;
+  optional uint32 receiverAppid = 14;
+  optional uint64 seq = 15;
+  optional bytes tagName = 17;
+  optional bytes messageExt = 18;
+}
+
+message ImageInfo {
+  optional string md5 = 1;
+  optional string uuid = 2;
+  optional uint32 imgType = 3;
+  optional uint32 fileSize = 4;
+  optional uint32 width = 5;
+  optional uint32 height = 6;
+  optional uint32 original = 7;
+  optional uint32 fileId = 101;
+  optional uint32 serverIp = 102;
+  optional uint32 serverPort = 103;
+}
+
+message MiniAppMsgBody {
+  optional uint64 miniAppAppid = 1;
+  optional string miniAppPath = 2;
+  optional string webPageUrl = 3;
+  optional uint32 miniAppType = 4;
+  optional string title = 5;
+  optional string desc = 6;
+  optional string jsonStr = 10;
+}
+
+message ReqBody {
+  optional uint64 appId = 1;
+  optional uint32 appType = 2;
+  optional uint32 style = 3;
+  optional uint64 senderUin = 4;
+  optional ClientInfo clientInfo = 5;
+  optional string textMsg = 6;
+  optional ExtInfo extInfo = 7;
+  optional uint32 sendType = 10;
+  optional uint64 recvUin = 11;
+  optional RichMsgBody richMsgBody = 12;
+  optional ArkMsgBody arkMsgBody = 13;
+  optional string recvOpenid = 14;
+  optional ArkV1MsgBody arkv1MsgBody = 15;
+  optional ArkJsonBody arkJsonBody = 16;
+  optional XmlMsgBody xmlMsgBody = 17;
+  optional MiniAppMsgBody miniAppMsgBody = 18;
+  optional uint64 recvGuildId = 19;
+}
+
+message RichMsgBody {
+  optional bool usingArk = 1;
+  optional string title = 10;
+  optional string summary = 11;
+  optional string brief = 12;
+  optional string url = 13;
+  optional string pictureUrl = 14;
+  optional string action = 15;
+  optional string musicUrl = 16;
+  optional ImageInfo imageInfo = 21;
+}
+
+message RspBody {
+  optional string wording = 1;
+  optional uint32 jumpResult = 2;
+  optional string jumpUrl = 3;
+  optional uint32 level = 4;
+  optional uint32 subLevel = 5;
+  optional string developMsg = 6;
+}
+
+message TemplateItem {
+  optional string key = 1;
+  optional uint32 type = 2;
+  optional string value = 3;
+}
+
+message XmlMsgBody {
+  optional uint32 serviceId = 11;
+  optional string xml = 12;
+}

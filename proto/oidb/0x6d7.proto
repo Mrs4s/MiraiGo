@@ -1,0 +1,76 @@
+syntax = "proto2";
+
+package oidb_0x6d7;
+
+import "group_file_common/common.proto";
+
+option go_package = "oidb/oidb0x6d7;oidb0x6d7";
+
+message CreateFolderReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional string parentFolderId = 3;
+  optional string folderName = 4;
+}
+
+message CreateFolderRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional group_file_common.FolderInfo folderInfo = 4;
+}
+
+message DeleteFolderReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional string folderId = 3;
+}
+
+message DeleteFolderRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+}
+
+message MoveFolderReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional string folderId = 3;
+  optional string parentFolderId = 4;
+  optional string destFolderId = 5;
+}
+
+message MoveFolderRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional group_file_common.FolderInfo folderInfo = 4;
+}
+
+message RenameFolderReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional string folderId = 3;
+  optional string newFolderName = 4;
+}
+
+message RenameFolderRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional group_file_common.FolderInfo folderInfo = 4;
+}
+
+message ReqBody {
+  optional CreateFolderReqBody createFolderReq = 1;
+  optional DeleteFolderReqBody deleteFolderReq = 2;
+  optional RenameFolderReqBody renameFolderReq = 3;
+  optional MoveFolderReqBody moveFolderReq = 4;
+}
+
+message RspBody {
+  optional CreateFolderRspBody createFolderRsp = 1;
+  optional DeleteFolderRspBody deleteFolderRsp = 2;
+  optional RenameFolderRspBody renameFolderRsp = 3;
+  optional MoveFolderRspBody moveFolderRsp = 4;
+}

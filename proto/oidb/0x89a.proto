@@ -1,0 +1,94 @@
+syntax = "proto2";
+
+package oidb_0x89a;
+
+option go_package = "oidb/oidb0x89a;oidb0x89a";
+
+message GroupCardPrefix {
+  optional bytes introduction = 1;
+  repeated bytes prefix = 2;
+}
+
+message GroupExInfoOnly {
+  optional uint32 tribeId = 1;
+  optional uint32 moneyForAddGroup = 2;
+}
+
+message GroupGeoInfo {
+  optional uint32 cityId = 1;
+  optional uint64 longtitude = 2;
+  optional uint64 latitude = 3;
+  optional bytes geoContent = 4;
+  optional uint64 poiId = 5;
+}
+
+message GroupNewGuidelinesInfo {
+  optional bool enabled = 1;
+  optional bytes content = 2;
+}
+
+message GroupSchoolInfo {
+  optional bytes location = 1;
+  optional uint32 grade = 2;
+  optional bytes school = 3;
+}
+
+message ReqBody {
+  optional uint64 groupCode = 1;
+  optional groupInfo stGroupInfo = 2;
+  optional uint64 originalOperatorUin = 3;
+  optional uint32 reqGroupOpenAppid = 4;
+}
+
+message RspBody {
+  optional uint64 groupCode = 1;
+  optional bytes errorinfo = 2;
+}
+
+message groupInfo {
+  optional uint32 groupExtAdmNum = 1;
+  optional uint32 flag = 2;
+  optional bytes groupName = 3;
+  optional bytes groupMemo = 4;
+  optional bytes groupFingerMemo = 5;
+  optional bytes groupAioSkinUrl = 6;
+  optional bytes groupBoardSkinUrl = 7;
+  optional bytes groupCoverSkinUrl = 8;
+  optional uint32 groupGrade = 9;
+  optional uint32 activeMemberNum = 10;
+  optional uint32 certificationType = 11;
+  optional bytes certificationText = 12;
+  optional bytes groupRichFingerMemo = 13;
+  optional GroupNewGuidelinesInfo stGroupNewguidelines = 14;
+  optional uint32 groupFace = 15;
+  optional uint32 addOption = 16;
+  optional uint32 shutupTime = 17;
+  optional uint32 groupTypeFlag = 18;
+  repeated bytes groupTag = 19;
+  optional GroupGeoInfo groupGeoInfo = 20;
+  optional uint32 groupClassExt = 21;
+  optional bytes groupClassText = 22;
+  optional uint32 appPrivilegeFlag = 23;
+  optional uint32 appPrivilegeMask = 24;
+  optional GroupExInfoOnly stGroupExInfo = 25;
+  optional uint32 groupSecLevel = 26;
+  optional uint32 groupSecLevelInfo = 27;
+  optional uint64 subscriptionUin = 28;
+  optional uint32 allowMemberInvite = 29;
+  optional bytes groupQuestion = 30;
+  optional bytes groupAnswer = 31;
+  optional uint32 groupFlagext3 = 32;
+  optional uint32 groupFlagext3Mask = 33;
+  optional uint32 groupOpenAppid = 34;
+  optional uint32 noFingerOpenFlag = 35;
+  optional uint32 noCodeFingerOpenFlag = 36;
+  optional uint64 rootId = 37;
+  optional uint32 msgLimitFrequency = 38;
+  optional uint32 hlGuildAppid = 39;
+  optional uint32 hlGuildSubType = 40;
+  optional uint32 hlGuildOrgid = 41;
+  optional uint32 groupFlagext4 = 42;
+  optional uint32 groupFlagext4Mask = 43;
+  optional bytes groupSchoolInfo = 44;
+  optional GroupCardPrefix stGroupCardPrefix = 45;
+}

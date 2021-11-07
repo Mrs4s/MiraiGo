@@ -5,27 +5,26 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a7"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xeac"
-	"go.dedis.ch/protobuf"
 	"math"
 	"math/rand"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a7"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xeac"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
-
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -408,10 +407,10 @@ func decodeGetGroupMsgResponse(c *QQClient, info *incomingPacketInfo, payload []
 func decodeAtAllRemainResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x8a7.RspBody{}
-	if err := protobuf.Decode(payload, &pkg); err != nil {
+	if err := protobuf.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
+	if err := protobuf.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return &AtAllRemainInfo{
@@ -524,7 +523,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		groupCard := m.Head.GroupInfo.GetGroupCard()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb0x8fc.CommCardNameBuf{}
-			if err := protobuf.Decode(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
+			if err := protobuf.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
 				var gcard strings.Builder
 				for _, e := range buf.RichCardName {
 					gcard.Write(e.Text)
@@ -606,10 +605,10 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 func decodeEssenceMsgResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := &oidb0xeac.RspBody{}
-	if err := protobuf.Decode(payload, &pkg); err != nil {
+	if err := protobuf.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := protobuf.Decode(pkg.Bodybuffer, rsp); err != nil {
+	if err := protobuf.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return rsp, nil

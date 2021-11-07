@@ -1,0 +1,73 @@
+syntax = "proto2";
+
+package oidb_0x8fc;
+
+option go_package = "oidb/oidb0x8fc;oidb0x8fc";
+
+message CardNameElem {
+  optional uint32 enumCardType = 1;
+  optional bytes value = 2;
+}
+
+message ClientInfo {
+  optional uint32 implat = 1;
+  optional string clientver = 2;
+}
+
+message CommCardNameBuf {
+  repeated RichCardNameElem richCardName = 1;
+  optional uint32 coolId = 2;
+}
+
+message LevelName {
+  optional uint32 level = 1;
+  optional string name = 2;
+}
+
+message MemberInfo {
+  optional uint64 uin = 1;
+  optional uint32 point = 2;
+  optional uint32 activeDay = 3;
+  optional uint32 level = 4;
+  optional bytes specialTitle = 5;
+  optional int32 specialTitleExpireTime = 6;
+  optional bytes uinName = 7;
+  optional bytes memberCardName = 8;
+  optional bytes phone = 9;
+  optional bytes email = 10;
+  optional bytes remark = 11;
+  optional uint32 gender = 12;
+  optional bytes job = 13;
+  optional uint32 tribeLevel = 14;
+  optional uint32 tribePoint = 15;
+  repeated CardNameElem richCardName = 16;
+  optional bytes commRichCardName = 17;
+  optional uint32 ringtoneId = 18;
+  optional bytes groupHonor = 19;
+  optional uint32 cmduinFlagEx3Grocery = 20;
+  optional uint32 cmduinFlagEx3Mask = 21;
+}
+
+message ReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 showFlag = 2;
+  repeated MemberInfo memLevelInfo = 3;
+  repeated LevelName levelName = 4;
+  optional uint32 updateTime = 5;
+  optional uint32 officeMode = 6;
+  optional uint32 groupOpenAppid = 7;
+  optional ClientInfo clientInfo = 8;
+  optional bytes authKey = 9;
+  repeated LevelName levelNameNew = 10;
+}
+
+message RichCardNameElem {
+  optional bytes ctrl = 1;
+  optional bytes text = 2;
+}
+
+message RspBody {
+  optional uint64 groupCode = 1;
+  optional string ErrInfo = 2;
+  optional bytes coolGroupCardRsp = 3;
+}

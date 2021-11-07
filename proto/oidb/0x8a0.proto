@@ -1,0 +1,30 @@
+syntax = "proto2";
+
+package oidb_0x8a0;
+
+option go_package = "oidb/oidb0x8a0;oidb0x8a0";
+
+message KickMemberInfo {
+  optional uint32 operate = 1;
+  optional uint64 memberUin = 2;
+  optional uint32 flag = 3;
+  optional bytes msg = 4;
+}
+
+message KickResult {
+  optional uint32 result = 1;
+  optional uint64 memberUin = 2;
+}
+
+message ReqBody {
+  optional uint64 groupCode = 1;
+  repeated KickMemberInfo msgKickList = 2;
+  repeated uint64 kickList = 3;
+  optional uint32 kickFlag = 4;
+  optional bytes kickMsg = 5;
+}
+
+message RspBody {
+  optional uint64 groupCode = 1;
+  repeated KickResult kickResult = 2;
+}

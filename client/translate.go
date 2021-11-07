@@ -1,12 +1,13 @@
 package client
 
 import (
+	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
+
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x990"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"go.dedis.ch/protobuf"
 )
 
 func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) {
@@ -41,10 +42,10 @@ func (c *QQClient) Translate(src, dst, text string) (string, error) {
 func decodeTranslateResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb0x990.RspBody{}
-	if err := protobuf.Decode(payload, &pkg); err != nil {
+	if err := protobuf.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if err := protobuf.Decode(pkg.Bodybuffer, &rsp); err != nil {
+	if err := protobuf.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return rsp.BatchTranslateRsp, nil

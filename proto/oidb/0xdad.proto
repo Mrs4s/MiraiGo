@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package cmd0xdad;
+
+option go_package = "oidb/oidb0xdad;oidb0xdad";
+
+message LoginSig {
+  optional uint32 type = 1;
+  optional bytes sig = 2;
+  optional uint32 appid = 3;
+}
+
+message ReqBody {
+  optional int64 client = 1;
+  optional int64 productId = 2;
+  optional int64 amount = 3;
+  optional uint64 toUin = 4;
+  optional uint64 gc = 5;
+  optional string ip = 6;
+  optional string vsersion = 7;
+  optional LoginSig sig = 8;
+}
+
+message RspBody {
+  optional int64 retcode = 1;
+  optional string errmsg = 2;
+}

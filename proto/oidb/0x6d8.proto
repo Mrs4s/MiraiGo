@@ -1,0 +1,138 @@
+syntax = "proto2";
+
+package oidb_0x6d8;
+
+import "group_file_common/common.proto";
+
+option go_package = "oidb/oidb0x6d8;oidb0x6d8";
+
+message FileTimeStamp {
+  optional uint32 uploadTime = 1;
+  optional string fileId = 2;
+}
+
+message GetFileCountReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+}
+
+message GetFileCountRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional uint32 allFileCount = 4;
+  optional bool fileTooMany = 5;
+  optional uint32 limitCount = 6;
+  optional bool isFull = 7;
+}
+
+message GetFileInfoReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+  optional uint32 fieldFlag = 5;
+}
+
+message GetFileInfoRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional group_file_common.FileInfo fileInfo = 4;
+}
+
+message GetFileListReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional string folderId = 3;
+  optional FileTimeStamp startTimestamp = 4;
+  optional uint32 fileCount = 5;
+  optional FileTimeStamp maxTimestamp = 6;
+  optional uint32 allFileCount = 7;
+  optional uint32 reqFrom = 8;
+  optional uint32 sortBy = 9;
+  optional uint32 filterCode = 10;
+  optional uint64 uin = 11;
+  optional uint32 fieldFlag = 12;
+  optional uint32 startIndex = 13;
+  optional bytes context = 14;
+  optional uint32 clientVersion = 15;
+  optional uint32 whiteList = 16;
+  optional uint32 sortOrder = 17;
+  optional uint32 showOnlinedocFolder = 18;
+}
+
+message GetFileListRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional bool isEnd = 4;
+  repeated Item itemList = 5;
+  optional FileTimeStamp maxTimestamp = 6;
+  optional uint32 allFileCount = 7;
+  optional uint32 filterCode = 8;
+  optional bool safeCheckFlag = 11;
+  optional uint32 safeCheckRes = 12;
+  optional uint32 nextIndex = 13;
+  optional bytes context = 14;
+  optional uint32 role = 15;
+  optional uint32 openFlag = 16;
+
+  message Item {
+    optional uint32 type = 1;
+    optional group_file_common.FolderInfo folderInfo = 2;
+    optional group_file_common.FileInfo fileInfo = 3;
+  }
+}
+
+message GetFilePreviewReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+}
+
+message GetFilePreviewRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional uint32 serverIp = 4;
+  optional uint32 serverPort = 5;
+  optional string downloadDns = 6;
+  optional bytes downloadUrl = 7;
+  optional string cookieVal = 8;
+  optional bytes reservedField = 9;
+  optional bytes downloadDnsHttps = 10;
+  optional uint32 previewPortHttps = 11;
+}
+
+message GetSpaceReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+}
+
+message GetSpaceRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional uint64 totalSpace = 4;
+  optional uint64 usedSpace = 5;
+  optional bool allUpload = 6;
+}
+
+message ReqBody {
+  optional GetFileInfoReqBody fileInfoReq = 1;
+  optional GetFileListReqBody fileListInfoReq = 2;
+  optional GetFileCountReqBody groupFileCntReq = 3;
+  optional GetSpaceReqBody groupSpaceReq = 4;
+  optional GetFilePreviewReqBody filePreviewReq = 5;
+}
+
+message RspBody {
+  optional GetFileInfoRspBody fileInfoRsp = 1;
+  optional GetFileListRspBody fileListInfoRsp = 2;
+  optional GetFileCountRspBody groupFileCntRsp = 3;
+  optional GetSpaceRspBody groupSpaceRsp = 4;
+  optional GetFilePreviewRspBody filePreviewRsp = 5;
+}

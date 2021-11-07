@@ -1,0 +1,32 @@
+syntax = "proto2";
+
+package oidb_0xef0;
+
+option go_package = "oidb/oidb0xef0;oidb0xef0";
+
+message GroupInfoExt {
+  optional uint32 groupInfoExtSeq = 1;
+  optional uint64 luckyWordId = 2;
+  optional uint32 lightCharNum = 3;
+  optional bytes luckyWord = 4;
+  optional uint32 starId = 5;
+  optional uint32 essentialMsgSwitch = 6;
+  optional uint32 todoSeq = 7;
+  optional uint32 blacklistExpireTime = 8;
+}
+
+message ReqBody {
+  repeated uint64 groupCode = 1;
+  optional GroupInfoExt groupInfoExt = 2;
+}
+
+message RspBody {
+  repeated RspDetail rspDetail = 1;
+}
+
+message RspDetail {
+  optional uint64 groupCode = 1;
+  optional int32 result = 2;
+  optional GroupInfoExt groupInfoExt = 3;
+}
+

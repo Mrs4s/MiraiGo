@@ -1,0 +1,146 @@
+syntax = "proto2";
+
+package oidb_0x6d6;
+
+option go_package = "oidb/oidb0x6d6;oidb0x6d6";
+
+message DeleteFileReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string parentFolderId = 4;
+  optional string fileId = 5;
+  optional uint32 msgdbSeq = 6;
+  optional uint32 msgRand = 7;
+}
+
+message DeleteFileRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+}
+
+message DownloadFileReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+  optional bool thumbnailReq = 5;
+  optional uint32 urlType = 6;
+  optional bool previewReq = 7;
+  optional uint32 src = 8;
+}
+
+message DownloadFileRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional string downloadIp = 4;
+  optional bytes downloadDns = 5;
+  optional bytes downloadUrl = 6;
+  optional bytes sha = 7;
+  optional bytes sha3 = 8;
+  optional bytes md5 = 9;
+  optional bytes cookieVal = 10;
+  optional string saveFileName = 11;
+  optional uint32 previewPort = 12;
+  optional string downloadDnsHttps = 13;
+  optional uint32 previewPortHttps = 14;
+}
+
+message MoveFileReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+  optional string parentFolderId = 5;
+  optional string destFolderId = 6;
+}
+
+message MoveFileRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional string parentFolderId = 4;
+}
+
+message RenameFileReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+  optional string parentFolderId = 5;
+  optional string newFileName = 6;
+}
+
+message RenameFileRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+}
+
+message ReqBody {
+  optional UploadFileReqBody uploadFileReq = 1;
+  optional ResendReqBody resendFileReq = 2;
+  optional DownloadFileReqBody downloadFileReq = 3;
+  optional DeleteFileReqBody deleteFileReq = 4;
+  optional RenameFileReqBody renameFileReq = 5;
+  optional MoveFileReqBody moveFileReq = 6;
+}
+
+message ResendReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional string fileId = 4;
+  optional bytes sha = 5;
+}
+
+message ResendRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional string uploadIp = 4;
+  optional bytes fileKey = 5;
+  optional bytes checkKey = 6;
+}
+
+message RspBody {
+  optional UploadFileRspBody uploadFileRsp = 1;
+  optional ResendRspBody resendFileRsp = 2;
+  optional DownloadFileRspBody downloadFileRsp = 3;
+  optional DeleteFileRspBody deleteFileRsp = 4;
+  optional RenameFileRspBody renameFileRsp = 5;
+  optional MoveFileRspBody moveFileRsp = 6;
+}
+
+message UploadFileReqBody {
+  optional uint64 groupCode = 1;
+  optional uint32 appId = 2;
+  optional uint32 busId = 3;
+  optional uint32 entrance = 4;
+  optional string parentFolderId = 5;
+  optional string fileName = 6;
+  optional string localPath = 7;
+  optional uint64 fileSize = 8;
+  optional bytes sha = 9;
+  optional bytes sha3 = 10;
+  optional bytes md5 = 11;
+  optional bool supportMultiUpload = 15;
+}
+
+message UploadFileRspBody {
+  optional int32 retCode = 1;
+  optional string retMsg = 2;
+  optional string clientWording = 3;
+  optional string uploadIp = 4;
+  optional string serverDns = 5;
+  optional uint32 busId = 6;
+  optional string fileId = 7;
+  optional bytes fileKey = 8;
+  optional bytes checkKey = 9;
+  optional bool fileExist = 10;
+  repeated string uploadIpLanV4 = 12;
+  repeated string uploadIpLanV6 = 13;
+  optional uint32 uploadPort = 14;
+}

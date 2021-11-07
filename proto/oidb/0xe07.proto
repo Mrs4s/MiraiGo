@@ -1,0 +1,64 @@
+syntax = "proto2";
+
+package oidb_0xe07;
+
+option go_package = "oidb/oidb0xe07;oidb0xe07";
+
+message Coordinate {
+  optional int32 X = 1;
+  optional int32 Y = 2;
+}
+
+message Language {
+  optional string language = 1;
+  optional string languageDesc = 2;
+}
+
+message OCRReqBody {
+  optional string imageUrl = 1;
+  optional string languageType = 2;
+  optional string scene = 3;
+  optional string originMd5 = 10;
+  optional string afterCompressMd5 = 11;
+  optional uint32 afterCompressFileSize = 12;
+  optional uint32 afterCompressWeight = 13;
+  optional uint32 afterCompressHeight = 14;
+  optional bool isCut = 15;
+}
+
+message OCRRspBody {
+  repeated TextDetection textDetections = 1;
+  optional string language = 2;
+  optional string requestId = 3;
+  repeated string ocrLanguageList = 101;
+  repeated string dstTranslateLanguageList = 102;
+  repeated Language languageList = 103;
+  optional uint32 afterCompressWeight = 111;
+  optional uint32 afterCompressHeight = 112;
+}
+
+message Polygon {
+  repeated Coordinate coordinates = 1;
+}
+
+message ReqBody {
+  optional uint32 version = 1;
+  optional uint32 client = 2;
+  optional uint32 entrance = 3;
+  optional OCRReqBody ocrReqBody = 10;
+}
+
+message RspBody {
+  optional int32 retCode = 1;
+  optional string errMsg = 2;
+  optional string wording = 3;
+  optional OCRRspBody ocrRspBody = 10;
+}
+
+message TextDetection {
+  optional string detectedText = 1;
+  optional uint32 confidence = 2;
+  optional Polygon polygon = 3;
+  optional string advancedInfo = 4;
+}
+

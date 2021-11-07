@@ -1,0 +1,190 @@
+syntax = "proto2";
+
+package oidb_0x88d;
+
+import "oidb/0xef0.proto";
+
+option go_package = "oidb/oidb0x88d;oidb0x88d";
+
+message GroupCardPrefix {
+  optional bytes introduction = 1;
+  repeated bytes prefix = 2;
+}
+
+message GroupExInfoOnly {
+  optional uint32 tribeId = 1;
+  optional uint32 moneyForAddGroup = 2;
+}
+
+message GroupGeoInfo {
+  optional uint64 owneruin = 1;
+  optional uint32 settime = 2;
+  optional uint32 cityid = 3;
+  optional int64 longitude = 4;
+  optional int64 latitude = 5;
+  optional bytes geocontent = 6;
+  optional uint64 poiId = 7;
+}
+
+message GroupHeadPortrait {
+  optional uint32 picCnt = 1;
+  repeated GroupHeadPortraitInfo info = 2;
+  optional uint32 defaultId = 3;
+  optional uint32 verifyingPicCnt = 4;
+  repeated GroupHeadPortraitInfo verifyingpicInfo = 5;
+}
+
+message GroupHeadPortraitInfo {
+  optional uint32 picId = 1;
+  optional uint32 leftX = 2;
+  optional uint32 leftY = 3;
+  optional uint32 rightX = 4;
+  optional uint32 rightY = 5;
+}
+
+message GroupInfo {
+  optional uint64 groupOwner = 1;
+  optional uint32 groupCreateTime = 2;
+  optional uint32 groupFlag = 3;
+  optional uint32 groupFlagExt = 4;
+  optional uint32 groupMemberMaxNum = 5;
+  optional uint32 groupMemberNum = 6;
+  optional uint32 groupOption = 7;
+  optional uint32 groupClassExt = 8;
+  optional uint32 groupSpecialClass = 9;
+  optional uint32 groupLevel = 10;
+  optional uint32 groupFace = 11;
+  optional uint32 groupDefaultPage = 12;
+  optional uint32 groupInfoSeq = 13;
+  optional uint32 groupRoamingTime = 14;
+  optional bytes groupName = 15;
+  optional bytes groupMemo = 16;
+  optional bytes groupFingerMemo = 17;
+  optional bytes groupClassText = 18;
+  repeated uint32 groupAllianceCode = 19;
+  optional uint32 groupExtraAdmNum = 20;
+  optional uint64 groupUin = 21;
+  optional uint32 groupCurMsgSeq = 22;
+  optional uint32 groupLastMsgTime = 23;
+  optional bytes groupQuestion = 24;
+  optional bytes groupAnswer = 25;
+  optional uint32 groupVisitorMaxNum = 26;
+  optional uint32 groupVisitorCurNum = 27;
+  optional uint32 levelNameSeq = 28;
+  optional uint32 groupAdminMaxNum = 29;
+  optional uint32 groupAioSkinTimestamp = 30;
+  optional uint32 groupBoardSkinTimestamp = 31;
+  optional bytes groupAioSkinUrl = 32;
+  optional bytes groupBoardSkinUrl = 33;
+  optional uint32 groupCoverSkinTimestamp = 34;
+  optional bytes groupCoverSkinUrl = 35;
+  optional uint32 groupGrade = 36;
+  optional uint32 activeMemberNum = 37;
+  optional uint32 certificationType = 38;
+  optional bytes certificationText = 39;
+  optional bytes groupRichFingerMemo = 40;
+  repeated TagRecord tagRecord = 41;
+  optional GroupGeoInfo groupGeoInfo = 42;
+  optional uint32 headPortraitSeq = 43;
+  optional GroupHeadPortrait headPortrait = 44;
+  optional uint32 shutupTimestamp = 45;
+  optional uint32 shutupTimestampMe = 46;
+  optional uint32 createSourceFlag = 47;
+  optional uint32 cmduinMsgSeq = 48;
+  optional uint32 cmduinJoinTime = 49;
+  optional uint32 cmduinUinFlag = 50;
+  optional uint32 cmduinFlagEx = 51;
+  optional uint32 cmduinNewMobileFlag = 52;
+  optional uint32 cmduinReadMsgSeq = 53;
+  optional uint32 cmduinLastMsgTime = 54;
+  optional uint32 groupTypeFlag = 55;
+  optional uint32 appPrivilegeFlag = 56;
+  optional GroupExInfoOnly stGroupExInfo = 57;
+  optional uint32 groupSecLevel = 58;
+  optional uint32 groupSecLevelInfo = 59;
+  optional uint32 cmduinPrivilege = 60;
+  optional bytes poidInfo = 61;
+  optional uint32 cmduinFlagEx2 = 62;
+  optional uint64 confUin = 63;
+  optional uint32 confMaxMsgSeq = 64;
+  optional uint32 confToGroupTime = 65;
+  optional uint32 passwordRedbagTime = 66;
+  optional uint64 subscriptionUin = 67;
+  optional uint32 memberListChangeSeq = 68;
+  optional uint32 membercardSeq = 69;
+  optional uint64 rootId = 70;
+  optional uint64 parentId = 71;
+  optional uint32 teamSeq = 72;
+  optional uint64 historyMsgBeginTime = 73;
+  optional uint64 inviteNoAuthNumLimit = 74;
+  optional uint32 cmduinHistoryMsgSeq = 75;
+  optional uint32 cmduinJoinMsgSeq = 76;
+  optional uint32 groupFlagext3 = 77;
+  optional uint32 groupOpenAppid = 78;
+  optional uint32 isConfGroup = 79;
+  optional uint32 isModifyConfGroupFace = 80;
+  optional uint32 isModifyConfGroupName = 81;
+  optional uint32 noFingerOpenFlag = 82;
+  optional uint32 noCodeFingerOpenFlag = 83;
+  optional uint32 autoAgreeJoinGroupUserNumForNormalGroup = 84;
+  optional uint32 autoAgreeJoinGroupUserNumForConfGroup = 85;
+  optional uint32 isAllowConfGroupMemberNick = 86;
+  optional uint32 isAllowConfGroupMemberAtAll = 87;
+  optional uint32 isAllowConfGroupMemberModifyGroupName = 88;
+  optional bytes longGroupName = 89;
+  optional uint32 cmduinJoinRealMsgSeq = 90;
+  optional uint32 isGroupFreeze = 91;
+  optional uint32 msgLimitFrequency = 92;
+  optional bytes joinGroupAuth = 93;
+  optional uint32 hlGuildAppid = 94;
+  optional uint32 hlGuildSubType = 95;
+  optional uint32 hlGuildOrgid = 96;
+  optional uint32 isAllowHlGuildBinary = 97;
+  optional uint32 cmduinRingtoneId = 98;
+  optional uint32 groupFlagext4 = 99;
+  optional uint32 groupFreezeReason = 100;
+  optional uint32 isAllowRecallMsg = 101;
+  optional uint32 importantMsgLatestSeq = 102;
+  optional bytes groupSchoolInfo = 103;
+  optional uint32 appealDeadline = 104;
+  optional GroupCardPrefix stGroupCardPrefix = 105;
+  optional uint64 allianceId = 106;
+  optional uint32 cmduinFlagEx3Grocery = 107;
+  optional uint32 groupInfoExtSeq = 108;
+  optional oidb_0xef0.GroupInfoExt stGroupInfoExt = 109;
+  optional bytes cmduinGroupRemarkName = 110;
+}
+
+message ReqBody {
+  optional uint32 appid = 1;
+  repeated ReqGroupInfo stzreqgroupinfo = 2;
+  optional uint32 pcClientVersion = 3;
+}
+
+message ReqGroupInfo {
+  optional uint64 groupCode = 1;
+  optional GroupInfo stgroupinfo = 2;
+  optional uint32 lastGetGroupNameTime = 3;
+}
+
+message RspBody {
+  repeated RspGroupInfo stzrspgroupinfo = 1;
+  optional bytes errorinfo = 2;
+}
+
+message RspGroupInfo {
+  optional uint64 groupCode = 1;
+  optional uint32 result = 2;
+  optional GroupInfo stgroupinfo = 3;
+}
+
+message TagRecord {
+  optional uint64 fromUin = 1;
+  optional uint64 groupCode = 2;
+  optional bytes tagId = 3;
+  optional uint64 setTime = 4;
+  optional uint32 goodNum = 5;
+  optional uint32 badNum = 6;
+  optional uint32 tagLen = 7;
+  optional bytes tagValue = 8;
+}
