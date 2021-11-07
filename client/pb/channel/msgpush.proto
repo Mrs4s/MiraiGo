@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+import "pb/channel/common.proto";
+
+message FocusInfo {
+  repeated uint64 channelIdList = 1;
+}
+
+message MsgOnlinePush {
+  repeated ChannelMsgContent msgs = 1;
+  optional uint32 generalFlag = 2;
+  optional uint32 needResp = 3;
+  optional bytes serverBuf = 4;
+  optional uint32 compressFlag = 5;
+  optional bytes compressMsg = 6;
+  optional FocusInfo focusInfo = 7;
+  optional uint32 hugeFlag = 8;
+}
+
+message MsgPushResp {
+  optional bytes serverBuf = 1;
+}
+
+message PressMsg {
+  repeated ChannelMsgContent msgs = 1;
+}
+
+message ServerBuf {
+  optional uint32 svrIp = 1;
+  optional uint32 svrPort = 2;
+  optional bytes echoKey = 3;
+}
+
+
