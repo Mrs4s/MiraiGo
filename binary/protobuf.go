@@ -72,31 +72,17 @@ func (en *encoder) uvarint(v uint64) {
 }
 
 func (en *encoder) svarint(v int64) {
-	if v >= 0 {
-		en.uvarint(uint64(v) << 1)
-	} else {
-		en.uvarint(^uint64(v << 1))
-	}
+	en.uvarint(uint64(v)<<1 ^ uint64(v>>63))
 }
 
 func (en *encoder) u32(v uint32) {
-	var b [4]byte
-	b[0] = byte(v)
-	b[1] = byte(v >> 8)
-	b[2] = byte(v >> 16)
-	b[3] = byte(v >> 24)
+	var b [8]byte
+	binary.LittleEndian.PutUint32(b[:], v)
 	_, _ = en.Write(b[:])
 }
 
 func (en *encoder) u64(v uint64) {
 	var b [8]byte
-	b[0] = byte(v)
-	b[1] = byte(v >> 8)
-	b[2] = byte(v >> 16)
-	b[3] = byte(v >> 24)
-	b[4] = byte(v >> 32)
-	b[5] = byte(v >> 40)
-	b[6] = byte(v >> 48)
-	b[7] = byte(v >> 56)
+	binary.LittleEndian.PutUint64(b[:], v)
 	_, _ = en.Write(b[:])
 }
