@@ -76,7 +76,7 @@ func (en *encoder) svarint(v int64) {
 }
 
 func (en *encoder) u32(v uint32) {
-	var b [8]byte
+	var b [4]byte
 	binary.LittleEndian.PutUint32(b[:], v)
 	_, _ = en.Write(b[:])
 }
