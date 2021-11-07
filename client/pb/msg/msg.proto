@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package msg;
 
-option go_package = "github.com/Mrs4s/MiraiGo/client/pb/msg;msg";
+option go_package = "pb/msg;msg";
 
 message GetMessageRequest {
   optional SyncFlag syncFlag = 1;
@@ -774,6 +774,11 @@ message MsgElemInfo_servtype33 {
   optional bytes text = 2;
   optional bytes compat = 3;
   optional bytes buf = 4;
+}
+
+message MsgElemInfo_servtype38 {
+  optional bytes reactData = 1;
+  optional bytes replyData = 2;
 }
 
 message SubMsgType0x4Body {

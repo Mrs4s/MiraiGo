@@ -2,10 +2,9 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/message"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -337,8 +336,47 @@ func decodeGuildMessagePushPacket(c *QQClient, _ *incomingPacketInfo, payload []
 	}
 	for _, m := range push.Msgs {
 		if m.Head.ContentHead.GetType() == 3841 {
-			if m.Head.ContentHead.GetSubType() != 2 {
+			// todo: 回头 event flow 的处理移出去重构下逻辑, 先暂时这样方便改
+			var common *msg.CommonElem
+			if m.Body != nil {
+				for _, e := range m.Body.RichText.Elems {
+					if e.CommonElem != nil {
+						common = e.CommonElem
+						break
+					}
+				}
+			}
+			if m.Head.ContentHead.GetSubType() == 2 { // todo: tips?
 				continue
+			}
+			if common == nil || common.GetServiceType() != 500 {
+				continue
+			}
+			eventBody := new(channel.EventBody)
+			if err := proto.Unmarshal(common.PbElem, eventBody); err != nil {
+				c.Error("failed to unmarshal guild channel event body: %v", err)
+				continue
+			}
+			if eventBody.UpdateMsg != nil {
+				if eventBody.UpdateMsg.GetEventType() == 1 || eventBody.UpdateMsg.GetEventType() == 2 { // todo: 撤回消息
+					continue
+				}
+				if eventBody.UpdateMsg.GetEventType() == 4 { // 消息贴表情更新 (包含添加或删除)
+					t, err := c.GuildService.pullRoamMsgByEventFlow(m.Head.RoutingHead.GetGuildId(), m.Head.RoutingHead.GetChannelId(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetEventVersion()-1)
+					if err != nil || len(t) == 0 {
+						c.Error("process guild event flow error: pull eventMsg message error: %v", err)
+						continue
+					}
+					// 自己的消息被贴表情会单独推送一个tips, 这里不需要解析
+					if t[0].Head.RoutingHead.GetFromTinyid() == c.GuildService.TinyId {
+						continue
+					}
+					// todo: 如果是别人消息被贴表情, 会在在后续继续推送一个 empty tips, 可以从那个消息获取到 OperatorId
+					c.dispatchGuildMessageReactionsUpdatedEvent(&GuildMessageReactionsUpdatedEvent{
+						MessageId:        t[0].Head.ContentHead.GetSeq(),
+						CurrentReactions: decodeGuildMessageEmojiReactions(t[0]),
+					})
+				}
 			}
 			continue
 		}
@@ -385,24 +423,4 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 
 	}
 	return nil, nil
-}
-
-func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *message.GuildChannelMessage {
-	guild := c.GuildService.FindGuild(msg.Head.RoutingHead.GetGuildId())
-	if guild == nil {
-		return nil // todo: sync guild info
-	}
-	// mem := guild.FindMember(msg.Head.RoutingHead.GetFromTinyid())
-	return &message.GuildChannelMessage{
-		Id:         msg.Head.ContentHead.GetSeq(),
-		InternalId: msg.Body.RichText.Attr.GetRandom(),
-		GuildId:    msg.Head.RoutingHead.GetGuildId(),
-		ChannelId:  msg.Head.RoutingHead.GetChannelId(),
-		Time:       int64(msg.Head.ContentHead.GetTime()),
-		Sender: &message.GuildSender{
-			TinyId:   msg.Head.RoutingHead.GetFromTinyid(),
-			Nickname: string(msg.ExtInfo.GetFromNick()),
-		},
-		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
-	}
 }

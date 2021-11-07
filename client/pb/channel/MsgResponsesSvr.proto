@@ -1,0 +1,56 @@
+syntax = "proto2";
+
+option go_package = "pb/channel;channel";
+
+
+message BatchGetMsgRspCountReq {
+  repeated GuildMsg guildMsgList = 1;
+}
+
+message BatchGetMsgRspCountRsp {
+  repeated GuildMsgInfo guildMsgInfoList = 1;
+}
+
+message SvrChannelMsg {
+  optional uint64 channelId = 1;
+  repeated MsgId id = 2;
+}
+
+message ChannelMsgInfo {
+  optional uint64 channelId = 1;
+  repeated MsgRespData respData = 2;
+}
+
+message EmojiReaction {
+  optional string emojiId = 1;
+  optional uint64 emojiType = 2;
+  optional uint64 cnt = 3;
+  optional bool isClicked = 4;
+}
+
+message GuildMsg {
+  optional uint64 guildId = 1;
+  repeated SvrChannelMsg channelMsgList = 2;
+}
+
+message GuildMsgInfo {
+  optional uint64 guildId = 1;
+  repeated ChannelMsgInfo channelMsgInfoList = 2;
+}
+
+message MsgCnt {
+  optional MsgId id = 1;
+  repeated EmojiReaction emojiReaction = 2;
+}
+
+message MsgId {
+  optional uint64 version = 1;
+  optional uint64 seq = 2;
+}
+
+message MsgRespData {
+  optional MsgId id = 1;
+  optional bytes cnt = 2;
+}
+
+
