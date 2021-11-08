@@ -55,6 +55,10 @@ func (msg DynamicProtoMessage) Encode() []byte {
 				en.uvarint(key | 0)
 				en.uvarint(v[i])
 			}
+		case []byte:
+			en.uvarint(key | 2)
+			en.uvarint(uint64(len(v)))
+			_, _ = en.Write(v)
 		case DynamicProtoMessage:
 			en.uvarint(key | 2)
 			b := v.Encode()

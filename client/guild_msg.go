@@ -1,6 +1,9 @@
 package client
 
 import (
+	"encoding/hex"
+	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -35,6 +38,56 @@ func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *mes
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
+}
+
+func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size uint64) (*message.GuildImageElement, error) {
+	seq := s.c.nextSeq()
+	payload, _ := proto.Marshal(&cmd0x388.D388ReqBody{
+		NetType: proto.Uint32(3),
+		Subcmd:  proto.Uint32(1),
+		TryupImgReq: []*cmd0x388.TryUpImgReq{
+			{
+				GroupCode:       &channelId,
+				SrcUin:          proto.Uint64(uint64(s.c.Uin)),
+				FileId:          proto.Uint64(0),
+				FileMd5:         hash,
+				FileSize:        &size,
+				FileName:        []byte(hex.EncodeToString(hash) + ".jpg"),
+				SrcTerm:         proto.Uint32(5),
+				PlatformType:    proto.Uint32(9),
+				BuType:          proto.Uint32(211),
+				PicType:         proto.Uint32(1000),
+				BuildVer:        []byte("8.8.38.2266"),
+				AppPicType:      proto.Uint32(1052),
+				SrvUpload:       proto.Uint32(0),
+				QqmeetGuildId:   &guildId,
+				QqmeetChannelId: &channelId,
+			},
+		},
+		CommandId: proto.Uint32(83),
+	})
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "ImgStore.QQMeetPicUp", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := new(cmd0x388.D388RspBody)
+	if err = proto.Unmarshal(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if len(body.TryupImgRsp) == 0 {
+		return nil, errors.New("response is empty")
+	}
+	if body.TryupImgRsp[0].GetFileExit() {
+		return &message.GuildImageElement{
+			FileId:        body.TryupImgRsp[0].GetFileid(),
+			FilePath:      hex.EncodeToString(hash) + ".jpg",
+			Size:          int32(size),
+			DownloadIndex: string(body.TryupImgRsp[0].GetDownloadIndex()),
+			Md5:           hash,
+		}, nil
+	}
+	return nil, errors.New("image is not exists")
 }
 
 func decodeGuildMessagePushPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
