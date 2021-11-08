@@ -16,7 +16,7 @@ func (s *GuildService) pullRoamMsgByEventFlow(guildId, channelId, beginSeq, endS
 			EndSeq:    &endSeq,
 			Version:   []uint64{eventVersion},
 		},
-		WithVersionFlag:   proto.Uint32(2),
+		WithVersionFlag:   proto.Uint32(1),
 		DirectMessageFlag: proto.Uint32(0),
 	})
 	seq := s.c.nextSeq()

@@ -149,6 +149,7 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 func (s *GuildService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
+	// todo: 这个包实际上是 fetchMemberListWithRole , 可以按channel, role等规则获取成员列表, 还需要修改
 	payload := s.c.packOIDBPackageDynamically(3931, 1, binary.DynamicProtoMessage{ // todo: 可能还需要处理翻页的情况?
 		1: guildId, // guild id
 		2: uint32(3),
