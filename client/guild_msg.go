@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/pkg/errors"
 	"strconv"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
@@ -8,6 +9,10 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"google.golang.org/protobuf/proto"
 )
+
+func init() {
+	decoders["MsgPush.PushGroupProMsg"] = decodeGuildMessagePushPacket
+}
 
 func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *message.GuildChannelMessage {
 	guild := c.GuildService.FindGuild(msg.Head.RoutingHead.GetGuildId())
@@ -27,6 +32,66 @@ func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *mes
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
+}
+
+func decodeGuildMessagePushPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+	push := new(channel.MsgOnlinePush)
+	if err := proto.Unmarshal(payload, push); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	for _, m := range push.Msgs {
+		if m.Head.ContentHead.GetType() == 3841 {
+			// todo: 回头 event flow 的处理移出去重构下逻辑, 先暂时这样方便改
+			var common *msg.CommonElem
+			if m.Body != nil {
+				for _, e := range m.Body.RichText.Elems {
+					if e.CommonElem != nil {
+						common = e.CommonElem
+						break
+					}
+				}
+			}
+			if m.Head.ContentHead.GetSubType() == 2 { // todo: tips?
+				continue
+			}
+			if common == nil || common.GetServiceType() != 500 {
+				continue
+			}
+			eventBody := new(channel.EventBody)
+			if err := proto.Unmarshal(common.PbElem, eventBody); err != nil {
+				c.Error("failed to unmarshal guild channel event body: %v", err)
+				continue
+			}
+			if eventBody.UpdateMsg != nil {
+				if eventBody.UpdateMsg.GetEventType() == 1 || eventBody.UpdateMsg.GetEventType() == 2 { // todo: 撤回消息
+					continue
+				}
+				if eventBody.UpdateMsg.GetEventType() == 4 { // 消息贴表情更新 (包含添加或删除)
+					t, err := c.GuildService.pullRoamMsgByEventFlow(m.Head.RoutingHead.GetGuildId(), m.Head.RoutingHead.GetChannelId(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetEventVersion()-1)
+					if err != nil || len(t) == 0 {
+						c.Error("process guild event flow error: pull eventMsg message error: %v", err)
+						continue
+					}
+					// 自己的消息被贴表情会单独推送一个tips, 这里不需要解析
+					if t[0].Head.RoutingHead.GetFromTinyid() == c.GuildService.TinyId {
+						continue
+					}
+					// todo: 如果是别人消息被贴表情, 会在在后续继续推送一个 empty tips, 可以从那个消息获取到 OperatorId
+					c.dispatchGuildMessageReactionsUpdatedEvent(&GuildMessageReactionsUpdatedEvent{
+						GuildId:          m.Head.RoutingHead.GetGuildId(),
+						ChannelId:        m.Head.RoutingHead.GetChannelId(),
+						MessageId:        t[0].Head.ContentHead.GetSeq(),
+						CurrentReactions: decodeGuildMessageEmojiReactions(t[0]),
+					})
+				}
+			}
+			continue
+		}
+		if cm := c.parseGuildChannelMessage(m); cm != nil {
+			c.dispatchGuildChannelMessage(cm)
+		}
+	}
+	return nil, nil
 }
 
 func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*message.GuildMessageEmojiReaction) {

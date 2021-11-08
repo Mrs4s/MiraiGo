@@ -223,6 +223,8 @@ type (
 	GuildMessageReactionsUpdatedEvent struct {
 		OperatorId       uint64 // OperatorId 操作者TinyId, 只有自身消息被贴表情才会有值
 		EmojiId          int32  // EmojiId 被贴的表情, 只有自身消息被贴表情才会有值
+		GuildId          uint64
+		ChannelId        uint64
 		MessageId        uint64
 		CurrentReactions []*message.GuildMessageEmojiReaction
 	}
