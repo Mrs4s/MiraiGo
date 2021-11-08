@@ -2,9 +2,10 @@ package client
 
 import (
 	"encoding/hex"
+	"strconv"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
-	"strconv"
 
 	"github.com/pkg/errors"
 
