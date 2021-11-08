@@ -345,44 +345,25 @@ func unpackOIDBPackage(buff []byte, payload proto.Message) error {
 }
 
 func (c *QQClient) Error(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "ERROR",
-		Message: fmt.Sprintf(msg, args...),
-	})
+	c.Logger.Error(c, msg, args...)
 }
 
 func (c *QQClient) Warning(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "WARNING",
-		Message: fmt.Sprintf(msg, args...),
-	})
+	c.Logger.Warning(c, msg, args...)
 }
 
 func (c *QQClient) Info(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "INFO",
-		Message: fmt.Sprintf(msg, args...),
-	})
+	c.Logger.Info(c, msg, args...)
 }
 
 func (c *QQClient) Debug(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "DEBUG",
-		Message: fmt.Sprintf(msg, args...),
-	})
+	c.Logger.Debug(c, msg, args...)
 }
 
 func (c *QQClient) Trace(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "TRACE",
-		Message: fmt.Sprintf(msg, args...),
-	})
+	c.Logger.Trace(c, msg, args...)
 }
 
 func (c *QQClient) Dump(msg string, data []byte, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "DUMP",
-		Message: fmt.Sprintf(msg, args...),
-		Dump:    data,
-	})
+	c.Logger.Dump(c, data, msg, args...)
 }

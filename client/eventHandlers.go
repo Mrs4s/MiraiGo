@@ -35,13 +35,13 @@ type eventHandlers struct {
 	friendRequestHandlers                []func(*QQClient, *NewFriendRequest)
 	newFriendHandlers                    []func(*QQClient, *NewFriendEvent)
 	disconnectHandlers                   []func(*QQClient, *ClientDisconnectedEvent)
-	logHandlers                          []func(*QQClient, *LogEvent)
-	groupNotifyHandlers                  []func(*QQClient, INotifyEvent)
-	friendNotifyHandlers                 []func(*QQClient, INotifyEvent)
-	memberTitleUpdatedHandlers           []func(*QQClient, *MemberSpecialTitleUpdatedEvent)
-	offlineFileHandlers                  []func(*QQClient, *OfflineFileEvent)
-	otherClientStatusChangedHandlers     []func(*QQClient, *OtherClientStatusChangedEvent)
-	groupDigestHandlers                  []func(*QQClient, *GroupDigestEvent)
+	//logHandlers                          []func(*QQClient, *LogEvent)
+	groupNotifyHandlers              []func(*QQClient, INotifyEvent)
+	friendNotifyHandlers             []func(*QQClient, INotifyEvent)
+	memberTitleUpdatedHandlers       []func(*QQClient, *MemberSpecialTitleUpdatedEvent)
+	offlineFileHandlers              []func(*QQClient, *OfflineFileEvent)
+	otherClientStatusChangedHandlers []func(*QQClient, *OtherClientStatusChangedEvent)
+	groupDigestHandlers              []func(*QQClient, *GroupDigestEvent)
 }
 
 func (c *QQClient) OnPrivateMessage(f func(*QQClient, *message.PrivateMessage)) {
@@ -169,7 +169,10 @@ func (c *QQClient) OnOtherClientStatusChanged(f func(*QQClient, *OtherClientStat
 }
 
 func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
-	c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
+	if l, ok := c.Logger.(*eventLogger); ok {
+		c.Logger = append(*l, f)
+	}
+	//c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
 }
 
 func (c *QQClient) OnGroupNotify(f func(*QQClient, INotifyEvent)) {
@@ -566,17 +569,6 @@ func (c *QQClient) dispatchGroupDigestEvent(e *GroupDigestEvent) {
 		return
 	}
 	for _, f := range c.eventHandlers.groupDigestHandlers {
-		cover(func() {
-			f(c, e)
-		})
-	}
-}
-
-func (c *QQClient) dispatchLogEvent(e *LogEvent) {
-	if e == nil {
-		return
-	}
-	for _, f := range c.eventHandlers.logHandlers {
 		cover(func() {
 			f(c, e)
 		})

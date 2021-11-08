@@ -127,9 +127,6 @@ var defaultHandlers = EventHandler{
 	DisconnectHandler: func(client *QQClient, disconnectEvent *ClientDisconnectedEvent) {
 		client.dispatchDisconnectEvent(disconnectEvent)
 	},
-	LogHandler: func(client *QQClient, logEvent *LogEvent) {
-		client.dispatchLogEvent(logEvent)
-	},
 	ServerUpdatedHandler: func(client *QQClient, serverUpdatedEvent *ServerUpdatedEvent) bool {
 		return client.dispatchServerUpdatedEvent(serverUpdatedEvent)
 	},

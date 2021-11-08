@@ -94,7 +94,8 @@ type QQClient struct {
 	groupMessageReceiptHandler sync.Map
 	serverUpdatedHandlers      []func(*QQClient, *ServerUpdatedEvent) bool
 	EventHandler
-	eventHandlers // 旧兼容
+	eventHandlers // 向后兼容
+	Logger
 
 	groupListLock sync.Mutex
 }
@@ -140,7 +141,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
-		EventHandler:    defaultHandlers,
 		msgSvcCache:     utils.NewCache(time.Second * 15),
 		transCache:      utils.NewCache(time.Second * 15),
 		onlinePushCache: utils.NewCache(time.Second * 15),
@@ -151,6 +151,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		pending:    make(map[int32]*network.Call),
 		version:    new(auth.AppVersion),
 		deviceInfo: new(auth.Device),
+
+		EventHandler: defaultHandlers,
+		Logger:       &eventLogger{},
 	}
 
 	cli.groupMessageReceiptHandler.Store("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
