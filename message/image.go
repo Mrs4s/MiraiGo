@@ -85,6 +85,10 @@ func (e *FriendImageElement) Type() ElementType {
 	return Image
 }
 
+func (e *GuildImageElement) Type() ElementType {
+	return Image
+}
+
 func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 	cface := &msg.CustomFace{
 		FileType: proto.Int32(66),
