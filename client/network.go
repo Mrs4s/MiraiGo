@@ -213,6 +213,25 @@ func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
 	}
 }
 
+// waitPacketTimeoutSyncF
+// 等待一个数据包解析, 优先级低于 sendAndWait
+func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, filter func(interface{}) bool) (r interface{}, e error) {
+	notifyChan := make(chan bool)
+	defer c.waitPacket(cmd, func(i interface{}, err error) {
+		if filter(i) {
+			r = i
+			e = err
+			notifyChan <- true
+		}
+	})()
+	select {
+	case <-notifyChan:
+		return
+	case <-time.After(timeout):
+		return nil, errors.New("timeout")
+	}
+}
+
 // sendAndWaitDynamic
 // 发送数据包并返回需要解析的 response
 func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {

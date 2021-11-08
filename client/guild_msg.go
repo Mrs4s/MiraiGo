@@ -8,6 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 	"google.golang.org/protobuf/proto"
+	"time"
 )
 
 func init() {
@@ -41,6 +42,12 @@ func decodeGuildMessagePushPacket(c *QQClient, _ *incomingPacketInfo, payload []
 	}
 	for _, m := range push.Msgs {
 		if m.Head.ContentHead.GetType() == 3841 {
+			type tipsPushInfo struct {
+				TinyId                 uint64
+				TargetMessageSenderUin int64
+				GuildId                uint64
+				ChannelId              uint64
+			}
 			// todo: 回头 event flow 的处理移出去重构下逻辑, 先暂时这样方便改
 			var common *msg.CommonElem
 			if m.Body != nil {
@@ -52,7 +59,18 @@ func decodeGuildMessagePushPacket(c *QQClient, _ *incomingPacketInfo, payload []
 				}
 			}
 			if m.Head.ContentHead.GetSubType() == 2 { // todo: tips?
-				continue
+				if common == nil { // empty tips
+
+				}
+				tipsInfo := &tipsPushInfo{
+					TinyId:    m.Head.RoutingHead.GetFromTinyid(),
+					GuildId:   m.Head.RoutingHead.GetGuildId(),
+					ChannelId: m.Head.RoutingHead.GetChannelId(),
+				}
+				if len(m.CtrlHead.IncludeUin) > 0 {
+					tipsInfo.TargetMessageSenderUin = int64(m.CtrlHead.IncludeUin[0])
+				}
+				return tipsInfo, nil
 			}
 			if common == nil || common.GetServiceType() != 500 {
 				continue
@@ -76,13 +94,24 @@ func decodeGuildMessagePushPacket(c *QQClient, _ *incomingPacketInfo, payload []
 					if t[0].Head.RoutingHead.GetFromTinyid() == c.GuildService.TinyId {
 						continue
 					}
-					// todo: 如果是别人消息被贴表情, 会在在后续继续推送一个 empty tips, 可以从那个消息获取到 OperatorId
-					c.dispatchGuildMessageReactionsUpdatedEvent(&GuildMessageReactionsUpdatedEvent{
+					updatedEvent := &GuildMessageReactionsUpdatedEvent{
 						GuildId:          m.Head.RoutingHead.GetGuildId(),
 						ChannelId:        m.Head.RoutingHead.GetChannelId(),
 						MessageId:        t[0].Head.ContentHead.GetSeq(),
 						CurrentReactions: decodeGuildMessageEmojiReactions(t[0]),
+					}
+					tipsInfo, err := c.waitPacketTimeoutSyncF("MsgPush.PushGroupProMsg", time.Second, func(i interface{}) bool {
+						if i == nil {
+							return false
+						}
+						_, ok := i.(*tipsPushInfo)
+						return ok
 					})
+					if err == nil {
+						updatedEvent.OperatorId = tipsInfo.(*tipsPushInfo).TinyId
+						updatedEvent.MessageSenderUin = tipsInfo.(*tipsPushInfo).TargetMessageSenderUin
+					}
+					c.dispatchGuildMessageReactionsUpdatedEvent(updatedEvent)
 				}
 			}
 			continue
