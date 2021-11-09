@@ -45,6 +45,7 @@ type GuildImageElement struct {
 	Height        int32
 	DownloadIndex string
 	Md5           []byte
+	Url           string
 }
 
 type ImageBizType uint32

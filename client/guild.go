@@ -111,6 +111,15 @@ func (g *GuildInfo) FindMember(tinyId uint64) *GuildMemberInfo {
 	return nil
 }
 
+func (g *GuildInfo) FindChannel(channelId uint64) *ChannelInfo {
+	for _, c := range g.Channels {
+		if c.ChannelId == channelId {
+			return c
+		}
+	}
+	return nil
+}
+
 func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {
 	seq := s.c.nextSeq()
 	flags := binary.DynamicProtoMessage{}
