@@ -3,7 +3,7 @@ package message
 type (
 	GuildChannelMessage struct {
 		Id         uint64
-		InternalId int32
+		InternalId uint64
 		GuildId    uint64
 		ChannelId  uint64
 		Time       int64

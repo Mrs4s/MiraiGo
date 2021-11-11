@@ -3,7 +3,9 @@ syntax = "proto2";
 package channel;
 
 option go_package = "pb/channel;channel";
+
 import "pb/channel/common.proto";
+import "pb/msg/msg.proto";
 
 message DF62ReqBody {
   optional ChannelMsgContent msg = 1;
@@ -17,6 +19,7 @@ message DF62RspBody {
   optional uint32 errType = 5;
   optional TransSvrInfo transSvrInfo = 6;
   optional ChannelFreqLimitInfo freqLimitInfo = 7;
+  optional msg.MessageBody body = 8;
 }
 
 message TransSvrInfo {

@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/utils"
 	"image"
 	"io"
 	"math/rand"
 	"strconv"
-
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
@@ -42,7 +41,7 @@ func init() {
 	decoders["ImgStore.QQMeetPicUp"] = decodeGuildImageStoreResponse
 }
 
-func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) error {
+func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) (*message.GuildChannelMessage, error) {
 	mr := rand.Uint32() // 客户端似乎是生成的 u32 虽然类型是u64
 	req := &channel.DF62ReqBody{Msg: &channel.ChannelMsgContent{
 		Head: &channel.ChannelMsgHead{
@@ -67,17 +66,27 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "MsgProxy.SendMsg", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
-		return errors.Wrap(err, "send packet error")
+		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.DF62RspBody)
 	if err = proto.Unmarshal(rsp, body); err != nil {
-		return errors.Wrap(err, "failed to unmarshal protobuf message")
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if body.GetResult() != 0 {
-		return errors.Errorf("send channel message error: server response %v", body.GetResult())
+		return nil, errors.Errorf("send channel message error: server response %v", body.GetResult())
 	}
-	// todo: 返回 *message.GuildMessage
-	return nil
+	return &message.GuildChannelMessage{
+		Id:         body.Head.ContentHead.GetSeq(),
+		InternalId: body.Head.ContentHead.GetRandom(),
+		GuildId:    guildId,
+		ChannelId:  channelId,
+		Time:       int64(body.GetSendTime()),
+		Sender: &message.GuildSender{
+			TinyId:   body.Head.RoutingHead.GetFromTinyid(),
+			Nickname: s.Nickname,
+		},
+		Elements: message.ParseMessageElems(body.Body.RichText.Elems),
+	}, nil
 }
 
 func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size uint64) (*message.GuildImageElement, error) {
@@ -254,7 +263,7 @@ func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *mes
 	// mem := guild.FindMember(msg.Head.RoutingHead.GetFromTinyid())
 	return &message.GuildChannelMessage{
 		Id:         msg.Head.ContentHead.GetSeq(),
-		InternalId: msg.Body.RichText.Attr.GetRandom(),
+		InternalId: msg.Head.ContentHead.GetRandom(),
 		GuildId:    msg.Head.RoutingHead.GetGuildId(),
 		ChannelId:  msg.Head.RoutingHead.GetChannelId(),
 		Time:       int64(msg.Head.ContentHead.GetTime()),
