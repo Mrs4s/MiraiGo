@@ -37,7 +37,7 @@ type FriendImageElement struct {
 }
 
 type GuildImageElement struct {
-	FileId        uint64
+	FileId        int64
 	FilePath      string
 	ImageType     int32
 	Size          int32

@@ -1,7 +1,13 @@
 package client
 
 import (
+	"bytes"
 	"encoding/hex"
+	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/utils"
+	"image"
+	"io"
 	"math/rand"
 	"strconv"
 
@@ -15,6 +21,25 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"google.golang.org/protobuf/proto"
 )
+
+type (
+	guildImageUploadResponse struct {
+		UploadKey     []byte
+		UploadIp      []uint32
+		UploadPort    []uint32
+		Width         int32
+		Height        int32
+		Message       string
+		DownloadIndex string
+		FileId        int64
+		ResultCode    int32
+		IsExists      bool
+	}
+)
+
+func init() {
+	decoders["ImgStore.QQMeetPicUp"] = decodeGuildImageStoreResponse
+}
 
 func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) error {
 	mr := rand.Uint32() // 客户端似乎是生成的 u32 虽然类型是u64
@@ -55,14 +80,84 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 }
 
 func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size uint64) (*message.GuildImageElement, error) {
-	seq := s.c.nextSeq()
+	rsp, err := s.c.sendAndWait(s.c.buildGuildImageStorePacket(guildId, channelId, hash, size))
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := rsp.(*guildImageUploadResponse)
+	if body.IsExists {
+		return &message.GuildImageElement{
+			FileId:        body.FileId,
+			FilePath:      hex.EncodeToString(hash) + ".jpg",
+			Size:          int32(size),
+			DownloadIndex: body.DownloadIndex,
+			Width:         body.Width,
+			Height:        body.Height,
+			Md5:           hash,
+		}, nil
+	}
+	return nil, errors.New("image is not exists")
+}
+
+func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSeeker) (*message.GuildImageElement, error) {
+	_, _ = img.Seek(0, io.SeekStart) // safe
+	fh, length := utils.ComputeMd5AndLength(img)
+	_, _ = img.Seek(0, io.SeekStart)
+	rsp, err := s.c.sendAndWait(s.c.buildGuildImageStorePacket(guildId, channelId, fh, uint64(length)))
+	if err != nil {
+		return nil, err
+	}
+	body := rsp.(*guildImageUploadResponse)
+	if body.IsExists {
+		goto ok
+	}
+	if len(s.c.srvSsoAddrs) == 0 {
+		for i, addr := range body.UploadIp {
+			s.c.srvSsoAddrs = append(s.c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr), body.UploadPort[i]))
+		}
+	}
+	if _, err = s.c.highwayUploadByBDH(img, length, 83, body.UploadKey, fh, binary.DynamicProtoMessage{11: guildId, 12: channelId}.Encode(), false); err == nil {
+		goto ok
+	}
+	return nil, errors.Wrap(err, "highway upload error")
+ok:
+	_, _ = img.Seek(0, io.SeekStart)
+	i, _, err := image.DecodeConfig(img)
+	var imageType int32 = 1000
+	_, _ = img.Seek(0, io.SeekStart)
+	tmp := make([]byte, 4)
+	_, _ = img.Read(tmp)
+	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
+		imageType = 2000
+	}
+	width := int32(i.Width)
+	height := int32(i.Height)
+	if err != nil {
+		s.c.Warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
+		width = 200
+		height = 200
+	}
+	return &message.GuildImageElement{
+		FileId:        body.FileId,
+		FilePath:      hex.EncodeToString(fh) + ".jpg",
+		Size:          int32(length),
+		DownloadIndex: body.DownloadIndex,
+		Width:         width,
+		Height:        height,
+		ImageType:     imageType,
+		Md5:           fh,
+	}, nil
+}
+
+func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []byte, size uint64) (uint16, []byte) {
+	seq := c.nextSeq()
 	payload, _ := proto.Marshal(&cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
 		Subcmd:  proto.Uint32(1),
 		TryupImgReq: []*cmd0x388.TryUpImgReq{
 			{
 				GroupCode:       &channelId,
-				SrcUin:          proto.Uint64(uint64(s.c.Uin)),
+				SrcUin:          proto.Uint64(uint64(c.Uin)),
 				FileId:          proto.Uint64(0),
 				FileMd5:         hash,
 				FileSize:        &size,
@@ -80,28 +175,8 @@ func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size u
 		},
 		CommandId: proto.Uint32(83),
 	})
-	packet := packets.BuildUniPacket(s.c.Uin, seq, "ImgStore.QQMeetPicUp", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
-	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
-	if err != nil {
-		return nil, errors.Wrap(err, "send packet error")
-	}
-	body := new(cmd0x388.D388RspBody)
-	if err = proto.Unmarshal(rsp, body); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if len(body.TryupImgRsp) == 0 {
-		return nil, errors.New("response is empty")
-	}
-	if body.TryupImgRsp[0].GetFileExit() {
-		return &message.GuildImageElement{
-			FileId:        body.TryupImgRsp[0].GetFileid(),
-			FilePath:      hex.EncodeToString(hash) + ".jpg",
-			Size:          int32(size),
-			DownloadIndex: string(body.TryupImgRsp[0].GetDownloadIndex()),
-			Md5:           hash,
-		}, nil
-	}
-	return nil, errors.New("image is not exists")
+	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.QQMeetPicUp", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
+	return seq, packet
 }
 
 func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*message.GuildMessageEmojiReaction) {
@@ -138,6 +213,36 @@ func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*
 		}
 	}
 	return
+}
+
+func decodeGuildImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+	body := new(cmd0x388.D388RspBody)
+	if err := proto.Unmarshal(payload, body); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if len(body.TryupImgRsp) == 0 {
+		return nil, errors.New("response is empty")
+	}
+	rsp := body.TryupImgRsp[0]
+	if rsp.GetResult() != 0 {
+		return &guildImageUploadResponse{
+			ResultCode: int32(rsp.GetResult()),
+			Message:    utils.B2S(rsp.GetFailMsg()),
+		}, nil
+	}
+	if rsp.GetFileExit() {
+		if rsp.ImgInfo != nil {
+			return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.GetDownloadIndex()), Width: int32(rsp.ImgInfo.GetFileWidth()), Height: int32(rsp.ImgInfo.GetFileHeight())}, nil
+		}
+		return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.GetDownloadIndex())}, nil
+	}
+	return &guildImageUploadResponse{
+		FileId:        int64(rsp.GetFileid()),
+		UploadKey:     rsp.UpUkey,
+		UploadIp:      rsp.GetUpIp(),
+		UploadPort:    rsp.GetUpPort(),
+		DownloadIndex: string(rsp.GetDownloadIndex()),
+	}, nil
 }
 
 func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *message.GuildChannelMessage {

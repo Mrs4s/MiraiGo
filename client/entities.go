@@ -265,19 +265,6 @@ type (
 		list    []*GroupMemberInfo
 	}
 
-	imageUploadResponse struct {
-		UploadKey  []byte
-		UploadIp   []uint32
-		UploadPort []uint32
-		ResourceId string
-		Message    string
-		FileId     int64
-		Width      int32
-		Height     int32
-		ResultCode int32
-		IsExists   bool
-	}
-
 	pttUploadResponse struct {
 		ResultCode int32
 		Message    string
