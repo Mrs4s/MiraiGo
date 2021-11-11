@@ -5,7 +5,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
-	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
@@ -168,20 +167,16 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
-	pkg := new(oidb.OIDBSSOPkg)
-	oidbRsp := new(channel.ChannelOidb0Xfc9Rsp)
-	if err = proto.Unmarshal(rsp, pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	body := new(channel.ChannelOidb0Xfc9Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
 	}
 	// todo: 解析个性档案
 	return &GuildUserProfile{
 		TinyId:    tinyId,
-		Nickname:  oidbRsp.Profile.GetNickname(),
-		AvatarUrl: oidbRsp.Profile.GetAvatarUrl(),
-		JoinTime:  oidbRsp.Profile.GetJoinTime(),
+		Nickname:  body.Profile.GetNickname(),
+		AvatarUrl: body.Profile.GetAvatarUrl(),
+		JoinTime:  body.Profile.GetJoinTime(),
 	}, nil
 }
 
@@ -205,13 +200,9 @@ func (s *GuildService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo,
 	if err != nil {
 		return nil, nil, nil, errors.Wrap(err, "send packet error")
 	}
-	pkg := new(oidb.OIDBSSOPkg)
-	oidbRsp := new(channel.ChannelOidb0Xf5BRsp)
-	if err = proto.Unmarshal(rsp, pkg); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	body := new(channel.ChannelOidb0Xf5BRsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, nil, nil, errors.Wrap(err, "decode packet error")
 	}
 	protoToMemberInfo := func(mem *channel.GuildMemberInfo) *GuildMemberInfo {
 		return &GuildMemberInfo{
@@ -222,13 +213,13 @@ func (s *GuildService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo,
 			Role:          mem.GetRole(),
 		}
 	}
-	for _, mem := range oidbRsp.Bots {
+	for _, mem := range body.Bots {
 		bots = append(bots, protoToMemberInfo(mem))
 	}
-	for _, mem := range oidbRsp.Members {
+	for _, mem := range body.Members {
 		members = append(members, protoToMemberInfo(mem))
 	}
-	for _, mem := range oidbRsp.AdminInfo.Admins {
+	for _, mem := range body.AdminInfo.Admins {
 		admins = append(admins, protoToMemberInfo(mem))
 	}
 	return
@@ -252,20 +243,16 @@ func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Guild
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
-	pkg := new(oidb.OIDBSSOPkg)
-	oidbRsp := new(channel.ChannelOidb0Xf88Rsp)
-	if err = proto.Unmarshal(rsp, pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	body := new(channel.ChannelOidb0Xf88Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
 	}
 	// todo: 解析个性档案
 	return &GuildUserProfile{
 		TinyId:    tinyId,
-		Nickname:  oidbRsp.Profile.GetNickname(),
-		AvatarUrl: oidbRsp.Profile.GetAvatarUrl(),
-		JoinTime:  oidbRsp.Profile.GetJoinTime(),
+		Nickname:  body.Profile.GetNickname(),
+		AvatarUrl: body.Profile.GetAvatarUrl(),
+		JoinTime:  body.Profile.GetJoinTime(),
 	}, nil
 }
 
@@ -291,23 +278,19 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
-	pkg := new(oidb.OIDBSSOPkg)
-	oidbRsp := new(channel.ChannelOidb0Xf57Rsp)
-	if err = proto.Unmarshal(rsp, pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err = proto.Unmarshal(pkg.Bodybuffer, oidbRsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	body := new(channel.ChannelOidb0Xf57Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
 	}
 	return &GuildMeta{
-		GuildName:      oidbRsp.Rsp.Meta.GetName(),
-		GuildProfile:   oidbRsp.Rsp.Meta.GetProfile(),
-		MaxMemberCount: oidbRsp.Rsp.Meta.GetMaxMemberCount(),
-		MemberCount:    oidbRsp.Rsp.Meta.GetMemberCount(),
-		CreateTime:     oidbRsp.Rsp.Meta.GetCreateTime(),
-		MaxRobotCount:  oidbRsp.Rsp.Meta.GetRobotMaxNum(),
-		MaxAdminCount:  oidbRsp.Rsp.Meta.GetAdminMaxNum(),
-		OwnerId:        oidbRsp.Rsp.Meta.GetOwnerId(),
+		GuildName:      body.Rsp.Meta.GetName(),
+		GuildProfile:   body.Rsp.Meta.GetProfile(),
+		MaxMemberCount: body.Rsp.Meta.GetMaxMemberCount(),
+		MemberCount:    body.Rsp.Meta.GetMemberCount(),
+		CreateTime:     body.Rsp.Meta.GetCreateTime(),
+		MaxRobotCount:  body.Rsp.Meta.GetRobotMaxNum(),
+		MaxAdminCount:  body.Rsp.Meta.GetAdminMaxNum(),
+		OwnerId:        body.Rsp.Meta.GetOwnerId(),
 	}, nil
 }
 
