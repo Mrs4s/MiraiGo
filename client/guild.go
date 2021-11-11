@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
@@ -294,6 +293,24 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	}, nil
 }
 
+func (s *GuildService) FetchChannelList(guildId uint64) (r []*ChannelInfo, e error) {
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf5d_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(3933, 1, binary.DynamicProtoMessage{1: guildId, 3: binary.DynamicProtoMessage{1: uint32(1)}}))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0Xf5DRsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
+	}
+	for _, info := range body.Rsp.Channels {
+		r = append(r, convertChannelInfo(info))
+	}
+	return
+}
+
 func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo, error) {
 	seq := s.c.nextSeq()
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf55_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
@@ -306,35 +323,7 @@ func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo
 	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
-	meta := &ChannelMeta{
-		CreatorUin:      body.Info.GetCreatorUin(),
-		CreatorTinyId:   body.Info.GetCreatorTinyId(),
-		CreateTime:      body.Info.GetCreateTime(),
-		GuildId:         body.Info.GetGuildId(),
-		VisibleType:     body.Info.GetVisibleType(),
-		CurrentSlowMode: body.Info.GetCurrentSlowModeKey(),
-		TalkPermission:  body.Info.GetTalkPermission(),
-	}
-	if body.Info.TopMsg != nil {
-		meta.TopMessageSeq = body.Info.TopMsg.GetTopMsgSeq()
-		meta.TopMessageTime = body.Info.TopMsg.GetTopMsgTime()
-		meta.TopMessageOperatorId = body.Info.TopMsg.GetTopMsgOperatorTinyId()
-	}
-	for _, slow := range body.Info.SlowModeInfos {
-		meta.SlowModes = append(meta.SlowModes, &ChannelSlowModeInfo{
-			SlowModeKey:    slow.GetSlowModeKey(),
-			SpeakFrequency: slow.GetSpeakFrequency(),
-			SlowModeCircle: slow.GetSlowModeCircle(),
-			SlowModeText:   slow.GetSlowModeText(),
-		})
-	}
-	return &ChannelInfo{
-		ChannelId:   body.Info.GetChannelId(),
-		ChannelName: body.Info.GetChannelName(),
-		NotifyType:  uint32(body.Info.GetFinalNotifyType()),
-		ChannelType: ChannelType(body.Info.GetChannelType()),
-		Meta:        meta,
-	}, nil
+	return convertChannelInfo(body.Info), nil
 }
 
 /* need analysis
@@ -361,6 +350,38 @@ func (s *GuildService) fetchChannelListState(guildId uint64, channels []*Channel
 	}
 }
 */
+
+func convertChannelInfo(info *channel.GuildChannelInfo) *ChannelInfo {
+	meta := &ChannelMeta{
+		CreatorUin:      info.GetCreatorUin(),
+		CreatorTinyId:   info.GetCreatorTinyId(),
+		CreateTime:      info.GetCreateTime(),
+		GuildId:         info.GetGuildId(),
+		VisibleType:     info.GetVisibleType(),
+		CurrentSlowMode: info.GetCurrentSlowModeKey(),
+		TalkPermission:  info.GetTalkPermission(),
+	}
+	if info.TopMsg != nil {
+		meta.TopMessageSeq = info.TopMsg.GetTopMsgSeq()
+		meta.TopMessageTime = info.TopMsg.GetTopMsgTime()
+		meta.TopMessageOperatorId = info.TopMsg.GetTopMsgOperatorTinyId()
+	}
+	for _, slow := range info.SlowModeInfos {
+		meta.SlowModes = append(meta.SlowModes, &ChannelSlowModeInfo{
+			SlowModeKey:    slow.GetSlowModeKey(),
+			SpeakFrequency: slow.GetSpeakFrequency(),
+			SlowModeCircle: slow.GetSlowModeCircle(),
+			SlowModeText:   slow.GetSlowModeText(),
+		})
+	}
+	return &ChannelInfo{
+		ChannelId:   info.GetChannelId(),
+		ChannelName: info.GetChannelName(),
+		NotifyType:  uint32(info.GetFinalNotifyType()),
+		ChannelType: ChannelType(info.GetChannelType()),
+		Meta:        meta,
+	}
+}
 
 func (c *QQClient) syncChannelFirstView() {
 	rsp, err := c.sendAndWaitDynamic(c.buildSyncChannelFirstViewPacket())
@@ -424,6 +445,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 			}
 			info.Bots, info.Members, info.Admins, _ = c.GuildService.GetGuildMembers(info.GuildId)
 			c.GuildService.Guilds = append(c.GuildService.Guilds, info)
+			c.GuildService.FetchChannelList(info.GuildId)
 		}
 	}
 	if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg

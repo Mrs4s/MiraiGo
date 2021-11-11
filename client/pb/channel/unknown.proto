@@ -28,9 +28,19 @@ message ChannelOidb0xf55Rsp {
   optional GuildChannelInfo info = 1;
 }
 
+message ChannelOidb0xf5dRsp {
+  optional ChannelListRsp rsp = 1;
+}
+
 message GuildMetaRsp {
   optional uint64 guildId = 3;
   optional GuildMeta meta = 4;
+}
+
+message ChannelListRsp {
+  optional uint64 guildId = 1;
+  repeated GuildChannelInfo channels = 2;
+  // 5: Category infos
 }
 
 message GuildAdminInfo {
