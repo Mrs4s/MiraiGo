@@ -1,13 +1,14 @@
 package client
 
 import (
+	"sync"
+	"time"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
-	"sync"
-	"time"
 )
 
 func init() {
