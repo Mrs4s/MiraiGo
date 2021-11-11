@@ -192,16 +192,16 @@ func GenRandomDevice() {
 
 func genVersionInfo(p ClientProtocol) *versionInfo {
 	switch p {
-	case AndroidPhone: // Dumped by mirai from qq android v8.2.7
+	case AndroidPhone: // Dumped by mirai from qq android v8.8.38
 		return &versionInfo{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537066738,
-			SubAppId:        537066738,
-			SortVersionName: "8.5.0",
-			BuildTime:       1607689988,
+			AppId:           537100432,
+			SubAppId:        537100432,
+			SortVersionName: "8.8.38",
+			BuildTime:       1634310940,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2454",
-			SSOVersion:      15,
+			SdkVersion:      "6.0.0.2487",
+			SSOVersion:      16,
 			MiscBitmap:      184024956,
 			SubSigmap:       0x10400,
 			MainSigMap:      34869472,
@@ -225,9 +225,9 @@ func genVersionInfo(p ClientProtocol) *versionInfo {
 	case IPad:
 		return &versionInfo{
 			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537065739,
-			SubAppId:        537065739,
-			SortVersionName: "5.8.9",
+			AppId:           537097188,
+			SubAppId:        537097188,
+			SortVersionName: "8.8.35",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
 			SdkVersion:      "6.0.0.2433",
@@ -655,6 +655,10 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType uint32, body []byte) []byte 
 	return r
 }
 
+func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg binary.DynamicProtoMessage) []byte {
+	return c.packOIDBPackage(cmd, serviceType, msg.Encode())
+}
+
 func (c *QQClient) packOIDBPackageProto(cmd, serviceType uint32, msg proto.Message) []byte {
 	b, _ := proto.Marshal(msg)
 	return c.packOIDBPackage(cmd, serviceType, b)
@@ -663,6 +667,20 @@ func (c *QQClient) packOIDBPackageProto(cmd, serviceType uint32, msg proto.Messa
 func (c *QQClient) packOIDBPackageProto2(cmd, serviceType uint32, msg proto2.Message) []byte {
 	b, _ := msg.Marshal()
 	return c.packOIDBPackage(cmd, serviceType, b)
+}
+
+func (c *QQClient) unpackOIDBPackage(buff []byte, payload proto.Message) error {
+	pkg := new(oidb.OIDBSSOPkg)
+	if err := proto.Unmarshal(buff, pkg); err != nil {
+		return errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if pkg.GetResult() != 0 {
+		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.GetResult(), pkg.GetErrorMsg())
+	}
+	if err := proto.Unmarshal(pkg.Bodybuffer, payload); err != nil {
+		return errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return nil
 }
 
 func (c *QQClient) Error(msg string, args ...interface{}) {

@@ -44,6 +44,7 @@ type QQClient struct {
 	OnlineClients []*OtherClientInfo
 	Online        bool
 	QiDian        *QiDianAccountInfo
+	GuildService  *GuildService
 
 	// protocol public field
 	SequenceId              int32
@@ -212,6 +213,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		alive:                   true,
 		ecdh:                    crypto.NewEcdh(),
 	}
+	cli.GuildService = &GuildService{c: cli}
 	cli.ecdh.FetchPubKey(uin)
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
@@ -451,6 +453,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
+	c.syncChannelFirstView()
 	return nil
 }
 

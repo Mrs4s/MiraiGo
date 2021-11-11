@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+import "pb/channel/common.proto";
+
+message DF62ReqBody {
+  optional ChannelMsgContent msg = 1;
+}
+
+message DF62RspBody {
+  optional uint32 result = 1;
+  optional bytes errmsg = 2;
+  optional uint32 sendTime = 3;
+  optional ChannelMsgHead head = 4;
+  optional uint32 errType = 5;
+  optional TransSvrInfo transSvrInfo = 6;
+  optional ChannelFreqLimitInfo freqLimitInfo = 7;
+}
+
+message TransSvrInfo {
+  optional uint32 subType = 1;
+  optional int32 retCode = 2;
+  optional bytes errMsg = 3;
+  optional bytes transInfo = 4;
+}

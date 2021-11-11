@@ -1,0 +1,135 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+import "pb/msg/msg.proto";
+
+message ChannelContentHead {
+  optional uint64 type = 1;
+  optional uint64 subType = 2;
+  optional uint64 random = 3;
+  optional uint64 seq = 4;
+  optional uint64 cntSeq = 5;
+  optional uint64 time = 6;
+  optional bytes meta = 7;
+}
+
+message DirectMessageMember {
+  optional uint64 uin = 1;
+  optional uint64 tinyid = 2;
+  optional uint64 sourceGuildId = 3;
+  optional bytes sourceGuildName = 4;
+  optional bytes nickName = 5;
+  optional bytes memberName = 6;
+  optional uint32 notifyType = 7;
+}
+
+message ChannelEvent {
+  optional uint64 type = 1;
+  optional uint64 version = 2;
+  optional ChannelMsgOpInfo opInfo = 3;
+}
+
+message ChannelExtInfo {
+  optional bytes fromNick = 1;
+  optional bytes guildName = 2;
+  optional bytes channelName = 3;
+  optional uint32 visibility = 4;
+  optional uint32 notifyType = 5;
+  optional uint32 offlineFlag = 6;
+  optional uint32 nameType = 7;
+  optional bytes memberName = 8;
+  optional uint32 timestamp = 9;
+  optional uint64 eventVersion = 10;
+  repeated ChannelEvent events = 11;
+  optional ChannelRole fromRoleInfo = 12;
+  optional ChannelFreqLimitInfo freqLimitInfo = 13;
+  repeated DirectMessageMember directMessageMember = 14;
+}
+
+message ChannelFreqLimitInfo {
+  optional uint32 isLimited = 1;
+  optional uint32 leftCount = 2;
+  optional uint64 limitTimestamp = 3;
+}
+
+message ChannelInfo {
+  optional uint64 id = 1;
+  optional bytes name = 2;
+  optional uint32 color = 3;
+  optional uint32 hoist = 4;
+}
+
+message ChannelLoginSig {
+  optional uint32 type = 1;
+  optional bytes sig = 2;
+  optional uint32 appid = 3;
+}
+
+message ChannelMeta {
+  optional uint64 fromUin = 1;
+  optional ChannelLoginSig loginSig = 2;
+}
+
+message ChannelMsgContent {
+  optional ChannelMsgHead head = 1;
+  optional ChannelMsgCtrlHead ctrlHead = 2;
+  optional msg.MessageBody body = 3;
+  optional ChannelExtInfo extInfo = 4;
+}
+
+message ChannelMsgCtrlHead {
+  repeated uint64 includeUin = 1;
+  repeated uint64 excludeUin = 2;
+  repeated uint64 featureid = 3;
+  optional uint32 offlineFlag = 4;
+  optional uint32 visibility = 5;
+  optional uint64 ctrlFlag = 6;
+  repeated ChannelEvent events = 7;
+  optional uint64 level = 8;
+  repeated PersonalLevel personalLevels = 9;
+  optional uint64 guildSyncSeq = 10;
+  optional uint32 memberNum = 11;
+  optional uint32 channelType = 12;
+  optional uint32 privateType = 13;
+}
+
+message ChannelMsgHead {
+  optional ChannelRoutingHead routingHead = 1;
+  optional ChannelContentHead contentHead = 2;
+}
+
+message ChannelMsgMeta {
+  optional uint64 atAllSeq = 1;
+}
+
+message ChannelMsgOpInfo {
+  optional uint64 operatorTinyid = 1;
+  optional uint64 operatorRole = 2;
+  optional uint64 reason = 3;
+  optional uint64 timestamp = 4;
+  optional uint64 atType = 5;
+}
+
+message PersonalLevel {
+  optional uint64 toUin = 1;
+  optional uint64 level = 2;
+}
+
+message ChannelRole {
+  optional uint64 id = 1;
+  optional bytes info = 2;
+  optional uint32 flag = 3;
+}
+
+message ChannelRoutingHead {
+  optional uint64 guildId = 1;
+  optional uint64 channelId = 2;
+  optional uint64 fromUin = 3;
+  optional uint64 fromTinyid = 4;
+  optional uint64 guildCode = 5;
+  optional uint64 fromAppid = 6;
+  optional uint32 directMessageFlag = 7;
+}
