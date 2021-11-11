@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"math/rand"
 	"net"
 	"sort"
@@ -13,14 +12,16 @@ import (
 	"strings"
 	"time"
 
-	proto2 "github.com/Mrs4s/MiraiGo/internal/protobuf/proto"
 	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
+	proto2 "github.com/Mrs4s/MiraiGo/internal/protobuf/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -655,7 +656,7 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType uint32, body []byte) []byte 
 	return r
 }
 
-func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg binary.DynamicProtoMessage) []byte {
+func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType uint32, msg binary.DynamicProtoMessage) []byte {
 	return c.packOIDBPackage(cmd, serviceType, msg.Encode())
 }
 
@@ -671,7 +672,7 @@ func (c *QQClient) packOIDBPackageProto2(cmd, serviceType uint32, msg proto2.Mes
 
 func (c *QQClient) unpackOIDBPackage(buff []byte, payload proto.Message) error {
 	pkg := new(oidb.OIDBSSOPkg)
-	if err := proto.Unmarshal(buff, pkg); err != nil {
+	if err := protobuf.Unmarshal(buff, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if pkg.GetResult() != 0 {
