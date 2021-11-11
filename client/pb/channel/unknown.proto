@@ -3,7 +3,7 @@ syntax = "proto2";
 
 package channel;
 
-option go_package = "./;channel";
+option go_package = "pb/channel;channel";
 
 message ChannelOidb0xf5bRsp {
   optional uint64 guildId = 1;
@@ -22,6 +22,10 @@ message ChannelOidb0xfc9Rsp {
 
 message ChannelOidb0xf57Rsp {
   optional GuildMetaRsp rsp = 1;
+}
+
+message ChannelOidb0xf55Rsp {
+  optional GuildChannelInfo info = 1;
 }
 
 message GuildMetaRsp {
@@ -68,6 +72,36 @@ message GuildMeta {
   optional int32 clientId = 20;
 }
 
+message GuildChannelInfo {
+  optional uint64 channelId = 1;
+  optional string channelName = 2;
+  optional int64 creatorUin = 3;
+  optional int64 createTime = 4;
+  optional uint64 guildId = 5;
+  optional int32 finalNotifyType = 6;
+  optional int32 channelType = 7;
+  optional int32 talkPermission = 8;
+  // 11 - 14 : MsgInfo
+  optional uint64 creatorTinyId = 15;
+  // 16: Member info ?
+  optional int32 visibleType = 22;
+  optional GuildChannelTopMsgInfo topMsg = 28;
+  optional int32 currentSlowModeKey = 31;
+  repeated GuildChannelSlowModeInfo slowModeInfos = 32;
+}
+
+message GuildChannelSlowModeInfo {
+  optional int32 slowModeKey = 1;
+  optional int32 speakFrequency = 2;
+  optional int32 slowModeCircle = 3;
+  optional string slowModeText = 4;
+}
+
+message GuildChannelTopMsgInfo {
+  optional uint64 topMsgSeq = 1;
+  optional int64 topMsgTime = 2;
+  optional uint64 topMsgOperatorTinyId = 3;
+}
 /*
 // 个性档案卡片
 message GuildMemberProfileCard {

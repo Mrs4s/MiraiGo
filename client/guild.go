@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
@@ -74,9 +73,39 @@ type (
 		Time        uint64
 		EventTime   uint32
 		NotifyType  uint32
-		ChannelType uint32
+		ChannelType ChannelType
 		AtAllSeq    uint64
+		Meta        *ChannelMeta
 	}
+
+	ChannelMeta struct {
+		CreatorUin           int64
+		CreatorTinyId        uint64
+		CreateTime           int64
+		GuildId              uint64
+		VisibleType          int32
+		TopMessageSeq        uint64
+		TopMessageTime       int64
+		TopMessageOperatorId uint64
+		CurrentSlowMode      int32
+		TalkPermission       int32
+		SlowModes            []*ChannelSlowModeInfo
+	}
+
+	ChannelSlowModeInfo struct {
+		SlowModeKey    int32
+		SpeakFrequency int32
+		SlowModeCircle int32
+		SlowModeText   string
+	}
+
+	ChannelType int32
+)
+
+const (
+	ChannelTypeText  ChannelType = 1
+	ChannelTypeVoice ChannelType = 2
+	ChannelTypeLive  ChannelType = 5
 )
 
 func init() {
@@ -281,6 +310,49 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	}, nil
 }
 
+func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo, error) {
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf55_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(3925, 1, binary.DynamicProtoMessage{1: guildId, 2: channelId}))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0Xf55Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
+	}
+	meta := &ChannelMeta{
+		CreatorUin:      body.Info.GetCreatorUin(),
+		CreatorTinyId:   body.Info.GetCreatorTinyId(),
+		CreateTime:      body.Info.GetCreateTime(),
+		GuildId:         body.Info.GetGuildId(),
+		VisibleType:     body.Info.GetVisibleType(),
+		CurrentSlowMode: body.Info.GetCurrentSlowModeKey(),
+		TalkPermission:  body.Info.GetTalkPermission(),
+	}
+	if body.Info.TopMsg != nil {
+		meta.TopMessageSeq = body.Info.TopMsg.GetTopMsgSeq()
+		meta.TopMessageTime = body.Info.TopMsg.GetTopMsgTime()
+		meta.TopMessageOperatorId = body.Info.TopMsg.GetTopMsgOperatorTinyId()
+	}
+	for _, slow := range body.Info.SlowModeInfos {
+		meta.SlowModes = append(meta.SlowModes, &ChannelSlowModeInfo{
+			SlowModeKey:    slow.GetSlowModeKey(),
+			SpeakFrequency: slow.GetSpeakFrequency(),
+			SlowModeCircle: slow.GetSlowModeCircle(),
+			SlowModeText:   slow.GetSlowModeText(),
+		})
+	}
+	return &ChannelInfo{
+		ChannelId:   body.Info.GetChannelId(),
+		ChannelName: body.Info.GetChannelName(),
+		NotifyType:  uint32(body.Info.GetFinalNotifyType()),
+		ChannelType: ChannelType(body.Info.GetChannelType()),
+		Meta:        meta,
+	}, nil
+}
+
 /* need analysis
 func (s *GuildService) fetchChannelListState(guildId uint64, channels []*ChannelInfo) {
 	seq := s.c.nextSeq()
@@ -362,7 +434,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 					Time:        node.GetTime(),
 					EventTime:   node.GetEventTime(),
 					NotifyType:  node.GetNotifyType(),
-					ChannelType: node.GetChannelType(),
+					ChannelType: ChannelType(node.GetChannelType()),
 					AtAllSeq:    meta.GetAtAllSeq(),
 				})
 			}
