@@ -431,22 +431,27 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 				CoverUrl:  fmt.Sprintf("https://groupprocover-76483.picgzc.qpic.cn/%v", guild.GetGuildId()),
 				AvatarUrl: fmt.Sprintf("https://groupprohead-76292.picgzc.qpic.cn/%v", guild.GetGuildId()),
 			}
-			for _, node := range guild.ChannelNodes {
-				meta := new(channel.ChannelMsgMeta)
-				_ = proto.Unmarshal(node.Meta, meta)
-				info.Channels = append(info.Channels, &ChannelInfo{
-					ChannelId:   node.GetChannelId(),
-					ChannelName: utils.B2S(node.ChannelName),
-					Time:        node.GetTime(),
-					EventTime:   node.GetEventTime(),
-					NotifyType:  node.GetNotifyType(),
-					ChannelType: ChannelType(node.GetChannelType()),
-					AtAllSeq:    meta.GetAtAllSeq(),
-				})
+			channels, err := c.GuildService.FetchChannelList(info.GuildId)
+			if err != nil {
+				c.Warning("waring: fetch guild %v channel error %v. will use sync node to fill channel list field")
+				for _, node := range guild.ChannelNodes {
+					meta := new(channel.ChannelMsgMeta)
+					_ = proto.Unmarshal(node.Meta, meta)
+					info.Channels = append(info.Channels, &ChannelInfo{
+						ChannelId:   node.GetChannelId(),
+						ChannelName: utils.B2S(node.ChannelName),
+						Time:        node.GetTime(),
+						EventTime:   node.GetEventTime(),
+						NotifyType:  node.GetNotifyType(),
+						ChannelType: ChannelType(node.GetChannelType()),
+						AtAllSeq:    meta.GetAtAllSeq(),
+					})
+				}
+			} else {
+				info.Channels = channels
 			}
 			info.Bots, info.Members, info.Admins, _ = c.GuildService.GetGuildMembers(info.GuildId)
 			c.GuildService.Guilds = append(c.GuildService.Guilds, info)
-			c.GuildService.FetchChannelList(info.GuildId)
 		}
 	}
 	if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg
