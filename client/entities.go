@@ -230,6 +230,14 @@ type (
 		CurrentReactions []*message.GuildMessageEmojiReaction
 	}
 
+	GuildChannelUpdatedEvent struct {
+		OperatorId     uint64
+		GuildId        uint64
+		ChannelId      uint64
+		OldChannelInfo *ChannelInfo
+		NewChannelInfo *ChannelInfo
+	}
+
 	OcrResponse struct {
 		Texts    []*TextDetection `json:"texts"`
 		Language string           `json:"language"`

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"sync"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
@@ -13,6 +14,10 @@ import (
 func init() {
 	decoders["MsgPush.PushGroupProMsg"] = decodeGuildEventFlowPacket
 }
+
+var (
+	updateChanLock sync.Mutex
+)
 
 func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	push := new(channel.MsgOnlinePush)
@@ -57,6 +62,34 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 			eventBody := new(channel.EventBody)
 			if err := proto.Unmarshal(common.PbElem, eventBody); err != nil {
 				c.Error("failed to unmarshal guild channel event body: %v", err)
+				continue
+			}
+			if eventBody.ChangeChanInfo != nil {
+				updateChanLock.Lock()
+				defer updateChanLock.Unlock()
+				guild := c.GuildService.FindGuild(m.Head.RoutingHead.GetGuildId())
+				oldInfo := guild.FindChannel(eventBody.ChangeChanInfo.GetChanId())
+				if time.Now().Unix()-oldInfo.fetchTime <= 2 {
+					continue
+				}
+				newInfo, err := c.GuildService.FetchChannelInfo(m.Head.RoutingHead.GetGuildId(), eventBody.ChangeChanInfo.GetChanId())
+				if err != nil {
+					c.Error("error to decode channel info updated event: fetch channel info failed: %v", err)
+					continue
+				}
+				for i := range guild.Channels {
+					if guild.Channels[i].ChannelId == newInfo.ChannelId {
+						guild.Channels[i] = newInfo
+						break
+					}
+				}
+				c.dispatchGuildChannelUpdatedEvent(&GuildChannelUpdatedEvent{
+					OperatorId:     m.Head.RoutingHead.GetFromTinyid(),
+					GuildId:        m.Head.RoutingHead.GetGuildId(),
+					ChannelId:      eventBody.ChangeChanInfo.GetChanId(),
+					OldChannelInfo: oldInfo,
+					NewChannelInfo: newInfo,
+				})
 				continue
 			}
 			if eventBody.UpdateMsg != nil {

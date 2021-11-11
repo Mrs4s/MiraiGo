@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
@@ -76,6 +77,8 @@ type (
 		ChannelType ChannelType
 		AtAllSeq    uint64
 		Meta        *ChannelMeta
+
+		fetchTime int64
 	}
 
 	ChannelMeta struct {
@@ -381,6 +384,7 @@ func convertChannelInfo(info *channel.GuildChannelInfo) *ChannelInfo {
 		NotifyType:  uint32(info.GetFinalNotifyType()),
 		ChannelType: ChannelType(info.GetChannelType()),
 		Meta:        meta,
+		fetchTime:   time.Now().Unix(),
 	}
 }
 
