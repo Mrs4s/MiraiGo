@@ -110,7 +110,11 @@ func BenchmarkTEAen(b *testing.B) {
 		benchEncrypt(b, data)
 	})
 	b.Run("4K", func(b *testing.B) {
-		data := make([]byte, 4096)
+		data := make([]byte, 1024*4)
+		benchEncrypt(b, data)
+	})
+	b.Run("32K", func(b *testing.B) {
+		data := make([]byte, 1024*32)
 		benchEncrypt(b, data)
 	})
 }
@@ -126,6 +130,10 @@ func BenchmarkTEAde(b *testing.B) {
 	})
 	b.Run("4K", func(b *testing.B) {
 		data := make([]byte, 4096)
+		benchDecrypt(b, data)
+	})
+	b.Run("32K", func(b *testing.B) {
+		data := make([]byte, 1024*32)
 		benchDecrypt(b, data)
 	})
 }
