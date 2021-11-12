@@ -443,18 +443,31 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			if len(elem.CustomFace.Md5) == 0 {
 				continue
 			}
+			url := func() string {
+				if elem.CustomFace.GetOrigUrl() == "" {
+					return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
+				}
+				return "https://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
+			}()
+			if strings.Contains(elem.CustomFace.GetOrigUrl(), "qmeet") {
+				res = append(res, &GuildImageElement{
+					FileId:   int64(elem.CustomFace.GetFileId()),
+					FilePath: elem.CustomFace.GetFilePath(),
+					Size:     elem.CustomFace.GetSize(),
+					Width:    elem.CustomFace.GetWidth(),
+					Height:   elem.CustomFace.GetHeight(),
+					Url:      url,
+					Md5:      elem.CustomFace.Md5,
+				})
+				continue
+			}
 			res = append(res, &GroupImageElement{
 				FileId:  int64(elem.CustomFace.GetFileId()),
 				ImageId: elem.CustomFace.GetFilePath(),
 				Size:    elem.CustomFace.GetSize(),
 				Width:   elem.CustomFace.GetWidth(),
 				Height:  elem.CustomFace.GetHeight(),
-				Url: func() string {
-					if elem.CustomFace.GetOrigUrl() == "" {
-						return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
-					}
-					return "https://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
-				}(),
+				Url:     url,
 				ImageBizType: func() ImageBizType {
 					if len(elem.CustomFace.PbReserve) == 0 {
 						return UnknownBizType
