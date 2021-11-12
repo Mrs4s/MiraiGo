@@ -7,10 +7,6 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/internal/crypto"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
-	"github.com/Mrs4s/MiraiGo/internal/tlv"
-
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -22,6 +18,9 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/internal/crypto"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/tlv"
 	"github.com/Mrs4s/MiraiGo/message"
 )
 

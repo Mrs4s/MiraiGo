@@ -9,8 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Mrs4s/MiraiGo/internal/packets"
-
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 
@@ -18,6 +16,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
