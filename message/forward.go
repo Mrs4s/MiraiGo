@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"crypto/md5"
 
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -111,7 +112,7 @@ func (f *ForwardMessage) CalculateValidationData(seq, random int32, groupCode in
 			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
 		},
 	}}
-	b, _ := proto.Marshal(trans)
+	b, _ := protobuf.Marshal(trans)
 	data := binary.GZipCompress(b)
 	hash := md5.Sum(data)
 	return data, hash[:]
@@ -127,7 +128,7 @@ func (f *ForwardMessage) CalculateValidationDataForward(seq, random int32, group
 		},
 	}}
 	trans.PbItemList = append(trans.PbItemList, f.items...)
-	b, _ := proto.Marshal(trans)
+	b, _ := protobuf.Marshal(trans)
 	data := binary.GZipCompress(b)
 	hash := md5.Sum(data)
 	return data, hash[:], trans.PbItemList

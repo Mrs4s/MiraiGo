@@ -3,11 +3,13 @@ package client
 import (
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/client/pb/channel"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+	protobuf "github.com/segmentio/encoding/proto"
+
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/channel"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/proto"
 )
 
 func init() {
@@ -16,7 +18,7 @@ func init() {
 
 func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	push := new(channel.MsgOnlinePush)
-	if err := proto.Unmarshal(payload, push); err != nil {
+	if err := protobuf.Unmarshal(payload, push); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	for _, m := range push.Msgs {
@@ -55,7 +57,7 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 				continue
 			}
 			eventBody := new(channel.EventBody)
-			if err := proto.Unmarshal(common.PbElem, eventBody); err != nil {
+			if err := protobuf.Unmarshal(common.PbElem, eventBody); err != nil {
 				c.Error("failed to unmarshal guild channel event body: %v", err)
 				continue
 			}
@@ -103,7 +105,7 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 }
 
 func (s *GuildService) pullRoamMsgByEventFlow(guildId, channelId, beginSeq, endSeq, eventVersion uint64) ([]*channel.ChannelMsgContent, error) {
-	payload, _ := proto.Marshal(&channel.ChannelMsgReq{
+	payload, _ := protobuf.Marshal(&channel.ChannelMsgReq{
 		ChannelParam: &channel.ChannelParam{
 			GuildId:   &guildId,
 			ChannelId: &channelId,
@@ -121,7 +123,7 @@ func (s *GuildService) pullRoamMsgByEventFlow(guildId, channelId, beginSeq, endS
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	msgRsp := new(channel.ChannelMsgRsp)
-	if err = proto.Unmarshal(rsp, msgRsp); err != nil {
+	if err = protobuf.Unmarshal(rsp, msgRsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return msgRsp.ChannelMsg.Msgs, nil

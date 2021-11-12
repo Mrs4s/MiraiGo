@@ -3,7 +3,7 @@ package message
 import (
 	"fmt"
 
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"google.golang.org/protobuf/proto"
 )

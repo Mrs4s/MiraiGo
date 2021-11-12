@@ -5,12 +5,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/internal/packets"
-
 	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/message"
 )
 
@@ -140,7 +140,7 @@ func (c *QQClient) buildGetOneDayRoamMsgRequest(target, lastMsgTime, random int6
 		Random:      proto.Uint64(uint64(random)),
 		ReadCnt:     &count,
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetOneDayRoamMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -175,11 +175,11 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 				Const2: &syncConst2,
 				Const3: proto.Int64(0x1d),
 			}
-			b, _ := proto.Marshal(cookie)
+			b, _ := protobuf.Marshal(cookie)
 			return b
 		}(),
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -209,11 +209,11 @@ func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r
 				Const2: &syncConst2,
 				Const3: proto.Int64(0x1d),
 			}
-			b, _ := proto.Marshal(cookie)
+			b, _ := protobuf.Marshal(cookie)
 			return b
 		}(),
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -242,11 +242,11 @@ func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r in
 				Const2: &syncConst2,
 				Const3: proto.Int64(0x1d),
 			}
-			b, _ := proto.Marshal(cookie)
+			b, _ := protobuf.Marshal(cookie)
 			return b
 		}(),
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }

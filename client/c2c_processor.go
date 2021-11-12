@@ -7,12 +7,14 @@ import (
 	"sync/atomic"
 	"time"
 
+	protobuf "github.com/segmentio/encoding/proto"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 
-	"github.com/Mrs4s/MiraiGo/client/pb"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
+
+	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 )
 
 type (
@@ -71,7 +73,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 		_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
 	}
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
-		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
+		c.Debug("continue sync with flag: %v", *rsp.SyncFlag)
 		seq, pkt := c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix())
 		_, _ = c.sendAndWait(seq, pkt, info.Params)
 	}
@@ -159,7 +161,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo) {
 			info := &TempSessionInfo{
 				Source: 0,
 				Sender: pMsg.Head.GetFromUin(),
-				sig:    pMsg.Head.C2CTmpMsgHead.GetSig(),
+				sig:    pMsg.Head.C2CTmpMsgHead.Sig,
 				client: c,
 			}
 
@@ -235,10 +237,10 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *incomingPac
 	if !info.Params.bool("used_reg_proxy") && pMsg.Head.GetMsgType() != 85 && pMsg.Head.GetMsgType() != 36 {
 		c.exceptAndDispatchGroupSysMsg()
 	}
-	if len(pMsg.Body.GetMsgContent()) == 0 {
+	if len(pMsg.Body.MsgContent) == 0 {
 		return
 	}
-	reader := binary.NewReader(pMsg.GetBody().GetMsgContent())
+	reader := binary.NewReader(pMsg.Body.MsgContent)
 	groupCode := uint32(reader.ReadInt32())
 	if info := c.FindGroup(int64(groupCode)); info != nil && pMsg.Head.GetGroupName() != "" && info.Name != pMsg.Head.GetGroupName() {
 		c.Debug("group %v name updated. %v -> %v", groupCode, info.Name, pMsg.Head.GetGroupName())
@@ -251,7 +253,7 @@ func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *incomingPacketInf
 		tempSessionDecoder(c, pMsg, info)
 	}
 	sub4 := msg.SubMsgType0X4Body{}
-	if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
+	if err := protobuf.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
 		err = errors.Wrap(err, "unmarshal sub msg 0x4 error")
 		c.Error("unmarshal sub msg 0x4 error: %v", err)
 		return

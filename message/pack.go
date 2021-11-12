@@ -3,10 +3,11 @@ package message
 import (
 	"encoding/hex"
 
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 )
 
 /*
@@ -34,7 +35,7 @@ func (e *FaceElement) Pack() (r []*msg.Elem) {
 			Text:   []byte("/" + e.Name),
 			Compat: []byte("/" + e.Name),
 		}
-		b, _ := proto.Marshal(elem)
+		b, _ := protobuf.Marshal(elem)
 		r = append(r, &msg.Elem{
 			CommonElem: &msg.CommonElem{
 				ServiceType:  proto.Int32(33),

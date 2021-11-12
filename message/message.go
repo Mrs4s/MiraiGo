@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"strings"
 
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -353,7 +354,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					if r.ReadByte() == 1 {
 						pb := r.ReadBytes(int(r.ReadUInt16()))
 						objMsg := msg.ObjMsg{}
-						if err := proto.Unmarshal(pb, &objMsg); err == nil && len(objMsg.MsgContentInfo) > 0 {
+						if err := protobuf.Unmarshal(pb, &objMsg); err == nil && len(objMsg.MsgContentInfo) > 0 {
 							info := objMsg.MsgContentInfo[0]
 							res = append(res, &GroupFileElement{
 								Name:  info.MsgFile.FileName,
@@ -387,7 +388,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					Size:      elem.VideoFile.GetFileSize(),
 					ThumbSize: elem.VideoFile.GetThumbFileSize(),
 					Md5:       elem.VideoFile.FileMd5,
-					ThumbMd5:  elem.VideoFile.GetThumbFileMd5(),
+					ThumbMd5:  elem.VideoFile.ThumbFileMd5,
 				},
 			}
 		}
@@ -460,7 +461,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 						return UnknownBizType
 					}
 					attr := new(msg.ResvAttr)
-					if proto.Unmarshal(elem.CustomFace.PbReserve, attr) != nil {
+					if protobuf.Unmarshal(elem.CustomFace.PbReserve, attr) != nil {
 						return UnknownBizType
 					}
 					return ImageBizType(attr.GetImageBizType())
@@ -470,13 +471,13 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
-				Name:       utils.B2S(elem.MarketFace.GetFaceName()),
+				Name:       utils.B2S(elem.MarketFace.FaceName),
 				FaceId:     elem.MarketFace.FaceId,
 				TabId:      int32(elem.MarketFace.GetTabId()),
 				ItemType:   int32(elem.MarketFace.GetItemType()),
 				SubType:    int32(elem.MarketFace.GetSubType()),
 				MediaType:  int32(elem.MarketFace.GetMediaType()),
-				EncryptKey: elem.MarketFace.GetKey(),
+				EncryptKey: elem.MarketFace.Key,
 				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
 			}
 			if face.Name == "[骰子]" {
@@ -534,7 +535,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			switch elem.CommonElem.GetServiceType() {
 			case 3:
 				flash := &msg.MsgElemInfoServtype3{}
-				_ = proto.Unmarshal(elem.CommonElem.PbElem, flash)
+				_ = protobuf.Unmarshal(elem.CommonElem.PbElem, flash)
 				if flash.FlashTroopPic != nil {
 					res = append(res, &GroupImageElement{
 						FileId:  int64(flash.FlashTroopPic.GetFileId()),
@@ -558,7 +559,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				}
 			case 33:
 				newSysFaceMsg := &msg.MsgElemInfoServtype33{}
-				_ = proto.Unmarshal(elem.CommonElem.PbElem, newSysFaceMsg)
+				_ = protobuf.Unmarshal(elem.CommonElem.PbElem, newSysFaceMsg)
 				res = append(res, NewFace(int32(newSysFaceMsg.GetIndex())))
 			}
 		}

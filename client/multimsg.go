@@ -3,15 +3,18 @@ package client
 import (
 	"fmt"
 
+	protobuf "github.com/segmentio/encoding/proto"
+
 	"github.com/Mrs4s/MiraiGo/internal/packets"
+
+	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
-	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -126,7 +129,7 @@ func decodeMultiApplyDownResponse(_ *QQClient, _ *incomingPacketInfo, payload []
 	}
 	uc := binary.GZipUncompress(msgContent)
 	mt := msg.PbMultiMsgTransmit{}
-	if err = proto.Unmarshal(uc, &mt); err != nil {
+	if err = protobuf.Unmarshal(uc, &mt); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return &mt, nil

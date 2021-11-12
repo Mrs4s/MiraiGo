@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package msg;
 
-option go_package = "pb/msg;msg";
+option go_package = "msg;msg";
 
 message GetMessageRequest {
   optional SyncFlag syncFlag = 1;
@@ -379,14 +379,14 @@ message Text {
 }
 
 message Attr {
-  optional int32 codePage = 1;
-  optional int32 time = 2;
-  optional int32 random = 3;
-  optional int32 color = 4;
-  optional int32 size = 5;
-  optional int32 effect = 6;
-  optional int32 charSet = 7;
-  optional int32 pitchAndFamily = 8;
+  optional sint32 codePage = 1;
+  optional uint32 time = 2;
+  optional uint32 random = 3;
+  optional uint32 color = 4;
+  optional uint32 size = 5;
+  optional uint32 effect = 6;
+  optional uint32 charSet = 7;
+  optional uint32 pitchAndFamily = 8;
   optional string fontName = 9;
   optional bytes reserveData = 10;
 }

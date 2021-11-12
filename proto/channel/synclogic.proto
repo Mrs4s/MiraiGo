@@ -2,9 +2,9 @@ syntax = "proto2";
 
 package channel;
 
-option go_package = "pb/channel;channel";
+option go_package = "channel;channel";
 
-import "pb/channel/common.proto";
+import "channel/common.proto";
 
 message ChannelMsg {
   optional uint64 guildId = 1;

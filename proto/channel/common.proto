@@ -2,9 +2,9 @@ syntax = "proto2";
 
 package channel;
 
-option go_package = "pb/channel;channel";
+option go_package = "channel;channel";
 
-import "pb/msg/msg.proto";
+import "msg/msg.proto";
 
 message ChannelContentHead {
   optional uint64 type = 1;

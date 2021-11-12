@@ -3,7 +3,7 @@ syntax = "proto2";
 
 package channel;
 
-option go_package = "pb/channel;channel";
+option go_package = "channel;channel";
 
 message ChannelOidb0xf5bRsp {
   optional uint64 guildId = 1;

@@ -3,10 +3,11 @@ package message
 import (
 	"strings"
 
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 )
 
 /* -------- Definitions -------- */
@@ -109,7 +110,7 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 
 	if e.Flash { // resolve flash pic
 		flash := &msg.MsgElemInfoServtype3{FlashTroopPic: cface}
-		data, _ := proto.Marshal(flash)
+		data, _ := protobuf.Marshal(flash)
 		flashElem := &msg.Elem{
 			CommonElem: &msg.CommonElem{
 				ServiceType: proto.Int32(3),
@@ -134,7 +135,7 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 	if e.ImageBizType != UnknownBizType {
 		res.ImageBizType = proto.Uint32(uint32(e.ImageBizType))
 	}
-	cface.PbReserve, _ = proto.Marshal(res)
+	cface.PbReserve, _ = protobuf.Marshal(res)
 	elem := &msg.Elem{CustomFace: cface}
 	return []*msg.Elem{elem}
 }
@@ -153,7 +154,7 @@ func (e *FriendImageElement) Pack() (r []*msg.Elem) {
 
 	if e.Flash {
 		flash := &msg.MsgElemInfoServtype3{FlashC2CPic: image}
-		data, _ := proto.Marshal(flash)
+		data, _ := protobuf.Marshal(flash)
 		flashElem := &msg.Elem{
 			CommonElem: &msg.CommonElem{
 				ServiceType: proto.Int32(3),

@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 
+	protobuf "github.com/segmentio/encoding/proto"
+
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/pkg/errors"
@@ -15,7 +17,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x3f6"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -43,7 +45,7 @@ func (c *QQClient) getQiDianAddressDetailList() ([]*FriendInfo, error) {
 		return nil, errors.Wrap(err, "request error")
 	}
 	rsp := &cmd0x6ff.C519RspBody{}
-	if err = proto.Unmarshal(rspData, rsp); err != nil {
+	if err = protobuf.Unmarshal(rspData, rsp); err != nil {
 		return nil, errors.Wrap(err, "unmarshal error")
 	}
 	if rsp.GetAddressDetailListRspBody == nil {
@@ -86,7 +88,7 @@ func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
 			SubAppId:     &c.version.AppId,
 		},
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "qidianservice.69", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -103,7 +105,7 @@ func (c *QQClient) buildConnKeyRequestPacket() (uint16, []byte) {
 			ServiceTypes: []uint32{1},
 		},
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "HttpConn.0x6ff_501", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -112,8 +114,8 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 	if c.QiDian.bigDataReqSession == nil {
 		return nil, errors.New("please call conn key request method before")
 	}
-	data, _ := proto.Marshal(req)
-	head, _ := proto.Marshal(&msg.IMHead{
+	data, _ := protobuf.Marshal(req)
+	head, _ := protobuf.Marshal(&msg.IMHead{
 		HeadType: proto.Uint32(4),
 		HttpconnHead: &msg.HttpConnHead{
 			Uin:          proto.Uint64(uint64(c.Uin)),
@@ -158,7 +160,7 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 
 func decodeLoginExtraResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := cmd0x3f6.C3F6RspBody{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := protobuf.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.SubcmdLoginProcessCompleteRspBody == nil {
@@ -174,7 +176,7 @@ func decodeLoginExtraResponse(c *QQClient, _ *incomingPacketInfo, payload []byte
 
 func decodeConnKeyResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := cmd0x6ff.C501RspBody{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := protobuf.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if c.QiDian == nil {

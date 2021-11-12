@@ -1,12 +1,13 @@
 syntax = "proto3";
 
-option go_package = "./;msg";
+option go_package = "msg;msg";
 
 message MsgPic {
   bytes smallPicUrl = 1;
   bytes originalPicUrl = 2;
   int32 localPicId = 3;
 }
+
 message ObjMsg {
   int32 msgType = 1;
   bytes title = 2;
@@ -16,10 +17,12 @@ message ObjMsg {
   repeated MsgContentInfo msgContentInfo = 7;
   int32 reportIdShow = 8;
 }
+
 message MsgContentInfo {
   bytes contentInfoId = 1;
   MsgFile msgFile = 2;
 }
+
 message MsgFile {
   int32 busId = 1;
   bytes filePath = 2;

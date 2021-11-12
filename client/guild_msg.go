@@ -5,15 +5,18 @@ import (
 	"math/rand"
 	"strconv"
 
+	protobuf "github.com/segmentio/encoding/proto"
+
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 
 	"github.com/pkg/errors"
 
-	"github.com/Mrs4s/MiraiGo/client/pb/channel"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/message"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/channel"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
+	"github.com/Mrs4s/MiraiGo/message"
 )
 
 func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) error {
@@ -37,14 +40,14 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 		},
 	}}
 	seq := s.c.nextSeq()
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "MsgProxy.SendMsg", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
 		return errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.DF62RspBody)
-	if err = proto.Unmarshal(rsp, body); err != nil {
+	if err = protobuf.Unmarshal(rsp, body); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if body.GetResult() != 0 {
@@ -56,7 +59,7 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 
 func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size uint64) (*message.GuildImageElement, error) {
 	seq := s.c.nextSeq()
-	payload, _ := proto.Marshal(&cmd0x388.D388ReqBody{
+	payload, _ := protobuf.Marshal(&cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
 		Subcmd:  proto.Uint32(1),
 		TryupImgReq: []*cmd0x388.TryUpImgReq{
@@ -86,7 +89,7 @@ func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size u
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(cmd0x388.D388RspBody)
-	if err = proto.Unmarshal(rsp, body); err != nil {
+	if err = protobuf.Unmarshal(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(body.TryupImgRsp) == 0 {
@@ -117,10 +120,10 @@ func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*
 		return
 	}
 	serv38 := new(msg.MsgElemInfoServtype38)
-	_ = proto.Unmarshal(common.PbElem, serv38)
+	_ = protobuf.Unmarshal(common.PbElem, serv38)
 	if len(serv38.ReactData) > 0 {
 		cnt := new(channel.MsgCnt)
-		_ = proto.Unmarshal(serv38.ReactData, cnt)
+		_ = protobuf.Unmarshal(serv38.ReactData, cnt)
 		if len(cnt.EmojiReaction) == 0 {
 			return
 		}
@@ -154,7 +157,7 @@ func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *mes
 		Time:       int64(msg.Head.ContentHead.GetTime()),
 		Sender: &message.GuildSender{
 			TinyId:   msg.Head.RoutingHead.GetFromTinyid(),
-			Nickname: string(msg.ExtInfo.GetFromNick()),
+			Nickname: string(msg.ExtInfo.FromNick),
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}

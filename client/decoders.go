@@ -19,10 +19,10 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x6ff"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0xd79"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -377,7 +377,7 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 // MessageSvc.PbGetMsg
 func decodeMessageSvcPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.GetMessageResponse{}
-	err := proto.Unmarshal(payload, &rsp)
+	err := protobuf.Unmarshal(payload, &rsp)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
@@ -645,7 +645,7 @@ func decodeOffPicUpResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 // OnlinePush.PbPushTransMsg
 func decodeOnlinePushTransPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	info := msg.TransMsgInfo{}
-	err := proto.Unmarshal(payload, &info)
+	err := protobuf.Unmarshal(payload, &info)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}

@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-option go_package = "pb/channel;channel";
+option go_package = "channel;channel";
 
 
 message BatchGetMsgRspCountReq {

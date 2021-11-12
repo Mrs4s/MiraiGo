@@ -12,8 +12,8 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/msf"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x769"
 	"github.com/Mrs4s/MiraiGo/message"
 )
@@ -175,7 +175,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		EndSeq: time.Now().Unix(),
 	}
 	flag := msg.SyncFlag_START
-	msgReq, _ := proto.Marshal(&msg.GetMessageRequest{
+	msgReq, _ := protobuf.Marshal(&msg.GetMessageRequest{
 		SyncFlag:           &flag,
 		SyncCookie:         c.syncCookie,
 		RambleFlag:         proto.Int32(0),
@@ -252,11 +252,11 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		OtherRambleNumber:  proto.Int32(3),
 		MsgReqType:         proto.Int32(1),
 	}
-	offMsg, _ := proto.Marshal(msgReq)
+	offMsg, _ := protobuf.Marshal(msgReq)
 	msgReq.MsgReqType = proto.Int32(2)
 	msgReq.SyncCookie = nil
 	msgReq.PubaccountCookie = c.pubAccountCookie
-	pubMsg, _ := proto.Marshal(msgReq)
+	pubMsg, _ := protobuf.Marshal(msgReq)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
 		"req_PbOffMsg": jce.NewJceWriter().WriteBytes(append([]byte{0, 0, 0, 0}, offMsg...), 0).Bytes(),
 		"req_PbPubMsg": jce.NewJceWriter().WriteBytes(append([]byte{0, 0, 0, 0}, pubMsg...), 0).Bytes(),
@@ -276,7 +276,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 // PbMessageSvc.PbMsgReadedReport
 func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{GrpReadReport: []*msg.PbGroupReadedReportReq{{
+	req, _ := protobuf.Marshal(&msg.PbMsgReadedReportReq{GrpReadReport: []*msg.PbGroupReadedReportReq{{
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		LastReadSeq: proto.Uint64(uint64(msgSeq)),
 	}}})
@@ -286,7 +286,7 @@ func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, [
 
 func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{C2CReadReport: &msg.PbC2CReadedReportReq{PairInfo: []*msg.UinPairReadInfo{
+	req, _ := protobuf.Marshal(&msg.PbMsgReadedReportReq{C2CReadReport: &msg.PbC2CReadedReportReq{PairInfo: []*msg.UinPairReadInfo{
 		{
 			PeerUin:      proto.Uint64(uint64(uin)),
 			LastReadTime: proto.Uint32(uint32(time)),
@@ -367,7 +367,7 @@ func decodePushParamPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 // RegPrxySvc.PbSyncMsg
 func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := &msf.SvcRegisterProxyMsgResp{}
-	if err := proto.Unmarshal(payload, rsp); err != nil {
+	if err := protobuf.Unmarshal(payload, rsp); err != nil {
 		return nil, err
 	}
 	ret := &sessionSyncEvent{
@@ -380,7 +380,7 @@ func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte
 	if len(rsp.GroupMsg) > 0 {
 		for _, gm := range rsp.GroupMsg {
 			gmRsp := &msg.GetGroupMsgResp{}
-			if err := proto.Unmarshal(gm.Content[4:], gmRsp); err != nil {
+			if err := protobuf.Unmarshal(gm.Content[4:], gmRsp); err != nil {
 				continue
 			}
 			var latest []*message.GroupMessage
@@ -401,7 +401,7 @@ func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte
 	}
 	if len(rsp.C2CMsg) > 4 {
 		c2cRsp := &msg.GetMessageResponse{}
-		if proto.Unmarshal(rsp.C2CMsg[4:], c2cRsp) == nil {
+		if protobuf.Unmarshal(rsp.C2CMsg[4:], c2cRsp) == nil {
 			c.c2cMessageSyncProcessor(c2cRsp, info)
 		}
 	}
@@ -411,17 +411,17 @@ func decodeMsgSyncResponse(c *QQClient, info *incomingPacketInfo, payload []byte
 // OnlinePush.PbC2CMsgSync
 func decodeC2CSyncPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	m := msg.PbPushMsg{}
-	if err := proto.Unmarshal(payload, &m); err != nil {
+	if err := protobuf.Unmarshal(payload, &m); err != nil {
 		return nil, err
 	}
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.PushToken, info.SequenceId, nil))
 	c.commMsgProcessor(m.Msg, info)
 	return nil, nil
 }
 
 func decodeMsgReadedResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.PbMsgReadedReportResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := protobuf.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.GrpReadReport) > 0 {

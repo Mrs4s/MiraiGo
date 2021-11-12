@@ -3,12 +3,14 @@ package client
 import (
 	"fmt"
 
-	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/pb/channel"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/channel"
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 type (
@@ -346,7 +348,7 @@ func (s *GuildService) fetchChannelListState(guildId uint64, channels []*Channel
 		return
 	}
 	pkg := new(oidb.OIDBSSOPkg)
-	if err = proto.Unmarshal(rsp, pkg); err != nil {
+	if err = protobuf.Unmarshal(rsp, pkg); err != nil {
 		return //nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 }
@@ -391,7 +393,7 @@ func (c *QQClient) syncChannelFirstView() {
 		return
 	}
 	firstViewRsp := new(channel.FirstViewRsp)
-	if err = proto.Unmarshal(rsp, firstViewRsp); err != nil {
+	if err = protobuf.Unmarshal(rsp, firstViewRsp); err != nil {
 		return
 	}
 	c.GuildService.TinyId = firstViewRsp.GetSelfTinyid()
@@ -411,14 +413,14 @@ func (c *QQClient) buildSyncChannelFirstViewPacket() (uint16, []byte) {
 		Seq:               proto.Uint32(0),
 		DirectMessageFlag: proto.Uint32(1),
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "trpc.group_pro.synclogic.SyncLogic.SyncFirstView", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
 
 func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	firstViewMsg := new(channel.FirstViewMsg)
-	if err := proto.Unmarshal(payload, firstViewMsg); err != nil {
+	if err := protobuf.Unmarshal(payload, firstViewMsg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(firstViewMsg.GuildNodes) > 0 {
@@ -436,7 +438,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 				c.Warning("waring: fetch guild %v channel error %v. will use sync node to fill channel list field", guild.GuildId, err)
 				for _, node := range guild.ChannelNodes {
 					meta := new(channel.ChannelMsgMeta)
-					_ = proto.Unmarshal(node.Meta, meta)
+					_ = protobuf.Unmarshal(node.Meta, meta)
 					info.Channels = append(info.Channels, &ChannelInfo{
 						ChannelId:   node.GetChannelId(),
 						ChannelName: utils.B2S(node.ChannelName),

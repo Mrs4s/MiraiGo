@@ -2,8 +2,8 @@ syntax = "proto2";
 
 package channel;
 
-option go_package = "pb/channel;channel";
-import "pb/channel/common.proto";
+option go_package = "channel;channel";
+import "channel/common.proto";
 
 message DF62ReqBody {
   optional ChannelMsgContent msg = 1;

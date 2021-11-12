@@ -7,18 +7,19 @@ import (
 	"math/rand"
 	"time"
 
+	protobuf "github.com/segmentio/encoding/proto"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x89a"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a0"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
@@ -759,7 +760,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 	seq := c.nextSeq()
 	cook := c.syncCookie
 	if cook == nil {
-		cook, _ = proto.Marshal(&msg.SyncCookie{
+		cook, _ = protobuf.Marshal(&msg.SyncCookie{
 			Time:   &msgTime,
 			Ran1:   proto.Int64(758330138),
 			Ran2:   proto.Int64(2480149246),
@@ -780,7 +781,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		MsgCtrlBuf:         []byte{},
 		ServerBuf:          []byte{},
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetMsg", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
 	return seq, packet
 }

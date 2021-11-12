@@ -1,6 +1,6 @@
 package client
 
-import "github.com/Mrs4s/MiraiGo/client/pb/msg"
+import "github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 
 var privateMsgDecoders = map[int32]func(*QQClient, *msg.Message, *incomingPacketInfo){
 	9: privateMessageDecoder, 10: privateMessageDecoder, 31: privateMessageDecoder,

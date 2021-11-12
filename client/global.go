@@ -19,7 +19,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	devinfo "github.com/Mrs4s/MiraiGo/client/pb"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	proto2 "github.com/Mrs4s/MiraiGo/internal/protobuf/proto"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -670,7 +670,7 @@ func (c *QQClient) packOIDBPackageProto2(cmd, serviceType uint32, msg proto2.Mes
 	return c.packOIDBPackage(cmd, serviceType, b)
 }
 
-func (c *QQClient) unpackOIDBPackage(buff []byte, payload proto.Message) error {
+func (c *QQClient) unpackOIDBPackage(buff []byte, payload interface{}) error {
 	pkg := new(oidb.OIDBSSOPkg)
 	if err := protobuf.Unmarshal(buff, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -678,7 +678,7 @@ func (c *QQClient) unpackOIDBPackage(buff []byte, payload proto.Message) error {
 	if pkg.GetResult() != 0 {
 		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.GetResult(), pkg.GetErrorMsg())
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, payload); err != nil {
+	if err := protobuf.Unmarshal(pkg.Bodybuffer, payload); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return nil

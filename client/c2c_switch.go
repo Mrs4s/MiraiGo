@@ -3,7 +3,7 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 )
 
 const (

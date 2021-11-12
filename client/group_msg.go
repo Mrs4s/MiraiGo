@@ -16,9 +16,9 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
-	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/msg"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8a7"
 	"github.com/Mrs4s/MiraiGo/internal/protobuf/data/oidb/oidb0x8fc"
@@ -267,7 +267,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 			return nil
 		}(),
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -280,7 +280,7 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 		EndSeq:      proto.Uint64(uint64(endSeq)),
 		PublicGroup: proto.Bool(false),
 	}
-	payload, _ := proto.Marshal(req)
+	payload, _ := protobuf.Marshal(req)
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetGroupMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -301,7 +301,7 @@ func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byt
 // OnlinePush.PbPushGroupMsg
 func decodeGroupMessagePacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
-	err := proto.Unmarshal(payload, &pkt)
+	err := protobuf.Unmarshal(payload, &pkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
@@ -342,7 +342,7 @@ func decodeGroupMessagePacket(c *QQClient, _ *incomingPacketInfo, payload []byte
 
 func decodeMsgSendResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.SendMessageResponse{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := protobuf.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	switch rsp.GetResult() {
@@ -357,7 +357,7 @@ func decodeMsgSendResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (
 
 func decodeGetGroupMsgResponse(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := msg.GetGroupMsgResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := protobuf.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.GetResult() != 0 {
