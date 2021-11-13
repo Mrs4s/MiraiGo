@@ -234,8 +234,10 @@ func (s *GuildService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo,
 	for _, mem := range body.Members {
 		members = append(members, protoToMemberInfo(mem))
 	}
-	for _, mem := range body.AdminInfo.Admins {
-		admins = append(admins, protoToMemberInfo(mem))
+	if body.AdminInfo != nil {
+		for _, mem := range body.AdminInfo.Admins {
+			admins = append(admins, protoToMemberInfo(mem))
+		}
 	}
 	return
 }
