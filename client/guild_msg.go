@@ -74,6 +74,10 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 	if body.GetResult() != 0 {
 		return nil, errors.Errorf("send channel message error: server response %v", body.GetResult())
 	}
+	elements := m.Elements
+	if body.Body != nil && body.Body.RichText != nil {
+		elements = message.ParseMessageElems(body.Body.RichText.Elems)
+	}
 	return &message.GuildChannelMessage{
 		Id:         body.Head.ContentHead.GetSeq(),
 		InternalId: body.Head.ContentHead.GetRandom(),
@@ -84,7 +88,7 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 			TinyId:   body.Head.RoutingHead.GetFromTinyid(),
 			Nickname: s.Nickname,
 		},
-		Elements: message.ParseMessageElems(body.Body.RichText.Elems),
+		Elements: elements,
 	}, nil
 }
 
