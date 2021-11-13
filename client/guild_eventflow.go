@@ -77,13 +77,15 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 }
 
 func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody *channel.EventBody) {
-	switch {
-	case eventBody.CreateChan != nil:
-		guild := c.GuildService.FindGuild(m.Head.RoutingHead.GetGuildId())
-		if guild == nil {
-			c.Warning("process create channel event error: guild not found.")
+	var guild *GuildInfo
+	if m.Head.RoutingHead.GetGuildId() != 0 {
+		if guild = c.GuildService.FindGuild(m.Head.RoutingHead.GetGuildId()); guild == nil {
+			c.Warning("process channel event error: guild not found.")
 			return
 		}
+	}
+	switch {
+	case eventBody.CreateChan != nil:
 		for _, chanId := range eventBody.CreateChan.CreateId {
 			if guild.FindChannel(chanId.GetChanId()) != nil {
 				continue
@@ -94,16 +96,28 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 				continue
 			}
 			guild.Channels = append(guild.Channels, channelInfo)
-			c.dispatchGuildChannelCreatedEvent(&GuildChannelCreatedEvent{
+			c.dispatchGuildChannelCreatedEvent(&GuildChannelOperationEvent{
 				OperatorId:  m.Head.RoutingHead.GetFromTinyid(),
 				GuildId:     m.Head.RoutingHead.GetGuildId(),
+				ChannelInfo: channelInfo,
+			})
+		}
+	case eventBody.DestroyChan != nil:
+		for _, chanId := range eventBody.DestroyChan.DeleteId {
+			channelInfo := guild.FindChannel(chanId.GetChanId())
+			if channelInfo == nil {
+				continue
+			}
+			guild.removeChannel(chanId.GetChanId())
+			c.dispatchGuildChannelDestroyedEvent(&GuildChannelOperationEvent{
+				OperatorId:  m.Head.RoutingHead.GetFromTinyid(),
+				GuildId:     guild.GuildId,
 				ChannelInfo: channelInfo,
 			})
 		}
 	case eventBody.ChangeChanInfo != nil:
 		updateChanLock.Lock()
 		defer updateChanLock.Unlock()
-		guild := c.GuildService.FindGuild(m.Head.RoutingHead.GetGuildId())
 		oldInfo := guild.FindChannel(eventBody.ChangeChanInfo.GetChanId())
 		if time.Now().Unix()-oldInfo.fetchTime <= 2 {
 			return

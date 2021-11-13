@@ -238,7 +238,7 @@ type (
 		NewChannelInfo *ChannelInfo
 	}
 
-	GuildChannelCreatedEvent struct {
+	GuildChannelOperationEvent struct {
 		OperatorId  uint64
 		GuildId     uint64
 		ChannelInfo *ChannelInfo

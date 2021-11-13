@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/pkg/errors"
@@ -151,6 +152,16 @@ func (g *GuildInfo) FindChannel(channelId uint64) *ChannelInfo {
 		}
 	}
 	return nil
+}
+
+func (g *GuildInfo) removeChannel(id uint64) {
+	i := sort.Search(len(g.Channels), func(i int) bool {
+		return g.Channels[i].ChannelId >= id
+	})
+	if i >= len(g.Channels) || g.Channels[i].ChannelId != id {
+		return
+	}
+	g.Channels = append(g.Channels[:i], g.Channels[i+1:]...)
 }
 
 func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {

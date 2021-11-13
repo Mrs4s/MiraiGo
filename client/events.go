@@ -17,7 +17,8 @@ type eventHandlers struct {
 	guildChannelMessageHandlers          []func(*QQClient, *message.GuildChannelMessage)
 	guildMessageReactionsUpdatedHandlers []func(*QQClient, *GuildMessageReactionsUpdatedEvent)
 	guildChannelUpdatedHandlers          []func(*QQClient, *GuildChannelUpdatedEvent)
-	guildChannelCreatedHandlers          []func(*QQClient, *GuildChannelCreatedEvent)
+	guildChannelCreatedHandlers          []func(*QQClient, *GuildChannelOperationEvent)
+	guildChannelDestroyedHandlers        []func(*QQClient, *GuildChannelOperationEvent)
 	groupMuteEventHandlers               []func(*QQClient, *GroupMuteEvent)
 	groupRecalledHandlers                []func(*QQClient, *GroupMessageRecalledEvent)
 	friendRecalledHandlers               []func(*QQClient, *FriendMessageRecalledEvent)
@@ -84,8 +85,12 @@ func (s *GuildService) OnGuildChannelUpdated(f func(*QQClient, *GuildChannelUpda
 	s.c.eventHandlers.guildChannelUpdatedHandlers = append(s.c.eventHandlers.guildChannelUpdatedHandlers, f)
 }
 
-func (s *GuildService) OnGuildChannelCreated(f func(*QQClient, *GuildChannelCreatedEvent)) {
+func (s *GuildService) OnGuildChannelCreated(f func(*QQClient, *GuildChannelOperationEvent)) {
 	s.c.eventHandlers.guildChannelCreatedHandlers = append(s.c.eventHandlers.guildChannelCreatedHandlers, f)
+}
+
+func (s *GuildService) OnGuildChannelDestroyed(f func(*QQClient, *GuildChannelOperationEvent)) {
+	s.c.eventHandlers.guildChannelDestroyedHandlers = append(s.c.eventHandlers.guildChannelDestroyedHandlers, f)
 }
 
 func (c *QQClient) OnGroupMuted(f func(*QQClient, *GroupMuteEvent)) {
@@ -283,11 +288,22 @@ func (c *QQClient) dispatchGuildChannelUpdatedEvent(e *GuildChannelUpdatedEvent)
 	}
 }
 
-func (c *QQClient) dispatchGuildChannelCreatedEvent(e *GuildChannelCreatedEvent) {
+func (c *QQClient) dispatchGuildChannelCreatedEvent(e *GuildChannelOperationEvent) {
 	if e == nil {
 		return
 	}
 	for _, f := range c.eventHandlers.guildChannelCreatedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchGuildChannelDestroyedEvent(e *GuildChannelOperationEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.guildChannelDestroyedHandlers {
 		cover(func() {
 			f(c, e)
 		})
