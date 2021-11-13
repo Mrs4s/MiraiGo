@@ -238,6 +238,12 @@ type (
 		NewChannelInfo *ChannelInfo
 	}
 
+	GuildChannelCreatedEvent struct {
+		OperatorId  uint64
+		GuildId     uint64
+		ChannelInfo *ChannelInfo
+	}
+
 	OcrResponse struct {
 		Texts    []*TextDetection `json:"texts"`
 		Language string           `json:"language"`

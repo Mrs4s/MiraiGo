@@ -78,6 +78,28 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 
 func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody *channel.EventBody) {
 	switch {
+	case eventBody.CreateChan != nil:
+		guild := c.GuildService.FindGuild(m.Head.RoutingHead.GetGuildId())
+		if guild == nil {
+			c.Warning("process create channel event error: guild not found.")
+			return
+		}
+		for _, chanId := range eventBody.CreateChan.CreateId {
+			if guild.FindChannel(chanId.GetChanId()) != nil {
+				continue
+			}
+			channelInfo, err := c.GuildService.FetchChannelInfo(guild.GuildId, chanId.GetChanId())
+			if err != nil {
+				c.Warning("process create channel event error: fetch channel info error: %v", err)
+				continue
+			}
+			guild.Channels = append(guild.Channels, channelInfo)
+			c.dispatchGuildChannelCreatedEvent(&GuildChannelCreatedEvent{
+				OperatorId:  m.Head.RoutingHead.GetFromTinyid(),
+				GuildId:     m.Head.RoutingHead.GetGuildId(),
+				ChannelInfo: channelInfo,
+			})
+		}
 	case eventBody.ChangeChanInfo != nil:
 		updateChanLock.Lock()
 		defer updateChanLock.Unlock()
