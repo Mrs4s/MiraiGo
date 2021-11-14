@@ -52,18 +52,18 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 		return nil
 	}
 	if !useFram && (msgLen > 100 || imgCount > 2) {
-		ret := c.sendGroupMessage(groupCode, false,
-			&message.SendingMessage{Elements: []message.IMessageElement{
-				c.uploadGroupLongMessage(groupCode,
-					message.NewForwardMessage().AddNode(&message.ForwardNode{
-						SenderId:   c.Uin,
-						SenderName: c.Nickname,
-						Time:       int32(time.Now().Unix()),
-						Message:    m.Elements,
-					}),
-				),
-			}},
-		)
+		lmsg, err := c.uploadGroupLongMessage(groupCode,
+			message.NewForwardMessage().AddNode(&message.ForwardNode{
+				SenderId:   c.Uin,
+				SenderName: c.Nickname,
+				Time:       int32(time.Now().Unix()),
+				Message:    m.Elements,
+			}))
+		if err != nil {
+			c.Error("%v", err)
+			return nil
+		}
+		ret := c.sendGroupMessage(groupCode, false, &message.SendingMessage{Elements: []message.IMessageElement{lmsg}})
 		ret.Elements = m.Elements
 		return ret
 	}
@@ -160,17 +160,13 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	}
 }
 
-func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMessage) *message.ServiceElement {
-	if m.Length() >= 200 {
-		return nil
-	}
+func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMessage) (*message.ServiceElement, error) {
 	ts := time.Now().UnixNano()
 	seq := c.nextGroupSeq()
 	data, hash := m.CalculateValidationData(seq, rand.Int31(), groupCode)
 	rsp, body, err := c.multiMsgApplyUp(groupCode, data, hash, 1)
 	if err != nil {
-		c.Error("upload long message error: %v", err)
-		return nil
+		return nil, errors.Errorf("upload long message error: %v", err)
 	}
 	for i, ip := range rsp.Uint32UpIp {
 		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
@@ -178,10 +174,9 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 			c.Error("highway upload long message error: %v", err)
 			continue
 		}
-		return genLongTemplate(rsp.MsgResid, m.Brief(), ts)
+		return genLongTemplate(rsp.MsgResid, m.Brief(), ts), nil
 	}
-	c.Error("upload long message error: highway server list is empty or not available server.")
-	return nil
+	return nil, errors.New("upload long message error: highway server list is empty or not available server.")
 }
 
 func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.ForwardElement {
