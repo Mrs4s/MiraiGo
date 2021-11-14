@@ -392,7 +392,21 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 		}
 		if elem.Text != nil {
-			if len(elem.Text.Attr6Buf) == 0 {
+			switch {
+			case len(elem.Text.Attr6Buf) > 0:
+				att6 := binary.NewReader(elem.Text.Attr6Buf)
+				att6.ReadBytes(7)
+				target := int64(uint32(att6.ReadInt32()))
+				res = append(res, NewAt(target, elem.Text.GetStr()))
+			case len(elem.Text.PbReserve) > 0:
+				resv := new(msg.TextResvAttr)
+				_ = proto.Unmarshal(elem.Text.PbReserve, resv)
+				if resv.GetAtType() == 2 {
+					res = append(res, NewAt(int64(resv.GetAtMemberTinyid()), elem.Text.GetStr()))
+					break
+				}
+				fallthrough
+			default:
 				res = append(res, NewText(func() string {
 					// 这么处理应该没问题
 					if strings.Contains(elem.Text.GetStr(), "\r") && !strings.Contains(elem.Text.GetStr(), "\r\n") {
@@ -400,11 +414,6 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					}
 					return elem.Text.GetStr()
 				}()))
-			} else {
-				att6 := binary.NewReader(elem.Text.Attr6Buf)
-				att6.ReadBytes(7)
-				target := int64(uint32(att6.ReadInt32()))
-				res = append(res, NewAt(target, elem.Text.GetStr()))
 			}
 		}
 		if elem.RichMsg != nil {
