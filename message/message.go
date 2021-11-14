@@ -72,8 +72,6 @@ type (
 	}
 
 	ElementType int
-
-	GroupGift int
 )
 
 // MusicType values.
@@ -99,21 +97,6 @@ const (
 	Video                       // 视频
 	LightApp                    // 轻应用
 	RedBag                      // 红包
-
-	HoldingYourHand GroupGift = 280
-	CuteCat         GroupGift = 281
-	MysteryMask     GroupGift = 284
-	SweetWink       GroupGift = 285
-	ImBusy          GroupGift = 286
-	HappyCola       GroupGift = 289
-	LuckyBracelet   GroupGift = 290
-	Cappuccino      GroupGift = 299
-	CatWatch        GroupGift = 302
-	FleeceGloves    GroupGift = 307
-	RainbowCandy    GroupGift = 308
-	LoveMask        GroupGift = 312
-	Stronger        GroupGift = 313
-	LoveMicrophone  GroupGift = 367
 )
 
 func (s *Sender) IsAnonymous() bool {

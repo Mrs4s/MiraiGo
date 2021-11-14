@@ -21,7 +21,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
-	"github.com/Mrs4s/MiraiGo/message"
 )
 
 var (
@@ -1094,23 +1093,5 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 		Qua:     []byte("and_537065262_8.4.5"),
 	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
-}
-
-// OidbSvc.0xdad_1
-func (c *QQClient) sendGroupGiftPacket(groupCode, uin uint64, productID message.GroupGift) (uint16, []byte) {
-	seq := c.nextSeq()
-	payload := c.packOIDBPackageProto(3501, 1, &oidb.DADReqBody{
-		Client:    1,
-		ProductId: uint64(productID),
-		ToUin:     uin,
-		Gc:        groupCode,
-		Version:   "V 8.4.5.4745",
-		Sig: &oidb.DADLoginSig{
-			Type: 1,
-			Sig:  []byte(c.getSKey()),
-		},
-	})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xdad_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
