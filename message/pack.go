@@ -56,24 +56,34 @@ func (e *FaceElement) Pack() (r []*msg.Elem) {
 
 func (e *AtElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
-	r = append(r, &msg.Elem{
-		Text: &msg.Text{
-			Str: &e.Display,
-			Attr6Buf: binary.NewWriterF(func(w *binary.Writer) {
-				w.WriteUInt16(1)
-				w.WriteUInt16(0)
-				w.WriteUInt16(uint16(len([]rune(e.Display))))
-				w.WriteByte(func() byte {
-					if e.Target == 0 {
-						return 1
-					}
-					return 0
-				}())
-				w.WriteUInt32(uint32(e.Target))
-				w.WriteUInt16(0)
-			}),
-		},
-	})
+	if e.Guild {
+		pb, _ := proto.Marshal(&msg.TextResvAttr{AtType: proto.Uint32(2), AtMemberTinyid: proto.Uint64(uint64(e.Target))})
+		r = append(r, &msg.Elem{
+			Text: &msg.Text{
+				Str:       &e.Display,
+				PbReserve: pb,
+			},
+		})
+	} else {
+		r = append(r, &msg.Elem{
+			Text: &msg.Text{
+				Str: &e.Display,
+				Attr6Buf: binary.NewWriterF(func(w *binary.Writer) {
+					w.WriteUInt16(1)
+					w.WriteUInt16(0)
+					w.WriteUInt16(uint16(len([]rune(e.Display))))
+					w.WriteByte(func() byte {
+						if e.Target == 0 {
+							return 1
+						}
+						return 0
+					}())
+					w.WriteUInt32(uint32(e.Target))
+					w.WriteUInt16(0)
+				}),
+			},
+		})
+	}
 	r = append(r, &msg.Elem{Text: &msg.Text{Str: proto.String(" ")}})
 	return
 }

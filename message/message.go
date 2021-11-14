@@ -385,7 +385,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				resv := new(msg.TextResvAttr)
 				_ = proto.Unmarshal(elem.Text.PbReserve, resv)
 				if resv.GetAtType() == 2 {
-					res = append(res, NewAt(int64(resv.GetAtMemberTinyid()), elem.Text.GetStr()))
+					at := NewAt(int64(resv.GetAtMemberTinyid()), elem.Text.GetStr())
+					at.Guild = true
+					res = append(res, at)
 					break
 				}
 				fallthrough

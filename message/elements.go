@@ -41,6 +41,7 @@ type FaceElement struct {
 type AtElement struct {
 	Target  int64
 	Display string
+	Guild   bool
 }
 
 type GroupFileElement struct {
