@@ -384,6 +384,32 @@ func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint6
 	return nil
 }
 
+func (s *GuildService) ModifyRoleInGuild(guildId uint64, roleId uint64, name string, color uint32, indepedent bool) error {
+	seq := s.c.nextSeq()
+	packet := ([]byte)(nil)
+	u1 := uint32(1)
+	packet = packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x100d_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4109, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: roleId,
+			3: binary.DynamicProtoMessage{
+				1: u1,
+				2: u1,
+				3: u1,
+			},
+			4: binary.DynamicProtoMessage{
+				1: name,
+				2: color,
+				3: indepedent,
+			},
+		}))
+	_, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.Wrap(err, "send packet error")
+	}
+	return nil
+}
+
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
