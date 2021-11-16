@@ -297,7 +297,7 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
-	roles := make([]*GuildRole, 0)
+	roles := make([]*GuildRole, 0, len(body.Roles))
 	for _, role := range body.Roles {
 		roles = append(roles, &GuildRole{
 			RoleId:     role.GetRoleId(),
@@ -358,7 +358,7 @@ func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
 
 func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint64, user []uint64) error { // remove => p2 = false
 	seq := s.c.nextSeq()
-	packet := ([]byte)(nil)
+	var packet []byte
 	setOrRemove := binary.DynamicProtoMessage{
 		1: roleId,
 	}
@@ -381,7 +381,7 @@ func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint6
 
 func (s *GuildService) ModifyRoleInGuild(guildId uint64, roleId uint64, name string, color uint32, indepedent bool) error {
 	seq := s.c.nextSeq()
-	packet := ([]byte)(nil)
+	var packet []byte
 	u1 := uint32(1)
 	packet = packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x100d_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
 		s.c.packOIDBPackageDynamically(4109, 1, binary.DynamicProtoMessage{
