@@ -69,11 +69,6 @@ type (
 		JoinTime  int64 // 只有 GetGuildMemberProfileInfo 函数才会有
 	}
 
-	GuildRoleInfo struct {
-		GuildId uint64
-		Roles   []*GuildRole
-	}
-
 	// GuildRole 频道身份组信息
 	GuildRole struct {
 		RoleId     uint64
