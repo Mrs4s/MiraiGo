@@ -32,6 +32,40 @@ message ChannelOidb0xf5dRsp {
   optional ChannelListRsp rsp = 1;
 }
 
+message ChannelOidb0x1019Rsp {
+  optional uint64 guildId = 1;
+  repeated GuildRole roles = 2;
+  // 3: ?
+  // 4: 
+}
+
+/*
+message ChannelOidb0x100dReq { // 修改身份组
+  optional uint64 guildId = 1;
+  repeated uint64 roleId = 2; 
+  repeated int32 unkonwn = 3; // 3: ? 三个1
+  repeated ModifyGuildRole role = 4;
+}*/
+
+/*
+message ChannelOidb0x1016Req { // 新建身份组
+  optional uint64 guildId = 1;
+  repeated int32 unknown = 2; // 2: ? 三个1
+  optional ModifyGuildRole role = 3;
+  repeated uint64 initialUsers = 4;
+}*/
+
+message ChannelOidb0x1016Rsp {
+  optional uint64 roleId = 2;
+}
+
+/*
+message ChannelOidb0x101aReq { // 修改身份组
+  optional uint64 guildId = 1;
+  repeated SetGuildRole setRoles = 2;
+  repeated SetGuildRole removeRoles = 3;
+}*/
+
 message GuildMetaRsp {
   optional uint64 guildId = 3;
   optional GuildMeta meta = 4;
@@ -66,6 +100,31 @@ message GuildUserProfile {
   // 23 display cards
   // 25 current cards *uncertainty
 }
+
+message GuildRole {
+  optional uint64 roleId = 1;
+  optional string name = 2;
+  optional uint32 argbColor = 3;
+  optional int32 independent = 4;
+  optional int32 num = 5;
+  optional int32 owned = 6; // 是否拥有 存疑
+  optional int32 disabled = 7; // 权限不足或不显示
+  optional int32 maxNum = 8;
+  // 9: ?
+}
+
+/*
+message SetGuildRole {
+  optional uint64 roleId = 1;
+  optional uint64 targetId = 2;
+}*/
+
+/*
+message ModifyGuildRole {
+  optional string roleName = 1;
+  optional uint32 color = 2;
+  optional int32 independent = 3; // 身份组单独显示
+}*/
 
 message GuildMeta {
   optional uint64 guildCode = 2;

@@ -69,6 +69,18 @@ type (
 		JoinTime  int64 // 只有 GetGuildMemberProfileInfo 函数才会有
 	}
 
+	// GuildRole 频道身份组信息
+	GuildRole struct {
+		RoleId     uint64
+		RoleName   string
+		ArgbColor  uint32
+		Indepedent bool
+		Num        int32
+		Owned      bool
+		Disabled   bool
+		MaxNum     int32
+	}
+
 	// ChannelInfo 子频道信息
 	ChannelInfo struct {
 		ChannelId   uint64
@@ -271,6 +283,126 @@ func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Guild
 		AvatarUrl: body.Profile.GetAvatarUrl(),
 		JoinTime:  body.Profile.GetJoinTime(),
 	}, nil
+}
+
+func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x1019_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4121, 1, binary.DynamicProtoMessage{1: guildId}))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0X1019Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
+	}
+	roles := make([]*GuildRole, 0, len(body.Roles))
+	for _, role := range body.Roles {
+		roles = append(roles, &GuildRole{
+			RoleId:     role.GetRoleId(),
+			RoleName:   role.GetName(),
+			ArgbColor:  role.GetArgbColor(),
+			Indepedent: role.GetIndependent() == 1,
+			Num:        role.GetNum(),
+			Owned:      role.GetOwned() == 1,
+			Disabled:   role.GetDisabled() == 1,
+			MaxNum:     role.GetMaxNum(),
+		})
+	}
+	return roles, nil
+}
+
+func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32, independent bool, initialUsers []uint64) (uint64, error) {
+	seq := s.c.nextSeq()
+	u1 := uint32(1)
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x1016_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4118, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: binary.DynamicProtoMessage{ // todo: 未知参数
+				1: u1,
+				2: u1,
+				3: u1,
+			},
+			3: binary.DynamicProtoMessage{
+				1: name,
+				2: color,
+				3: independent,
+			},
+			4: initialUsers,
+		}))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return 0, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0X1016Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return 0, errors.Wrap(err, "decode packet error")
+	}
+	return body.GetRoleId(), nil
+}
+
+func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x100e_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4110, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: roleId,
+		}))
+	_, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.Wrap(err, "send packet error")
+	}
+	return nil
+}
+
+func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint64, user []uint64) error { // remove => p2 = false
+	seq := s.c.nextSeq()
+	var packet []byte
+	setOrRemove := binary.DynamicProtoMessage{
+		1: roleId,
+	}
+	if set {
+		setOrRemove[2] = user
+	} else {
+		setOrRemove[3] = user
+	}
+	packet = packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x101a_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4122, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: setOrRemove,
+		}))
+	_, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.Wrap(err, "send packet error")
+	}
+	return nil
+}
+
+func (s *GuildService) ModifyRoleInGuild(guildId uint64, roleId uint64, name string, color uint32, indepedent bool) error {
+	seq := s.c.nextSeq()
+	var packet []byte
+	u1 := uint32(1)
+	packet = packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x100d_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4109, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: roleId,
+			3: binary.DynamicProtoMessage{
+				1: u1,
+				2: u1,
+				3: u1,
+			},
+			4: binary.DynamicProtoMessage{
+				1: name,
+				2: color,
+				3: indepedent,
+			},
+		}))
+	_, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.Wrap(err, "send packet error")
+	}
+	return nil
 }
 
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
