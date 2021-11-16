@@ -76,9 +76,14 @@ type (
 
 	// GuildRole 频道身份组信息
 	GuildRole struct {
-		RoleId    uint64
-		RoleName  string
-		ArgbColor uint32
+		RoleId     uint64
+		RoleName   string
+		ArgbColor  uint32
+		Indepedent bool
+		Num        int32
+		Owned      bool
+		Disabled   bool
+		MaxNum     int32
 	}
 
 	// ChannelInfo 子频道信息
@@ -300,12 +305,46 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	roles := make([]*GuildRole, 0)
 	for _, role := range body.Roles {
 		roles = append(roles, &GuildRole{
-			RoleId:    *role.RoleId,
-			RoleName:  *role.Name,
-			ArgbColor: *role.ArgbColor,
+			RoleId:     role.GetRoleId(),
+			RoleName:   role.GetName(),
+			ArgbColor:  role.GetArgbColor(),
+			Indepedent: role.GetIndependent() == 1,
+			Num:        role.GetNum(),
+			Owned:      role.GetOwned() == 1,
+			Disabled:   role.GetDisabled() == 1,
+			MaxNum:     role.GetMaxNum(),
 		})
 	}
 	return roles, nil
+}
+
+func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32, independent bool, initialUsers []uint64) (uint64, error) {
+	seq := s.c.nextSeq()
+	u1 := uint32(1)
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x1016_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4118, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: binary.DynamicProtoMessage{ // todo: 未知参数
+				1: u1,
+				2: u1,
+				3: u1,
+			},
+			3: binary.DynamicProtoMessage{
+				1: name,
+				2: color,
+				3: independent,
+			},
+			4: initialUsers,
+		}))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return 0, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0X1016Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return 0, errors.Wrap(err, "decode packet error")
+	}
+	return body.GetRoleId(), nil
 }
 
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
