@@ -69,6 +69,18 @@ type (
 		JoinTime  int64 // 只有 GetGuildMemberProfileInfo 函数才会有
 	}
 
+	GuildRoleInfo struct {
+		GuildId uint64
+		Roles   []*GuildRole
+	}
+
+	// GuildRole 频道身份组信息
+	GuildRole struct {
+		RoleId    uint64
+		RoleName  string
+		ArgbColor uint32
+	}
+
 	// ChannelInfo 子频道信息
 	ChannelInfo struct {
 		ChannelId   uint64
@@ -271,6 +283,29 @@ func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*Guild
 		AvatarUrl: body.Profile.GetAvatarUrl(),
 		JoinTime:  body.Profile.GetJoinTime(),
 	}, nil
+}
+
+func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x1019_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4121, 1, binary.DynamicProtoMessage{1: guildId}))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0X1019Rsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
+	}
+	roles := make([]*GuildRole, 0)
+	for _, role := range body.Roles {
+		roles = append(roles, &GuildRole{
+			RoleId:    *role.RoleId,
+			RoleName:  *role.Name,
+			ArgbColor: *role.ArgbColor,
+		})
+	}
+	return roles, nil
 }
 
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
