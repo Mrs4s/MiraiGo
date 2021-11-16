@@ -60,7 +60,7 @@ message ChannelOidb0x1016Rsp {
 }
 
 /*
-message ChannelOidb0x101aReq { // 给予身份组
+message ChannelOidb0x101aReq { // 修改身份组
   optional uint64 guildId = 1;
   repeated SetGuildRole setRoles = 2;
   repeated SetGuildRole removeRoles = 3;

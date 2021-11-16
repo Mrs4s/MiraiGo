@@ -347,6 +347,43 @@ func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32
 	return body.GetRoleId(), nil
 }
 
+func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x100e_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4110, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: roleId,
+		}))
+	_, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.Wrap(err, "send packet error")
+	}
+	return nil
+}
+
+func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint64, user []uint64) error { // remove => p2 = false
+	seq := s.c.nextSeq()
+	packet := ([]byte)(nil)
+	setOrRemove := binary.DynamicProtoMessage{
+		1: roleId,
+	}
+	if set {
+		setOrRemove[2] = user
+	} else {
+		setOrRemove[3] = user
+	}
+	packet = packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0x101a_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key,
+		s.c.packOIDBPackageDynamically(4122, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: setOrRemove,
+		}))
+	_, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.Wrap(err, "send packet error")
+	}
+	return nil
+}
+
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
