@@ -137,3 +137,15 @@ func BenchmarkTEAde(b *testing.B) {
 		benchDecrypt(b, data)
 	})
 }
+
+func BenchmarkTEA_encode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		testTEA.encode(114514)
+	}
+}
+
+func BenchmarkTEA_decode(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		testTEA.decode(114514)
+	}
+}
