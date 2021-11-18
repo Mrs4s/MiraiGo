@@ -69,6 +69,7 @@ type ShortVideoElement struct {
 	Md5       []byte
 	ThumbMd5  []byte
 	Url       string
+	Guild     bool
 }
 
 type ServiceElement struct {

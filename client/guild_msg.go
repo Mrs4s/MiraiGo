@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"image"
@@ -16,6 +17,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -42,10 +44,7 @@ func init() {
 
 func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) (*message.GuildChannelMessage, error) {
 	mr := rand.Uint32() // 客户端似乎是生成的 u32 虽然类型是u64
-	at := m.FirstOrNil(func(e message.IMessageElement) bool {
-		_, ok := e.(*message.AtElement)
-		return ok
-	})
+	at := m.FirstOrNil(func(e message.IMessageElement) bool { return e.Type() == message.At })
 	if at != nil {
 		at.(*message.AtElement).Guild = true
 	}
@@ -283,4 +282,73 @@ func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *mes
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
+}
+
+// PttCenterSvr.GroupShortVideoUpReq
+func (c *QQClient) buildPttGuildVideoUpReq(videoHash, thumbHash []byte, guildId, channelId int64, videoSize, thumbSize int64) (uint16, []byte) {
+	seq := c.nextSeq()
+	pb := c.buildPttGroupShortVideoProto(videoHash, thumbHash, guildId, videoSize, thumbSize, 4)
+	pb.PttShortVideoUploadReq.BusinessType = 4601
+	pb.PttShortVideoUploadReq.ToUin = channelId
+	pb.ExtensionReq[0].SubBusiType = 4601
+	payload, _ := proto.Marshal(pb)
+	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.GroupShortVideoUpReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	return seq, packet
+}
+
+func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb io.ReadSeeker) (*message.ShortVideoElement, error) {
+	// todo: combine with group short video upload
+	videoHash, videoLen := utils.ComputeMd5AndLength(video)
+	thumbHash, thumbLen := utils.ComputeMd5AndLength(thumb)
+
+	key := string(videoHash) + string(thumbHash)
+	pttWaiter.Wait(key)
+	defer pttWaiter.Done(key)
+
+	i, err := c.sendAndWait(c.buildPttGuildVideoUpReq(videoHash, thumbHash, int64(guildId), int64(channelId), videoLen, thumbLen))
+	if err != nil {
+		return nil, errors.Wrap(err, "upload req error")
+	}
+	rsp := i.(*pttcenter.ShortVideoUploadRsp)
+	if rsp.FileExists == 1 {
+		return &message.ShortVideoElement{
+			Uuid:      []byte(rsp.FileId),
+			Size:      int32(videoLen),
+			ThumbSize: int32(thumbLen),
+			Md5:       videoHash,
+			ThumbMd5:  thumbHash,
+			Guild:     true,
+		}, nil
+	}
+	req := c.buildPttGroupShortVideoProto(videoHash, thumbHash, int64(guildId), videoLen, thumbLen, 4).PttShortVideoUploadReq
+	req.BusinessType = 4601
+	req.ToUin = int64(channelId)
+	ext, _ := proto.Marshal(req)
+	var hwRsp []byte
+	multi := utils.MultiReadSeeker(thumb, video)
+	h := md5.New()
+	length, _ := io.Copy(h, multi)
+	fh := h.Sum(nil)
+	_, _ = multi.Seek(0, io.SeekStart)
+
+	hwRsp, err = c.highwayUploadByBDH(multi, length, 89, c.bigDataSession.SigSession, fh, ext, true)
+	if err != nil {
+		return nil, errors.Wrap(err, "upload video file error")
+	}
+
+	if len(hwRsp) == 0 {
+		return nil, errors.New("resp is empty")
+	}
+	rsp = &pttcenter.ShortVideoUploadRsp{}
+	if err = proto.Unmarshal(hwRsp, rsp); err != nil {
+		return nil, errors.Wrap(err, "decode error")
+	}
+	return &message.ShortVideoElement{
+		Uuid:      []byte(rsp.FileId),
+		Size:      int32(videoLen),
+		ThumbSize: int32(thumbLen),
+		Md5:       videoHash,
+		ThumbMd5:  thumbHash,
+		Guild:     true,
+	}, nil
 }

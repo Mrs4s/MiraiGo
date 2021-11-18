@@ -134,7 +134,7 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 			ThumbMd5:  thumbHash,
 		}, nil
 	}
-	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen).PttShortVideoUploadReq)
+	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen, 1).PttShortVideoUploadReq)
 	var hwRsp []byte
 	multi := utils.MultiReadSeeker(thumb, video)
 	h := md5.New()
@@ -245,7 +245,7 @@ func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []
 	return seq, packet
 }
 
-func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) *pttcenter.ShortVideoReqBody {
+func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64, chattype int32) *pttcenter.ShortVideoReqBody {
 	seq := c.nextSeq()
 	return &pttcenter.ShortVideoReqBody{
 		Cmd: 300,
@@ -253,7 +253,7 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 		PttShortVideoUploadReq: &pttcenter.ShortVideoUploadReq{
 			FromUin:    c.Uin,
 			ToUin:      toUin,
-			ChatType:   1,
+			ChatType:   chattype,
 			ClientType: 2,
 			Info: &pttcenter.ShortVideoFileInfo{
 				FileName:      hex.EncodeToString(videoHash) + ".mp4",
@@ -281,7 +281,7 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 // PttCenterSvr.GroupShortVideoUpReq
 func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize))
+	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize, 1))
 	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.GroupShortVideoUpReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
