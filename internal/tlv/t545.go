@@ -2,9 +2,9 @@ package tlv
 
 import "github.com/Mrs4s/MiraiGo/binary"
 
-func T108(ksid []byte) []byte {
+func T545(imei []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x108)
-		w.WriteBytesShort(ksid)
+		w.WriteBytesShort(imei)
 	})
 }

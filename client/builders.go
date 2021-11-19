@@ -314,6 +314,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
 		w.Write(tlv.T107(0))
+		w.Write(tlv.T108(c.ksid))
 		w.Write(tlv.T144(
 			c.deviceInfo.AndroidId,
 			c.deviceInfo.GenDeviceInfoData(),
@@ -348,6 +349,8 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(0))
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
+		// w.Write(tlv.545())
+		w.Write(tlv.T545([]byte(c.deviceInfo.IMEI)))
 	})
 	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
 	return seq, packet
@@ -362,7 +365,7 @@ func (c *QQClient) buildRequestChangeSigPacket() (uint16, []byte) {
 		w.Write(tlv.T100(c.version.SSOVersion, 100, c.version.MainSigMap))
 		w.Write(tlv.T10A(c.sigInfo.tgt))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
-		w.Write(tlv.T108(c.deviceInfo.IMEI))
+		w.Write(tlv.T108(c.ksid))
 		h := md5.Sum(c.sigInfo.d2Key)
 		w.Write(tlv.T144(
 			c.deviceInfo.AndroidId,
