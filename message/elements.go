@@ -102,7 +102,8 @@ type MusicShareElement struct {
 }
 
 type AnimatedSticker struct {
-	ID int32
+	ID   int32
+	Name string
 }
 
 type RedBagMessageType int

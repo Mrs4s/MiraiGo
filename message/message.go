@@ -567,6 +567,14 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				newSysFaceMsg := &msg.MsgElemInfoServtype33{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, newSysFaceMsg)
 				res = append(res, NewFace(int32(newSysFaceMsg.GetIndex())))
+			case 37:
+				animatedStickerMsg := &msg.MsgElemInfoServtype37{}
+				_ = proto.Unmarshal(elem.CommonElem.PbElem, animatedStickerMsg)
+				sticker := &AnimatedSticker{
+					ID:   int32(animatedStickerMsg.GetQsid()),
+					Name: strings.TrimPrefix(string(animatedStickerMsg.GetText()), "/"),
+				}
+				return []IMessageElement{sticker} // sticker 永远为单独消息
 			}
 		}
 	}

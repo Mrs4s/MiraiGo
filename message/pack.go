@@ -155,13 +155,22 @@ func (e *ShortVideoElement) Pack() (r []*msg.Elem) {
 }
 
 func (e *AnimatedSticker) Pack() []*msg.Elem {
-	name := "/" + faceMap[int(e.ID)]
+	if e.Name == "" {
+		e.Name = faceMap[int(e.ID)]
+	}
+	name := "/" + e.Name
+	business := int32(1)
+	if e.ID == 114 {
+		// 对篮球适配，否则篮球不会投出
+		business = 2
+	}
+
 	pbElem, _ := proto.Marshal(&msg.MsgElemInfoServtype37{
 		Packid:      []byte("1"),
 		Stickerid:   []byte(stickerMap[int(e.ID)]),
 		Qsid:        proto.Uint32(uint32(e.ID)),
 		Sourcetype:  proto.Uint32(1),
-		Stickertype: proto.Uint32(1),
+		Stickertype: proto.Uint32(uint32(business)),
 		Resultid:    []byte{},
 		Text:        []byte(name),
 		Surpriseid:  []byte{},
@@ -171,11 +180,11 @@ func (e *AnimatedSticker) Pack() []*msg.Elem {
 		CommonElem: &msg.CommonElem{
 			ServiceType:  proto.Int32(37),
 			PbElem:       pbElem,
-			BusinessType: proto.Int32(1),
+			BusinessType: &business,
 		},
 	}
 
-	pbReverse, _ := proto.Marshal(&msg.Text{Str: proto.String(fmt.Sprintf("[%s]请使用最新版手机QQ体验新功能", faceMap[int(e.ID)]))})
+	pbReverse, _ := proto.Marshal(&msg.Text{Str: proto.String(fmt.Sprintf("[%s]请使用最新版手机QQ体验新功能", e.Name))})
 	text := &msg.Elem{
 		Text: &msg.Text{
 			Str:       &name,

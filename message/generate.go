@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-const faceDownloadUrl = `https://down.qq.com/qqface/config/face_config2021071501.zip?mType=Other` //? 好像是会自动更新的
+const faceDownloadUrl = `https://down.qq.com/qqface/config/face_config_json_1026_hide.zip?mType=Other` //? 好像是会自动更新的
 
 type ani struct {
 	QSid      string
@@ -66,7 +66,7 @@ func main() {
 		faceConfig.SystemFace[i].QDes = strings.TrimPrefix(faceConfig.SystemFace[i].QDes, "/")
 		if sysface.AniStickerId != "" {
 			faceConfig.Stickers = append(faceConfig.Stickers, ani{
-				Qsid:      sysface.QSid,
+				QSid:      sysface.QSid,
 				StickerID: sysface.AniStickerId,
 			})
 		}
