@@ -8,11 +8,11 @@ import (
 
 const (
 	UnknownDecoder = iota
-	privateMsgDecoders
 	nonSvcNotifyTroopSystemMsgDecoders
 	troopSystemMsgDecoders
 	sysMsgDecoders
 	otherDecoders
+	privateMsgDecoders
 )
 
 func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, *incomingPacketInfo), decoderType uint8) {

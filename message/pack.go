@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	"google.golang.org/protobuf/proto"
 
@@ -151,4 +152,36 @@ func (e *ShortVideoElement) Pack() (r []*msg.Elem) {
 
 	r = append(r, &msg.Elem{VideoFile: video})
 	return
+}
+
+func (e *AnimatedSticker) Pack() []*msg.Elem {
+	name := "/" + faceMap[int(e.ID)]
+	pbElem, _ := proto.Marshal(&msg.MsgElemInfoServtype37{
+		Packid:      []byte("1"),
+		Stickerid:   []byte(stickerMap[int(e.ID)]),
+		Qsid:        proto.Uint32(uint32(e.ID)),
+		Sourcetype:  proto.Uint32(1),
+		Stickertype: proto.Uint32(1),
+		Resultid:    []byte{},
+		Text:        []byte(name),
+		Surpriseid:  []byte{},
+		Randomtype:  proto.Uint32(1),
+	})
+	common := &msg.Elem{
+		CommonElem: &msg.CommonElem{
+			ServiceType:  proto.Int32(37),
+			PbElem:       pbElem,
+			BusinessType: proto.Int32(1),
+		},
+	}
+
+	pbReverse, _ := proto.Marshal(&msg.Text{Str: proto.String(fmt.Sprintf("[%s]请使用最新版手机QQ体验新功能", faceMap[int(e.ID)]))})
+	text := &msg.Elem{
+		Text: &msg.Text{
+			Str:       &name,
+			PbReserve: pbReverse,
+		},
+	}
+
+	return []*msg.Elem{common, text}
 }

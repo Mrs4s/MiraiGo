@@ -855,3 +855,15 @@ message PbPushMsg {
   optional uint32 generalFlag = 9;
   optional uint64 bindUin = 10;
 }
+
+message MsgElemInfo_servtype37 {
+  optional bytes packid = 1;
+  optional bytes stickerid = 2;
+  optional uint32 qsid = 3;
+  optional uint32 sourcetype = 4;
+  optional uint32 stickertype = 5;
+  optional bytes resultid = 6;
+  optional bytes text = 7;
+  optional bytes surpriseid = 8;
+  optional uint32 randomtype = 9;
+}

@@ -101,6 +101,10 @@ type MusicShareElement struct {
 	MusicUrl   string // 音乐播放链接
 }
 
+type AnimatedSticker struct {
+	ID int32
+}
+
 type RedBagMessageType int
 
 // /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
@@ -269,4 +273,8 @@ func (e *MusicShareElement) Type() ElementType {
 
 func (e *RedBagElement) Type() ElementType {
 	return RedBag
+}
+
+func (e *AnimatedSticker) Type() ElementType {
+	return Face
 }
