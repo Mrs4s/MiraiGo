@@ -9,6 +9,8 @@ message ChannelOidb0xf5bRsp {
   optional uint64 guildId = 1;
   repeated GuildMemberInfo bots = 4;
   repeated GuildMemberInfo members = 5;
+  optional uint32 nextRoleIdIndex = 8;
+  optional uint32 nextIndex = 10;
   optional GuildAdminInfo adminInfo = 25;
 }
 
