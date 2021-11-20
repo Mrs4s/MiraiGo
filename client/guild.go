@@ -123,6 +123,7 @@ const (
 	ChannelTypeText  ChannelType = 1
 	ChannelTypeVoice ChannelType = 2
 	ChannelTypeLive  ChannelType = 5
+	ChannelTypeTopic ChannelType = 7
 )
 
 func init() {
