@@ -187,7 +187,7 @@ func NewClient(uin int64, password string) *QQClient {
 }
 
 func NewClientEmpty() *QQClient {
-	return NewClient(0, "")
+	return NewClientMd5(0, [16]byte{})
 }
 
 func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
