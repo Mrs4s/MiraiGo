@@ -12,7 +12,7 @@ import (
 type Writer bytes.Buffer
 
 func NewWriterF(f func(writer *Writer)) []byte {
-	w := NewWriter()
+	w := SelectWriter()
 	f(w)
 	b := append([]byte(nil), w.Bytes()...)
 	PutWriter(w)
@@ -81,7 +81,7 @@ func (w *Writer) WriteIntLvPacket(offset int, f func(writer *Writer)) {
 }
 
 func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body []byte) {
-	w1 := NewWriter()
+	w1 := SelectWriter()
 	{ // WriteIntLvPacket
 		w1.WriteString(commandName)
 		w1.WriteUInt32(8)

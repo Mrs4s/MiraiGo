@@ -14,8 +14,8 @@ var bufferPool = sync.Pool{
 	},
 }
 
-// NewWriter 从池中取出一个 Writer
-func NewWriter() *Writer {
+// SelectWriter 从池中取出一个 Writer
+func SelectWriter() *Writer {
 	w := bufferPool.Get().(*Writer)
 	if w == nil {
 		return new(Writer)

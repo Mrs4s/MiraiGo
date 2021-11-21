@@ -50,7 +50,7 @@ func (e *EncryptECDH) generateKey(sPubKey string) {
 }
 
 func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
-	w := binary.NewWriter()
+	w := binary.SelectWriter()
 	w.WriteByte(0x02)
 	w.WriteByte(0x01)
 	w.Write(k)
