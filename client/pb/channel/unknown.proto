@@ -34,6 +34,15 @@ message ChannelOidb0xf5dRsp {
   optional ChannelListRsp rsp = 1;
 }
 
+message ChannelOidb0x1017Rsp {
+  optional P10x1017 p1 = 1;
+}
+
+message P10x1017 {
+  optional uint64 userId = 1;
+  repeated GuildRole roles = 3;
+}
+
 message ChannelOidb0x1019Rsp {
   optional uint64 guildId = 1;
   repeated GuildRole roles = 2;
