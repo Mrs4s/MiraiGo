@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
+	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
 var msg0x210Decoders = map[int64]func(*QQClient, []byte) error{

@@ -7,8 +7,6 @@ import (
 	"math/rand"
 	"time"
 
-	"google.golang.org/protobuf/proto"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -20,6 +18,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
+	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
 )
 
