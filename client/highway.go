@@ -16,10 +16,10 @@ import (
 
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -49,7 +49,7 @@ func (c *QQClient) highwayUploadStream(ip uint32, port int, updKey []byte, strea
 	chunk := *buf
 	defer binary.Put256KBytes(buf)
 
-	w := binary.NewWriter()
+	w := binary.SelectWriter()
 	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
@@ -134,7 +134,7 @@ func (c *QQClient) highwayUploadByBDH(stream io.Reader, length int64, cmdId int3
 	chunk := *buf
 	defer binary.Put256KBytes(buf)
 
-	w := binary.NewWriter()
+	w := binary.SelectWriter()
 	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
@@ -270,7 +270,7 @@ func (c *QQClient) highwayUploadFileMultiThreadingByBDH(path string, cmdId int32
 			return errors.Wrap(err, "echo error")
 		}
 		buffer := make([]byte, blockSize)
-		w := binary.NewWriter()
+		w := binary.SelectWriter()
 		w.Reset()
 		w.Grow(600 * 1024) // 复用,600k 不要放回池中
 		for {
@@ -368,7 +368,7 @@ func (c *QQClient) highwaySendHeartbreak(conn net.Conn) error {
 			LocaleId:  2052,
 		},
 	})
-	w := binary.NewWriter()
+	w := binary.SelectWriter()
 	w.WriteByte(40)
 	w.WriteUInt32(uint32(len(head)))
 	w.WriteUInt32(0)
@@ -406,7 +406,7 @@ func (c *QQClient) excitingUploadStream(stream io.ReadSeeker, cmdId int32, ticke
 		chunkSize       = 524288
 	)
 	chunk := make([]byte, chunkSize)
-	w := binary.NewWriter()
+	w := binary.SelectWriter()
 	w.Reset()
 	w.Grow(600 * 1024) // 复用,600k 不要放回池中
 	for {

@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"crypto/md5"
 
-	"google.golang.org/protobuf/proto"
-
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 

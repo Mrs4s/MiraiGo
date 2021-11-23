@@ -14,10 +14,10 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/proto"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/richmedia"
+	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -132,7 +132,7 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 		return nil, errors.Wrap(err, "failed to post to tts server")
 	}
 	ttsReader := binary.NewReader(rsp)
-	ttsWriter := binary.NewWriter()
+	ttsWriter := binary.SelectWriter()
 	for {
 		// 数据格式 69e(字符串)  十六进制   数据长度  0 为结尾
 		// 0D 0A (分隔符) payload  0D 0A
