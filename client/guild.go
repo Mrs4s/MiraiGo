@@ -71,14 +71,14 @@ type (
 
 	// GuildRole 频道身份组信息
 	GuildRole struct {
-		RoleId     uint64
-		RoleName   string
-		ArgbColor  uint32
-		Indepedent bool
-		Num        int32
-		Owned      bool
-		Disabled   bool
-		MaxNum     int32
+		RoleId      uint64
+		RoleName    string
+		ArgbColor   uint32
+		Independent bool
+		Num         int32
+		Owned       bool
+		Disabled    bool
+		MaxNum      int32
 	}
 
 	// ChannelInfo 子频道信息
@@ -311,14 +311,14 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	roles := make([]*GuildRole, 0, len(body.Roles))
 	for _, role := range body.Roles {
 		roles = append(roles, &GuildRole{
-			RoleId:     role.GetRoleId(),
-			RoleName:   role.GetName(),
-			ArgbColor:  role.GetArgbColor(),
-			Indepedent: role.GetIndependent() == 1,
-			Num:        role.GetNum(),
-			Owned:      role.GetOwned() == 1,
-			Disabled:   role.GetDisabled() == 1,
-			MaxNum:     role.GetMaxNum(),
+			RoleId:      role.GetRoleId(),
+			RoleName:    role.GetName(),
+			ArgbColor:   role.GetArgbColor(),
+			Independent: role.GetIndependent() == 1,
+			Num:         role.GetNum(),
+			Owned:       role.GetOwned() == 1,
+			Disabled:    role.GetDisabled() == 1,
+			MaxNum:      role.GetMaxNum(),
 		})
 	}
 	return roles, nil
