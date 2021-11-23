@@ -19,6 +19,14 @@ func NewWriterF(f func(writer *Writer)) []byte {
 	return b
 }
 
+// OpenWriterF must call func close
+func OpenWriterF(f func(writer *Writer)) (b []byte, close func()) {
+	w := SelectWriter()
+	w.WriteByte(0)
+	f(w)
+	return w.Bytes(), func() { PutWriter(w) }
+}
+
 func (w *Writer) Write(b []byte) {
 	(*bytes.Buffer)(w).Write(b)
 }
@@ -73,9 +81,10 @@ func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(writer *Writer)) {
-	data := NewWriterF(f)
+	data, close := OpenWriterF(f)
 	w.WriteUInt32(uint32(len(data) + offset))
 	w.Write(data)
+	close()
 }
 
 func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body []byte) {
