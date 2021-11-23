@@ -69,9 +69,7 @@ func (w *Writer) WriteBool(b bool) {
 }
 
 func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
-	tea := NewTeaCipher(key)
-	ed := tea.Encrypt(data)
-	w.Write(ed)
+	w.Write(NewTeaCipher(key).Encrypt(data))
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(writer *Writer)) {

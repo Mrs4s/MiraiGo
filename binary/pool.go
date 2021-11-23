@@ -16,11 +16,10 @@ var bufferPool = sync.Pool{
 
 // SelectWriter 从池中取出一个 Writer
 func SelectWriter() *Writer {
-	w := bufferPool.Get().(*Writer)
-	if w == nil {
-		return new(Writer)
-	}
-	return w
+	// 因为 bufferPool 定义有 New 函数
+	// 所以 bufferPool.Get() 永不为 nil
+	// 不用判空
+	return bufferPool.Get().(*Writer)
 }
 
 // PutWriter 将 Writer 放回池中
@@ -103,9 +102,9 @@ var b256kPool = sync.Pool{
 // Get256KBytes 获取一个128k大小 []byte
 func Get256KBytes() *[]byte {
 	buf := b256kPool.Get().(*[]byte)
-	if buf == nil {
-		return make128kSlicePointer()
-	}
+	// 因为 b256kPool 定义有 New 函数
+	// 所以 b256kPool.Get() 永不为 nil
+	// 不用判空
 	if cap(*buf) < size256k {
 		return make128kSlicePointer()
 	}
