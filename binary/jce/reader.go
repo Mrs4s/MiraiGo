@@ -43,7 +43,7 @@ func (r *JceReader) peakHead() (h HeadData, l int32) {
 }
 
 func (r *JceReader) skip(l int) {
-	r.readBytes(l)
+	r.off += l
 }
 
 func (r *JceReader) skipField(t byte) {

@@ -1,3 +1,5 @@
+github.com/RomiChan/protobuf v0.0.0-20211124134334-257932207c53 h1:sbaXMniSPMlCKtwrBvCZd53kUf2upvmOE/Dku6gFtXY=
+github.com/RomiChan/protobuf v0.0.0-20211124134334-257932207c53/go.mod h1:2h54jTA7gqc5o5UjwPUZm0G8D218mEpu8WYAnNcvE7I=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=

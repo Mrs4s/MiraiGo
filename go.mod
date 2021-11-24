@@ -3,6 +3,7 @@ module github.com/Mrs4s/MiraiGo
 go 1.16
 
 require (
+	github.com/RomiChan/protobuf v0.0.0-20211124134334-257932207c53
 	github.com/klauspost/compress v1.13.6
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.3.0
