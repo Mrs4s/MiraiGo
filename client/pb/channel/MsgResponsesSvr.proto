@@ -2,7 +2,6 @@ syntax = "proto2";
 
 option go_package = "pb/channel;channel";
 
-
 message BatchGetMsgRspCountReq {
   repeated GuildMsg guildMsgList = 1;
 }

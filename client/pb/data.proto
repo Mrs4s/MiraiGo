@@ -2,7 +2,6 @@ syntax = "proto3";
 
 option go_package = "./;pb";
 
-
 message DeviceInfo {
   string bootloader = 1;
   string procVersion = 2;
