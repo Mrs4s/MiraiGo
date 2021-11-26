@@ -3,13 +3,14 @@ package topic
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/channel"
-	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/utils"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/client/pb/channel"
+	"github.com/Mrs4s/MiraiGo/message"
+	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 type (
