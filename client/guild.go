@@ -2,10 +2,11 @@ package client
 
 import (
 	"fmt"
-	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"math/rand"
 	"sort"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 
 	"github.com/pkg/errors"
 
