@@ -1,8 +1,8 @@
 package proto
 
-import "google.golang.org/protobuf/proto"
+import "github.com/RomiChan/protobuf/proto"
 
-type Message = proto.Message
+type Message = interface{}
 
 func Marshal(m Message) ([]byte, error) {
 	return proto.Marshal(m)

@@ -2,7 +2,6 @@ syntax = "proto2";
 
 option go_package = "pb/channel;channel";
 
-
 message BatchGetMsgRspCountReq {
   repeated GuildMsg guildMsgList = 1;
 }
@@ -26,6 +25,7 @@ message EmojiReaction {
   optional uint64 emojiType = 2;
   optional uint64 cnt = 3;
   optional bool isClicked = 4;
+  optional bool isDefaultEmoji = 10001;
 }
 
 message GuildMsg {

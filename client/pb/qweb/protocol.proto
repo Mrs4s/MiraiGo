@@ -1,18 +1,46 @@
-syntax = "proto3";
+syntax = "proto2";
 
 option go_package = "./;qweb";
 
 message QWebReq {
-  int64 seq = 1;
-  string qua = 2;
-  string deviceInfo = 3;
-  bytes busiBuff = 4;
-  string traceId = 5;
+  optional int64 seq = 1;
+  optional string qua = 2;
+  optional string deviceInfo = 3;
+  optional bytes busiBuff = 4;
+  optional string traceId = 5;
+  optional string Module = 6;
+  optional string Cmdname = 7;
+  optional StAuthInfo loginSig = 8;
+  optional StEncryption Crypto = 9;
+  repeated COMMEntry Extinfo = 10;
+  optional uint32 contentType = 11;
 }
 
 message QWebRsp {
-  int64 seq = 1;
-  int64 retCode = 2;
-  string errMsg = 3;
-  bytes busiBuff = 4;
+  optional int64 seq = 1;
+  optional int64 retCode = 2;
+  optional string errMsg = 3;
+  optional bytes busiBuff = 4;
+  optional string traceid = 5;
+}
+
+message StAuthInfo {
+  optional string uin = 1;
+  optional bytes sig = 2;
+  optional string platform = 3;
+  optional uint32 type = 4;
+  optional string appid = 5;
+  optional string openid = 6;
+  optional bytes sessionkey = 7;
+  repeated COMMEntry Extinfo = 8;
+}
+
+message StEncryption {
+  optional uint32 method = 1;
+  optional string iv = 2;
+}
+
+message COMMEntry {
+  optional string key = 1;
+  optional string value = 2;
 }

@@ -804,8 +804,8 @@ func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if pkg.RetCode != 0 {
-		return nil, errors.New(pkg.ErrMsg)
+	if pkg.GetRetCode() != 0 {
+		return nil, errors.New(pkg.GetErrMsg())
 	}
 	if err := proto.Unmarshal(pkg.BusiBuff, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

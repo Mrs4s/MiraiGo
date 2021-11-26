@@ -71,7 +71,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *in
 		_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
 	}
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
-		c.Debug("continue sync with flag: %v", rsp.SyncFlag.String())
+		c.Debug("continue sync with flag: %v", rsp.SyncFlag)
 		seq, pkt := c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix())
 		_, _ = c.sendAndWait(seq, pkt, info.Params)
 	}
