@@ -476,8 +476,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	rspPkt.ReadFrom(jce.NewJceReader(tea.Decrypt(rsp)[4:]))
 	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
 	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
-	servers := []jce.SsoServerInfo{}
-	reader.ReadSlice(&servers, 2)
+	servers := reader.ReadSsoServerInfos(2)
 	adds := make([]*net.TCPAddr, 0, len(servers))
 	for _, s := range servers {
 		if strings.Contains(s.Server, "com") {

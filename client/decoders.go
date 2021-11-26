@@ -312,8 +312,7 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 		switch t {
 		case 1:
 			ssoPkt := jce.NewJceReader(jceBuf)
-			servers := []jce.SsoServerInfo{}
-			ssoPkt.ReadSlice(&servers, 1)
+			servers := ssoPkt.ReadSsoServerInfos(1)
 			if len(servers) > 0 {
 				var adds []*net.TCPAddr
 				for _, s := range servers {
@@ -433,8 +432,7 @@ func decodeSummaryCardResponse(_ *QQClient, _ *incomingPacketInfo, payload []byt
 		Uin:       rsp.ReadInt64(23),
 		LoginDays: rsp.ReadInt64(36),
 	}
-	services := [][]byte{}
-	rsp.ReadSlice(&services, 46)
+	services := rsp.ReadByteArrArr(46)
 	readService := func(buf []byte) (*profilecard.BusiComm, []byte) {
 		r := binary.NewReader(buf)
 		r.ReadByte()
@@ -467,8 +465,7 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["FLRESP"][1:])
 	totalFriendCount := r.ReadInt16(5)
-	friends := make([]jce.FriendInfo, 0)
-	r.ReadSlice(&friends, 7)
+	friends := r.ReadFriendInfos(7)
 	l := make([]*FriendInfo, 0, len(friends))
 	for _, f := range friends {
 		l = append(l, &FriendInfo{
@@ -505,10 +502,8 @@ func decodeGroupListResponse(c *QQClient, _ *incomingPacketInfo, payload []byte)
 	data := &jce.RequestDataVersion3{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["GetTroopListRespV2"][1:])
-	vecCookie := []byte{}
-	groups := []jce.TroopNumber{}
-	r.ReadSlice(&vecCookie, 4)
-	r.ReadSlice(&groups, 5)
+	vecCookie := r.ReadBytes(4)
+	groups := r.ReadTroopNumbers(5)
 	l := make([]*GroupInfo, 0, len(groups))
 	for _, g := range groups {
 		l = append(l, &GroupInfo{
@@ -539,8 +534,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	data := &jce.RequestDataVersion3{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	r := jce.NewJceReader(data.Map["GTMLRESP"][1:])
-	members := make([]jce.TroopMemberInfo, 0)
-	r.ReadSlice(&members, 3)
+	members := r.ReadTroopMemberInfos(3)
 	next := r.ReadInt64(4)
 	l := make([]*GroupMemberInfo, 0, len(members))
 	for _, m := range members {
