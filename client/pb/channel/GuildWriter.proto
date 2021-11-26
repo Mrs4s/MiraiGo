@@ -1,0 +1,154 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+import "pb/channel/GuildFeedCloudMeta.proto";
+import "pb/channel/GuildChannelBase.proto";
+
+message StAlterFeedReq {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional bytes busiReqData = 3;
+  optional uint64 mBitmap = 4;
+  optional int32 from = 5;
+  optional int32 src = 6;
+  repeated CommonEntry alterFeedExtInfo = 7;
+  optional string jsonFeed = 8;
+  optional StClientContent clientContent = 9;
+}
+
+message StAlterFeedRsp {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional bytes busiRspData = 3;
+}
+
+message StClientContent {
+  repeated StClientImageContent clientImageContents = 1;
+  repeated StClientVideoContent clientVideoContents = 2;
+}
+
+message StClientImageContent {
+  optional string taskId = 1;
+  optional string picId = 2;
+  optional string url = 3;
+}
+
+message StClientVideoContent {
+  optional string taskId = 1;
+  optional string videoId = 2;
+  optional string videoUrl = 3;
+  optional string coverUrl = 4;
+}
+
+message StDelFeedReq {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional int32 from = 3;
+  optional int32 src = 4;
+}
+
+message StDelFeedRsp {
+  optional StCommonExt extInfo = 1;
+}
+
+message StDoCommentReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 commentType = 2;
+  optional StComment comment = 3;
+  optional StFeed feed = 4;
+  optional int32 from = 5;
+  optional bytes busiReqData = 6;
+  optional int32 src = 7;
+}
+
+message StDoCommentRsp {
+  optional StCommonExt extInfo = 1;
+  optional StComment comment = 2;
+  optional bytes busiRspData = 3;
+}
+
+message StDoLikeReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 likeType = 2;
+  optional StLike like = 3;
+  optional StFeed feed = 4;
+  optional bytes busiReqData = 5;
+  optional StComment comment = 6;
+  optional StReply reply = 7;
+  optional int32 from = 8;
+  optional int32 src = 9;
+  optional StEmotionReactionInfo emotionReaction = 10;
+}
+
+message StDoLikeRsp {
+  optional StCommonExt extInfo = 1;
+  optional StLike like = 2;
+  optional bytes busiRspData = 3;
+  optional StEmotionReactionInfo emotionReaction = 4;
+}
+
+message StDoReplyReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 replyType = 2;
+  optional StReply reply = 3;
+  optional StComment comment = 4;
+  optional StFeed feed = 5;
+  optional int32 from = 6;
+  optional bytes busiReqData = 7;
+  optional int32 src = 8;
+}
+
+message StDoReplyRsp {
+  optional StCommonExt extInfo = 1;
+  optional StReply reply = 2;
+  optional bytes busiRspData = 3;
+}
+
+message StDoSecurityReq {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional StComment comment = 3;
+  optional StReply reply = 4;
+  optional StUser poster = 5;
+  optional int32 secType = 6;
+}
+
+message StDoSecurityRsp {
+  optional StCommonExt extInfo = 1;
+}
+
+message StModifyFeedReq {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional uint64 mBitmap = 3;
+  optional int32 from = 4;
+  optional int32 src = 5;
+  repeated CommonEntry modifyFeedExtInfo = 6;
+}
+
+message StModifyFeedRsp {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional bytes busiRspData = 3;
+}
+
+message StPublishFeedReq {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional bytes busiReqData = 3;
+  optional int32 from = 4;
+  optional int32 src = 5;
+  repeated CommonEntry storeFeedExtInfo = 6;
+  optional string jsonFeed = 7;
+  optional StClientContent clientContent = 8;
+}
+
+message StPublishFeedRsp {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional bytes busiRspData = 3;
+}
+
