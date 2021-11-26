@@ -176,6 +176,25 @@ func (x *StChannelSign) GetChannelId() uint64 {
 	return 0
 }
 
+type StEmotionReactionInfo struct {
+	Id                *string          `protobuf:"bytes,1,opt"`
+	EmojiReactionList []*EmojiReaction `protobuf:"bytes,2,rep"`
+}
+
+func (x *StEmotionReactionInfo) GetId() string {
+	if x != nil && x.Id != nil {
+		return *x.Id
+	}
+	return ""
+}
+
+func (x *StEmotionReactionInfo) GetEmojiReactionList() []*EmojiReaction {
+	if x != nil {
+		return x.EmojiReactionList
+	}
+	return nil
+}
+
 type StCommonExt struct {
 	MapInfo      []*CommonEntry `protobuf:"bytes,1,rep"`
 	AttachInfo   *string        `protobuf:"bytes,2,opt"`

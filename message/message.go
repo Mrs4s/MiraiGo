@@ -607,5 +607,8 @@ func ToReadableString(m []IMessageElement) string {
 }
 
 func FaceNameById(id int) string {
-	return faceMap[id]
+	if name, ok := faceMap[id]; ok {
+		return name
+	}
+	return "未知表情"
 }

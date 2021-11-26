@@ -580,31 +580,31 @@ func (x *StExternalMedalWallInfo) GetNeedShowEntrance() bool {
 }
 
 type StFeed struct {
-	Id              *string        `protobuf:"bytes,1,opt"`
-	Title           *StRichText    `protobuf:"bytes,2,opt"`
-	Subtitle        *StRichText    `protobuf:"bytes,3,opt"`
-	Poster          *StUser        `protobuf:"bytes,4,opt"`
-	Videos          []*StVideo     `protobuf:"bytes,5,rep"`
-	Contents        *StRichText    `protobuf:"bytes,6,opt"`
-	CreateTime      *uint64        `protobuf:"varint,7,opt"`
-	EmotionReaction *EmojiReaction `protobuf:"bytes,8,opt"`
-	CommentCount    *uint32        `protobuf:"varint,9,opt"`
-	VecComment      []*StComment   `protobuf:"bytes,10,rep"`
-	Share           *StShare       `protobuf:"bytes,11,opt"`
-	VisitorInfo     *StVisitor     `protobuf:"bytes,12,opt"`
-	Images          []*StImage     `protobuf:"bytes,13,rep"`
-	PoiInfo         *StPoiInfoV2   `protobuf:"bytes,14,opt"`
-	TagInfos        []*StTagInfo   `protobuf:"bytes,15,rep"`
-	BusiReport      []byte         `protobuf:"bytes,16,opt"`
-	OpMask          []uint32       `protobuf:"varint,17,rep"`
-	Opinfo          *StOpinfo      `protobuf:"bytes,18,opt"`
-	ExtInfo         []*CommonEntry `protobuf:"bytes,19,rep"`
-	PatternInfo     *string        `protobuf:"bytes,20,opt"`
-	ChannelInfo     *StChannelInfo `protobuf:"bytes,21,opt"`
-	CreateTimeNs    *uint64        `protobuf:"varint,22,opt"`
-	Summary         *StFeedSummary `protobuf:"bytes,23,opt"`
-	RecomInfo       *StRecomInfo   `protobuf:"bytes,24,opt"`
-	Meta            *FeedMetaData  `protobuf:"bytes,25,opt"`
+	Id              *string                `protobuf:"bytes,1,opt"`
+	Title           *StRichText            `protobuf:"bytes,2,opt"`
+	Subtitle        *StRichText            `protobuf:"bytes,3,opt"`
+	Poster          *StUser                `protobuf:"bytes,4,opt"`
+	Videos          []*StVideo             `protobuf:"bytes,5,rep"`
+	Contents        *StRichText            `protobuf:"bytes,6,opt"`
+	CreateTime      *uint64                `protobuf:"varint,7,opt"`
+	EmotionReaction *StEmotionReactionInfo `protobuf:"bytes,8,opt"`
+	CommentCount    *uint32                `protobuf:"varint,9,opt"`
+	VecComment      []*StComment           `protobuf:"bytes,10,rep"`
+	Share           *StShare               `protobuf:"bytes,11,opt"`
+	VisitorInfo     *StVisitor             `protobuf:"bytes,12,opt"`
+	Images          []*StImage             `protobuf:"bytes,13,rep"`
+	PoiInfo         *StPoiInfoV2           `protobuf:"bytes,14,opt"`
+	TagInfos        []*StTagInfo           `protobuf:"bytes,15,rep"`
+	BusiReport      []byte                 `protobuf:"bytes,16,opt"`
+	OpMask          []uint32               `protobuf:"varint,17,rep"`
+	Opinfo          *StOpinfo              `protobuf:"bytes,18,opt"`
+	ExtInfo         []*CommonEntry         `protobuf:"bytes,19,rep"`
+	PatternInfo     *string                `protobuf:"bytes,20,opt"`
+	ChannelInfo     *StChannelInfo         `protobuf:"bytes,21,opt"`
+	CreateTimeNs    *uint64                `protobuf:"varint,22,opt"`
+	Summary         *StFeedSummary         `protobuf:"bytes,23,opt"`
+	RecomInfo       *StRecomInfo           `protobuf:"bytes,24,opt"`
+	Meta            *FeedMetaData          `protobuf:"bytes,25,opt"`
 }
 
 func (x *StFeed) GetId() string {
@@ -656,7 +656,7 @@ func (x *StFeed) GetCreateTime() uint64 {
 	return 0
 }
 
-func (x *StFeed) GetEmotionReaction() *EmojiReaction {
+func (x *StFeed) GetEmotionReaction() *StEmotionReactionInfo {
 	if x != nil {
 		return x.EmotionReaction
 	}
@@ -1734,9 +1734,10 @@ func (x *StPoiInfoV2) GetDisplayName() string {
 }
 
 type StPrePullCacheFeed struct {
-	Id         *string `protobuf:"bytes,1,opt"`
-	Poster     *StUser `protobuf:"bytes,2,opt"`
-	CreateTime *uint64 `protobuf:"varint,3,opt"` //repeated GuildCommon.BytesEntry busiTranparent = 4;
+	Id             *string       `protobuf:"bytes,1,opt"`
+	Poster         *StUser       `protobuf:"bytes,2,opt"`
+	CreateTime     *uint64       `protobuf:"varint,3,opt"`
+	BusiTranparent []*BytesEntry `protobuf:"bytes,4,rep"`
 }
 
 func (x *StPrePullCacheFeed) GetId() string {
@@ -1758,6 +1759,13 @@ func (x *StPrePullCacheFeed) GetCreateTime() uint64 {
 		return *x.CreateTime
 	}
 	return 0
+}
+
+func (x *StPrePullCacheFeed) GetBusiTranparent() []*BytesEntry {
+	if x != nil {
+		return x.BusiTranparent
+	}
+	return nil
 }
 
 type StProxyInfo struct {

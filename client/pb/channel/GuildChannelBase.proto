@@ -4,6 +4,8 @@ package channel;
 
 option go_package = "pb/channel;channel";
 
+import "pb/channel/MsgResponsesSvr.proto";
+
 message ChannelUserInfo {
   optional ClientIdentity clientIdentity = 1;
   optional uint32 memberType = 2;
@@ -51,12 +53,13 @@ message StEmojiReaction {
   optional bool isClicked = 4;
   optional bool isDefaultEmoji = 10001;
 }
+ */
 
 message StEmotionReactionInfo {
   optional string id = 1;
-  repeated StEmojiReaction emojiReactionList = 2;
+  repeated EmojiReaction emojiReactionList = 2;
 }
- */
+
 
 message StCommonExt {
   repeated CommonEntry mapInfo = 1;

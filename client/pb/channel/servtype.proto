@@ -286,9 +286,15 @@ message SwitchDetail {
 message SwitchLiveRoom {
   optional uint64 guildId = 1;
   optional uint64 channelId = 2;
-  optional uint64 roomId = 3;
-  optional uint64 tinyid = 4;
-  optional uint32 action = 5;
+  // optional uint64 roomId = 3;
+  // optional uint64 tinyid = 4;
+  optional SwitchLiveRoomUserInfo userInfo = 3;
+  optional uint32 action = 4; // JOIN = 1 QUIT = 2
+}
+
+message SwitchLiveRoomUserInfo {
+  optional uint64 tinyId = 1;
+  optional string nickname = 2;
 }
 
 message SwitchVoiceChannel {

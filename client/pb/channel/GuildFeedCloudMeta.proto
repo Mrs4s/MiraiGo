@@ -4,7 +4,6 @@ package channel;
 
 option go_package = "pb/channel;channel";
 
-import "pb/channel/MsgResponsesSvr.proto";
 import "pb/channel/GuildChannelBase.proto";
 
 message ContentMetaData {
@@ -130,7 +129,7 @@ message StFeed {
   repeated StVideo videos = 5;
   optional StRichText contents = 6;
   optional uint64 createTime = 7;
-  optional EmojiReaction emotionReaction = 8;
+  optional StEmotionReactionInfo emotionReaction = 8;
   optional uint32 commentCount = 9;
   repeated StComment vecComment = 10;
   optional StShare share = 11;
@@ -328,7 +327,7 @@ message StPrePullCacheFeed {
   optional string id = 1;
   optional StUser poster = 2;
   optional uint64 createTime = 3;
-  //repeated GuildCommon.BytesEntry busiTranparent = 4;
+  repeated BytesEntry busiTranparent = 4;
 }
 
 message StProxyInfo {

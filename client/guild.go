@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/topic"
 	"math/rand"
 	"sort"
 	"time"
@@ -525,17 +526,17 @@ func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo
 	return convertChannelInfo(body.Info), nil
 }
 
-func (s *GuildService) GetChannelTopics(guildId, channelId uint64) error {
+func (s *GuildService) GetTopicChannelFeeds(guildId, channelId uint64) ([]*topic.Feed, error) {
 	guild := s.FindGuild(guildId)
 	if guild == nil {
-		return errors.New("guild not found")
+		return nil, errors.New("guild not found")
 	}
 	channelInfo := guild.FindChannel(channelId)
 	if channelInfo == nil {
-		return errors.New("channel not found")
+		return nil, errors.New("channel not found")
 	}
 	if channelInfo.ChannelType != ChannelTypeTopic {
-		return errors.New("channel type error")
+		return nil, errors.New("channel type error")
 	}
 	req, _ := proto.Marshal(&channel.StGetChannelFeedsReq{
 		Count: proto.Uint32(12),
@@ -571,17 +572,21 @@ func (s *GuildService) GetChannelTopics(guildId, channelId uint64) error {
 	packet := packets.BuildUniPacket(s.c.Uin, seq, "QChannelSvr.trpc.qchannel.commreader.ComReader.GetChannelTimelineFeeds", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
-		return errors.New("send packet error")
+		return nil, errors.New("send packet error")
 	}
 	pkg := new(qweb.QWebRsp)
 	body := new(channel.StGetChannelFeedsRsp)
 	if err = proto.Unmarshal(rsp, pkg); err != nil {
-		return errors.Wrap(err, "failed to unmarshal protobuf message")
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err = proto.Unmarshal(pkg.BusiBuff, body); err != nil {
-		return errors.Wrap(err, "failed to unmarshal protobuf message")
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	return nil
+	feeds := make([]*topic.Feed, 0, len(body.VecFeed))
+	for _, f := range body.VecFeed {
+		feeds = append(feeds, topic.DecodeFeed(f))
+	}
+	return feeds, nil
 }
 
 /* need analysis

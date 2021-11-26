@@ -1534,9 +1534,10 @@ func (x *SwitchDetail) GetPlatform() uint32 {
 type SwitchLiveRoom struct {
 	GuildId   *uint64 `protobuf:"varint,1,opt"`
 	ChannelId *uint64 `protobuf:"varint,2,opt"`
-	RoomId    *uint64 `protobuf:"varint,3,opt"`
-	Tinyid    *uint64 `protobuf:"varint,4,opt"`
-	Action    *uint32 `protobuf:"varint,5,opt"`
+	// optional uint64 roomId = 3;
+	// optional uint64 tinyid = 4;
+	UserInfo *SwitchLiveRoomUserInfo `protobuf:"bytes,3,opt"`
+	Action   *uint32                 `protobuf:"varint,4,opt"` // JOIN = 1 QUIT = 2
 }
 
 func (x *SwitchLiveRoom) GetGuildId() uint64 {
@@ -1553,18 +1554,11 @@ func (x *SwitchLiveRoom) GetChannelId() uint64 {
 	return 0
 }
 
-func (x *SwitchLiveRoom) GetRoomId() uint64 {
-	if x != nil && x.RoomId != nil {
-		return *x.RoomId
+func (x *SwitchLiveRoom) GetUserInfo() *SwitchLiveRoomUserInfo {
+	if x != nil {
+		return x.UserInfo
 	}
-	return 0
-}
-
-func (x *SwitchLiveRoom) GetTinyid() uint64 {
-	if x != nil && x.Tinyid != nil {
-		return *x.Tinyid
-	}
-	return 0
+	return nil
 }
 
 func (x *SwitchLiveRoom) GetAction() uint32 {
@@ -1572,6 +1566,25 @@ func (x *SwitchLiveRoom) GetAction() uint32 {
 		return *x.Action
 	}
 	return 0
+}
+
+type SwitchLiveRoomUserInfo struct {
+	TinyId   *uint64 `protobuf:"varint,1,opt"`
+	Nickname *string `protobuf:"bytes,2,opt"`
+}
+
+func (x *SwitchLiveRoomUserInfo) GetTinyId() uint64 {
+	if x != nil && x.TinyId != nil {
+		return *x.TinyId
+	}
+	return 0
+}
+
+func (x *SwitchLiveRoomUserInfo) GetNickname() string {
+	if x != nil && x.Nickname != nil {
+		return *x.Nickname
+	}
+	return ""
 }
 
 type SwitchVoiceChannel struct {
