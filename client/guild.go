@@ -613,7 +613,7 @@ func (s *GuildService) PostTopicChannelFeed(guildId, channelId uint64, feed *top
 		ExtInfo: &channel.StCommonExt{
 			MapInfo: []*channel.CommonEntry{
 				{
-					proto.String("clientkey"), proto.String("GuildMain" + utils.RandomStringRange(14, "0123456789")),
+					Key: proto.String("clientkey"), Value: proto.String("GuildMain" + utils.RandomStringRange(14, "0123456789")),
 				},
 			},
 		},
