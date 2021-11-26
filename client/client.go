@@ -82,6 +82,7 @@ type QQClient struct {
 	ksid             []byte
 
 	// session info
+	qwebSeq        int64
 	sigInfo        *loginSigInfo
 	bigDataSession *bigDataSessionInfo
 	dpwd           []byte
@@ -859,6 +860,10 @@ func (c *QQClient) nextGroupSeq() int32 {
 
 func (c *QQClient) nextFriendSeq() int32 {
 	return atomic.AddInt32(&c.friendSeq, 1)
+}
+
+func (c *QQClient) nextQWebSeq() int64 {
+	return atomic.AddInt64(&c.qwebSeq, 1)
 }
 
 func (c *QQClient) nextGroupDataTransSeq() int32 {

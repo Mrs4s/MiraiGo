@@ -1,0 +1,93 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+import "pb/channel/GuildFeedCloudMeta.proto";
+import "pb/channel/GuildChannelBase.proto";
+
+
+message GetNoticesReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 pageNum = 2;
+  optional string attachInfo = 3;
+}
+
+message GetNoticesRsp {
+  optional StCommonExt extInfo = 1;
+  repeated StNotice notices = 2;
+  optional uint32 totalNum = 3;
+  optional bool isFinish = 4;
+  optional string attachInfo = 5;
+}
+
+message NeedInsertCommentInfo {
+  optional string commentID = 1;
+}
+
+message RefreshToast {
+  optional string text = 1;
+}
+
+message StGetChannelFeedsReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 count = 2;
+  optional uint32 from = 3;
+  optional StChannelSign channelSign = 4;
+  optional string feedAttchInfo = 5;
+}
+
+message StGetChannelFeedsRsp {
+  optional StCommonExt extInfo = 1;
+  repeated StFeed vecFeed = 2;
+  optional uint32 isFinish = 3;
+  optional StUser user = 4;
+  optional string feedAttchInfo = 5;
+  optional RefreshToast refreshToast = 6;
+}
+
+message StGetChannelShareFeedReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 from = 2;
+  optional StChannelShareInfo channelShareInfo = 3;
+}
+
+message StGetChannelShareFeedRsp {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+}
+
+message StGetFeedCommentsReq {
+  optional StCommonExt extInfo = 1;
+  optional string userId = 2;
+  optional string feedId = 3;
+  optional uint32 listNum = 4;
+  optional uint32 from = 5;
+  optional string attchInfo = 6;
+  optional string entrySchema = 7;
+}
+
+message StGetFeedCommentsRsp {
+  optional StCommonExt extInfo = 1;
+  repeated StComment vecComment = 2;
+  optional uint32 totalNum = 3;
+  optional uint32 isFinish = 4;
+  optional string attchInfo = 5;
+}
+
+message StGetFeedDetailReq {
+  optional StCommonExt extInfo = 1;
+  optional uint32 from = 2;
+  optional string userId = 3;
+  optional string feedId = 4;
+  optional uint64 createTime = 5;
+  optional uint32 detailType = 6;
+  optional StChannelSign channelSign = 7;
+}
+
+message StGetFeedDetailRsp {
+  optional StCommonExt extInfo = 1;
+  optional StFeed feed = 2;
+  optional StUser loginUser = 3;
+}

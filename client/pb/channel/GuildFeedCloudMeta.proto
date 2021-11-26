@@ -1,0 +1,652 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+import "pb/channel/MsgResponsesSvr.proto";
+import "pb/channel/GuildChannelBase.proto";
+
+message ContentMetaData {
+  optional RichTextContentCount count = 1;
+  optional int64 ContentID = 2;
+}
+
+message FeedMetaData {
+  optional ContentMetaData content = 1;
+  optional uint64 lastModifiedTime = 2;
+}
+
+message FeedRedTouchTransInfo {
+  optional string feedId = 1;
+  optional string author = 2;
+  optional int64 createTs = 3;
+  optional int32 msgType = 4;
+  optional int32 pageType = 5;
+  optional int32 redType = 6;
+  optional int32 insertPageType = 7;
+}
+
+message NoticeOperation {
+  optional uint32 type = 1;
+  optional string schema = 2;
+}
+
+message RichTextContentCount {
+  optional uint64 textWord = 1;
+  optional uint64 at = 2;
+  optional uint64 url = 3;
+  optional uint64 emoji = 4;
+  optional uint64 image = 5;
+  optional uint64 video = 6;
+}
+
+message StAnimation {
+  optional uint32 width = 1;
+  optional uint32 height = 2;
+  optional string animationUrl = 3;
+  optional bytes busiData = 4;
+}
+
+message StBusiReportInfo {
+  optional StRecomReportInfo recomReport = 1;
+  optional string traceID = 2;
+}
+
+message StChannelShareInfo {
+  optional string feedID = 1;
+  optional string posterID = 2;
+  optional uint64 feedPublishAt = 3;
+  optional StChannelSign channelSign = 4;
+  optional uint64 updateDurationMs = 5;
+  optional StChannelShareSign sign = 6;
+}
+
+message StChannelShareSign {
+  optional uint64 createAt = 1;
+  optional string token = 2;
+}
+
+message StCircleRankItem {
+  optional int32 rankNo = 1;
+  optional string circleName = 2;
+  optional int64 fuelValue = 3;
+  optional int64 feedNum = 4;
+  optional string circleID = 5;
+}
+
+message StClientInfo {
+  optional string feedclientkey = 1;
+  repeated CommonEntry clientMap = 2;
+}
+
+
+message StComment {
+  optional string id = 1;
+  optional StUser postUser = 2;
+  optional uint64 createTime = 3;
+  optional string content = 4;
+  optional uint32 replyCount = 5;
+  repeated StReply vecReply = 6;
+  optional bytes busiData = 7;
+  optional StLike likeInfo = 8;
+  optional uint32 typeFlag = 9;
+  repeated string atUinList = 10;
+  optional uint32 typeFlag2 = 11;
+  optional uint64 createTimeNs = 12;
+  repeated CommonEntry storeExtInfo = 13;
+  optional string thirdId = 14;
+  optional uint32 sourceType = 15;
+  optional StRichText richContents = 16;
+}
+
+message StDebugInfo {
+  repeated CommonEntry debugMap = 1;
+}
+
+message StDittoFeed {
+  optional uint32 dittoId = 1;
+  optional uint32 dittoPatternId = 2;
+  optional bytes dittoData = 3;
+  optional bytes dittoDataNew = 4;
+}
+
+message StExifInfo {
+  repeated CommonEntry kvs = 1;
+}
+
+message StExternalMedalWallInfo {
+  optional bool needRedPoint = 1;
+  repeated StMedalInfo medalInfos = 2;
+  optional string medalWallJumpUrl = 3;
+  optional bool needShowEntrance = 4;
+}
+
+message StFeed {
+  optional string id = 1;
+  optional StRichText title = 2;
+  optional StRichText subtitle = 3;
+  optional StUser poster = 4;
+  repeated StVideo videos = 5;
+  optional StRichText contents = 6;
+  optional uint64 createTime = 7;
+  optional EmojiReaction emotionReaction = 8;
+  optional uint32 commentCount = 9;
+  repeated StComment vecComment = 10;
+  optional StShare share = 11;
+  optional StVisitor visitorInfo = 12;
+  repeated StImage images = 13;
+  optional StPoiInfoV2 poiInfo = 14;
+  repeated StTagInfo tagInfos = 15;
+  optional bytes busiReport = 16;
+  repeated uint32 opMask = 17;
+  optional StOpinfo opinfo = 18;
+  repeated CommonEntry extInfo = 19;
+  optional string patternInfo = 20;
+  optional StChannelInfo channelInfo = 21;
+  optional uint64 createTimeNs = 22;
+  optional StFeedSummary summary = 23;
+  optional StRecomInfo recomInfo = 24;
+  optional FeedMetaData meta = 25;
+}
+
+message StFeedAbstract {
+  optional string id = 1;
+  optional string title = 2;
+  optional StUser poster = 3;
+  optional StImage pic = 4;
+  optional uint32 type = 5;
+  optional uint64 createTime = 6;
+  optional StVideo video = 7;
+  optional uint32 fuelNum = 8;
+  optional string content = 9;
+  repeated StImage images = 10;
+  optional StFeedCount countInfo = 11;
+}
+
+message StFeedCount {
+  optional int64 liked = 1;
+  optional int64 push = 2;
+  optional int64 comment = 3;
+  optional int64 visitor = 4;
+}
+
+message StFeedSummary {
+  optional uint32 layoutType = 1;
+}
+
+message StFollowRecomInfo {
+  optional string followText = 1;
+  repeated StFollowUser followUsers = 4;
+  optional string commFriendText = 6;
+  optional string commGroupText = 7;
+}
+
+message StFollowUser {
+  optional uint64 uid = 1;
+  optional string nick = 2;
+}
+
+message StGPSV2 {
+  optional int64 lat = 1;
+  optional int64 lon = 2;
+  optional int64 eType = 3;
+  optional int64 alt = 4;
+}
+
+message StGuidePublishBubble {
+  optional string id = 1;
+  optional StImage backgroundImage = 2;
+  optional string jumpUrl = 3;
+}
+
+message StIconInfo {
+  optional string iconUrl40 = 1;
+  optional string iconUrl100 = 2;
+  optional string iconUrl140 = 3;
+  optional string iconUrl640 = 4;
+  optional string iconUrl = 5;
+}
+
+message StImage {
+  optional uint32 width = 1;
+  optional uint32 height = 2;
+  optional string picUrl = 3;
+  repeated StImageUrl vecImageUrl = 4;
+  optional string picId = 5;
+  optional bytes busiData = 6;
+  optional string imageMD5 = 7;
+  optional string layerPicUrl = 8;
+  optional string patternId = 9;
+  optional uint32 displayIndex = 10;
+}
+
+message StImageUrl {
+  optional uint32 levelType = 1;
+  optional string url = 2;
+  optional uint32 width = 3;
+  optional uint32 height = 4;
+  optional bytes busiData = 5;
+}
+
+message StLightInteractInfo {
+  optional StUser user = 1;
+  optional StRelationInfo relation = 2;
+  optional uint32 count = 3;
+  optional bytes busiData = 4;
+}
+
+message StLike {
+  optional string id = 1;
+  optional uint32 count = 2;
+  optional uint32 status = 3;
+  repeated StUser vecUser = 4;
+  optional bytes busiData = 5;
+  optional StUser postUser = 6;
+  optional uint32 hasLikedCount = 7;
+  optional uint32 ownerStatus = 8;
+  optional string jumpUrl = 9;
+}
+
+message StLiteBanner {
+  optional StImage icon = 1;
+  optional string title = 2;
+  optional string jumpUrl = 3;
+  optional string activityID = 4;
+  optional string jsonStyle = 5;
+  repeated CommonEntry extInfo = 6;
+}
+
+message StMaterialDataNew {
+  optional string materialType = 1;
+  repeated StSingleMaterial materialList = 2;
+}
+
+message StMedalInfo {
+  optional int32 type = 1;
+  optional string medalName = 2;
+  optional string medalID = 3;
+  optional int32 rank = 4;
+  optional bool isHighLight = 5;
+  optional bool isNew = 6;
+  optional string jumpUrl = 7;
+  optional string iconUrl = 8;
+  optional string backgroundUrl = 9;
+  optional string describe = 10;
+  optional int32 reportValue = 11;
+}
+
+message StNotice {
+  optional StFeed psvFeed = 1;
+  optional StFeed origineFeed = 2;
+  optional StNoticePattonInfo pattonInfo = 3;
+}
+
+message StNoticePattonInfo {
+  optional uint32 pattonType = 1;
+  optional StPlainTxtInfo plainTxt = 2;
+}
+
+message StNoticeTxtInfo {
+  optional StRichText content = 1;
+  optional StRichText contentOfReference = 2;
+}
+
+message StOpinfo {
+  repeated uint64 createTime = 1;
+}
+
+message StPlainTxtInfo {
+  optional StNoticeTxtInfo txtInfo = 1;
+  optional NoticeOperation operation = 2;
+}
+
+message StPoiInfoV2 {
+  optional string poiId = 1;
+  optional string name = 2;
+  optional int32 poiType = 3;
+  optional string typeName = 4;
+  optional string address = 5;
+  optional int32 districtCode = 6;
+  optional StGPSV2 gps = 7;
+  optional int32 distance = 8;
+  optional int32 hotValue = 9;
+  optional string phone = 10;
+  optional string country = 11;
+  optional string province = 12;
+  optional string city = 13;
+  optional int32 poiNum = 14;
+  optional int32 poiOrderType = 15;
+  optional string defaultName = 16;
+  optional string district = 17;
+  optional string dianPingId = 18;
+  optional string distanceText = 19;
+  optional string displayName = 20;
+}
+
+message StPrePullCacheFeed {
+  optional string id = 1;
+  optional StUser poster = 2;
+  optional uint64 createTime = 3;
+  //repeated GuildCommon.BytesEntry busiTranparent = 4;
+}
+
+message StProxyInfo {
+  optional int32 cmdId = 1;
+  optional int32 subCmdId = 2;
+  optional string appProtocol = 3;
+  optional bytes reqBody = 4;
+}
+
+message StRankingItem {
+  optional StUser user = 1;
+  optional StRelationInfo relation = 2;
+  optional int64 score = 3;
+  optional int32 grade = 4;
+  optional bytes busiData = 5;
+  optional int32 rankNo = 6;
+  optional int32 inTopicList = 7;
+}
+
+message StRecomForward {
+  optional string id = 1;
+  optional string title = 2;
+  optional string subtitle = 3;
+  optional StUser poster = 4;
+  optional uint64 createTime = 5;
+  optional uint32 type = 6;
+  optional bytes busiData = 7;
+}
+
+message StRecomInfo {
+  optional string recomReason = 1;
+  optional bytes recomAttachInfo = 2;
+  optional string recomTrace = 3;
+  optional bytes clientSealData = 4;
+  optional string iconUrl = 5;
+  optional int32 recomReasonType = 6;
+}
+
+message StRecomReportInfo {
+  repeated StSingleRecomReportInfo recomInfos = 1;
+}
+
+message StRelationInfo {
+  optional string id = 1;
+  optional uint32 relation = 2;
+  optional bytes busiData = 3;
+  optional uint32 relationState = 4;
+  optional uint32 score = 5;
+  optional bool isBlock = 6;
+  optional bool isBlocked = 7;
+  optional bool isFriend = 8;
+  optional bool isUncare = 9;
+  optional uint64 imBitMap = 10;
+}
+
+message StReply {
+  optional string id = 1;
+  optional StUser postUser = 2;
+  optional uint64 createTime = 3;
+  optional string content = 4;
+  optional StUser targetUser = 5;
+  optional bytes busiData = 6;
+  optional StLike likeInfo = 7;
+  optional uint32 typeFlag = 8;
+  optional uint32 modifyflag = 9;
+  repeated string atUinList = 10;
+  optional uint32 typeFlag2 = 11;
+  optional uint64 createTimeNs = 12;
+  repeated CommonEntry storeExtInfo = 13;
+  optional string thirdId = 14;
+  optional string targetReplyID = 15;
+  optional uint32 sourceType = 16;
+  optional StRichText richContents = 17;
+}
+
+message StReportInfo {
+  optional string id = 1;
+  optional bytes busiReport = 2;
+}
+
+message StRichText {
+  repeated StRichTextContent contents = 1;
+}
+
+message StRichTextAtContent {
+  optional uint32 type = 1;
+  optional GuildChannelBaseGuildInfo guildInfo = 2;
+  optional GuildChannelBaseRoleGroupInfo roleGroupId = 3;
+  optional StUser user = 4;
+}
+
+message GuildChannelBaseGuildInfo {
+  optional uint64 guildId = 1;
+  optional string name = 2;
+  optional uint64 joinTime = 3;
+}
+
+message GuildChannelBaseRoleGroupInfo {
+  optional uint64 roleId = 1;
+  optional string name = 2;
+  optional uint32 color = 3;
+}
+
+message StRichTextChannelContent {
+  optional StChannelInfo channelInfo = 1;
+}
+
+message StRichTextContent {
+  optional uint32 type = 1;
+  optional string patternId = 2;
+  optional StRichTextTextContent textContent = 3;
+  optional StRichTextAtContent atContent = 4;
+  optional StRichTextURLContent urlContent = 5;
+  optional StRichTextEmojiContent emojiContent = 6;
+  optional StRichTextChannelContent channelContent = 7;
+}
+
+message StRichTextEmojiContent {
+  optional string id = 1;
+  optional string type = 2;
+  optional string name = 3;
+  optional string url = 4;
+}
+
+message StRichTextTextContent {
+  optional string text = 1;
+}
+
+message StRichTextURLContent {
+  optional string url = 1;
+  optional string displayText = 2;
+}
+
+message StSameTopicGuideInfo {
+  optional uint32 isSameTopicGuide = 1;
+  optional int64 stayShowTime = 2;
+  optional string hashTag = 3;
+  optional string words = 4;
+  optional string jumpUrl = 5;
+  optional string reportExt = 6;
+}
+
+message StShare {
+  optional string title = 1;
+  optional string desc = 2;
+  optional uint32 type = 3;
+  optional string url = 4;
+  optional StUser author = 5;
+  optional StUser poster = 6;
+  repeated StVideo videos = 7;
+  optional string shorturl = 8;
+  optional string shareCardInfo = 9;
+  optional StShareQzoneInfo shareQzoneInfo = 10;
+  repeated StImage images = 11;
+  optional uint32 publishTotalUser = 12;
+  optional uint32 sharedCount = 13;
+  optional StChannelShareInfo channelShareInfo = 14;
+}
+
+message StShareQzoneInfo {
+  repeated CommonEntry entrys = 1;
+}
+
+message StSingleMaterial {
+  optional string materialId = 1;
+}
+
+message StSingleRecomReportInfo {
+  optional string reportID = 1;
+  optional bytes reportData = 2;
+}
+
+message StTagInfo {
+  optional string tagId = 1;
+  optional string tagName = 2;
+  optional string tagDec = 3;
+  repeated StUser userList = 4;
+  repeated StFeedAbstract feedList = 5;
+  optional uint32 tagTotalUser = 6;
+  optional uint32 tagTotalFeed = 7;
+  optional string tagWording = 8;
+  optional uint32 tagType = 9;
+  optional uint32 followState = 10;
+  optional StShare shareInfo = 11;
+  optional uint32 isTop = 12;
+  optional uint32 isSelected = 13;
+  optional int64 userViewHistory = 14;
+  optional StTagMedalInfo medal = 15;
+  optional uint32 status = 16;
+  optional StTagOperateInfo optInfo = 17;
+  optional uint32 tagBaseStatus = 18;
+  optional int32 isRecommend = 19;
+  optional int64 tagViewHistory = 20;
+  optional string operateIconUrl = 21;
+  optional string tagReport = 99;
+  optional string tagIconUrl = 100;
+}
+
+message StTagMedalInfo {
+  optional string tagID = 1;
+  optional string tagName = 2;
+  optional uint64 rank = 3;
+}
+
+message StTagOperateInfo {
+  optional string createUser = 1;
+  optional string coverURL = 2;
+  optional string desc = 3;
+  optional string backgroundURL = 4;
+  optional string bannerURL = 5;
+  optional string bannerSkipLink = 6;
+  optional int64 activityStartTime = 7;
+  optional int64 activityEndTime = 8;
+  optional string recommendReason = 9;
+  optional int32 isWhite = 10;
+  optional int64 beWhiteStartTime = 11;
+  optional int64 beWhiteEndTime = 12;
+  optional string publishSchema = 13;
+}
+
+message StUnifiedTag {
+  optional string unifiedType = 1;
+  optional string unifiedId = 2;
+}
+
+message StUser {
+  optional string id = 1;
+  optional string nick = 2;
+  optional StIconInfo icon = 3;
+  optional string desc = 4;
+  optional uint32 followState = 5;
+  optional uint32 type = 6;
+  optional uint32 sex = 7;
+  optional uint64 birthday = 8;
+  optional string school = 9;
+  optional string location = 11;
+  optional bytes busiData = 12;
+  optional uint32 frdState = 13;
+  optional uint32 relationState = 14;
+  optional uint32 blackState = 15;
+  optional StTagMedalInfo medal = 16;
+  optional int32 constellation = 17;
+  optional string jumpUrl = 18;
+  optional string locationCode = 19;
+  optional string thirdId = 20;
+  optional string company = 21;
+  optional string certificationDesc = 22;
+  optional uint32 descType = 23;
+  optional GuildChannelBaseChannelUserInfo channelUserInfo = 24;
+  optional string loginId = 25;
+}
+
+message GuildChannelBaseChannelUserInfo {
+  optional ClientIdentity clientIdentity = 1;
+  optional uint32 memberType = 2;
+  // optional ChannelUserPermission permission = 3;
+  repeated GuildChannelBaseRoleGroupInfo roleGroups = 4;
+}
+
+message StUserGroupInfo {
+  optional string id = 1;
+  optional string name = 2;
+  repeated StUser userList = 3;
+}
+
+message StUserRecomInfo {
+  optional StUser user = 1;
+  repeated StFeedAbstract feedList = 2;
+  optional bytes busiData = 3;
+}
+
+message StVideo {
+  optional string fileId = 1;
+  optional uint32 fileSize = 2;
+  optional uint32 duration = 3;
+  optional uint32 width = 4;
+  optional uint32 height = 5;
+  optional string playUrl = 6;
+  optional uint32 transStatus = 7;
+  optional uint32 videoPrior = 8;
+  optional uint32 videoRate = 9;
+  repeated StVideoUrl vecVideoUrl = 10;
+  optional bytes busiData = 11;
+  optional uint32 approvalStatus = 12;
+  optional uint32 videoSource = 13;
+  optional uint32 mediaQualityRank = 14;
+  optional float mediaQualityScore = 15;
+  optional string videoMD5 = 16;
+  optional uint32 isQuic = 17;
+  optional uint32 orientation = 18;
+  optional StImage cover = 19;
+  optional string patternId = 20;
+  optional uint32 displayIndex = 21;
+}
+
+message StVideoUrl {
+  optional uint32 levelType = 1;
+  optional string playUrl = 2;
+  optional uint32 videoPrior = 3;
+  optional uint32 videoRate = 4;
+  optional uint32 transStatus = 5;
+  optional bytes busiData = 6;
+  optional bool hasWatermark = 7;
+}
+
+message StVisitor {
+  optional uint32 viewCount = 1;
+  optional bytes busiData = 2;
+  optional uint32 recomCount = 3;
+  optional string viewDesc = 4;
+}
+
+message StWearingMedal {
+  repeated StWearingMedalInfo medalInfos = 1;
+}
+
+message StWearingMedalInfo {
+  optional int32 type = 1;
+  optional string medalName = 2;
+  optional string medalID = 3;
+}

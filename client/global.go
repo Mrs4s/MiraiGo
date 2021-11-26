@@ -643,6 +643,16 @@ func (p requestParams) int32(k string) int32 {
 	return i.(int32)
 }
 
+func (c *QQClient) getWebDeviceInfo() (i string) {
+	qimei := strings.ToLower(utils.RandomString(36))
+	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.deviceInfo.IMEI, utils.B2S(c.deviceInfo.MacAddress), utils.B2S(c.deviceInfo.Device), utils.B2S(c.deviceInfo.Version.Release))
+	i += fmt.Sprintf("a=%v&sd=0&c64=0&sc=1&p=1080*2210&aid=%v&", c.deviceInfo.Version.Sdk, c.deviceInfo.IMEI)
+	i += fmt.Sprintf("f=%v&mm=%v&cf=%v&cc=%v&", c.deviceInfo.Brand, 5629 /* Total Memory*/, 1725 /* CPU Frequency */, 8 /* CPU Core Count */)
+	i += fmt.Sprintf("qimei=%v&qimei36=%v&", qimei, qimei)
+	i += "sharpP=1&n=wifi&support_xsj_live=true&client_mod=default&timezone=Asia/Shanghai&material_sdk_version=2.9.0&vh265=null&refreshrate=60"
+	return
+}
+
 func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 	pkg := &oidb.OIDBSSOPkg{
 		Command:       cmd,

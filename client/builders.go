@@ -1076,11 +1076,11 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	}
 	b, _ := proto.Marshal(req)
 	body := &qweb.QWebReq{
-		Seq:        1,
-		Qua:        "V1_AND_SQ_8.4.8_1492_YYB_D",
-		DeviceInfo: fmt.Sprintf("i=865166025905020&imsi=460002478794049&mac=02:00:00:00:00:00&m=%v&o=7.1.2&a=25&sc=1&sd=0&p=900*1600&f=nubia&mm=3479&cf=2407&cc=4&aid=086bbf84a7d5fbb3&qimei=865166023450458&sharpP=1&n=wifi", string(c.deviceInfo.Model)),
+		Seq:        proto.Int64(1),
+		Qua:        proto.String("V1_AND_SQ_8.4.8_1492_YYB_D"),
+		DeviceInfo: proto.String(c.getWebDeviceInfo()),
 		BusiBuff:   b,
-		TraceId:    fmt.Sprintf("%v_%v_%v", c.Uin, time.Now().Format("0102150405"), rand.Int63()),
+		TraceId:    proto.String(fmt.Sprintf("%v_%v_%v", c.Uin, time.Now().Format("0102150405"), rand.Int63())),
 	}
 	payload, _ := proto.Marshal(body)
 	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)

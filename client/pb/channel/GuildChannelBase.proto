@@ -1,0 +1,75 @@
+syntax = "proto2";
+
+package channel;
+
+option go_package = "pb/channel;channel";
+
+message ChannelUserInfo {
+  optional ClientIdentity clientIdentity = 1;
+  optional uint32 memberType = 2;
+  optional ChannelUserPermission permission = 3;
+  repeated BaseRoleGroupInfo roleGroups = 4;
+}
+
+message ChannelUserPermission {
+  optional bool allowReadFeed = 1;
+  optional bool allowWriteFeed = 2;
+}
+
+message ClientIdentity {
+  optional uint32 clientId = 1;
+  optional string desc = 2;
+}
+
+message BaseGuildInfo {
+  optional uint64 guildId = 1;
+  optional string name = 2;
+  optional uint64 joinTime = 3;
+}
+
+message BaseRoleGroupInfo {
+  optional uint64 roleId = 1;
+  optional string name = 2;
+  optional uint32 color = 3;
+}
+
+message StChannelInfo {
+  optional StChannelSign sign = 1;
+  optional string name = 2;
+  optional string iconUrl = 3;
+}
+
+message StChannelSign {
+  optional uint64 guildId = 1;
+  optional uint64 channelId = 2;
+}
+/*
+message StEmojiReaction {
+  optional string emojiId = 1;
+  optional uint64 emojiType = 2;
+  optional uint64 cnt = 3;
+  optional bool isClicked = 4;
+  optional bool isDefaultEmoji = 10001;
+}
+
+message StEmotionReactionInfo {
+  optional string id = 1;
+  repeated StEmojiReaction emojiReactionList = 2;
+}
+ */
+
+message StCommonExt {
+  repeated CommonEntry mapInfo = 1;
+  optional string attachInfo = 2;
+  repeated BytesEntry mapBytesInfo = 3;
+}
+
+message BytesEntry {
+  optional string key = 1;
+  optional bytes value = 2;
+}
+
+message CommonEntry {
+  optional string key = 1;
+  optional string value = 2;
+}

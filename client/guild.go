@@ -2,6 +2,8 @@ package client
 
 import (
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
+	"math/rand"
 	"sort"
 	"time"
 
@@ -10,8 +12,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
-	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
+	"google.golang.org/protobuf/proto"
 )
 
 type (
@@ -520,6 +522,65 @@ func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	return convertChannelInfo(body.Info), nil
+}
+
+func (s *GuildService) GetChannelTopics(guildId, channelId uint64) error {
+	guild := s.FindGuild(guildId)
+	if guild == nil {
+		return errors.New("guild not found")
+	}
+	channelInfo := guild.FindChannel(channelId)
+	if channelInfo == nil {
+		return errors.New("channel not found")
+	}
+	if channelInfo.ChannelType != ChannelTypeTopic {
+		return errors.New("channel type error")
+	}
+	req, _ := proto.Marshal(&channel.StGetChannelFeedsReq{
+		Count: proto.Uint32(12),
+		From:  proto.Uint32(0),
+		ChannelSign: &channel.StChannelSign{
+			GuildId:   &guildId,
+			ChannelId: &channelId,
+		},
+		FeedAttchInfo: proto.String(""), // isLoadMore
+	})
+	payload, _ := proto.Marshal(&qweb.QWebReq{
+		Seq:        proto.Int64(s.c.nextQWebSeq()),
+		Qua:        proto.String("V1_AND_SQ_8.8.50_2324_YYB_D"),
+		DeviceInfo: proto.String(s.c.getWebDeviceInfo()),
+		BusiBuff:   req,
+		TraceId:    proto.String(fmt.Sprintf("%v_%v_%v", s.c.Uin, time.Now().Format("0102150405"), rand.Int63())),
+		Extinfo: []*qweb.COMMEntry{
+			{
+				Key:   proto.String("fc-appid"),
+				Value: proto.String("96"),
+			},
+			{
+				Key:   proto.String("environment_id"),
+				Value: proto.String("production"),
+			},
+			{
+				Key:   proto.String("tiny_id"),
+				Value: proto.String(fmt.Sprint(s.TinyId)),
+			},
+		},
+	})
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "QChannelSvr.trpc.qchannel.commreader.ComReader.GetChannelTimelineFeeds", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return errors.New("send packet error")
+	}
+	pkg := new(qweb.QWebRsp)
+	body := new(channel.StGetChannelFeedsRsp)
+	if err = proto.Unmarshal(rsp, pkg); err != nil {
+		return errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if err = proto.Unmarshal(pkg.BusiBuff, body); err != nil {
+		return errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return nil
 }
 
 /* need analysis
