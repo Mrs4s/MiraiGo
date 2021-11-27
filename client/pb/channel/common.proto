@@ -82,8 +82,8 @@ message ChannelMsgContent {
 
 message ChannelMsgCtrlHead {
   repeated uint64 includeUin = 1;
-  repeated uint64 excludeUin = 2;
-  repeated uint64 featureid = 3;
+  // repeated uint64 excludeUin = 2; // bytes?
+  // repeated uint64 featureid = 3;
   optional uint32 offlineFlag = 4;
   optional uint32 visibility = 5;
   optional uint64 ctrlFlag = 6;

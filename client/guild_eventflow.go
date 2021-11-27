@@ -140,6 +140,25 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			OldChannelInfo: oldInfo,
 			NewChannelInfo: newInfo,
 		})
+	case eventBody.JoinGuild != nil:
+		if mem := guild.FindMember(eventBody.JoinGuild.GetMemberTinyid()); mem != nil {
+			c.Info("ignore join guild event: member %v already exists", mem.TinyId)
+			return
+		}
+		profile, err := c.GuildService.GetGuildMemberProfileInfo(guild.GuildId, eventBody.JoinGuild.GetMemberTinyid())
+		if err != nil {
+			c.Error("error to decode member join guild event: get member profile error: %v", err)
+			return
+		}
+		info := &GuildMemberInfo{
+			TinyId:   profile.TinyId,
+			Nickname: profile.Nickname,
+		}
+		guild.Members = append(guild.Members, info)
+		c.dispatchMemberJoinedGuildEvent(&MemberJoinGuildEvent{
+			Guild:  guild,
+			Member: info,
+		})
 	case eventBody.UpdateMsg != nil:
 		if eventBody.UpdateMsg.GetEventType() == 1 || eventBody.UpdateMsg.GetEventType() == 2 { // todo: 撤回消息
 			return

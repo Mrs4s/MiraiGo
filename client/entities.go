@@ -244,6 +244,11 @@ type (
 		ChannelInfo *ChannelInfo
 	}
 
+	MemberJoinGuildEvent struct {
+		Guild  *GuildInfo
+		Member *GuildMemberInfo
+	}
+
 	OcrResponse struct {
 		Texts    []*TextDetection `json:"texts"`
 		Language string           `json:"language"`
