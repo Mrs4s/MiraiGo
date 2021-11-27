@@ -142,7 +142,21 @@ message EventBody {
   repeated MsgEvent events = 39;
   optional SchedulerMsg scheduler = 40;
   optional AppChannelMsg appChannel = 41;
+  optional FeedEvent feedEvent = 44;
   optional AppChannelMsg weakMsgAppChannel = 46;
+  optional ReadFeedNotify readFeedNotify = 48;
+}
+
+message FeedEvent {
+  optional uint64 guildId = 1;
+  optional uint64 channelId = 2;
+  optional string feedId = 3;
+  optional string msgSummary = 4;
+  optional uint64 eventTime = 5;
+}
+
+message ReadFeedNotify {
+  optional uint64 reportTime = 2;
 }
 
 message GroupProStatus {

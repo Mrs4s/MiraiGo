@@ -619,7 +619,9 @@ type EventBody struct {
 	Events               []*MsgEvent              `protobuf:"bytes,39,rep"`
 	Scheduler            *SchedulerMsg            `protobuf:"bytes,40,opt"`
 	AppChannel           *AppChannelMsg           `protobuf:"bytes,41,opt"`
+	FeedEvent            *FeedEvent               `protobuf:"bytes,44,opt"`
 	WeakMsgAppChannel    *AppChannelMsg           `protobuf:"bytes,46,opt"`
+	ReadFeedNotify       *ReadFeedNotify          `protobuf:"bytes,48,opt"`
 }
 
 func (x *EventBody) GetReadNotify() *ReadNotify {
@@ -790,11 +792,79 @@ func (x *EventBody) GetAppChannel() *AppChannelMsg {
 	return nil
 }
 
+func (x *EventBody) GetFeedEvent() *FeedEvent {
+	if x != nil {
+		return x.FeedEvent
+	}
+	return nil
+}
+
 func (x *EventBody) GetWeakMsgAppChannel() *AppChannelMsg {
 	if x != nil {
 		return x.WeakMsgAppChannel
 	}
 	return nil
+}
+
+func (x *EventBody) GetReadFeedNotify() *ReadFeedNotify {
+	if x != nil {
+		return x.ReadFeedNotify
+	}
+	return nil
+}
+
+type FeedEvent struct {
+	GuildId    *uint64 `protobuf:"varint,1,opt"`
+	ChannelId  *uint64 `protobuf:"varint,2,opt"`
+	FeedId     *string `protobuf:"bytes,3,opt"`
+	MsgSummary *string `protobuf:"bytes,4,opt"`
+	EventTime  *uint64 `protobuf:"varint,5,opt"`
+}
+
+func (x *FeedEvent) GetGuildId() uint64 {
+	if x != nil && x.GuildId != nil {
+		return *x.GuildId
+	}
+	return 0
+}
+
+func (x *FeedEvent) GetChannelId() uint64 {
+	if x != nil && x.ChannelId != nil {
+		return *x.ChannelId
+	}
+	return 0
+}
+
+func (x *FeedEvent) GetFeedId() string {
+	if x != nil && x.FeedId != nil {
+		return *x.FeedId
+	}
+	return ""
+}
+
+func (x *FeedEvent) GetMsgSummary() string {
+	if x != nil && x.MsgSummary != nil {
+		return *x.MsgSummary
+	}
+	return ""
+}
+
+func (x *FeedEvent) GetEventTime() uint64 {
+	if x != nil && x.EventTime != nil {
+		return *x.EventTime
+	}
+	return 0
+}
+
+type ReadFeedNotify struct {
+	ReportTime *uint64 `protobuf:"varint,2,opt"`
+}
+
+func (x *ReadFeedNotify) GetReportTime() uint64 {
+	if x != nil && x.ReportTime != nil {
+		return *x.ReportTime
+	}
+	return 0
 }
 
 type GroupProStatus struct {
