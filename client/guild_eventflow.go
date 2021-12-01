@@ -1,9 +1,10 @@
 package client
 
 import (
-	"github.com/pierrec/lz4/v4"
 	"sync"
 	"time"
+
+	"github.com/pierrec/lz4/v4"
 
 	"github.com/pkg/errors"
 
