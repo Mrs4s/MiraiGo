@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/pierrec/lz4/v4"
 	"sync"
 	"time"
 
@@ -31,6 +32,18 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 	push := new(channel.MsgOnlinePush)
 	if err := proto.Unmarshal(payload, push); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	if push.GetCompressFlag() == 1 && len(push.CompressMsg) > 0 {
+		press := new(channel.PressMsg)
+		dst := make([]byte, len(push.CompressMsg)*2)
+		i, err := lz4.UncompressBlock(push.CompressMsg, dst)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to decompress guild event packet")
+		}
+		if err = proto.Unmarshal(dst[:i], press); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+		}
+		push.Msgs = press.Msgs
 	}
 	for _, m := range push.Msgs {
 		if m.Head.ContentHead.GetType() == 3841 {
