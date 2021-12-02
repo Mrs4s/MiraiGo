@@ -133,6 +133,15 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		updateChanLock.Lock()
 		defer updateChanLock.Unlock()
 		oldInfo := guild.FindChannel(eventBody.ChangeChanInfo.GetChanId())
+		if oldInfo == nil {
+			info, err := c.GuildService.FetchChannelInfo(m.Head.RoutingHead.GetGuildId(), eventBody.ChangeChanInfo.GetChanId())
+			if err != nil {
+				c.Error("error to decode channel info updated event: fetch channel info failed: %v", err)
+				return
+			}
+			guild.Channels = append(guild.Channels, info)
+			oldInfo = info
+		}
 		if time.Now().Unix()-oldInfo.fetchTime <= 2 {
 			return
 		}
