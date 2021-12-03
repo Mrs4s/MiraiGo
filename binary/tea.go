@@ -2,10 +2,14 @@ package binary
 
 import (
 	"encoding/binary"
-	"math/rand"
+	_ "unsafe" // required by go:linkname
 )
 
 type TEA [4]uint32
+
+// Uint32 returns a lock free uint32 value.
+//go:linkname Uint32 runtime.fastrand
+func Uint32() uint32
 
 // Encrypt tea 加密
 // http://bbs.chinaunix.net/thread-583468-1-1.html
@@ -14,7 +18,9 @@ func (t TEA) Encrypt(src []byte) (dst []byte) {
 	lens := len(src)
 	fill := 10 - (lens+1)%8
 	dst = make([]byte, fill+lens+7)
-	_, _ = rand.Read(dst[0:fill])
+	binary.LittleEndian.PutUint32(dst, Uint32())
+	binary.LittleEndian.PutUint32(dst[4:], Uint32())
+	binary.LittleEndian.PutUint32(dst[8:], Uint32())
 	dst[0] = byte(fill-3) | 0xF8 // 存储pad长度
 	copy(dst[fill:], src)
 
@@ -36,14 +42,13 @@ func (t TEA) Decrypt(data []byte) []byte {
 		return nil
 	}
 	dst := make([]byte, len(data))
-	var iv1, iv2, holder, tmp uint64
+	var iv1, iv2, holder uint64
 	for i := 0; i < len(dst); i += 8 {
-		block := binary.BigEndian.Uint64(data[i:])
-		tmp = t.decode(block ^ iv2)
-		iv2 = tmp
-		holder = tmp ^ iv1
-		iv1 = block
-		binary.BigEndian.PutUint64(dst[i:], holder)
+		iv1 = binary.BigEndian.Uint64(data[i:])
+		iv2 ^= iv1
+		iv2 = t.decode(iv2)
+		binary.BigEndian.PutUint64(dst[i:], iv2^holder)
+		holder = iv1
 	}
 	return dst[dst[0]&7+3 : len(data)-7]
 }

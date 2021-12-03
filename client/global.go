@@ -459,12 +459,15 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 		SFuncName:    "HttpServerListReq",
 		SBuffer:      buf.ToBytes(),
 	}
-	tea := binary.NewTeaCipher(key)
-	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp", tea.Encrypt(binary.NewWriterF(func(w *binary.Writer) {
+	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteIntLvPacket(0, func(w *binary.Writer) {
 			w.Write(pkt.ToBytes())
 		})
-	})))
+	})
+	tea := binary.NewTeaCipher(key)
+	encpkt := tea.Encrypt(b)
+	cl()
+	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp", encpkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to fetch server list")
 	}
@@ -473,8 +476,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	rspPkt.ReadFrom(jce.NewJceReader(tea.Decrypt(rsp)[4:]))
 	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
 	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
-	servers := []jce.SsoServerInfo{}
-	reader.ReadSlice(&servers, 2)
+	servers := reader.ReadSsoServerInfos(2)
 	adds := make([]*net.TCPAddr, 0, len(servers))
 	for _, s := range servers {
 		if strings.Contains(s.Server, "com") {

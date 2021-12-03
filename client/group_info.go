@@ -200,7 +200,8 @@ func decodeGroupSearchResponse(_ *QQClient, _ *incomingPacketInfo, payload []byt
 	}
 	rsp := data.Map["RespSearch"]["SummaryCard.RespSearch"][1:]
 	r := jce.NewJceReader(rsp)
-	rspService := r.ReadAny(2).([]interface{})[0].([]byte)
+	// rspService := r.ReadAny(2).([]interface{})[0].([]byte)
+	rspService := r.ReadByteArrArr(2)[0]
 	sr := binary.NewReader(rspService)
 	sr.ReadByte()
 	ld1 := sr.ReadInt32()

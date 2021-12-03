@@ -8,15 +8,16 @@ import (
 )
 
 func TestJceReader_ReadSlice(t *testing.T) {
-	s := make([]int64, 50)
+	s := make([][]byte, 50)
 	for i := range s {
-		s[i] = rand.Int63()
+		b := make([]byte, 64)
+		_, _ = rand.Read(b)
+		s[i] = b
 	}
 	w := NewJceWriter()
 	w.WriteObject(s, 1)
 	r := NewJceReader(w.Bytes())
-	var result []int64
-	r.ReadSlice(&result, 1)
+	result := r.ReadByteArrArr(1)
 	assert.Equal(t, s, result)
 }
 
@@ -35,10 +36,9 @@ func BenchmarkJceReader_ReadSlice(b *testing.B) {
 	src := w.Bytes()
 	b.SetBytes(int64(len(src)))
 	b.StartTimer()
-	result := make([]BigDataIPInfo, 0)
 	for i := 0; i < b.N; i++ {
 		r := NewJceReader(src)
-		r.ReadSlice(&result, 1)
+		_ = r.ReadBigDataIPInfos(1)
 	}
 }
 

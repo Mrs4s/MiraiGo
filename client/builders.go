@@ -169,10 +169,12 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+		wb, cl := binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x106)
 			w.WriteBytesShort(t106)
-		}))
+		})
+		w.Write(wb)
+		cl()
 		// w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, c.deviceInfo.Guid, c.deviceInfo.TgtgtKey, 0))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, c.version.SubAppId, c.version.MainSigMap))
@@ -194,10 +196,12 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 		w.Write(tlv.T145(c.deviceInfo.Guid))
 		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
-		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+		wb, cl = binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x16A)
 			w.WriteBytesShort(t16a)
-		}))
+		})
+		w.Write(wb)
+		cl()
 		w.Write(tlv.T154(seq))
 		w.Write(tlv.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
 		w.Write(tlv.T8(2052))
@@ -219,10 +223,12 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(8))
 		// w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
-		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+		wb, cl = binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x318)
 			w.WriteBytesShort(t318)
-		}))
+		})
+		w.Write(wb)
+		cl()
 	})
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
 	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
@@ -306,10 +312,12 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+		wb, cl := binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(0x106)
 			w.WriteBytesShort(c.sigInfo.encryptedA1)
-		}))
+		})
+		w.Write(wb)
+		cl()
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
 		w.Write(tlv.T107(0))
@@ -989,13 +997,15 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 // OidbSvc.0x570_8
 func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload := c.packOIDBPackage(1392, 8, binary.NewWriterF(func(w *binary.Writer) {
+	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(groupCode))
 		w.WriteByte(32)
 		w.WriteUInt16(1)
 		w.WriteUInt32(uint32(memberUin))
 		w.WriteUInt32(time)
-	}))
+	})
+	payload := c.packOIDBPackage(1392, 8, b)
+	cl()
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -1029,7 +1039,7 @@ func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
 // OidbSvc.0x55c_1
 func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
 	seq := c.nextSeq()
-	payload := c.packOIDBPackage(1372, 1, binary.NewWriterF(func(w *binary.Writer) {
+	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(groupCode))
 		w.WriteUInt32(uint32(member))
 		w.WriteByte(func() byte {
@@ -1038,7 +1048,9 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 			}
 			return 0
 		}())
-	}))
+	})
+	payload := c.packOIDBPackage(1372, 1, b)
+	cl()
 	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
@@ -1049,10 +1061,12 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 	jw := jce.NewJceWriter()
 	jw.WriteInt32(2, 0)
 	jw.WriteInt64(c.Uin, 1)
-	jw.WriteBytes(binary.NewWriterF(func(w *binary.Writer) {
+	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(c.Uin))
 		w.WriteUInt32(uint32(groupCode))
-	}), 2)
+	})
+	jw.WriteBytes(b, 2)
+	cl()
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"GroupMngReq": packUniRequestData(jw.Bytes())}}
 	pkt := &jce.RequestPacket{
 		IVersion:     3,

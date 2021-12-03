@@ -302,16 +302,15 @@ func decodeDevListResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	rsp := jce.NewJceReader(data.Map["SvcRspGetDevLoginInfo"]["QQService.SvcRspGetDevLoginInfo"][1:])
-	d := []jce.SvcDevLoginInfo{}
-	rsp.ReadSlice(&d, 4)
+	d := rsp.ReadSvcDevLoginInfos(4)
 	if len(d) > 0 {
 		return d, nil
 	}
-	rsp.ReadSlice(&d, 5)
+	d = rsp.ReadSvcDevLoginInfos(5)
 	if len(d) > 0 {
 		return d, nil
 	}
-	rsp.ReadSlice(&d, 6)
+	d = rsp.ReadSvcDevLoginInfos(6)
 	if len(d) > 0 {
 		return d, nil
 	}
