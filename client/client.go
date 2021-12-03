@@ -297,9 +297,9 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		_ = c.init(false)
+		err = c.init(false)
 	}
-	return &l, nil
+	return &l, err
 }
 
 func (c *QQClient) TokenLogin(token []byte) error {
@@ -361,9 +361,9 @@ func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
 	}
 	rsp := i.(LoginResponse)
 	if rsp.Success {
-		_ = c.init(false)
+		err = c.init(false)
 	}
-	return &rsp, nil
+	return &rsp, err
 }
 
 // SubmitCaptcha send captcha to server
@@ -376,9 +376,9 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		_ = c.init(false)
+		err = c.init(false)
 	}
-	return &l, nil
+	return &l, err
 }
 
 func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
@@ -390,9 +390,9 @@ func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		_ = c.init(false)
+		err = c.init(false)
 	}
-	return &l, nil
+	return &l, err
 }
 
 func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
@@ -403,9 +403,9 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 	}
 	l := rsp.(LoginResponse)
 	if l.Success {
-		_ = c.init(false)
+		err = c.init(false)
 	}
-	return &l, nil
+	return &l, err
 }
 
 func (c *QQClient) RequestSMS() bool {
