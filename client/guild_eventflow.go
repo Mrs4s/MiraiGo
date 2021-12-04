@@ -174,10 +174,12 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			NewChannelInfo: newInfo,
 		})
 	case eventBody.JoinGuild != nil:
+		/* 应该不会重复推送把, 不会吧不会吧
 		if mem := guild.FindMember(eventBody.JoinGuild.GetMemberTinyid()); mem != nil {
 			c.Info("ignore join guild event: member %v already exists", mem.TinyId)
 			return
 		}
+		*/
 		profile, err := c.GuildService.GetGuildMemberProfileInfo(guild.GuildId, eventBody.JoinGuild.GetMemberTinyid())
 		if err != nil {
 			c.Error("error to decode member join guild event: get member profile error: %v", err)
@@ -187,7 +189,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			TinyId:   profile.TinyId,
 			Nickname: profile.Nickname,
 		}
-		guild.Members = append(guild.Members, info)
+		// guild.Members = append(guild.Members, info)
 		c.dispatchMemberJoinedGuildEvent(&MemberJoinGuildEvent{
 			Guild:  guild,
 			Member: info,

@@ -41,9 +41,9 @@ type (
 		CoverUrl  string
 		AvatarUrl string
 		Channels  []*ChannelInfo
-		Bots      []*GuildMemberInfo
-		Members   []*GuildMemberInfo
-		Admins    []*GuildMemberInfo
+		// Bots      []*GuildMemberInfo
+		// Members   []*GuildMemberInfo
+		// Admins    []*GuildMemberInfo
 	}
 
 	// GuildMeta 频道数据
@@ -140,25 +140,6 @@ func (s *GuildService) FindGuild(guildId uint64) *GuildInfo {
 	for _, i := range s.Guilds {
 		if i.GuildId == guildId {
 			return i
-		}
-	}
-	return nil
-}
-
-func (g *GuildInfo) FindMember(tinyId uint64) *GuildMemberInfo {
-	for i := 0; i < len(g.Members); i++ {
-		if g.Members[i].TinyId == tinyId {
-			return g.Members[i]
-		}
-	}
-	for i := 0; i < len(g.Admins); i++ {
-		if g.Admins[i].TinyId == tinyId {
-			return g.Admins[i]
-		}
-	}
-	for i := 0; i < len(g.Bots); i++ {
-		if g.Bots[i].TinyId == tinyId {
-			return g.Bots[i]
 		}
 	}
 	return nil
@@ -785,7 +766,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 			} else {
 				info.Channels = channels
 			}
-			info.Bots, info.Members, info.Admins, _ = c.GuildService.GetGuildMembers(info.GuildId)
+			// info.Bots, info.Members, info.Admins, _ = c.GuildService.GetGuildMembers(info.GuildId)
 			c.GuildService.Guilds = append(c.GuildService.Guilds, info)
 		}
 	}
