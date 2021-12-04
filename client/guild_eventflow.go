@@ -38,6 +38,10 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 		press := new(channel.PressMsg)
 		dst := make([]byte, len(push.CompressMsg)*2)
 		i, err := lz4.UncompressBlock(push.CompressMsg, dst)
+		for times := 0; err != nil && err.Error() == "lz4: invalid source or destination buffer too short" && times < 5; times++ {
+			dst = append(dst, make([]byte, 1024)...)
+			i, err = lz4.UncompressBlock(push.CompressMsg, dst)
+		}
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to decompress guild event packet")
 		}
@@ -83,8 +87,14 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 			c.processGuildEventBody(m, eventBody)
 			continue
 		}
-		if cm := c.parseGuildChannelMessage(m); cm != nil {
-			c.dispatchGuildChannelMessage(cm)
+		if m.Head.ContentHead.GetType() == 3840 {
+			if m.Head.RoutingHead.GetDirectMessageFlag() == 1 {
+				// todo: direct message decode
+				continue
+			}
+			if cm := c.parseGuildChannelMessage(m); cm != nil {
+				c.dispatchGuildChannelMessage(cm)
+			}
 		}
 	}
 	return nil, nil
