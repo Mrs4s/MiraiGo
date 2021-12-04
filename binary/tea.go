@@ -7,9 +7,9 @@ import (
 
 type TEA [4]uint32
 
-// Uint32 returns a lock free uint32 value.
-//go:linkname Uint32 runtime.fastrand
-func Uint32() uint32
+// randuint32 returns a lock free uint32 value.
+//go:linkname randuint32 runtime.fastrand
+func randuint32() uint32
 
 // Encrypt tea 加密
 // http://bbs.chinaunix.net/thread-583468-1-1.html
@@ -18,9 +18,9 @@ func (t TEA) Encrypt(src []byte) (dst []byte) {
 	lens := len(src)
 	fill := 10 - (lens+1)%8
 	dst = make([]byte, fill+lens+7)
-	binary.LittleEndian.PutUint32(dst, Uint32())
-	binary.LittleEndian.PutUint32(dst[4:], Uint32())
-	binary.LittleEndian.PutUint32(dst[8:], Uint32())
+	binary.LittleEndian.PutUint32(dst, randuint32())
+	binary.LittleEndian.PutUint32(dst[4:], randuint32())
+	binary.LittleEndian.PutUint32(dst[8:], randuint32())
 	dst[0] = byte(fill-3) | 0xF8 // 存储pad长度
 	copy(dst[fill:], src)
 

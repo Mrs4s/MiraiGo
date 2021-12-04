@@ -169,9 +169,9 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		wb, cl := binary.OpenWriterF(func(w *binary.Writer) {
-			w.WriteUInt16(0x106)
-			w.WriteBytesShort(t106)
+		wb, cl := binary.OpenWriterF(func(bw *binary.Writer) {
+			bw.WriteUInt16(0x106)
+			bw.WriteBytesShort(t106)
 		})
 		w.Write(wb)
 		cl()
@@ -196,9 +196,9 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 		w.Write(tlv.T145(c.deviceInfo.Guid))
 		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
-		wb, cl = binary.OpenWriterF(func(w *binary.Writer) {
-			w.WriteUInt16(0x16A)
-			w.WriteBytesShort(t16a)
+		wb, cl = binary.OpenWriterF(func(bw *binary.Writer) {
+			bw.WriteUInt16(0x16A)
+			bw.WriteBytesShort(t16a)
 		})
 		w.Write(wb)
 		cl()
@@ -223,9 +223,9 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(8))
 		// w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
-		wb, cl = binary.OpenWriterF(func(w *binary.Writer) {
-			w.WriteUInt16(0x318)
-			w.WriteBytesShort(t318)
+		wb, cl = binary.OpenWriterF(func(bw *binary.Writer) {
+			bw.WriteUInt16(0x318)
+			bw.WriteBytesShort(t318)
 		})
 		w.Write(wb)
 		cl()
@@ -312,9 +312,9 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		wb, cl := binary.OpenWriterF(func(w *binary.Writer) {
-			w.WriteUInt16(0x106)
-			w.WriteBytesShort(c.sigInfo.encryptedA1)
+		wb, cl := binary.OpenWriterF(func(bw *binary.Writer) {
+			bw.WriteUInt16(0x106)
+			bw.WriteBytesShort(c.sigInfo.encryptedA1)
 		})
 		w.Write(wb)
 		cl()
