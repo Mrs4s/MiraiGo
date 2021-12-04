@@ -546,9 +546,6 @@ func (pkt *RequestPacket) ToBytes() []byte {
 }
 
 func (pkt *RequestPacket) ReadFrom(r *JceReader) {
-	pkt.SBuffer = []byte{}
-	pkt.Context = make(map[string]string)
-	pkt.Status = make(map[string]string)
 	pkt.IVersion = r.ReadInt16(1)
 	pkt.CPacketType = r.ReadByte(2)
 	pkt.IMessageType = r.ReadInt32(3)
@@ -596,9 +593,9 @@ func (pkt *FileStoragePushFSSvcList) ReadFrom(r *JceReader) {
 	pkt.QZoneProxyServiceList = r.ReadFileStorageServerInfos(3)
 	pkt.UrlEncodeServiceList = r.ReadFileStorageServerInfos(4)
 	pkt.BigDataChannel = &BigDataChannel{}
-	pkt.VipEmotionList = r.ReadFileStorageServerInfos(5)
-	pkt.C2CPicDownList = r.ReadFileStorageServerInfos(7)
 	r.ReadJceStruct(pkt.BigDataChannel, 5)
+	pkt.VipEmotionList = r.ReadFileStorageServerInfos(6)
+	pkt.C2CPicDownList = r.ReadFileStorageServerInfos(7)
 	pkt.PttList = r.ReadBytes(10)
 }
 

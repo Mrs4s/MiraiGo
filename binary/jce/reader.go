@@ -46,7 +46,6 @@ func (r *JceReader) skipHead() {
 		l = 2
 	}
 	r.off += l
-	return
 }
 
 func (r *JceReader) skip(l int) {
