@@ -7,7 +7,6 @@ option go_package = "pb/channel;channel";
 import "pb/channel/GuildFeedCloudMeta.proto";
 import "pb/channel/GuildChannelBase.proto";
 
-
 message GetNoticesReq {
   optional StCommonExt extInfo = 1;
   optional uint32 pageNum = 2;
