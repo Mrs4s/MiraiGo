@@ -485,7 +485,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				EncryptKey: elem.MarketFace.GetKey(),
 				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
 			}
-			if face.Name == "[骰子]" {
+			if face.Name == "[骰子]" || face.Name == "[随机骰子]" {
 				return []IMessageElement{
 					&DiceElement{
 						MarketFaceElement: face,
