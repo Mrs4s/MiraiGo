@@ -12,6 +12,7 @@ import (
 type TCPListener struct {
 	lock                 sync.RWMutex
 	conn                 net.Conn
+	connected            bool
 	plannedDisconnect    func(*TCPListener)
 	unexpectedDisconnect func(*TCPListener, error)
 }
@@ -42,6 +43,7 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
 	t.conn = conn
+	t.connected = true
 	return nil
 }
 
@@ -103,16 +105,18 @@ func (t *TCPListener) close() {
 func (t *TCPListener) invokePlannedDisconnect() {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	if t.plannedDisconnect != nil {
+	if t.plannedDisconnect != nil && t.connected {
 		go t.plannedDisconnect(t)
+		t.connected = false
 	}
 }
 
 func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
 	t.lock.RLock()
 	defer t.lock.RUnlock()
-	if t.unexpectedDisconnect != nil {
+	if t.unexpectedDisconnect != nil && t.connected {
 		go t.unexpectedDisconnect(t, err)
+		t.connected = false
 	}
 }
 

@@ -311,6 +311,9 @@ func (c *QQClient) netLoop() {
 			pkt.Payload, err = pkt.DecryptPayload(c.ecdh.InitialShareKey, c.RandomKey, c.sigInfo.wtSessionTicketKey)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
+				if errors.Is(err, packets.ErrUnknownFlag) {
+					go c.quickReconnect()
+				}
 				continue
 			}
 		}
