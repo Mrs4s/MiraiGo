@@ -348,11 +348,12 @@ const (
 	Administrator MemberPermission = 2
 	Member        MemberPermission = 3
 
+	Unset        ClientProtocol = 0
 	AndroidPhone ClientProtocol = 1
-	IPad         ClientProtocol = 2
-	AndroidWatch ClientProtocol = 3
-	MacOS        ClientProtocol = 4
-	QiDian       ClientProtocol = 5
+	AndroidWatch ClientProtocol = 2
+	MacOS        ClientProtocol = 3
+	QiDian       ClientProtocol = 4
+	IPad         ClientProtocol = 5
 )
 
 func (r *UserJoinGroupRequest) Accept() {

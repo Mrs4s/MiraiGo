@@ -303,8 +303,6 @@ func (info *DeviceInfo) ToJson() []byte {
 		VendorOSName: string(info.VendorOSName),
 		Protocol: func() int {
 			switch info.Protocol {
-			case IPad:
-				return 0
 			case AndroidPhone:
 				return 1
 			case AndroidWatch:
@@ -313,6 +311,8 @@ func (info *DeviceInfo) ToJson() []byte {
 				return 3
 			case QiDian:
 				return 4
+			case IPad:
+				return 5
 			}
 			return 0
 		}(),
@@ -377,6 +377,8 @@ func (info *DeviceInfo) ReadJson(d []byte) error {
 		info.Protocol = MacOS
 	case 4:
 		info.Protocol = QiDian
+	case 5:
+		info.Protocol = IPad
 	default:
 		info.Protocol = IPad
 	}
