@@ -138,20 +138,22 @@ func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 
 func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 	reader := binary.NewReader(payload)
-	if reader.ReadInt32()-4 > int32(reader.Len()) {
+	headLen := reader.ReadInt32()
+	if headLen-4 > int32(reader.Len()) {
 		return nil, errors.WithStack(ErrPacketDropped)
 	}
-	seqID := reader.ReadInt32()
-	retCode := reader.ReadInt32()
+	head := binary.NewReader(reader.ReadBytes(int(headLen) - 4))
+	seqID := head.ReadInt32()
+	retCode := head.ReadInt32()
 	if retCode != 0 {
 		if retCode == -10008 {
 			return nil, errors.WithStack(ErrSessionExpired)
 		}
 		return nil, errors.New("return code unsuccessful: " + strconv.FormatInt(int64(retCode), 10))
 	}
-	reader.ReadBytes(int(reader.ReadInt32()) - 4) // extra data
-	commandName := reader.ReadString()
-	sessionID := reader.ReadBytes(int(reader.ReadInt32()) - 4)
+	head.ReadBytes(int(head.ReadInt32()) - 4) // extra data
+	commandName := head.ReadString()
+	sessionID := head.ReadBytes(int(head.ReadInt32()) - 4)
 	if commandName == "Heartbeat.Alive" {
 		return &IncomingPacket{
 			SequenceId:  uint16(seqID),
@@ -161,19 +163,14 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 			Payload:     []byte{},
 		}, nil
 	}
-	compressedFlag := reader.ReadInt32()
+	compressedFlag := head.ReadInt32()
+	bodyLen := reader.ReadInt32()
 	packet := func() []byte {
 		if compressedFlag == 0 {
-			pktSize := uint64(reader.ReadInt32()) & 0xffffffff
-			if pktSize == uint64(reader.Len()) || pktSize == uint64(reader.Len()+4) {
-				return reader.ReadAvailable()
-			} else {
-				return reader.ReadAvailable() // some logic
-			}
+			return reader.ReadBytes(int(bodyLen) - 4)
 		}
 		if compressedFlag == 1 {
-			reader.ReadBytes(4)
-			return binary.ZlibUncompress(reader.ReadAvailable()) // ?
+			return binary.ZlibUncompress(reader.ReadBytes(int(bodyLen) - 4))
 		}
 		if compressedFlag == 8 {
 			return reader.ReadAvailable()
@@ -191,7 +188,7 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 
 func (pkt *IncomingPacket) DecryptPayload(ecdhShareKey, random, sessionKey []byte) ([]byte, error) {
 	reader := binary.NewReader(pkt.Payload)
-	if reader.ReadByte() != 2 {
+	if flag := reader.ReadByte(); flag != 2 {
 		return nil, ErrUnknownFlag
 	}
 	reader.ReadBytes(2)
