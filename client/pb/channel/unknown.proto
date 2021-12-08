@@ -5,13 +5,16 @@ package channel;
 
 option go_package = "pb/channel;channel";
 
+// see sub_37628C
 message ChannelOidb0xf5bRsp {
   optional uint64 guildId = 1;
   repeated GuildMemberInfo bots = 4;
   repeated GuildMemberInfo members = 5;
-  optional uint32 nextRoleIdIndex = 8;
   optional uint32 nextIndex = 10;
-  optional GuildAdminInfo adminInfo = 25;
+  optional uint32 finished = 9;
+  optional string nextQueryParam = 24;
+  repeated GuildGroupMembersInfo memberWithRoles = 25;
+  optional uint64 nextRoleIdIndex = 26;
 }
 
 message ChannelOidb0xf88Rsp {
@@ -88,10 +91,14 @@ message ChannelListRsp {
   // 5: Category infos
 }
 
-message GuildAdminInfo {
-  repeated GuildMemberInfo admins = 2;
+message GuildGroupMembersInfo {
+  optional uint64 roleId = 1;
+  repeated GuildMemberInfo members = 2;
+  optional string roleName = 3;
+  optional uint32 color = 4;
 }
 
+// see sub_374334
 message GuildMemberInfo {
   optional string title = 2;
   optional string nickname = 3;

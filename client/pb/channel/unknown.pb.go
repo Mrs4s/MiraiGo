@@ -3,13 +3,16 @@
 
 package channel
 
+// see sub_37628C
 type ChannelOidb0Xf5BRsp struct {
-	GuildId         *uint64            `protobuf:"varint,1,opt"`
-	Bots            []*GuildMemberInfo `protobuf:"bytes,4,rep"`
-	Members         []*GuildMemberInfo `protobuf:"bytes,5,rep"`
-	NextRoleIdIndex *uint32            `protobuf:"varint,8,opt"`
-	NextIndex       *uint32            `protobuf:"varint,10,opt"`
-	AdminInfo       *GuildAdminInfo    `protobuf:"bytes,25,opt"`
+	GuildId         *uint64                  `protobuf:"varint,1,opt"`
+	Bots            []*GuildMemberInfo       `protobuf:"bytes,4,rep"`
+	Members         []*GuildMemberInfo       `protobuf:"bytes,5,rep"`
+	NextIndex       *uint32                  `protobuf:"varint,10,opt"`
+	Finished        *uint32                  `protobuf:"varint,9,opt"`
+	NextQueryParam  *string                  `protobuf:"bytes,24,opt"`
+	MemberWithRoles []*GuildGroupMembersInfo `protobuf:"bytes,25,rep"`
+	NextRoleIdIndex *uint64                  `protobuf:"varint,26,opt"`
 }
 
 func (x *ChannelOidb0Xf5BRsp) GetGuildId() uint64 {
@@ -33,13 +36,6 @@ func (x *ChannelOidb0Xf5BRsp) GetMembers() []*GuildMemberInfo {
 	return nil
 }
 
-func (x *ChannelOidb0Xf5BRsp) GetNextRoleIdIndex() uint32 {
-	if x != nil && x.NextRoleIdIndex != nil {
-		return *x.NextRoleIdIndex
-	}
-	return 0
-}
-
 func (x *ChannelOidb0Xf5BRsp) GetNextIndex() uint32 {
 	if x != nil && x.NextIndex != nil {
 		return *x.NextIndex
@@ -47,11 +43,32 @@ func (x *ChannelOidb0Xf5BRsp) GetNextIndex() uint32 {
 	return 0
 }
 
-func (x *ChannelOidb0Xf5BRsp) GetAdminInfo() *GuildAdminInfo {
+func (x *ChannelOidb0Xf5BRsp) GetFinished() uint32 {
+	if x != nil && x.Finished != nil {
+		return *x.Finished
+	}
+	return 0
+}
+
+func (x *ChannelOidb0Xf5BRsp) GetNextQueryParam() string {
+	if x != nil && x.NextQueryParam != nil {
+		return *x.NextQueryParam
+	}
+	return ""
+}
+
+func (x *ChannelOidb0Xf5BRsp) GetMemberWithRoles() []*GuildGroupMembersInfo {
 	if x != nil {
-		return x.AdminInfo
+		return x.MemberWithRoles
 	}
 	return nil
+}
+
+func (x *ChannelOidb0Xf5BRsp) GetNextRoleIdIndex() uint64 {
+	if x != nil && x.NextRoleIdIndex != nil {
+		return *x.NextRoleIdIndex
+	}
+	return 0
 }
 
 type ChannelOidb0Xf88Rsp struct {
@@ -207,17 +224,42 @@ func (x *ChannelListRsp) GetChannels() []*GuildChannelInfo {
 	return nil
 }
 
-type GuildAdminInfo struct {
-	Admins []*GuildMemberInfo `protobuf:"bytes,2,rep"`
+type GuildGroupMembersInfo struct {
+	RoleId   *uint64            `protobuf:"varint,1,opt"`
+	Members  []*GuildMemberInfo `protobuf:"bytes,2,rep"`
+	RoleName *string            `protobuf:"bytes,3,opt"`
+	Color    *uint32            `protobuf:"varint,4,opt"`
 }
 
-func (x *GuildAdminInfo) GetAdmins() []*GuildMemberInfo {
+func (x *GuildGroupMembersInfo) GetRoleId() uint64 {
+	if x != nil && x.RoleId != nil {
+		return *x.RoleId
+	}
+	return 0
+}
+
+func (x *GuildGroupMembersInfo) GetMembers() []*GuildMemberInfo {
 	if x != nil {
-		return x.Admins
+		return x.Members
 	}
 	return nil
 }
 
+func (x *GuildGroupMembersInfo) GetRoleName() string {
+	if x != nil && x.RoleName != nil {
+		return *x.RoleName
+	}
+	return ""
+}
+
+func (x *GuildGroupMembersInfo) GetColor() uint32 {
+	if x != nil && x.Color != nil {
+		return *x.Color
+	}
+	return 0
+}
+
+// see sub_374334
 type GuildMemberInfo struct {
 	Title         *string `protobuf:"bytes,2,opt"`
 	Nickname      *string `protobuf:"bytes,3,opt"`

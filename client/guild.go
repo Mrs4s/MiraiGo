@@ -64,7 +64,8 @@ type (
 		Title         string
 		Nickname      string
 		LastSpeakTime int64
-		Role          int32 // 0 = member 1 = admin 2 = owner ?
+		Role          uint64
+		RoleName      string
 	}
 
 	// GuildUserProfile 频道系统用户资料
@@ -120,6 +121,14 @@ type (
 		SpeakFrequency int32
 		SlowModeCircle int32
 		SlowModeText   string
+	}
+
+	FetchGuildMemberListWithRoleResult struct {
+		Members        []*GuildMemberInfo
+		NextIndex      uint32
+		NextRoleId     uint64
+		NextQueryParam string
+		Finished       bool
 	}
 
 	ChannelType int32
@@ -195,61 +204,66 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 	}, nil
 }
 
-func (s *GuildService) GetGuildMembers(guildId uint64) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
-	return s.fetchMemberListWithRole(guildId, 0, 2)
-}
-
-func (s *GuildService) fetchMemberListWithRole(guildId uint64, startIndex, roleIdIndex uint32) (bots []*GuildMemberInfo, members []*GuildMemberInfo, admins []*GuildMemberInfo, err error) {
-	finished := false
+// FetchGuildMemberListWithRole 获取频道成员列表
+// 第一次请求: startIndex = 0 , roleIdIndex = 2 param = ""
+// 后续请求请根据上次请求的返回值进行设置
+func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, startIndex uint32, roleIdIndex uint64, param string) (*FetchGuildMemberListWithRoleResult, error) {
+	seq := s.c.nextSeq()
 	u1 := uint32(1)
-	for !finished {
-		seq := s.c.nextSeq()
-		// todo: 按 channel 获取 member list
-		payload := s.c.packOIDBPackageDynamically(3931, 1, binary.DynamicProtoMessage{
-			1: guildId, // guild id
-			2: uint32(3),
-			3: uint32(0),
-			4: binary.DynamicProtoMessage{ // unknown param, looks like flags
-				1: u1, 2: u1, 3: u1, 4: u1, 5: u1, 6: u1, 7: u1, 8: u1, 20: u1,
-			},
-			6:  startIndex,
-			8:  uint32(50), // count
-			14: roleIdIndex,
-		})
-		packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf5b_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
-		rsp, err := s.c.sendAndWaitDynamic(seq, packet)
-		if err != nil {
-			return nil, nil, nil, errors.Wrap(err, "send packet error")
-		}
-		body := new(channel.ChannelOidb0Xf5BRsp)
-		if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
-			return nil, nil, nil, errors.Wrap(err, "decode packet error")
-		}
-		protoToMemberInfo := func(mem *channel.GuildMemberInfo) *GuildMemberInfo {
-			return &GuildMemberInfo{
+	m := binary.DynamicProtoMessage{
+		1: guildId, // guild id
+		2: uint32(3),
+		3: uint32(0),
+		4: binary.DynamicProtoMessage{ // unknown param, looks like flags
+			1: u1, 2: u1, 3: u1, 4: u1, 5: u1, 6: u1, 7: u1, 8: u1, 20: u1,
+		},
+		6:  startIndex,
+		8:  uint32(50), // count
+		12: channelId,
+	}
+	if param != "" {
+		m[13] = param
+	}
+	m[14] = roleIdIndex
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "OidbSvcTrpcTcp.0xf5b_1", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, s.c.packOIDBPackageDynamically(3931, 1, m))
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	body := new(channel.ChannelOidb0Xf5BRsp)
+	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+		return nil, errors.Wrap(err, "decode packet error")
+	}
+	var ret []*GuildMemberInfo
+	for _, memberWithRole := range body.MemberWithRoles {
+		for _, mem := range memberWithRole.Members {
+			ret = append(ret, &GuildMemberInfo{
 				TinyId:        mem.GetTinyId(),
 				Title:         mem.GetTitle(),
 				Nickname:      mem.GetNickname(),
 				LastSpeakTime: mem.GetLastSpeakTime(),
-				Role:          mem.GetRole(),
-			}
+				Role:          memberWithRole.GetRoleId(),
+				RoleName:      memberWithRole.GetRoleName(),
+			})
 		}
-		for _, mem := range body.Bots {
-			bots = append(bots, protoToMemberInfo(mem))
-		}
-		for _, mem := range body.Members {
-			members = append(members, protoToMemberInfo(mem))
-		}
-		if body.AdminInfo != nil {
-			for _, mem := range body.AdminInfo.Admins {
-				admins = append(admins, protoToMemberInfo(mem))
-			}
-		}
-		finished = body.NextIndex == nil || startIndex == body.GetNextIndex() // todo: 不知道什么情况, 某些群 nextIndex一直是一样的
-		startIndex = body.GetNextIndex()
-		roleIdIndex = body.GetNextRoleIdIndex()
 	}
-	return
+	for _, mem := range body.Members {
+		ret = append(ret, &GuildMemberInfo{
+			TinyId:        mem.GetTinyId(),
+			Title:         mem.GetTitle(),
+			Nickname:      mem.GetNickname(),
+			LastSpeakTime: mem.GetLastSpeakTime(),
+			Role:          1,
+			RoleName:      "普通成员",
+		})
+	}
+	return &FetchGuildMemberListWithRoleResult{
+		Members:        ret,
+		NextIndex:      body.GetNextIndex(),
+		NextRoleId:     body.GetNextRoleIdIndex(),
+		NextQueryParam: body.GetNextQueryParam(),
+		Finished:       body.NextIndex == nil,
+	}, nil
 }
 
 func (s *GuildService) GetGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildUserProfile, error) {
