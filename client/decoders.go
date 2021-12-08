@@ -385,7 +385,7 @@ func decodeMessageSvcPacket(c *QQClient, info *incomingPacketInfo, payload []byt
 // MessageSvc.PushNotify
 func decodeSvcNotify(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload[15:]))
+	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	if len(data.Map) == 0 {
