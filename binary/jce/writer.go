@@ -19,7 +19,7 @@ func NewJceWriter() *JceWriter {
 
 func (w *JceWriter) writeHead(t, tag byte) {
 	if tag < 0xF {
-		w.buf.WriteByte(byte(tag<<4) | t)
+		w.buf.WriteByte(tag<<4 | t)
 	} else {
 		w.buf.WriteByte(0xF0 | t)
 		w.buf.WriteByte(tag)
@@ -145,7 +145,7 @@ func (w *JceWriter) WriteBytes(l []byte, tag byte) *JceWriter {
 func (w *JceWriter) WriteInt64Slice(l []int64, tag byte) {
 	w.writeHead(9, tag)
 	if len(l) == 0 {
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.WriteInt32(int32(len(l)), 0)
@@ -157,7 +157,7 @@ func (w *JceWriter) WriteInt64Slice(l []int64, tag byte) {
 func (w *JceWriter) WriteBytesSlice(l [][]byte, tag byte) {
 	w.writeHead(9, tag)
 	if len(l) == 0 {
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.WriteInt32(int32(len(l)), 0)
@@ -180,7 +180,7 @@ func (w *JceWriter) writeSlice(slice reflect.Value, tag byte) {
 	}
 	w.writeHead(9, tag)
 	if slice.Len() == 0 {
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.WriteInt32(int32(slice.Len()), 0)
@@ -193,7 +193,7 @@ func (w *JceWriter) writeSlice(slice reflect.Value, tag byte) {
 func (w *JceWriter) WriteJceStructSlice(l []IJceStruct, tag byte) {
 	w.writeHead(9, tag)
 	if len(l) == 0 {
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.WriteInt32(int32(len(l)), 0)
@@ -213,7 +213,7 @@ func (w *JceWriter) WriteMap(m interface{}, tag byte) {
 func (w *JceWriter) writeMap(m reflect.Value, tag byte) {
 	if m.IsNil() {
 		w.writeHead(8, tag)
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	if m.Kind() != reflect.Map {
@@ -231,7 +231,7 @@ func (w *JceWriter) writeMap(m reflect.Value, tag byte) {
 func (w *JceWriter) writeMapStrStr(m map[string]string, tag byte) {
 	if m == nil {
 		w.writeHead(8, tag)
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.writeHead(8, tag)
@@ -245,7 +245,7 @@ func (w *JceWriter) writeMapStrStr(m map[string]string, tag byte) {
 func (w *JceWriter) writeMapStrBytes(m map[string][]byte, tag byte) {
 	if m == nil {
 		w.writeHead(8, tag)
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.writeHead(8, tag)
@@ -259,7 +259,7 @@ func (w *JceWriter) writeMapStrBytes(m map[string][]byte, tag byte) {
 func (w *JceWriter) writeMapStrMapStrBytes(m map[string]map[string][]byte, tag byte) {
 	if m == nil {
 		w.writeHead(8, tag)
-		w.buf.WriteByte(0) // w.WriteInt32(0, 0)
+		w.writeHead(12, 0) // w.WriteInt32(0, 0)
 		return
 	}
 	w.writeHead(8, tag)

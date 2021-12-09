@@ -80,13 +80,13 @@ func writeObject(w io.Writer, v reflect.Value, tag byte, name string) {
 	}
 	switch k {
 	case reflect.Uint8, reflect.Int8:
-		w.Write([]byte(fmt.Sprintf("\tw.WriteByte(byte(pkt.%s), %d)\n", name, tag)))
+		w.Write([]byte(fmt.Sprintf("\tw.WriteByte(pkt.%s, %d)\n", name, tag)))
 	case reflect.Uint16, reflect.Int16:
-		w.Write([]byte(fmt.Sprintf("\tw.WriteInt16(int16(pkt.%s), %d)\n", name, tag)))
+		w.Write([]byte(fmt.Sprintf("\tw.WriteInt16(pkt.%s, %d)\n", name, tag)))
 	case reflect.Uint32, reflect.Int32:
-		w.Write([]byte(fmt.Sprintf("\tw.WriteInt32(int32(pkt.%s), %d)\n", name, tag)))
+		w.Write([]byte(fmt.Sprintf("\tw.WriteInt32(pkt.%s, %d)\n", name, tag)))
 	case reflect.Uint64, reflect.Int64:
-		w.Write([]byte(fmt.Sprintf("\tw.WriteInt64(int64(pkt.%s), %d)\n", name, tag)))
+		w.Write([]byte(fmt.Sprintf("\tw.WriteInt64(pkt.%s, %d)\n", name, tag)))
 	case reflect.String:
 		w.Write([]byte(fmt.Sprintf("\tw.WriteString(pkt.%s, %d)\n", name, tag)))
 	default:
@@ -148,9 +148,9 @@ func writeJceStructRaw(w io.Writer, s interface{}) {
 }
 
 func WriteJceStruct(w io.Writer, s jce.IJceStruct) {
-	w.Write([]byte(fmt.Sprintf("func (pkt %s) ToBytes() []byte {\n", strings.ReplaceAll(reflect.TypeOf(s).String(), "jce.", ""))))
+	w.Write([]byte(fmt.Sprintf("\nfunc (pkt %s) ToBytes() []byte {\n", strings.ReplaceAll(reflect.TypeOf(s).String(), "jce.", ""))))
 	w.Write([]byte("\tw := NewJceWriter()\n"))
 	writeJceStructRaw(w, s)
 	w.Write([]byte("\treturn w.Bytes()\n"))
-	w.Write([]byte("}\n\n"))
+	w.Write([]byte("}\n"))
 }
