@@ -12,7 +12,7 @@ func BenchmarkJceWriter_WriteMap(b *testing.B) {
 	var x = globalBytes
 	for i := 0; i < b.N; i++ {
 		w := NewJceWriter()
-		w.WriteMap(req.Map, 0)
+		w.writeMapStrMapStrBytes(req.Map, 0)
 		x = w.Bytes()
 	}
 	globalBytes = x
@@ -41,18 +41,14 @@ var reqPacket1 = &RequestPacket{
 func BenchmarkJceWriter_WriteJceStructRaw(b *testing.B) {
 	var x = globalBytes
 	for i := 0; i < b.N; i++ {
-		w := NewJceWriter()
-		w.WriteJceStructRaw(reqPacket1)
-		x = w.Bytes()
+		_ = reqPacket1.ToBytes()
 	}
 	globalBytes = x
 	b.SetBytes(int64(len(globalBytes)))
 }
 
 func TestJceWriter_WriteJceStructRaw(t *testing.T) {
-	w := NewJceWriter()
-	w.WriteJceStructRaw(reqPacket1)
-	r := NewJceReader(w.Bytes())
+	r := NewJceReader(reqPacket1.ToBytes())
 	var reqPacket2 RequestPacket
 	reqPacket2.ReadFrom(r)
 	assert.Equal(t, reqPacket1, &reqPacket2)

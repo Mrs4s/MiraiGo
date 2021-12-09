@@ -2,6 +2,7 @@ package jce
 
 import (
 	"math/rand"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,7 @@ func TestJceReader_ReadSlice(t *testing.T) {
 		s[i] = b
 	}
 	w := NewJceWriter()
-	w.WriteObject(s, 1)
+	w.WriteBytesSlice(s, 1)
 	r := NewJceReader(w.Bytes())
 	result := r.ReadByteArrArr(1)
 	assert.Equal(t, s, result)
@@ -64,7 +65,7 @@ var req = RequestDataVersion2{
 func TestRequestDataVersion2_ReadFrom(t *testing.T) {
 	// todo(wdv): fuzz test
 	w := NewJceWriter()
-	w.WriteObject(req.Map, 0)
+	w.writeMapStrMapStrBytes(req.Map, 0)
 	src := w.Bytes()
 	result := RequestDataVersion2{}
 	result.ReadFrom(NewJceReader(src))
@@ -73,7 +74,7 @@ func TestRequestDataVersion2_ReadFrom(t *testing.T) {
 
 func BenchmarkRequestDataVersion2_ReadFrom(b *testing.B) {
 	w := NewJceWriter()
-	w.WriteObject(req.Map, 0)
+	w.writeMapStrMapStrBytes(req.Map, 0)
 	src := w.Bytes()
 	b.SetBytes(int64(len(src)))
 	result := &RequestDataVersion2{}
@@ -92,4 +93,40 @@ func TestJceReader_ReadBytes(t *testing.T) {
 	rb := r.ReadBytes(0)
 
 	assert.Equal(t, b, rb)
+}
+
+func (w *JceWriter) WriteObject(i interface{}, tag byte) {
+	t := reflect.TypeOf(i)
+	if t.Kind() == reflect.Map {
+		w.WriteMap(i, tag)
+		return
+	}
+	if t.Kind() == reflect.Slice {
+		if b, ok := i.([]byte); ok {
+			w.WriteBytes(b, tag)
+			return
+		}
+		w.WriteSlice(i, tag)
+		return
+	}
+	switch o := i.(type) {
+	case byte:
+		w.WriteByte(o, tag)
+	case bool:
+		w.WriteBool(o, tag)
+	case int16:
+		w.WriteInt16(o, tag)
+	case int32:
+		w.WriteInt32(o, tag)
+	case int64:
+		w.WriteInt64(o, tag)
+	case float32:
+		w.WriteFloat32(o, tag)
+	case float64:
+		w.WriteFloat64(o, tag)
+	case string:
+		w.WriteString(o, tag)
+	case IJceStruct:
+		w.WriteJceStruct(o, tag)
+	}
 }
