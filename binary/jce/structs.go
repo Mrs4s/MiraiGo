@@ -5,7 +5,7 @@ type IJceStruct interface {
 	ReadFrom(*JceReader)
 }
 
-//go:generate go run gen/structs_parser.go -f structs_tobytes.go
+//go:generate go run gen/structs_parser.go -f structs_tobytes.go -i structs.go
 type (
 	RequestPacket struct {
 		IVersion     int16             `jceId:"1"`
