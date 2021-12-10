@@ -2,8 +2,8 @@ package tlv
 
 import "github.com/Mrs4s/MiraiGo/binary"
 
-func T1B(micro, version, size, margin, dpi, ecLevel, hint uint32) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
+func T1B(micro, version, size, margin, dpi, ecLevel, hint uint32) ([]byte, func()) {
+	return binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x1B)
 		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt32(micro)

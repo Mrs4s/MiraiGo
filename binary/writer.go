@@ -30,6 +30,11 @@ func (w *Writer) Write(b []byte) {
 	(*bytes.Buffer)(w).Write(b)
 }
 
+func (w *Writer) WriteAndClose(b []byte, cl func()) {
+	(*bytes.Buffer)(w).Write(b)
+	cl()
+}
+
 func (w *Writer) WriteHex(h string) {
 	b, _ := hex.DecodeString(h)
 	w.Write(b)
@@ -114,8 +119,7 @@ func (w *Writer) WriteBytesShort(data []byte) {
 
 func (w *Writer) WriteBytesShortAndClose(data []byte, cl func()) {
 	w.WriteUInt16(uint16(len(data)))
-	w.Write(data)
-	cl()
+	w.WriteAndClose(data, cl)
 }
 
 func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {

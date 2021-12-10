@@ -6,8 +6,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 )
 
-func T400(g []byte, uin int64, guid, dpwd []byte, j2, j3 int64, randSeed []byte) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
+func T400(g []byte, uin int64, guid, dpwd []byte, j2, j3 int64, randSeed []byte) ([]byte, func()) {
+	return binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x400)
 		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			w.EncryptAndWrite(g, binary.NewWriterF(func(w *binary.Writer) {

@@ -7,14 +7,14 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 )
 
-func T511(domains []string) []byte {
+func T511(domains []string) ([]byte, func()) {
 	var arr2 []string
 	for _, d := range domains {
 		if d != "" {
 			arr2 = append(arr2, d)
 		}
 	}
-	return binary.NewWriterF(func(w *binary.Writer) {
+	return binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x511)
 		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(uint16(len(arr2)))

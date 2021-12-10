@@ -7,11 +7,11 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 )
 
-func T1(uin uint32, ip []byte) []byte {
+func T1(uin uint32, ip []byte) ([]byte, func()) {
 	if len(ip) != 4 {
 		panic("invalid ip")
 	}
-	return binary.NewWriterF(func(w *binary.Writer) {
+	return binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x01)
 		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(1)

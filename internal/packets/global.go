@@ -54,8 +54,8 @@ func BuildOicqRequestPacket(uin int64, commandId uint16, encrypt IEncryptMethod,
 	})
 }
 
-func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
+func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) ([]byte, func()) {
+	return binary.OpenWriterF(func(w *binary.Writer) {
 		body, cl := binary.OpenWriterF(bodyFunc)
 		w.WriteByte(2)
 		w.WriteUInt16(uint16(43 + len(body) + 1))
@@ -72,8 +72,8 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 	})
 }
 
-func BuildSsoPacket(seq uint16, appID, subAppID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
-	return binary.NewWriterF(func(p *binary.Writer) {
+func BuildSsoPacket(seq uint16, appID, subAppID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) ([]byte, func()) {
+	return binary.OpenWriterF(func(p *binary.Writer) {
 		p.WriteIntLvPacket(4, func(writer *binary.Writer) {
 			writer.WriteUInt32(uint32(seq))
 			writer.WriteUInt32(appID)

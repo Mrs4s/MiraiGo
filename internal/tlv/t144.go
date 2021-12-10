@@ -9,17 +9,17 @@ func T144(
 	isGuidFromFileNull, isGuidAvailable, isGuidChanged bool,
 	guidFlag uint32,
 	buildModel, guid, buildBrand, tgtgtKey []byte,
-) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
+) ([]byte, func()) {
+	return binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x144)
 		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			w.EncryptAndWrite(tgtgtKey, binary.NewWriterF(func(w *binary.Writer) {
 				w.WriteUInt16(5)
-				w.Write(T109(imei))
-				w.Write(T52D(devInfo))
-				w.Write(T124(osType, osVersion, simInfo, apn))
-				w.Write(T128(isGuidFromFileNull, isGuidAvailable, isGuidChanged, guidFlag, buildModel, guid, buildBrand))
-				w.Write(T16E(buildModel))
+				w.WriteAndClose(T109(imei))
+				w.WriteAndClose(T52D(devInfo))
+				w.WriteAndClose(T124(osType, osVersion, simInfo, apn))
+				w.WriteAndClose(T128(isGuidFromFileNull, isGuidAvailable, isGuidChanged, guidFlag, buildModel, guid, buildBrand))
+				w.WriteAndClose(T16E(buildModel))
 			}))
 		}))
 	})
