@@ -180,7 +180,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			return
 		}
 		*/
-		profile, err := c.GuildService.GetGuildMemberProfileInfo(guild.GuildId, eventBody.JoinGuild.GetMemberTinyid())
+		profile, err := c.GuildService.FetchGuildMemberProfileInfo(guild.GuildId, eventBody.JoinGuild.GetMemberTinyid())
 		if err != nil {
 			c.Error("error to decode member join guild event: get member profile error: %v", err)
 			return
