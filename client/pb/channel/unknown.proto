@@ -42,8 +42,8 @@ message ChannelOidb0x1017Rsp {
 }
 
 message P10x1017 {
-  optional uint64 userId = 1;
-  repeated GuildRole roles = 3;
+  optional uint64 tinyId = 1;
+  repeated GuildUserRole roles = 3;
 }
 
 message ChannelOidb0x1019Rsp {
@@ -129,6 +129,13 @@ message GuildRole {
   optional int32 disabled = 7; // 权限不足或不显示
   optional int32 maxNum = 8;
   // 9: ?
+}
+
+message GuildUserRole {
+  optional uint64 roleId = 1;
+  optional string name = 2;
+  optional uint32 argbColor = 3;
+  optional int32 independent = 4;
 }
 
 /*

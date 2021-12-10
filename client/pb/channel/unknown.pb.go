@@ -138,18 +138,18 @@ func (x *ChannelOidb0X1017Rsp) GetP1() *P10X1017 {
 }
 
 type P10X1017 struct {
-	UserId *uint64      `protobuf:"varint,1,opt"`
-	Roles  []*GuildRole `protobuf:"bytes,3,rep"`
+	TinyId *uint64          `protobuf:"varint,1,opt"`
+	Roles  []*GuildUserRole `protobuf:"bytes,3,rep"`
 }
 
-func (x *P10X1017) GetUserId() uint64 {
-	if x != nil && x.UserId != nil {
-		return *x.UserId
+func (x *P10X1017) GetTinyId() uint64 {
+	if x != nil && x.TinyId != nil {
+		return *x.TinyId
 	}
 	return 0
 }
 
-func (x *P10X1017) GetRoles() []*GuildRole {
+func (x *P10X1017) GetRoles() []*GuildUserRole {
 	if x != nil {
 		return x.Roles
 	}
@@ -403,6 +403,41 @@ func (x *GuildRole) GetDisabled() int32 {
 func (x *GuildRole) GetMaxNum() int32 {
 	if x != nil && x.MaxNum != nil {
 		return *x.MaxNum
+	}
+	return 0
+}
+
+type GuildUserRole struct {
+	RoleId      *uint64 `protobuf:"varint,1,opt"`
+	Name        *string `protobuf:"bytes,2,opt"`
+	ArgbColor   *uint32 `protobuf:"varint,3,opt"`
+	Independent *int32  `protobuf:"varint,4,opt"`
+}
+
+func (x *GuildUserRole) GetRoleId() uint64 {
+	if x != nil && x.RoleId != nil {
+		return *x.RoleId
+	}
+	return 0
+}
+
+func (x *GuildUserRole) GetName() string {
+	if x != nil && x.Name != nil {
+		return *x.Name
+	}
+	return ""
+}
+
+func (x *GuildUserRole) GetArgbColor() uint32 {
+	if x != nil && x.ArgbColor != nil {
+		return *x.ArgbColor
+	}
+	return 0
+}
+
+func (x *GuildUserRole) GetIndependent() int32 {
+	if x != nil && x.Independent != nil {
+		return *x.Independent
 	}
 	return 0
 }
