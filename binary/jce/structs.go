@@ -1,7 +1,7 @@
 package jce
 
 type IJceStruct interface {
-	// ToBytes() []byte
+	ToBytes() []byte
 	ReadFrom(*JceReader)
 }
 
