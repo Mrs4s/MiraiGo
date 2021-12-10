@@ -15,7 +15,7 @@ func NewWriterF(f func(writer *Writer)) []byte {
 	w := SelectWriter()
 	f(w)
 	b := append([]byte(nil), w.Bytes()...)
-	PutWriter(w)
+	w.putback()
 	return b
 }
 
@@ -23,7 +23,7 @@ func NewWriterF(f func(writer *Writer)) []byte {
 func OpenWriterF(f func(*Writer)) (b []byte, cl func()) {
 	w := SelectWriter()
 	f(w)
-	return w.Bytes(), func() { PutWriter(w) }
+	return w.Bytes(), w.putback
 }
 
 func (w *Writer) Write(b []byte) {
@@ -144,4 +144,8 @@ func (w *Writer) Reset() {
 
 func (w *Writer) Grow(n int) {
 	(*bytes.Buffer)(w).Grow(n)
+}
+
+func (w *Writer) putback() {
+	PutWriter(w)
 }
