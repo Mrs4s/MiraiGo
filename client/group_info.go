@@ -156,20 +156,19 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 		},
 		Filtertype: proto.Int32(0),
 	})
+	reqService, cl := binary.OpenWriterF(func(w *binary.Writer) {
+		w.WriteByte(0x28)
+		w.WriteUInt32(uint32(len(comm)))
+		w.WriteUInt32(uint32(len(search)))
+		w.Write(comm)
+		w.Write(search)
+		w.WriteByte(0x29)
+	})
 	req := &jce.SummaryCardReqSearch{
 		Keyword:     keyword,
 		CountryCode: "+86",
 		Version:     3,
-		ReqServices: [][]byte{
-			binary.NewWriterF(func(w *binary.Writer) {
-				w.WriteByte(0x28)
-				w.WriteUInt32(uint32(len(comm)))
-				w.WriteUInt32(uint32(len(search)))
-				w.Write(comm)
-				w.Write(search)
-				w.WriteByte(0x29)
-			}),
-		},
+		ReqServices: [][]byte{reqService},
 	}
 	head := jce.NewJceWriter()
 	head.WriteInt32(2, 0)
@@ -177,6 +176,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 		"ReqHead":   packUniRequestData(head.Bytes()),
 		"ReqSearch": packUniRequestData(req.ToBytes()),
 	}}
+	cl()
 	pkt := &jce.RequestPacket{
 		IVersion:     3,
 		SServantName: "SummaryCardServantObj",

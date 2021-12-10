@@ -56,7 +56,7 @@ func BuildOicqRequestPacket(uin int64, commandId uint16, encrypt IEncryptMethod,
 
 func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
-		body := binary.NewWriterF(bodyFunc)
+		body, cl := binary.OpenWriterF(bodyFunc)
 		w.WriteByte(2)
 		w.WriteUInt16(uint16(43 + len(body) + 1))
 		w.WriteUInt16(cmd)
@@ -68,6 +68,7 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 		w.WriteUInt64(j)
 		w.Write(body)
 		w.WriteByte(3)
+		cl()
 	})
 }
 

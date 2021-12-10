@@ -13,7 +13,7 @@ import (
 func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtgtKey []byte, wtf uint32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x106)
-		body := binary.NewWriterF(func(w *binary.Writer) {
+		body, cl := binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(4)
 			w.WriteUInt32(rand.Uint32())
 			w.WriteUInt32(ssoVer)
@@ -43,7 +43,7 @@ func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable b
 			w.WriteBytesShort([]byte(strconv.FormatInt(int64(uin), 10)))
 			w.WriteUInt16(0)
 		})
-		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			b := make([]byte, 4)
 			if salt != 0 {
 				binary2.BigEndian.PutUint32(b, salt)
@@ -53,5 +53,6 @@ func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable b
 			key := md5.Sum(append(append(passwordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), b...))
 			w.EncryptAndWrite(key[:], body)
 		}))
+		cl()
 	})
 }

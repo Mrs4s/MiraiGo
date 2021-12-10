@@ -112,6 +112,12 @@ func (w *Writer) WriteBytesShort(data []byte) {
 	w.Write(data)
 }
 
+func (w *Writer) WriteBytesShortAndClose(data []byte, cl func()) {
+	w.WriteUInt16(uint16(len(data)))
+	w.Write(data)
+	cl()
+}
+
 func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {
 	if len(data) <= limit {
 		w.WriteBytesShort(data)

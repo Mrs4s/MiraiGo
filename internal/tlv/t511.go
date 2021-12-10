@@ -16,7 +16,7 @@ func T511(domains []string) []byte {
 	}
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x511)
-		w.WriteBytesShort(binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShortAndClose(binary.OpenWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(uint16(len(arr2)))
 			for _, d := range arr2 {
 				indexOf := strings.Index(d, "(")
