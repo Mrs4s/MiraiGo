@@ -229,6 +229,12 @@ func (pkt *SvcRespRegister) ToBytes() []byte {
 func (pkt *SvcReqRegisterNew) ToBytes() []byte {
 	w := NewJceWriter()
 	w.WriteInt64(pkt.RequestOptional, 0)
+	w.writeHead(10, 1)
+	w.buf.Write(pkt.C2CMsg.ToBytes())
+	w.writeHead(11, 0)
+	w.writeHead(10, 2)
+	w.buf.Write(pkt.GroupMsg.ToBytes())
+	w.writeHead(11, 0)
 	w.WriteByte(pkt.DisGroupMsgFilter, 14)
 	w.WriteByte(pkt.GroupMask, 15)
 	w.WriteInt64(pkt.EndSeq, 16)
