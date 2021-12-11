@@ -68,16 +68,16 @@ func writeObject(w io.Writer, v reflect.Value, tag byte, name string) {
 		w.Write([]byte(fmt.Sprintf("\tw.WriteInt64(int64(pkt.%s), %d)\n", name, tag)))
 	case reflect.String:
 		w.Write([]byte(fmt.Sprintf("\tw.WriteString(pkt.%s, %d)\n", name, tag)))
+	case reflect.Interface, reflect.Ptr:
+		w.Write([]byte(fmt.Sprintf("\tw.writeHead(10, %d)\n", tag)))
+		w.Write([]byte(fmt.Sprintf("\tw.buf.Write(pkt.%s.ToBytes())\n", name)))
+		w.Write([]byte("\tw.writeHead(11, 0)\n"))
 	default:
 		switch v.Interface().(type) {
 		case float32:
 			w.Write([]byte(fmt.Sprintf("\tw.WriteFloat32(pkt.%s, %d)\n", name, tag)))
 		case float64:
 			w.Write([]byte(fmt.Sprintf("\tw.WriteFloat64(pkt.%s, %d)\n", name, tag)))
-		case IJceStruct:
-			w.Write([]byte(fmt.Sprintf("\tw.writeHead(10, %d)\n", tag)))
-			w.Write([]byte(fmt.Sprintf("\tw.buf.Write(pkt.%s.ToBytes())\n", name)))
-			w.Write([]byte("\tw.writeHead(11, 0)\n"))
 		}
 	}
 }
