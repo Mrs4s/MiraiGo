@@ -255,12 +255,12 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 					ActionUinNick: st.Msg.ActionUinQqNick,
 				})
 			default:
-				c.Error("unknown group message type: %v", st.Msg.GroupMsgType)
+				c.Debug("unknown group system message type: %v", st.Msg.GroupMsgType)
 			}
 		case 3: // ?
 		case 5: // 自身状态变更(管理员/加群退群)
 		default:
-			c.Error("unknown group msg: %v", st.Msg.SubType)
+			c.Debug("unknown group system msg: %v", st.Msg.SubType)
 		}
 	}
 	return ret, nil
