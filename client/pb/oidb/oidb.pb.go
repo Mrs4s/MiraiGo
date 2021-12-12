@@ -222,30 +222,28 @@ type D89AGroupinfo struct {
 	StGroupNewguidelines   *D89AGroupNewGuidelinesInfo `protobuf:"bytes,14,opt"`
 	GroupFace              int32                       `protobuf:"varint,15,opt"`
 	AddOption              int32                       `protobuf:"varint,16,opt"`
-	// Types that are assignable to ShutupTime:
-	//	*D89AGroupinfo_Val
-	ShutupTime           isD89AGroupinfo_ShutupTime `protobuf_oneof:"shutupTime"`
-	GroupTypeFlag        int32                      `protobuf:"varint,18,opt"`
-	StringGroupTag       []byte                     `protobuf:"bytes,19,opt"`
-	MsgGroupGeoInfo      *D89AGroupGeoInfo          `protobuf:"bytes,20,opt"`
-	GroupClassExt        int32                      `protobuf:"varint,21,opt"`
-	IngGroupClassText    []byte                     `protobuf:"bytes,22,opt"`
-	AppPrivilegeFlag     int32                      `protobuf:"varint,23,opt"`
-	AppPrivilegeMask     int32                      `protobuf:"varint,24,opt"`
-	StGroupExInfo        *D89AGroupExInfoOnly       `protobuf:"bytes,25,opt"`
-	GroupSecLevel        int32                      `protobuf:"varint,26,opt"`
-	GroupSecLevelInfo    int32                      `protobuf:"varint,27,opt"`
-	SubscriptionUin      int64                      `protobuf:"varint,28,opt"`
-	AllowMemberInvite    int32                      `protobuf:"varint,29,opt"`
-	IngGroupQuestion     []byte                     `protobuf:"bytes,30,opt"`
-	IngGroupAnswer       []byte                     `protobuf:"bytes,31,opt"`
-	GroupFlagext3        int32                      `protobuf:"varint,32,opt"`
-	GroupFlagext3Mask    int32                      `protobuf:"varint,33,opt"`
-	GroupOpenAppid       int32                      `protobuf:"varint,34,opt"`
-	NoFingerOpenFlag     int32                      `protobuf:"varint,35,opt"`
-	NoCodeFingerOpenFlag int32                      `protobuf:"varint,36,opt"`
-	RootId               int64                      `protobuf:"varint,37,opt"`
-	MsgLimitFrequency    int32                      `protobuf:"varint,38,opt"`
+	ShutupTime             int32                       `protobuf:"varint,17,opt"`
+	GroupTypeFlag          int32                       `protobuf:"varint,18,opt"`
+	StringGroupTag         []byte                      `protobuf:"bytes,19,opt"`
+	MsgGroupGeoInfo        *D89AGroupGeoInfo           `protobuf:"bytes,20,opt"`
+	GroupClassExt          int32                       `protobuf:"varint,21,opt"`
+	IngGroupClassText      []byte                      `protobuf:"bytes,22,opt"`
+	AppPrivilegeFlag       int32                       `protobuf:"varint,23,opt"`
+	AppPrivilegeMask       int32                       `protobuf:"varint,24,opt"`
+	StGroupExInfo          *D89AGroupExInfoOnly        `protobuf:"bytes,25,opt"`
+	GroupSecLevel          int32                       `protobuf:"varint,26,opt"`
+	GroupSecLevelInfo      int32                       `protobuf:"varint,27,opt"`
+	SubscriptionUin        int64                       `protobuf:"varint,28,opt"`
+	AllowMemberInvite      int32                       `protobuf:"varint,29,opt"`
+	IngGroupQuestion       []byte                      `protobuf:"bytes,30,opt"`
+	IngGroupAnswer         []byte                      `protobuf:"bytes,31,opt"`
+	GroupFlagext3          int32                       `protobuf:"varint,32,opt"`
+	GroupFlagext3Mask      int32                       `protobuf:"varint,33,opt"`
+	GroupOpenAppid         int32                       `protobuf:"varint,34,opt"`
+	NoFingerOpenFlag       int32                       `protobuf:"varint,35,opt"`
+	NoCodeFingerOpenFlag   int32                       `protobuf:"varint,36,opt"`
+	RootId                 int64                       `protobuf:"varint,37,opt"`
+	MsgLimitFrequency      int32                       `protobuf:"varint,38,opt"`
 }
 
 func (x *D89AGroupinfo) GetGroupExtAdmNum() int32 {
@@ -360,16 +358,9 @@ func (x *D89AGroupinfo) GetAddOption() int32 {
 	return 0
 }
 
-func (m *D89AGroupinfo) GetShutupTime() isD89AGroupinfo_ShutupTime {
-	if m != nil {
-		return m.ShutupTime
-	}
-	return nil
-}
-
-func (x *D89AGroupinfo) GetVal() int32 {
-	if x, ok := x.GetShutupTime().(*D89AGroupinfo_Val); ok {
-		return x.Val
+func (x *D89AGroupinfo) GetShutupTime() int32 {
+	if x != nil {
+		return x.ShutupTime
 	}
 	return 0
 }
@@ -520,16 +511,6 @@ func (x *D89AGroupinfo) GetMsgLimitFrequency() int32 {
 	}
 	return 0
 }
-
-type isD89AGroupinfo_ShutupTime interface {
-	isD89AGroupinfo_ShutupTime()
-}
-
-type D89AGroupinfo_Val struct {
-	Val int32 `protobuf:"varint,17,opt"`
-}
-
-func (*D89AGroupinfo_Val) isD89AGroupinfo_ShutupTime() {}
 
 type D89AGroupNewGuidelinesInfo struct {
 	BoolEnabled bool   `protobuf:"varint,1,opt"`

@@ -956,15 +956,14 @@ func (c *QQClient) buildGroupMemoUpdatePacket(groupCode int64, newMemo string) (
 
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, []byte) {
+	shutUpTime := int32(0)
+	if mute {
+		shutUpTime = 268435455
+	}
 	body := &oidb.D89AReqBody{
 		GroupCode: groupCode,
 		StGroupInfo: &oidb.D89AGroupinfo{
-			ShutupTime: &oidb.D89AGroupinfo_Val{Val: func() int32 {
-				if mute {
-					return 268435455
-				}
-				return 0
-			}()},
+			ShutupTime: shutUpTime,
 		},
 	}
 	return c.buildGroupOperationPacket(body)
