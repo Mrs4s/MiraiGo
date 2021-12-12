@@ -238,6 +238,14 @@ type (
 		NewChannelInfo *ChannelInfo
 	}
 
+	GuildMessageRecalledEvent struct {
+		OperatorId uint64
+		GuildId    uint64
+		ChannelId  uint64
+		MessageId  uint64
+		RecallTime int64
+	}
+
 	GuildChannelOperationEvent struct {
 		OperatorId  uint64
 		GuildId     uint64

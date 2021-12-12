@@ -195,7 +195,14 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			Member: info,
 		})
 	case eventBody.UpdateMsg != nil:
-		if eventBody.UpdateMsg.GetEventType() == 1 || eventBody.UpdateMsg.GetEventType() == 2 { // todo: 撤回消息
+		if eventBody.UpdateMsg.GetEventType() == 1 || eventBody.UpdateMsg.GetEventType() == 2 {
+			c.dispatchGuildMessageRecalledEvent(&GuildMessageRecalledEvent{
+				OperatorId: eventBody.UpdateMsg.GetOperatorTinyid(),
+				GuildId:    m.Head.RoutingHead.GetGuildId(),
+				ChannelId:  m.Head.RoutingHead.GetChannelId(),
+				MessageId:  eventBody.UpdateMsg.GetMsgSeq(),
+				RecallTime: int64(m.Head.ContentHead.GetTime()),
+			})
 			return
 		}
 		if eventBody.UpdateMsg.GetEventType() == 4 { // 消息贴表情更新 (包含添加或删除)

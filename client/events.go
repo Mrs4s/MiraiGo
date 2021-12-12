@@ -16,6 +16,7 @@ type eventHandlers struct {
 	selfGroupMessageHandlers             []func(*QQClient, *message.GroupMessage)
 	guildChannelMessageHandlers          []func(*QQClient, *message.GuildChannelMessage)
 	guildMessageReactionsUpdatedHandlers []func(*QQClient, *GuildMessageReactionsUpdatedEvent)
+	guildMessageRecalledHandlers         []func(*QQClient, *GuildMessageRecalledEvent)
 	guildChannelUpdatedHandlers          []func(*QQClient, *GuildChannelUpdatedEvent)
 	guildChannelCreatedHandlers          []func(*QQClient, *GuildChannelOperationEvent)
 	guildChannelDestroyedHandlers        []func(*QQClient, *GuildChannelOperationEvent)
@@ -80,6 +81,10 @@ func (s *GuildService) OnGuildChannelMessage(f func(*QQClient, *message.GuildCha
 
 func (s *GuildService) OnGuildMessageReactionsUpdated(f func(*QQClient, *GuildMessageReactionsUpdatedEvent)) {
 	s.c.eventHandlers.guildMessageReactionsUpdatedHandlers = append(s.c.eventHandlers.guildMessageReactionsUpdatedHandlers, f)
+}
+
+func (s *GuildService) OnGuildMessageRecalled(f func(*QQClient, *GuildMessageRecalledEvent)) {
+	s.c.eventHandlers.guildMessageRecalledHandlers = append(s.c.eventHandlers.guildMessageRecalledHandlers, f)
 }
 
 func (s *GuildService) OnGuildChannelUpdated(f func(*QQClient, *GuildChannelUpdatedEvent)) {
@@ -276,6 +281,17 @@ func (c *QQClient) dispatchGuildMessageReactionsUpdatedEvent(e *GuildMessageReac
 		return
 	}
 	for _, f := range c.eventHandlers.guildMessageReactionsUpdatedHandlers {
+		cover(func() {
+			f(c, e)
+		})
+	}
+}
+
+func (c *QQClient) dispatchGuildMessageRecalledEvent(e *GuildMessageRecalledEvent) {
+	if e == nil {
+		return
+	}
+	for _, f := range c.eventHandlers.guildMessageRecalledHandlers {
 		cover(func() {
 			f(c, e)
 		})
