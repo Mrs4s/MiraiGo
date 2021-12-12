@@ -1,6 +1,6 @@
 package client
 
-//go:generate go run cmd/c2c_switcher.go
+//go:generate go run github.com/Mrs4s/MiraiGo/internal/generator/c2c_switcher
 
 import (
 	"fmt"

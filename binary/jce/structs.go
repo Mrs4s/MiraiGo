@@ -5,7 +5,7 @@ type IJceStruct interface {
 	ReadFrom(*JceReader)
 }
 
-//go:generate go run gen/structs_parser.go -f structs_tobytes.go -i structs.go
+//go:generate go run github.com/Mrs4s/MiraiGo/internal/generator/jce_gen -file=structs.go -o structs_tobytes.go
 type (
 	RequestPacket struct {
 		IVersion     int16             `jceId:"1"`
@@ -75,7 +75,6 @@ type (
 	}
 
 	SvcReqRegister struct {
-		IJceStruct
 		Uin                int64  `jceId:"0"`
 		Bid                int64  `jceId:"1"`
 		ConnType           byte   `jceId:"2"`
@@ -140,7 +139,6 @@ type (
 	}
 
 	SvcReqRegisterNew struct {
-		IJceStruct
 		RequestOptional   int64      `jceId:"0"`
 		C2CMsg            IJceStruct `jceId:"1"` // SvcReqGetMsgV2
 		GroupMsg          IJceStruct `jceId:"2"` // SvcReqPullGroupMsgSeq
@@ -174,7 +172,6 @@ type (
 	}
 
 	PullGroupSeqParam struct {
-		IJceStruct
 		GroupCode int64 `jceId:"0"`
 		LastSeqId int64 `jceId:"1"`
 	}
@@ -252,7 +249,6 @@ type (
 	}
 
 	SvcRespPushMsg struct {
-		IJceStruct
 		Uin         int64        `jceId:"0"`
 		DelInfos    []IJceStruct `jceId:"1"`
 		Svrip       int32        `jceId:"2"`
@@ -300,7 +296,6 @@ type (
 	}
 
 	FriendListRequest struct {
-		IJceStruct
 		Reqtype         int32   `jceId:"0"`
 		IfReflush       byte    `jceId:"1"`
 		Uin             int64   `jceId:"2"`
@@ -382,7 +377,6 @@ type (
 	}
 
 	TroopListRequest struct {
-		IJceStruct
 		Uin              int64   `jceId:"0"`
 		GetMSFMsgFlag    byte    `jceId:"1"`
 		Cookies          []byte  `jceId:"2"`
@@ -433,7 +427,6 @@ type (
 	}
 
 	TroopMemberListRequest struct {
-		IJceStruct
 		Uin                int64 `jceId:"0"`
 		GroupCode          int64 `jceId:"1"`
 		NextUin            int64 `jceId:"2"`
@@ -483,7 +476,6 @@ type (
 	}
 
 	ModifyGroupCardRequest struct {
-		IJceStruct
 		Zero      int64        `jceId:"0"`
 		GroupCode int64        `jceId:"1"`
 		NewSeq    int64        `jceId:"2"`
@@ -502,7 +494,6 @@ type (
 	}
 
 	SummaryCardReq struct {
-		IJceStruct
 		Uin                int64 `jceId:"0"`
 		ComeFrom           int32 `jceId:"1"`
 		QzoneFeedTimestamp int64 `jceId:"2"`
@@ -524,7 +515,6 @@ type (
 	}
 
 	SummaryCardReqSearch struct {
-		IJceStruct
 		Keyword     string   `jceId:"0"`
 		CountryCode string   `jceId:"1"`
 		Version     int32    `jceId:"2"`
@@ -532,7 +522,6 @@ type (
 	}
 
 	DelFriendReq struct {
-		IJceStruct
 		Uin     int64 `jceId:"0"`
 		DelUin  int64 `jceId:"1"`
 		DelType byte  `jceId:"2"`
