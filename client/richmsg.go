@@ -77,7 +77,7 @@ func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElem
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, msg, 1)) // rsp is empty chunk
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(0, target, msg, 1)) // rsp is empty chunk
 	select {
 	case ret := <-ch:
 		return ret, nil
@@ -88,11 +88,17 @@ func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElem
 
 // SendFriendMusicShare 发送好友音乐卡片
 func (c *QQClient) SendFriendMusicShare(target int64, msg *message.MusicShareElement) {
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(target, msg, 0))
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(0, target, msg, 0))
+}
+
+// SendGuildMusicShare 发送频道音乐卡片
+func (c *QQClient) SendGuildMusicShare(guildID, channelID uint64, msg *message.MusicShareElement) {
+	// todo(wdvxdr): message receipt?
+	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(guildID, int64(channelID), msg, 3))
 }
 
 // OidbSvc.0xb77_9
-func (c *QQClient) buildRichMsgSendingPacket(target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
+func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	tp := musicType[msg.MusicType] // MusicType
 	body := &oidb.DB77ReqBody{
@@ -121,6 +127,7 @@ func (c *QQClient) buildRichMsgSendingPacket(target int64, msg *message.MusicSha
 			PictureUrl: msg.PictureUrl,
 			MusicUrl:   msg.MusicUrl,
 		},
+		RecvGuildId: guild,
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2935, 9, b)

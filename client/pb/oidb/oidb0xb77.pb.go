@@ -14,6 +14,7 @@ type DB77ReqBody struct {
 	SendType    uint32           `protobuf:"varint,10,opt"`
 	RecvUin     uint64           `protobuf:"varint,11,opt"`
 	RichMsgBody *DB77RichMsgBody `protobuf:"bytes,12,opt"`
+	RecvGuildId uint64           `protobuf:"varint,19,opt"`
 }
 
 func (x *DB77ReqBody) GetAppId() uint64 {
@@ -84,6 +85,13 @@ func (x *DB77ReqBody) GetRichMsgBody() *DB77RichMsgBody {
 		return x.RichMsgBody
 	}
 	return nil
+}
+
+func (x *DB77ReqBody) GetRecvGuildId() uint64 {
+	if x != nil {
+		return x.RecvGuildId
+	}
+	return 0
 }
 
 type DB77ClientInfo struct {

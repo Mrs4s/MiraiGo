@@ -13,6 +13,7 @@ message DB77ReqBody {
   uint32 sendType = 10;
   uint64 recvUin = 11;
   DB77RichMsgBody richMsgBody = 12;
+  uint64 recvGuildId = 19;
 }
 
 message DB77ClientInfo {
