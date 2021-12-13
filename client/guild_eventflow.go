@@ -10,7 +10,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
@@ -92,7 +91,7 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 				// todo: direct message decode
 				continue
 			}
-			if cm := c.parseGuildChannelMessage(m); cm != nil {
+			if cm := c.GuildService.parseGuildChannelMessage(m); cm != nil {
 				c.dispatchGuildChannelMessage(cm)
 			}
 		}
@@ -206,7 +205,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			return
 		}
 		if eventBody.UpdateMsg.GetEventType() == 4 { // 消息贴表情更新 (包含添加或删除)
-			t, err := c.GuildService.pullRoamMsgByEventFlow(m.Head.RoutingHead.GetGuildId(), m.Head.RoutingHead.GetChannelId(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetEventVersion()-1)
+			t, err := c.GuildService.pullChannelMessages(m.Head.RoutingHead.GetGuildId(), m.Head.RoutingHead.GetChannelId(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetEventVersion()-1, false)
 			if err != nil || len(t) == 0 {
 				c.Error("process guild event flow error: pull eventMsg message error: %v", err)
 				return
@@ -235,29 +234,4 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			c.dispatchGuildMessageReactionsUpdatedEvent(updatedEvent)
 		}
 	}
-}
-
-func (s *GuildService) pullRoamMsgByEventFlow(guildId, channelId, beginSeq, endSeq, eventVersion uint64) ([]*channel.ChannelMsgContent, error) {
-	payload, _ := proto.Marshal(&channel.ChannelMsgReq{
-		ChannelParam: &channel.ChannelParam{
-			GuildId:   &guildId,
-			ChannelId: &channelId,
-			BeginSeq:  &beginSeq,
-			EndSeq:    &endSeq,
-			Version:   []uint64{eventVersion},
-		},
-		WithVersionFlag:   proto.Uint32(1),
-		DirectMessageFlag: proto.Uint32(0),
-	})
-	seq := s.c.nextSeq()
-	packet := packets.BuildUniPacket(s.c.Uin, seq, "trpc.group_pro.synclogic.SyncLogic.GetChannelMsg", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
-	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
-	if err != nil {
-		return nil, errors.Wrap(err, "send packet error")
-	}
-	msgRsp := new(channel.ChannelMsgRsp)
-	if err = proto.Unmarshal(rsp, msgRsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	return msgRsp.ChannelMsg.Msgs, nil
 }

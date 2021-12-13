@@ -168,6 +168,62 @@ ok:
 	}, nil
 }
 
+func (s *GuildService) PullGuildChannelMessage(guildId, channelId, beginSeq, endSeq uint64) (r []*message.GuildChannelMessage, e error) {
+	contents, err := s.pullChannelMessages(guildId, channelId, beginSeq, endSeq, 0, false)
+	if err != nil {
+		return nil, errors.Wrap(err, "pull channel message error")
+	}
+	for _, c := range contents {
+		if cm := s.parseGuildChannelMessage(c); cm != nil {
+			cm.Reactions = decodeGuildMessageEmojiReactions(c)
+			r = append(r, cm)
+		}
+	}
+	if len(r) == 0 {
+		return nil, errors.New("message not found")
+	}
+	return
+}
+
+func (s *GuildService) pullChannelMessages(guildId, channelId, beginSeq, endSeq, eventVersion uint64, direct bool) ([]*channel.ChannelMsgContent, error) {
+	param := &channel.ChannelParam{
+		GuildId:   &guildId,
+		ChannelId: &channelId,
+		BeginSeq:  &beginSeq,
+		EndSeq:    &endSeq,
+	}
+	if eventVersion != 0 {
+		param.Version = []uint64{eventVersion}
+	}
+
+	payload, _ := proto.Marshal(&channel.ChannelMsgReq{
+		ChannelParam: param,
+		WithVersionFlag: proto.Uint32(func() uint32 {
+			if eventVersion != 0 {
+				return 1
+			}
+			return 0
+		}()),
+		DirectMessageFlag: proto.Uint32(func() uint32 {
+			if direct {
+				return 1
+			}
+			return 0
+		}()),
+	})
+	seq := s.c.nextSeq()
+	packet := packets.BuildUniPacket(s.c.Uin, seq, "trpc.group_pro.synclogic.SyncLogic.GetChannelMsg", 1, s.c.OutGoingPacketSessionId, []byte{}, s.c.sigInfo.d2Key, payload)
+	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	if err != nil {
+		return nil, errors.Wrap(err, "send packet error")
+	}
+	msgRsp := new(channel.ChannelMsgRsp)
+	if err = proto.Unmarshal(rsp, msgRsp); err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	}
+	return msgRsp.ChannelMsg.Msgs, nil
+}
+
 func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []byte, size uint64) (uint16, []byte) {
 	seq := c.nextSeq()
 	payload, _ := proto.Marshal(&cmd0x388.D388ReqBody{
@@ -264,8 +320,8 @@ func decodeGuildImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	}, nil
 }
 
-func (c *QQClient) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *message.GuildChannelMessage {
-	guild := c.GuildService.FindGuild(msg.Head.RoutingHead.GetGuildId())
+func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) *message.GuildChannelMessage {
+	guild := s.FindGuild(msg.Head.RoutingHead.GetGuildId())
 	if guild == nil {
 		return nil // todo: sync guild info
 	}

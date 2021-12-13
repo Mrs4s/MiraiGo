@@ -9,6 +9,7 @@ type (
 		Time       int64
 		Sender     *GuildSender
 		Elements   []IMessageElement
+		Reactions  []*GuildMessageEmojiReaction // only available for pulling messages
 	}
 
 	GuildMessageEmojiReaction struct {
