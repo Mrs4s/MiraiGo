@@ -325,6 +325,9 @@ func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) 
 	if guild == nil {
 		return nil // todo: sync guild info
 	}
+	if msg.Body == nil || msg.Body.RichText == nil {
+		return nil
+	}
 	// mem := guild.FindMember(msg.Head.RoutingHead.GetFromTinyid())
 	return &message.GuildChannelMessage{
 		Id:         msg.Head.ContentHead.GetSeq(),
