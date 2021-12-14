@@ -22,10 +22,10 @@ var (
 )
 
 type tipsPushInfo struct {
-	TinyId                 uint64
-	TargetMessageSenderUin int64
-	GuildId                uint64
-	ChannelId              uint64
+	TinyId uint64
+	// TargetMessageSenderUin int64
+	GuildId   uint64
+	ChannelId uint64
 }
 
 func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
@@ -70,9 +70,11 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 					GuildId:   m.Head.RoutingHead.GetGuildId(),
 					ChannelId: m.Head.RoutingHead.GetChannelId(),
 				}
-				if len(m.CtrlHead.IncludeUin) > 0 {
-					tipsInfo.TargetMessageSenderUin = int64(m.CtrlHead.IncludeUin[0])
-				}
+				/*
+					if len(m.CtrlHead.IncludeUin) > 0 {
+						tipsInfo.TargetMessageSenderUin = int64(m.CtrlHead.IncludeUin[0])
+					}
+				*/
 				return tipsInfo, nil
 			}
 			if common == nil || common.GetServiceType() != 500 {
@@ -229,7 +231,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			})
 			if err == nil {
 				updatedEvent.OperatorId = tipsInfo.(*tipsPushInfo).TinyId
-				updatedEvent.MessageSenderUin = tipsInfo.(*tipsPushInfo).TargetMessageSenderUin
+				// updatedEvent.MessageSenderUin = tipsInfo.(*tipsPushInfo).TargetMessageSenderUin
 			}
 			c.dispatchGuildMessageReactionsUpdatedEvent(updatedEvent)
 		}

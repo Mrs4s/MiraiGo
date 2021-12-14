@@ -411,7 +411,7 @@ func (x *ChannelMsgContent) GetExtInfo() *ChannelExtInfo {
 }
 
 type ChannelMsgCtrlHead struct {
-	IncludeUin []uint64 `protobuf:"varint,1,rep"`
+	IncludeUin [][]byte `protobuf:"bytes,1,rep"`
 	// repeated uint64 excludeUin = 2; // bytes?
 	// repeated uint64 featureid = 3;
 	OfflineFlag    *uint32          `protobuf:"varint,4,opt"`
@@ -426,7 +426,7 @@ type ChannelMsgCtrlHead struct {
 	PrivateType    *uint32          `protobuf:"varint,13,opt"`
 }
 
-func (x *ChannelMsgCtrlHead) GetIncludeUin() []uint64 {
+func (x *ChannelMsgCtrlHead) GetIncludeUin() [][]byte {
 	if x != nil {
 		return x.IncludeUin
 	}
