@@ -346,14 +346,12 @@ func decodePushReqPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 			c.fileStorageInfo = list
 			rsp := cmd0x6ff.C501RspBody{}
 			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {
-				c.bigDataSession = &bigDataSessionInfo{
-					SigSession: rsp.RspBody.SigSession,
-					SessionKey: rsp.RspBody.SessionKey,
-				}
+				c.highwaySession.SigSession = rsp.RspBody.SigSession
+				c.highwaySession.SessionKey = rsp.RspBody.SessionKey
 				for _, srv := range rsp.RspBody.Addrs {
 					if srv.GetServiceType() == 10 {
 						for _, addr := range srv.Addrs {
-							c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+							c.highwaySession.AppendAddr(addr.GetIp(), addr.GetPort())
 						}
 					}
 					if srv.GetServiceType() == 21 {

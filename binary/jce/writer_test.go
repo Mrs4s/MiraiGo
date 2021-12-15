@@ -9,7 +9,7 @@ import (
 var globalBytes []byte
 
 func BenchmarkJceWriter_WriteMap(b *testing.B) {
-	var x = globalBytes
+	x := globalBytes
 	for i := 0; i < b.N; i++ {
 		w := NewJceWriter()
 		w.writeMapStrMapStrBytes(req.Map, 0)
@@ -39,7 +39,7 @@ var reqPacket1 = &RequestPacket{
 }
 
 func BenchmarkJceWriter_WriteJceStructRaw(b *testing.B) {
-	var x = globalBytes
+	x := globalBytes
 	for i := 0; i < b.N; i++ {
 		_ = reqPacket1.ToBytes()
 	}

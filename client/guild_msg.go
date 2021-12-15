@@ -2,9 +2,7 @@ package client
 
 import (
 	"bytes"
-	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"image"
 	"io"
 	"math/rand"
@@ -13,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -130,12 +129,18 @@ func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSe
 	if body.IsExists {
 		goto ok
 	}
-	if len(s.c.srvSsoAddrs) == 0 {
+	if s.c.highwaySession.AddrLength() == 0 {
 		for i, addr := range body.UploadIp {
-			s.c.srvSsoAddrs = append(s.c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr), body.UploadPort[i]))
+			s.c.highwaySession.AppendAddr(addr, body.UploadPort[i])
 		}
 	}
-	if _, err = s.c.highwayUploadByBDH(img, length, 83, body.UploadKey, fh, binary.DynamicProtoMessage{11: guildId, 12: channelId}.Encode(), false); err == nil {
+	if _, err = s.c.highwaySession.UploadBDH(highway.BdhInput{
+		CommandID: 83,
+		Body:      img,
+		Ticket:    body.UploadKey,
+		Ext:       binary.DynamicProtoMessage{11: guildId, 12: channelId}.Encode(),
+		Encrypt:   false,
+	}); err == nil {
 		goto ok
 	}
 	return nil, errors.Wrap(err, "highway upload error")
@@ -383,14 +388,15 @@ func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb
 	req.BusinessType = 4601
 	req.ToUin = int64(channelId)
 	ext, _ := proto.Marshal(req)
-	var hwRsp []byte
 	multi := utils.MultiReadSeeker(thumb, video)
-	h := md5.New()
-	length, _ := io.Copy(h, multi)
-	fh := h.Sum(nil)
-	_, _ = multi.Seek(0, io.SeekStart)
 
-	hwRsp, err = c.highwayUploadByBDH(multi, length, 89, c.bigDataSession.SigSession, fh, ext, true)
+	hwRsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+		CommandID: 89,
+		Body:      multi,
+		Ticket:    c.highwaySession.SigSession,
+		Ext:       ext,
+		Encrypt:   true,
+	})
 	if err != nil {
 		return nil, errors.Wrap(err, "upload video file error")
 	}

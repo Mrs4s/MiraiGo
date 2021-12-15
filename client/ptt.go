@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -28,17 +29,21 @@ var pttWaiter = utils.NewUploadWaiter()
 
 // UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
 func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*message.GroupVoiceElement, error) {
-	h := md5.New()
-	length, _ := io.Copy(h, voice)
-	fh := h.Sum(nil)
+	fh, length := utils.ComputeMd5AndLength(voice)
 	_, _ = voice.Seek(0, io.SeekStart)
 
-	key := hex.EncodeToString(fh)
+	key := string(fh)
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
 	ext := c.buildGroupPttStoreBDHExt(groupCode, fh[:], int32(length), 0, int32(length))
-	rsp, err := c.highwayUploadByBDH(voice, length, 29, c.bigDataSession.SigSession, fh, ext, false)
+	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+		CommandID: 29,
+		Body:      voice,
+		Ticket:    c.highwaySession.SigSession,
+		Ext:       ext,
+		Encrypt:   false,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +83,13 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	defer pttWaiter.Done(key)
 
 	ext := c.buildC2CPttStoreBDHExt(target, fh[:], int32(length), int32(length))
-	rsp, err := c.highwayUploadByBDH(voice, length, 26, c.bigDataSession.SigSession, fh, ext, false)
+	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+		CommandID: 26,
+		Body:      voice,
+		Ticket:    c.highwaySession.SigSession,
+		Ext:       ext,
+		Encrypt:   false,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -135,12 +146,17 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 		}, nil
 	}
 	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen, 1).PttShortVideoUploadReq)
+
 	var hwRsp []byte
 	multi := utils.MultiReadSeeker(thumb, video)
-	h := md5.New()
-	length, _ := io.Copy(h, multi)
-	fh := h.Sum(nil)
-	_, _ = multi.Seek(0, io.SeekStart)
+	input := highway.BdhInput{
+		CommandID: 25,
+		File:      cache,
+		Body:      multi,
+		Ticket:    c.highwaySession.SigSession,
+		Ext:       ext,
+		Encrypt:   true,
+	}
 	if cache != "" {
 		var file *os.File
 		file, err = os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0o666)
@@ -149,14 +165,14 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 			return err
 		}
 		if err != nil || cp() != nil {
-			hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.bigDataSession.SigSession, fh, ext, true)
+			hwRsp, err = c.highwaySession.UploadBDH(input)
 		} else {
 			_ = file.Close()
-			hwRsp, err = c.highwayUploadFileMultiThreadingByBDH(cache, 25, 8, c.bigDataSession.SigSession, ext, true)
+			hwRsp, err = c.highwaySession.UploadBDHMultiThread(input, 8)
 			_ = os.Remove(cache)
 		}
 	} else {
-		hwRsp, err = c.highwayUploadByBDH(multi, length, 25, c.bigDataSession.SigSession, fh, ext, true)
+		hwRsp, err = c.highwaySession.UploadBDH(input)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "upload video file error")

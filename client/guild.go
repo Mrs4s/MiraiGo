@@ -793,7 +793,6 @@ func decodeGuildPushFirstView(c *QQClient, _ *incomingPacketInfo, payload []byte
 		}
 	}
 	if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg
-
 	}
 	return nil, nil
 }

@@ -63,7 +63,8 @@ var req = RequestDataVersion2{
 		"5": {
 			"123": []byte(`123`),
 		},
-	}}
+	},
+}
 
 func TestRequestDataVersion2_ReadFrom(t *testing.T) {
 	// todo(wdv): fuzz test

@@ -58,9 +58,7 @@ type (
 	content map[string]interface{}
 )
 
-var (
-	globalBlockId int64 = 0
-)
+var globalBlockId int64 = 0
 
 func genBlockId() string {
 	id := atomic.AddInt64(&globalBlockId, 1)

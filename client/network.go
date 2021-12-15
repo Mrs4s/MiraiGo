@@ -3,7 +3,6 @@ package client
 import (
 	"net"
 	"runtime/debug"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -40,7 +39,8 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	r := &ConnectionQualityInfo{}
 	wg := sync.WaitGroup{}
 	wg.Add(2)
-	go func(w *sync.WaitGroup) {
+	go func() {
+		defer wg.Done()
 		var err error
 
 		if r.ChatServerLatency, err = qualityTest(c.servers[c.currServerIndex].String()); err != nil {
@@ -57,24 +57,22 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 			c.Error("resolve long message server error: %v", err)
 			r.LongMessageServerLatency = 9999
 		}
-		if len(c.srvSsoAddrs) > 0 {
-			if r.SrvServerLatency, err = qualityTest(c.srvSsoAddrs[0]); err != nil {
+		if c.highwaySession.AddrLength() > 0 {
+			if r.SrvServerLatency, err = qualityTest(c.highwaySession.SsoAddr[0].String()); err != nil {
 				c.Error("test srv server latency error: %v", err)
 				r.SrvServerLatency = 9999
 			}
 		}
-
-		w.Done()
-	}(&wg)
-	go func(w *sync.WaitGroup) {
+	}()
+	go func() {
+		defer wg.Done()
 		res := utils.RunICMPPingLoop(&net.IPAddr{IP: c.servers[c.currServerIndex].IP}, 10)
 		r.ChatServerPacketLoss = res.PacketsLoss
-		if len(c.srvSsoAddrs) > 0 {
-			res = utils.RunICMPPingLoop(&net.IPAddr{IP: net.ParseIP(strings.Split(c.srvSsoAddrs[0], ":")[0])}, 10)
+		if c.highwaySession.AddrLength() > 0 {
+			res = utils.RunICMPPingLoop(&net.IPAddr{IP: c.highwaySession.SsoAddr[0].AsNetIP()}, 10)
 			r.SrvServerPacketLoss = res.PacketsLoss
 		}
-		w.Done()
-	}(&wg)
+	}()
 	start := time.Now()
 	if _, err := utils.HttpGetBytes("https://ssl.htdata.qq.com", ""); err == nil {
 		r.LongMessageServerResponseLatency = time.Now().Sub(start).Milliseconds()

@@ -17,9 +17,7 @@ func init() {
 	decoders["MsgPush.PushGroupProMsg"] = decodeGuildEventFlowPacket
 }
 
-var (
-	updateChanLock sync.Mutex
-)
+var updateChanLock sync.Mutex
 
 type tipsPushInfo struct {
 	TinyId uint64
@@ -63,7 +61,6 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 			}
 			if m.Head.ContentHead.GetSubType() == 2 { // todo: tips?
 				if common == nil { // empty tips
-
 				}
 				tipsInfo := &tipsPushInfo{
 					TinyId:    m.Head.RoutingHead.GetFromTinyid(),

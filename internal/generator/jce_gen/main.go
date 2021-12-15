@@ -80,7 +80,7 @@ func main() {
 		fmt.Printf("%s\n", buf.Bytes())
 		panic(err)
 	}
-	_ = os.WriteFile(*output, formated, 0644)
+	_ = os.WriteFile(*output, formated, 0o644)
 }
 
 func (g Generator) Generate(w io.Writer) {

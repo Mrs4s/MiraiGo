@@ -13,6 +13,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
@@ -169,7 +170,13 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 		return nil, errors.Errorf("upload long message error: %v", err)
 	}
 	for i, ip := range rsp.Uint32UpIp {
-		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
+		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
+		input := highway.Input{
+			CommandID: 27,
+			Key:       rsp.MsgSig,
+			Body:      bytes.NewReader(body),
+		}
+		err := c.highwaySession.Upload(addr, input)
 		if err != nil {
 			c.Error("highway upload long message error: %v", err)
 			continue
@@ -191,7 +198,13 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 		return nil
 	}
 	for i, ip := range rsp.Uint32UpIp {
-		err := c.highwayUpload(uint32(ip), int(rsp.Uint32UpPort[i]), rsp.MsgSig, body, 27)
+		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
+		input := highway.Input{
+			CommandID: 27,
+			Key:       rsp.MsgSig,
+			Body:      bytes.NewReader(body),
+		}
+		err := c.highwaySession.Upload(addr, input)
 		if err != nil {
 			continue
 		}

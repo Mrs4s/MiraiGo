@@ -11,6 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
@@ -225,11 +226,18 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		},
 		Unknown3: proto.Int32(0),
 	})
-	if _, err = fs.client.excitingUploadStream(file, 71, fs.client.bigDataSession.SigSession, ext); err != nil {
+	client := fs.client
+	input := highway.ExcitingInput{
+		CommandID: 71,
+		Body:      file,
+		Ticket:    fs.client.highwaySession.SigSession,
+		Ext:       ext,
+	}
+	if _, err = fs.client.highwaySession.UploadExciting(input); err != nil {
 		return errors.Wrap(err, "upload failed")
 	}
-	_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.GetFileId(), rsp.GetBusId(), rand.Int31())
-	return fs.client.sendPacket(pkt)
+	_, pkt := client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.GetFileId(), rsp.GetBusId(), rand.Int31())
+	return client.sendPacket(pkt)
 }
 
 func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {

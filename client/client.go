@@ -15,6 +15,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
@@ -84,13 +85,12 @@ type QQClient struct {
 	// session info
 	qwebSeq        int64
 	sigInfo        *loginSigInfo
-	bigDataSession *bigDataSessionInfo
+	highwaySession *highway.Session
 	dpwd           []byte
 	timeDiff       int64
 	pwdFlag        bool
 
 	// address
-	srvSsoAddrs     []string
 	otherSrvAddrs   []string
 	fileStorageInfo *jce.FileStoragePushFSSvcList
 
@@ -270,6 +270,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 
 func (c *QQClient) UseDevice(info *DeviceInfo) {
 	c.version = genVersionInfo(info.Protocol)
+	c.highwaySession = highway.NewSession(int32(c.version.AppId), c.Uin)
 	c.ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
 	c.deviceInfo = info
 }

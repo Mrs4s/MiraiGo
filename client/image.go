@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/hex"
-	"fmt"
 	"image"
 	_ "image/gif"
 	"io"
@@ -15,8 +14,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
-	"github.com/Mrs4s/MiraiGo/client/pb/highway"
+	highway2 "github.com/Mrs4s/MiraiGo/client/pb/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
@@ -68,12 +68,18 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	if rsp.IsExists {
 		goto ok
 	}
-	if len(c.srvSsoAddrs) == 0 {
+	if c.highwaySession.AddrLength() == 0 {
 		for i, addr := range rsp.UploadIp {
-			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr), rsp.UploadPort[i]))
+			c.highwaySession.AppendAddr(addr, rsp.UploadPort[i])
 		}
 	}
-	if _, err = c.highwayUploadByBDH(img, length, 2, rsp.UploadKey, fh, EmptyBytes, false); err == nil {
+	if _, err = c.highwaySession.UploadBDH(highway.BdhInput{
+		CommandID: 2,
+		Body:      img,
+		Ticket:    rsp.UploadKey,
+		Ext:       EmptyBytes,
+		Encrypt:   false,
+	}); err == nil {
 		goto ok
 	}
 	return nil, errors.Wrap(err, "upload failed")
@@ -114,12 +120,19 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	if rsp.IsExists {
 		goto ok
 	}
-	if len(c.srvSsoAddrs) == 0 {
+	if c.highwaySession.AddrLength() == 0 {
 		for i, addr := range rsp.UploadIp {
-			c.srvSsoAddrs = append(c.srvSsoAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr), rsp.UploadPort[i]))
+			c.highwaySession.AppendAddr(addr, rsp.UploadPort[i])
 		}
 	}
-	if _, err = c.highwayUploadFileMultiThreadingByBDH(path, 2, 1, rsp.UploadKey, EmptyBytes, false); err == nil {
+
+	if _, err = c.highwaySession.UploadBDHMultiThread(highway.BdhInput{
+		CommandID: 2,
+		File:      path,
+		Ticket:    rsp.UploadKey,
+		Ext:       EmptyBytes,
+		Encrypt:   false,
+	}, 1); err == nil {
 		goto ok
 	}
 	return nil, errors.Wrap(err, "upload failed")
@@ -176,7 +189,7 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 	case *message.GroupImageElement:
 		url = e.Url
 		if b, err := utils.HTTPGetReadCloser(e.Url, ""); err == nil {
-			if url, err = c.uploadOcrImage(b, int64(e.Size), e.Md5); err != nil {
+			if url, err = c.uploadOcrImage(b); err != nil {
 				url = e.Url
 			}
 			_ = b.Close()
@@ -285,18 +298,26 @@ func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd
 	return seq, packet
 }
 
-func (c *QQClient) uploadOcrImage(img io.Reader, length int64, sum []byte) (string, error) {
+func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 	r := make([]byte, 16)
 	rand.Read(r)
-	ext, _ := proto.Marshal(&highway.CommFileExtReq{
+	ext, _ := proto.Marshal(&highway2.CommFileExtReq{
 		ActionType: proto.Uint32(0),
 		Uuid:       binary.GenUUID(r),
 	})
-	rsp, err := c.highwayUploadByBDH(img, length, 76, c.bigDataSession.SigSession, sum, ext, false)
+
+	buf, _ := io.ReadAll(img)
+	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+		CommandID: 76,
+		Body:      bytes.NewReader(buf),
+		Ticket:    c.highwaySession.SigSession,
+		Ext:       ext,
+		Encrypt:   false,
+	})
 	if err != nil {
 		return "", errors.Wrap(err, "upload ocr image error")
 	}
-	rspExt := highway.CommFileExtRsp{}
+	rspExt := highway2.CommFileExtRsp{}
 	if err = proto.Unmarshal(rsp, &rspExt); err != nil {
 		return "", errors.Wrap(err, "error unmarshal highway resp")
 	}
