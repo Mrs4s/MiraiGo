@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -793,7 +794,7 @@ func decodeWordSegmentation(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return nil, errors.New("no word received")
 }
 
-func decodeSidExpiredPacket(c *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
+func decodeSidExpiredPacket(c *QQClient, i *incomingPacketInfo, _ []byte) (interface{}, error) {
 	_, err := c.sendAndWait(c.buildRequestChangeSigPacket(3554528))
 	if err != nil {
 		return nil, errors.Wrap(err, "resign client error")
@@ -801,6 +802,7 @@ func decodeSidExpiredPacket(c *QQClient, _ *incomingPacketInfo, _ []byte) (inter
 	if err = c.registerClient(); err != nil {
 		return nil, errors.Wrap(err, "register error")
 	}
+	_ = c.sendPacket(packets.BuildUniPacket(c.Uin, i.SequenceId, "OnlinePush.SidTicketExpired", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, EmptyBytes))
 	return nil, nil
 }
 
