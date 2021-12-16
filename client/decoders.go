@@ -204,8 +204,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 	reader.ReadUInt16()
 	m := reader.ReadTlvMap(2)
 	if t != 0 {
-		c.Error("exchange_emp error: %v", t)
-		return nil, errors.New("exchange_emp failed")
+		return nil, errors.Errorf("exchange_emp failed: %v", t)
 	}
 	if cmd == 15 {
 		c.decodeT119R(m[0x119])
