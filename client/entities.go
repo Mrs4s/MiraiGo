@@ -177,6 +177,7 @@ type (
 	LogEvent struct {
 		Type    string
 		Message string
+		Dump    []byte
 	}
 
 	ServerUpdatedEvent struct {

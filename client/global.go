@@ -723,3 +723,11 @@ func (c *QQClient) Trace(msg string, args ...interface{}) {
 		Message: fmt.Sprintf(msg, args...),
 	})
 }
+
+func (c *QQClient) Dump(msg string, data []byte, args ...interface{}) {
+	c.dispatchLogEvent(&LogEvent{
+		Type:    "DUMP",
+		Message: fmt.Sprintf(msg, args...),
+		Dump:    data,
+	})
+}
