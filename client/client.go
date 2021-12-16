@@ -550,10 +550,8 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 	if m == nil {
 		return nil
 	}
-	var (
-		item *msg.PbMultiMsgItem
-		ret  = &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
-	)
+	var item *msg.PbMultiMsgItem
+	ret := &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
 	for _, iter := range m.Items {
 		if iter.GetFileName() == m.FileName {
 			item = iter
@@ -563,16 +561,15 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 		return nil
 	}
 	for _, m := range item.GetBuffer().GetMsg() {
+		name := m.Head.GetFromNick()
+		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
+			name = m.Head.GroupInfo.GetGroupCard()
+		}
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
-			SenderId: m.Head.GetFromUin(),
-			SenderName: func() string {
-				if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-					return m.Head.GroupInfo.GetGroupCard()
-				}
-				return m.Head.GetFromNick()
-			}(),
-			Time:    m.Head.GetMsgTime(),
-			Message: message.ParseMessageElems(m.Body.RichText.Elems),
+			SenderId:   m.Head.GetFromUin(),
+			SenderName: name,
+			Time:       m.Head.GetMsgTime(),
+			Message:    message.ParseMessageElems(m.Body.RichText.Elems),
 		})
 	}
 	return ret

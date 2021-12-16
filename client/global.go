@@ -157,10 +157,7 @@ var SystemDeviceInfo = &DeviceInfo{
 	},
 }
 
-var (
-	EmptyBytes  = []byte{}
-	NumberRange = "0123456789"
-)
+var EmptyBytes = make([]byte, 0)
 
 func init() {
 	r := make([]byte, 16)
@@ -174,8 +171,9 @@ func init() {
 func GenRandomDevice() {
 	r := make([]byte, 16)
 	rand.Read(r)
-	SystemDeviceInfo.Display = []byte("MIRAI." + utils.RandomStringRange(6, NumberRange) + ".001")
-	SystemDeviceInfo.FingerPrint = []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, NumberRange) + ":user/release-keys")
+	const numberRange = "0123456789"
+	SystemDeviceInfo.Display = []byte("MIRAI." + utils.RandomStringRange(6, numberRange) + ".001")
+	SystemDeviceInfo.FingerPrint = []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, numberRange) + ":user/release-keys")
 	SystemDeviceInfo.BootId = binary.GenUUID(r)
 	SystemDeviceInfo.ProcVersion = []byte("Linux version 3.0.31-" + utils.RandomString(8) + " (android-build@xxx.xxx.xxx.xxx.com)")
 	rand.Read(r)
@@ -498,8 +496,7 @@ func qualityTest(addr string) (int64, error) {
 		return 0, errors.Wrap(err, "failed to connect to server during quality test")
 	}
 	_ = conn.Close()
-	end := time.Now()
-	return end.Sub(start).Milliseconds(), nil
+	return time.Since(start).Milliseconds(), nil
 }
 
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
@@ -582,10 +579,12 @@ func (b *groupMessageBuilder) build() *msg.Message {
 	return base
 }
 
-func packUniRequestData(data []byte) (r []byte) {
-	r = append([]byte{0x0A}, data...)
+func packUniRequestData(data []byte) []byte {
+	r := make([]byte, 0, len(data)+2)
+	r = append(r, 0x0a)
+	r = append(r, data...)
 	r = append(r, 0x0B)
-	return
+	return r
 }
 
 func genForwardTemplate(resID, preview, title, brief, source, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
