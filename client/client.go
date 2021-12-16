@@ -95,11 +95,9 @@ type QQClient struct {
 	fileStorageInfo *jce.FileStoragePushFSSvcList
 
 	// message state
-	lastMessageSeq         int32
 	msgSvcCache            *utils.Cache
 	lastC2CMsgTime         int64
 	transCache             *utils.Cache
-	lastLostMsg            string
 	groupSysMsgCache       *GroupSystemMessages
 	groupMsgBuilders       sync.Map
 	onlinePushCache        *utils.Cache
@@ -107,7 +105,6 @@ type QQClient struct {
 	groupSeq               int32
 	friendSeq              int32
 	heartbeatEnabled       bool
-	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
 
@@ -150,6 +147,13 @@ type handlerInfo struct {
 	params  requestParams
 }
 
+func (h *handlerInfo) getParams() requestParams {
+	if h == nil {
+		return nil
+	}
+	return h.params
+}
+
 var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
@@ -174,7 +178,6 @@ var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interfac
 	"OidbSvc.0xd79":                                decodeWordSegmentation,
 	"OidbSvc.0x990":                                decodeTranslateResponse,
 	"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
-	"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,
 }
 
 func init() {
@@ -864,10 +867,6 @@ func (c *QQClient) nextFriendSeq() int32 {
 
 func (c *QQClient) nextQWebSeq() int64 {
 	return atomic.AddInt64(&c.qwebSeq, 1)
-}
-
-func (c *QQClient) nextGroupDataTransSeq() int32 {
-	return atomic.AddInt32(&c.groupDataTransSeq, 2)
 }
 
 func (c *QQClient) nextHighwayApplySeq() int32 {

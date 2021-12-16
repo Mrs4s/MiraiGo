@@ -95,12 +95,13 @@ func decodeMultiApplyDownResponse(_ *QQClient, _ *incomingPacketInfo, payload []
 		return nil, errors.New("not found")
 	}
 	rsp := body.MultimsgApplydownRsp[0]
-	prefix := func() string {
-		if rsp.MsgExternInfo != nil && rsp.MsgExternInfo.ChannelType == 2 {
-			return "https://ssl.htdata.qq.com"
-		}
-		return fmt.Sprintf("http://%s:%d", binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0])), body.MultimsgApplydownRsp[0].Uint32DownPort[0])
-	}()
+
+	var prefix string
+	if rsp.MsgExternInfo != nil && rsp.MsgExternInfo.ChannelType == 2 {
+		prefix = "https://ssl.htdata.qq.com"
+	} else {
+		prefix = fmt.Sprintf("http://%s:%d", binary.UInt32ToIPV4Address(uint32(rsp.Uint32DownIp[0])), body.MultimsgApplydownRsp[0].Uint32DownPort[0])
+	}
 	b, err := utils.HttpGetBytes(fmt.Sprintf("%s%s", prefix, string(rsp.ThumbDownPara)), "")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to download by multi apply down")

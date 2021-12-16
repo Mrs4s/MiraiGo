@@ -200,12 +200,12 @@ func NewUrlShare(url, title, content, image string) *ServiceElement {
 	}
 }
 
-func NewRichXml(template string, ResId int64) *ServiceElement {
-	if ResId == 0 {
-		ResId = 60 // 默认值60
+func NewRichXml(template string, resID int64) *ServiceElement {
+	if resID == 0 {
+		resID = 60 // 默认值60
 	}
 	return &ServiceElement{
-		Id:      int32(ResId),
+		Id:      int32(resID),
 		Content: template,
 		SubType: "xml",
 	}

@@ -97,11 +97,12 @@ func (r *Reader) ReadTlvMap(tagSize int) (m TlvMap) {
 			return m
 		}
 		var k uint16
-		if tagSize == 1 {
+		switch tagSize {
+		case 1:
 			k = uint16(r.ReadByte())
-		} else if tagSize == 2 {
+		case 2:
 			k = r.ReadUInt16()
-		} else if tagSize == 4 {
+		case 4:
 			k = uint16(r.ReadInt32())
 		}
 		if k == 255 {

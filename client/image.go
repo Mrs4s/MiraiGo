@@ -32,27 +32,25 @@ func init() {
 
 var imgWaiter = utils.NewUploadWaiter()
 
-type (
-	imageUploadResponse struct {
-		UploadKey  []byte
-		UploadIp   []uint32
-		UploadPort []uint32
-		ResourceId string
-		Message    string
-		FileId     int64
-		Width      int32
-		Height     int32
-		ResultCode int32
-		IsExists   bool
-	}
-)
+type imageUploadResponse struct {
+	UploadKey  []byte
+	UploadIp   []uint32
+	UploadPort []uint32
+	ResourceId string
+	Message    string
+	FileId     int64
+	Width      int32
+	Height     int32
+	ResultCode int32
+	IsExists   bool
+}
 
 func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
 
-	key := hex.EncodeToString(fh)
+	key := string(fh)
 	imgWaiter.Wait(key)
 	defer imgWaiter.Done(key)
 

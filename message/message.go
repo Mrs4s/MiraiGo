@@ -423,11 +423,9 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				if isOk := strings.Contains(content, "<?xml"); isOk {
 					res = append(res, NewRichXml(content, int64(elem.RichMsg.GetServiceId())))
 					continue
-				} else {
-					if json.Valid(utils.S2B(content)) {
-						res = append(res, NewRichJson(content))
-						continue
-					}
+				} else if json.Valid(utils.S2B(content)) {
+					res = append(res, NewRichJson(content))
+					continue
 				}
 				res = append(res, NewText(content))
 			}

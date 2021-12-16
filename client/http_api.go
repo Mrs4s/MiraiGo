@@ -124,10 +124,9 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 /* -------- TextToSpeech -------- */
 
 func (c *QQClient) GetTts(text string) ([]byte, error) {
-	url := "https://textts.qq.com/cgi-bin/tts"
-	bt, _ := json.Marshal(text)
-	data := fmt.Sprintf(`{"appid": "201908021016","sendUin": %v,"text": %s}`, c.Uin, bt)
-	rsp, err := utils.HttpPostBytesWithCookie(url, []byte(data), c.getCookies())
+	apiUrl := "https://textts.qq.com/cgi-bin/tts"
+	data := fmt.Sprintf(`{"appid": "201908021016","sendUin": %v,"text": %q}`, c.Uin, text)
+	rsp, err := utils.HttpPostBytesWithCookie(apiUrl, []byte(data), c.getCookies())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to post to tts server")
 	}

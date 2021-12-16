@@ -131,6 +131,7 @@ func (s *TempSessionInfo) SendMessage(m *message.SendingMessage) (*message.TempM
 	}
 }
 
+/* this function is unused
 func (c *QQClient) buildGetOneDayRoamMsgRequest(target, lastMsgTime, random int64, count uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := &msg.PbGetOneDayRoamMsgReq{
@@ -143,6 +144,7 @@ func (c *QQClient) buildGetOneDayRoamMsgRequest(target, lastMsgTime, random int6
 	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetOneDayRoamMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+*/
 
 // MessageSvc.PbSendMsg
 func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
