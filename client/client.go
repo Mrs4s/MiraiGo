@@ -168,7 +168,6 @@ var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interfac
 	"friendlist.GetTroopListReqV2":                 decodeGroupListResponse,
 	"friendlist.GetTroopMemberListReq":             decodeGroupMemberListResponse,
 	"group_member_card.get_group_member_card_info": decodeGroupMemberInfoResponse,
-	"PttStore.GroupPttUp":                          decodeGroupPttStoreResponse,
 	"LongConn.OffPicUp":                            decodeOffPicUpResponse,
 	"ProfileService.Pb.ReqSystemMsgNew.Group":      decodeSystemMsgGroupPacket,
 	"ProfileService.Pb.ReqSystemMsgNew.Friend":     decodeSystemMsgFriendPacket,

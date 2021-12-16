@@ -8,7 +8,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
@@ -201,14 +200,6 @@ func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
 	return i.(string)
 }
 
-// PttStore.GroupPttUp
-func (c *QQClient) buildGroupPttStorePacket(groupCode int64, md5 []byte, size, codec, voiceLength int32) (uint16, []byte) {
-	seq := c.nextSeq()
-	packet := packets.BuildUniPacket(c.Uin, seq, "PttStore.GroupPttUp", 1, c.OutGoingPacketSessionId,
-		EmptyBytes, c.sigInfo.d2Key, c.buildGroupPttStoreBDHExt(groupCode, md5, size, codec, voiceLength))
-	return seq, packet
-}
-
 func (c *QQClient) buildGroupPttStoreBDHExt(groupCode int64, md5 []byte, size, codec, voiceLength int32) []byte {
 	req := &cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
@@ -300,36 +291,6 @@ func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash [
 	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize, 1))
 	packet := packets.BuildUniPacket(c.Uin, seq, "PttCenterSvr.GroupShortVideoUpReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
-}
-
-// PttStore.GroupPttUp
-func decodeGroupPttStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
-	pkt := cmd0x388.D388RspBody{}
-	err := proto.Unmarshal(payload, &pkt)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	rsp := pkt.TryupPttRsp[0]
-	if rsp.GetResult() != 0 {
-		return pttUploadResponse{
-			ResultCode: int32(rsp.GetResult()),
-			Message:    utils.B2S(rsp.GetFailMsg()),
-		}, nil
-	}
-	if rsp.GetFileExit() {
-		return pttUploadResponse{IsExists: true}, nil
-	}
-	ip := make([]string, 0, len(rsp.GetUpIp()))
-	for _, i := range rsp.GetUpIp() {
-		ip = append(ip, binary.UInt32ToIPV4Address(i))
-	}
-	return pttUploadResponse{
-		UploadKey:  rsp.UpUkey,
-		UploadIp:   ip,
-		UploadPort: rsp.GetUpPort(),
-		FileKey:    rsp.FileKey,
-		FileId:     int64(rsp.GetFileid()),
-	}, nil
 }
 
 // PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500
