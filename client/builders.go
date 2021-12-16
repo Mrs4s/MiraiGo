@@ -3,7 +3,6 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
-	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
@@ -1080,6 +1078,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 	return seq, packet
 }
 
+/* this function is unused
 // LightAppSvc.mini_app_info.GetAppInfoById
 func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	seq := c.nextSeq()
@@ -1099,6 +1098,7 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	packet := packets.BuildUniPacket(c.Uin, seq, "LightAppSvc.mini_app_info.GetAppInfoById", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
 	return seq, packet
 }
+*/
 
 func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	seq := c.nextSeq()

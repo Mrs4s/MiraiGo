@@ -15,6 +15,7 @@ func RandomString(len int) string {
 
 func RandomStringRange(length int, str string) string {
 	sb := strings.Builder{}
+	sb.Grow(length)
 	for i := 0; i < length; i++ {
 		sb.WriteByte(str[rand.Intn(len(str))])
 	}

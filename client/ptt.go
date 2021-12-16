@@ -35,7 +35,7 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	ext := c.buildGroupPttStoreBDHExt(groupCode, fh[:], int32(length), 0, int32(length))
+	ext := c.buildGroupPttStoreBDHExt(groupCode, fh, int32(length), 0, int32(length))
 	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
 		CommandID: 29,
 		Body:      voice,
@@ -60,8 +60,8 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 		Ptt: &msg.Ptt{
 			FileType:     proto.Int32(4),
 			SrcUin:       &c.Uin,
-			FileMd5:      fh[:],
-			FileName:     proto.String(hex.EncodeToString(fh[:]) + ".amr"),
+			FileMd5:      fh,
+			FileName:     proto.String(hex.EncodeToString(fh) + ".amr"),
 			FileSize:     proto.Int32(int32(length)),
 			GroupFileKey: pkt.TryupPttRsp[0].FileKey,
 			BoolValid:    proto.Bool(true),
@@ -81,7 +81,7 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	ext := c.buildC2CPttStoreBDHExt(target, fh[:], int32(length), int32(length))
+	ext := c.buildC2CPttStoreBDHExt(target, fh, int32(length), int32(length))
 	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
 		CommandID: 26,
 		Body:      voice,
@@ -107,8 +107,8 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 			FileType: proto.Int32(4),
 			SrcUin:   &c.Uin,
 			FileUuid: pkt.ApplyUploadRsp.Uuid,
-			FileMd5:  fh[:],
-			FileName: proto.String(hex.EncodeToString(fh[:]) + ".amr"),
+			FileMd5:  fh,
+			FileName: proto.String(hex.EncodeToString(fh) + ".amr"),
 			FileSize: proto.Int32(int32(length)),
 			// Reserve:   constructPTTExtraInfo(1, int32(len(voice))), // todo length
 			BoolValid: proto.Bool(true),

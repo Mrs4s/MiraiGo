@@ -101,15 +101,14 @@ func (c *QQClient) SendGuildMusicShare(guildID, channelID uint64, msg *message.M
 func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	tp := musicType[msg.MusicType] // MusicType
+	msgStyle := uint32(0)
+	if msg.MusicUrl != "" {
+		msgStyle = 4
+	}
 	body := &oidb.DB77ReqBody{
-		AppId:   tp.appID,
-		AppType: tp.appType,
-		MsgStyle: func() uint32 {
-			if msg.MusicUrl == "" {
-				return 0
-			}
-			return 4
-		}(),
+		AppId:    tp.appID,
+		AppType:  tp.appType,
+		MsgStyle: msgStyle,
 		ClientInfo: &oidb.DB77ClientInfo{
 			Platform:           tp.platform,
 			SdkVersion:         tp.sdkVersion,

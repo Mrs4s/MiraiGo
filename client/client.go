@@ -95,11 +95,9 @@ type QQClient struct {
 	fileStorageInfo *jce.FileStoragePushFSSvcList
 
 	// message state
-	lastMessageSeq         int32
 	msgSvcCache            *utils.Cache
 	lastC2CMsgTime         int64
 	transCache             *utils.Cache
-	lastLostMsg            string
 	groupSysMsgCache       *GroupSystemMessages
 	groupMsgBuilders       sync.Map
 	onlinePushCache        *utils.Cache
@@ -107,7 +105,6 @@ type QQClient struct {
 	groupSeq               int32
 	friendSeq              int32
 	heartbeatEnabled       bool
-	groupDataTransSeq      int32
 	highwayApplyUpSeq      int32
 	eventHandlers          *eventHandlers
 
@@ -150,6 +147,13 @@ type handlerInfo struct {
 	params  requestParams
 }
 
+func (h *handlerInfo) getParams() requestParams {
+	if h == nil {
+		return nil
+	}
+	return h.params
+}
+
 var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
@@ -174,7 +178,6 @@ var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interfac
 	"OidbSvc.0xd79":                                decodeWordSegmentation,
 	"OidbSvc.0x990":                                decodeTranslateResponse,
 	"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
-	"LightAppSvc.mini_app_info.GetAppInfoById":     decodeAppInfoResponse,
 }
 
 func init() {
@@ -547,10 +550,8 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 	if m == nil {
 		return nil
 	}
-	var (
-		item *msg.PbMultiMsgItem
-		ret  = &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
-	)
+	var item *msg.PbMultiMsgItem
+	ret := &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
 	for _, iter := range m.Items {
 		if iter.GetFileName() == m.FileName {
 			item = iter
@@ -560,16 +561,15 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 		return nil
 	}
 	for _, m := range item.GetBuffer().GetMsg() {
+		name := m.Head.GetFromNick()
+		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
+			name = m.Head.GroupInfo.GetGroupCard()
+		}
 		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
-			SenderId: m.Head.GetFromUin(),
-			SenderName: func() string {
-				if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-					return m.Head.GroupInfo.GetGroupCard()
-				}
-				return m.Head.GetFromNick()
-			}(),
-			Time:    m.Head.GetMsgTime(),
-			Message: message.ParseMessageElems(m.Body.RichText.Elems),
+			SenderId:   m.Head.GetFromUin(),
+			SenderName: name,
+			Time:       m.Head.GetMsgTime(),
+			Message:    message.ParseMessageElems(m.Body.RichText.Elems),
 		})
 	}
 	return ret
@@ -864,10 +864,6 @@ func (c *QQClient) nextFriendSeq() int32 {
 
 func (c *QQClient) nextQWebSeq() int64 {
 	return atomic.AddInt64(&c.qwebSeq, 1)
-}
-
-func (c *QQClient) nextGroupDataTransSeq() int32 {
-	return atomic.AddInt32(&c.groupDataTransSeq, 2)
 }
 
 func (c *QQClient) nextHighwayApplySeq() int32 {

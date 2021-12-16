@@ -29,7 +29,7 @@ func (t TEA) Encrypt(src []byte) (dst []byte) {
 		block := binary.BigEndian.Uint64(dst[i:])
 		holder = block ^ iv1
 		iv1 = t.encode(holder)
-		iv1 = iv1 ^ iv2
+		iv1 ^= iv2
 		iv2 = holder
 		binary.BigEndian.PutUint64(dst[i:], iv1)
 	}

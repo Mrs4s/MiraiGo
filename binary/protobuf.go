@@ -14,6 +14,8 @@ type encoder struct {
 
 func (msg DynamicProtoMessage) Encode() []byte {
 	en := &encoder{}
+
+	//nolint:staticcheck
 	for id, value := range msg {
 		key := id << 3
 		switch v := value.(type) {

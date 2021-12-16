@@ -20,7 +20,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
-	"github.com/Mrs4s/MiraiGo/client/pb/qweb"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -204,8 +203,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 	reader.ReadUInt16()
 	m := reader.ReadTlvMap(2)
 	if t != 0 {
-		c.Error("exchange_emp error: %v", t)
-		return nil, errors.New("exchange_emp failed")
+		return nil, errors.Errorf("exchange_emp failed: %v", t)
 	}
 	if cmd == 15 {
 		c.decodeT119R(m[0x119])
@@ -795,6 +793,7 @@ func decodeWordSegmentation(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return nil, errors.New("no word received")
 }
 
+/* unused
 // LightAppSvc.mini_app_info.GetAppInfoById
 func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := qweb.QWebRsp{}
@@ -810,6 +809,7 @@ func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (
 	}
 	return rsp.AppInfo, nil
 }
+*/
 
 func ignoreDecoder(_ *QQClient, _ *incomingPacketInfo, _ []byte) (interface{}, error) {
 	return nil, nil

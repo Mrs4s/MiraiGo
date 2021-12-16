@@ -34,7 +34,7 @@ func (w *JceWriter) WriteByte(b, tag byte) *JceWriter {
 }
 
 func (w *JceWriter) WriteBool(b bool, tag byte) {
-	var by byte = 0
+	var by byte
 	if b {
 		by = 1
 	}

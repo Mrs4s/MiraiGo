@@ -75,7 +75,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	}()
 	start := time.Now()
 	if _, err := utils.HttpGetBytes("https://ssl.htdata.qq.com", ""); err == nil {
-		r.LongMessageServerResponseLatency = time.Now().Sub(start).Milliseconds()
+		r.LongMessageServerResponseLatency = time.Since(start).Milliseconds()
 	} else {
 		c.Error("test long message server response latency error: %v", err)
 		r.LongMessageServerResponseLatency = 9999
@@ -335,12 +335,7 @@ func (c *QQClient) netLoop() {
 					decoded, err = decoder(c, &incomingPacketInfo{
 						SequenceId:  pkt.SequenceId,
 						CommandName: pkt.CommandName,
-						Params: func() requestParams {
-							if !ok {
-								return nil
-							}
-							return info.params
-						}(),
+						Params:      info.getParams(),
 					}, pkt.Payload)
 					if err != nil {
 						c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)

@@ -68,6 +68,6 @@ func SendICMPRequest(addr *net.IPAddr, seq int) (int64, error) {
 	if err != nil {
 		return 0, errors.Wrap(err, "read icmp conn error")
 	}
-	duration := time.Now().Sub(start).Milliseconds()
+	duration := time.Since(start).Milliseconds()
 	return duration, nil
 }
