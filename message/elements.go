@@ -41,7 +41,7 @@ type FaceElement struct {
 type AtElement struct {
 	Target  int64
 	Display string
-	Guild   bool
+	SubType AtType
 }
 
 type GroupFileElement struct {
@@ -107,6 +107,7 @@ type AnimatedSticker struct {
 }
 
 type RedBagMessageType int
+type AtType int
 
 // /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
 const (
@@ -130,6 +131,10 @@ const (
 	RedBagWordChain          RedBagMessageType = 24
 	RedBagKeyword            RedBagMessageType = 25 // ?
 	RedBagDrawMultiModel     RedBagMessageType = 26 // ??
+
+	AtTypeGroupMember  = 0 // At群成员
+	AtTypeGuildMember  = 1 // At频道成员
+	AtTypeGuildChannel = 2 // At频道
 )
 
 func NewText(s string) *TextElement {

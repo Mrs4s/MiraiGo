@@ -379,13 +379,21 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				att6 := binary.NewReader(elem.Text.Attr6Buf)
 				att6.ReadBytes(7)
 				target := int64(uint32(att6.ReadInt32()))
-				res = append(res, NewAt(target, elem.Text.GetStr()))
+				at := NewAt(target, elem.Text.GetStr())
+				at.SubType = AtTypeGroupMember
+				res = append(res, at)
 			case len(elem.Text.PbReserve) > 0:
 				resv := new(msg.TextResvAttr)
 				_ = proto.Unmarshal(elem.Text.PbReserve, resv)
 				if resv.GetAtType() == 2 {
 					at := NewAt(int64(resv.GetAtMemberTinyid()), elem.Text.GetStr())
-					at.Guild = true
+					at.SubType = AtTypeGuildMember
+					res = append(res, at)
+					break
+				}
+				if resv.GetAtType() == 4 {
+					at := NewAt(int64(resv.AtChannelInfo.GetChannelId()), elem.Text.GetStr())
+					at.SubType = AtTypeGuildChannel
 					res = append(res, at)
 					break
 				}

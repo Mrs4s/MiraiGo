@@ -43,9 +43,13 @@ func init() {
 
 func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) (*message.GuildChannelMessage, error) {
 	mr := rand.Uint32() // 客户端似乎是生成的 u32 虽然类型是u64
-	at := m.FirstOrNil(func(e message.IMessageElement) bool { return e.Type() == message.At })
-	if at != nil {
-		at.(*message.AtElement).Guild = true
+	for _, elem := range m.Elements {
+		if elem.Type() == message.At {
+			at := elem.(*message.AtElement)
+			if at.SubType == message.AtTypeGroupMember {
+				at.SubType = message.AtTypeGuildMember
+			}
+		}
 	}
 	req := &channel.DF62ReqBody{Msg: &channel.ChannelMsgContent{
 		Head: &channel.ChannelMsgHead{
