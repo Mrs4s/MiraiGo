@@ -163,6 +163,7 @@ var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interfac
 	"MessageSvc.PushNotify":                        decodeSvcNotify,
 	"OnlinePush.ReqPush":                           decodeOnlinePushReqPacket,
 	"OnlinePush.PbPushTransMsg":                    decodeOnlinePushTransPacket,
+	"OnlinePush.SidTicketExpired":                  decodeSidExpiredPacket,
 	"ConfigPushSvc.PushReq":                        decodePushReqPacket,
 	"MessageSvc.PbGetMsg":                          decodeMessageSvcPacket,
 	"MessageSvc.PushForceOffline":                  decodeForceOfflinePacket,
@@ -327,7 +328,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
 	}
-	_, err = c.sendAndWait(c.buildRequestChangeSigPacket())
+	_, err = c.sendAndWait(c.buildRequestChangeSigPacket(c.version.MainSigMap))
 	if err != nil {
 		return err
 	}

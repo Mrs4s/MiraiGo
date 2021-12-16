@@ -361,13 +361,13 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	return seq, packet
 }
 
-func (c *QQClient) buildRequestChangeSigPacket() (uint16, []byte) {
+func (c *QQClient) buildRequestChangeSigPacket(mainSigMap uint32) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
 		w.WriteUInt16(11)
 		w.WriteUInt16(17)
 
-		w.Write(tlv.T100(c.version.SSOVersion, 100, c.version.MainSigMap))
+		w.Write(tlv.T100(c.version.SSOVersion, 100, mainSigMap))
 		w.Write(tlv.T10A(c.sigInfo.tgt))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T108(c.ksid))
