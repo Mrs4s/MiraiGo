@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 
@@ -208,6 +209,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		servers:                 []*net.TCPAddr{},
 		alive:                   true,
 		ecdh:                    crypto.NewEcdh(),
+		highwaySession:          new(highway.Session),
 	}
 	{ // init atomic values
 		cli.SequenceId.Store(0x3635)
@@ -216,6 +218,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		cli.friendSeq.Store(22911)
 		cli.highwayApplyUpSeq.Store(77918)
 	}
+	cli.highwaySession.Uin = strconv.FormatInt(cli.Uin, 10)
 	cli.GuildService = &GuildService{c: cli}
 	cli.ecdh.FetchPubKey(uin)
 	cli.UseDevice(SystemDeviceInfo)
@@ -273,7 +276,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 
 func (c *QQClient) UseDevice(info *DeviceInfo) {
 	c.version = genVersionInfo(info.Protocol)
-	c.highwaySession = highway.NewSession(int32(c.version.AppId), c.Uin)
+	c.highwaySession.AppID = int32(c.version.AppId)
 	c.ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
 	c.deviceInfo = info
 }
@@ -425,6 +428,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.g) == 0 {
 		c.Warning("device lock is disable. http api may fail.")
 	}
+	c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)
 	if err := c.registerClient(); err != nil {
 		return errors.Wrap(err, "register error")
 	}

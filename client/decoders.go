@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -22,6 +21,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
+	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -282,6 +282,7 @@ func decodeTransEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) 
 			return nil, errors.Errorf("wtlogin.trans_emp sub cmd 0x12 error: %v", code)
 		}
 		c.Uin = body.ReadInt64()
+		c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)
 		body.ReadInt32() // sig create time
 		body.ReadUInt16()
 		m := body.ReadTlvMap(2)
