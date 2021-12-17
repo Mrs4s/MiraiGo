@@ -11,7 +11,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msf"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 )
@@ -137,7 +136,7 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "StatSvc.GetDevLoginInfo", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "StatSvc.GetDevLoginInfo", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -193,7 +192,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "RegPrxySvc.getOffMsg", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "RegPrxySvc.getOffMsg", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -267,7 +266,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "RegPrxySvc.infoSync", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "RegPrxySvc.infoSync", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -278,7 +277,7 @@ func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, [
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		LastReadSeq: proto.Uint64(uint64(msgSeq)),
 	}}})
-	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgReadedReport", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, req)
+	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgReadedReport", req)
 	return seq, packet
 }
 
@@ -290,7 +289,7 @@ func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte)
 			LastReadTime: proto.Uint32(uint32(time)),
 		},
 	}, SyncCookie: c.syncCookie}})
-	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgReadedReport", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, req)
+	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgReadedReport", req)
 	return seq, packet
 }
 

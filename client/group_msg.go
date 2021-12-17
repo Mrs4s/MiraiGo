@@ -18,7 +18,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -272,7 +271,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbSendMsg", payload)
 	return seq, packet
 }
 
@@ -285,7 +284,7 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 		PublicGroup: proto.Bool(false),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetGroupMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbGetGroupMsg", payload)
 	return seq, packet
 }
 
@@ -298,7 +297,7 @@ func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byt
 		Uin:                       proto.Uint64(uint64(c.Uin)),
 		GroupCode:                 proto.Uint64(uint64(groupCode)),
 	})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a7_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x8a7_0", payload)
 	return seq, packet
 }
 
@@ -601,7 +600,7 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 		Seq:       proto.Uint32(msgSeq),
 		Random:    proto.Uint32(msgRand),
 	})
-	packet := packets.BuildUniPacket(c.Uin, seq, commandName, 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, commandName, payload)
 	return seq, packet
 }
 

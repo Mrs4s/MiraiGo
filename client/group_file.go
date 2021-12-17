@@ -14,7 +14,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -297,7 +296,7 @@ func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d6_0", payload)
 	return seq, packet
 }
 
@@ -313,7 +312,7 @@ func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, bu
 			MsgRandom: proto.Uint32(uint32(msgRand)),
 		}},
 	}})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d9_4", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, req)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d9_4", req)
 	return seq, packet
 }
 
@@ -341,7 +340,7 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d8_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d8_1", payload)
 	return seq, packet
 }
 
@@ -360,7 +359,7 @@ func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d8_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d8_1", payload)
 	return seq, packet
 }
 
@@ -378,7 +377,7 @@ func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d8_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d8_1", payload)
 	return seq, packet
 }
 
@@ -390,7 +389,7 @@ func (c *QQClient) buildGroupFileCreateFolderPacket(groupCode int64, parentFolde
 		ParentFolderId: &parentFolder,
 		FolderName:     &name,
 	}})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d7_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d7_0", payload)
 	return seq, packet
 }
 
@@ -402,7 +401,7 @@ func (c *QQClient) buildGroupFileRenameFolderPacket(groupCode int64, folderId, n
 		FolderId:      proto.String(folderId),
 		NewFolderName: proto.String(newName),
 	}})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d7_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d7_2", payload)
 	return seq, packet
 }
 
@@ -413,7 +412,7 @@ func (c *QQClient) buildGroupFileDeleteFolderPacket(groupCode int64, folderId st
 		AppId:     proto.Uint32(3),
 		FolderId:  proto.String(folderId),
 	}})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d7_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d7_1", payload)
 	return seq, packet
 }
 
@@ -435,7 +434,7 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d6_2", payload)
 	return seq, packet
 }
 
@@ -456,7 +455,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x6d6_3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x6d6_3", payload)
 	return seq, packet
 }
 

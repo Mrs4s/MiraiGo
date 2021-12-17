@@ -29,31 +29,6 @@ type IncomingPacket struct {
 	Payload     []byte
 }
 
-type IEncryptMethod interface {
-	DoEncrypt([]byte, []byte) []byte
-	Id() byte
-}
-
-func BuildOicqRequestPacket(uin int64, commandId uint16, encrypt IEncryptMethod, key []byte, bodyFunc func(writer *binary.Writer)) []byte {
-	body := encrypt.DoEncrypt(binary.NewWriterF(bodyFunc), key)
-	return binary.NewWriterF(func(p *binary.Writer) {
-		p.WriteByte(0x02)
-		p.WriteUInt16(27 + 2 + uint16(len(body)))
-		p.WriteUInt16(8001)
-		p.WriteUInt16(commandId)
-		p.WriteUInt16(1)
-		p.WriteUInt32(uint32(uin))
-		p.WriteByte(3)
-		p.WriteByte(encrypt.Id())
-		p.WriteByte(0)
-		p.WriteUInt32(2)
-		p.WriteUInt32(0)
-		p.WriteUInt32(0)
-		p.Write(body)
-		p.WriteByte(0x03)
-	})
-}
-
 func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		body := binary.NewWriterF(bodyFunc)

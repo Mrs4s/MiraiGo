@@ -6,7 +6,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/faceroam"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
@@ -39,7 +38,7 @@ func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
 		SubCmd:      proto.Uint32(1),
 		ReqUserInfo: &faceroam.ReqUserInfo{},
 	})
-	packet := packets.BuildUniPacket(c.Uin, seq, "Faceroam.OpReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "Faceroam.OpReq", payload)
 	return seq, packet
 }
 

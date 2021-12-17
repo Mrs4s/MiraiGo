@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 )
@@ -63,7 +62,7 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgWithDraw", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgWithDraw", payload)
 	return seq, packet
 }
 
@@ -92,7 +91,7 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		},
 	}}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "PbMessageSvc.PbMsgWithDraw", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgWithDraw", payload)
 	return seq, packet
 }
 

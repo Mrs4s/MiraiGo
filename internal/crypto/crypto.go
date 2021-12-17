@@ -49,7 +49,7 @@ func (e *EncryptECDH) generateKey(sPubKey string) {
 	e.PublicKey = elliptic.Marshal(p256, sx, sy)
 }
 
-func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
+func (e *EncryptECDH) Encrypt(d, k []byte) []byte {
 	w := binary.SelectWriter()
 	w.WriteByte(0x02)
 	w.WriteByte(0x01)
@@ -62,7 +62,7 @@ func (e *EncryptECDH) DoEncrypt(d, k []byte) []byte {
 	return w.Bytes()
 }
 
-func (e *EncryptECDH) Id() byte {
+func (e *EncryptECDH) ID() byte {
 	return 0x87
 }
 
@@ -70,7 +70,7 @@ func NewEncryptSession(t133 []byte) *EncryptSession {
 	return &EncryptSession{T133: t133}
 }
 
-func (e *EncryptSession) DoEncrypt(d, k []byte) []byte {
+func (e *EncryptSession) Encrypt(d, k []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		encrypt := binary.NewTeaCipher(k).Encrypt(d)
 		w.WriteUInt16(uint16(len(e.T133)))
@@ -79,7 +79,7 @@ func (e *EncryptSession) DoEncrypt(d, k []byte) []byte {
 	})
 }
 
-func (e *EncryptSession) Id() byte {
+func (e *EncryptSession) ID() byte {
 	return 69
 }
 

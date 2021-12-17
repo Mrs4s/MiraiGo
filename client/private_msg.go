@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 )
@@ -180,7 +179,7 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbSendMsg", payload)
 	return seq, packet
 }
 
@@ -214,7 +213,7 @@ func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbSendMsg", payload)
 	return seq, packet
 }
 
@@ -247,6 +246,6 @@ func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r in
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbSendMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbSendMsg", payload)
 	return seq, packet
 }

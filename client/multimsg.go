@@ -11,7 +11,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/multimsg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -42,7 +41,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 		BuType: buType,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MultiMsg.ApplyUp", payload)
 	return seq, packet
 }
 
@@ -84,7 +83,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
 		ReqChannelType: 2,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MultiMsg.ApplyDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MultiMsg.ApplyDown", payload)
 	return seq, packet
 }
 

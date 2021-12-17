@@ -4,7 +4,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
@@ -24,7 +23,7 @@ func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) 
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x990", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x990", payload)
 	return seq, packet
 }
 

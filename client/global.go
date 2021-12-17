@@ -136,7 +136,7 @@ var SystemDeviceInfo = &DeviceInfo{
 	FingerPrint:  []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/1234567:user/release-keys"),
 	BootId:       []byte("cb886ae2-00b6-4d68-a230-787f111d12c7"),
 	ProcVersion:  []byte("Linux version 3.0.31-cb886ae2 (android-build@xxx.xxx.xxx.xxx.com)"),
-	BaseBand:     []byte{},
+	BaseBand:     EmptyBytes,
 	SimInfo:      []byte("T-Mobile"),
 	OSType:       []byte("android"),
 	MacAddress:   []byte("00:50:56:C0:00:08"),

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/client/internal/codec"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -27,7 +28,7 @@ var (
 
 func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		if c.AllowSlider {
 			w.WriteUInt16(0x17)
@@ -87,15 +88,15 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(0))
 		w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(20)
 		w.WriteUInt16(4)
 
@@ -103,16 +104,16 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 		w.Write(tlv.T104(c.t104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T401(c.g))
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(0, 0x0812, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteHex(`0001110000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
 		w.Write(packets.BuildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
@@ -130,16 +131,16 @@ func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 			w.Write(tlv.T33(c.deviceInfo.Guid))
 			w.Write(tlv.T35(8))
 		}))
-	})
-	sso := packets.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
 	watch := genVersionInfo(AndroidWatch)
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(0, 0x812, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(0, 0x0812, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteHex(`0000620000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
 		w.Write(packets.BuildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
@@ -153,15 +154,15 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 			w.WriteBytesShort(EmptyBytes)
 			w.WriteUInt16(0) // const
 		}))
-	})
-	sso := packets.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, watch.AppId, c.version.SubAppId, "wtlogin.trans_emp", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(0, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(9)
 		w.WriteUInt16(24)
 
@@ -227,15 +228,15 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 		})
 		w.Write(wb)
 		cl()
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(2) // sub command
 		w.WriteUInt16(4)
 
@@ -243,15 +244,15 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.t104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(8)
 		w.WriteUInt16(6)
 
@@ -261,15 +262,15 @@ func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 		w.Write(tlv.T174(c.t174))
 		w.Write(tlv.T17A(9))
 		w.Write(tlv.T197())
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(7)
 		w.WriteUInt16(7)
 
@@ -280,15 +281,15 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 		w.Write(tlv.T17C(code))
 		w.Write(tlv.T401(c.g))
 		w.Write(tlv.T198())
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(2)
 		w.WriteUInt16(4)
 
@@ -296,15 +297,15 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.t104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
-	})
-	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	}))
+	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.login", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, req, c.ksid)
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
 func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, crypto.NewEncryptSession(c.sigInfo.t133), c.sigInfo.wtSessionTicketKey, func(w *binary.Writer) {
+	req := binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(15)
 		w.WriteUInt16(24)
 
@@ -357,13 +358,32 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		// w.Write(tlv.545())
 		w.Write(tlv.T545([]byte(c.deviceInfo.IMEI)))
 	})
-	packet := packets.BuildUniPacket(c.Uin, seq, "wtlogin.exchange_emp", 2, c.OutGoingPacketSessionId, []byte{}, make([]byte, 16), req)
-	return seq, packet
+
+	oicq := codec.OICQ{
+		Uin:           uint32(c.Uin),
+		Command:       0x810,
+		EncryptMethod: crypto.NewEncryptSession(c.sigInfo.t133),
+		Key:           c.sigInfo.wtSessionTicketKey,
+		Body:          req,
+	}
+
+	uni := codec.Uni{
+		Uin:         c.Uin,
+		Seq:         seq,
+		CommandName: "wtlogin.exchange_emp",
+		EncryptType: 2,
+		SessionID:   c.OutGoingPacketSessionId,
+		ExtraData:   EmptyBytes,
+		Key:         make([]byte, 16),
+		Body:        oicq.Encode(),
+	}
+
+	return seq, uni.Encode()
 }
 
 func (c *QQClient) buildRequestChangeSigPacket(mainSigMap uint32) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := packets.BuildOicqRequestPacket(c.Uin, 0x0810, c.ecdh, c.RandomKey, func(w *binary.Writer) {
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(11)
 		w.WriteUInt16(17)
 
@@ -402,9 +422,9 @@ func (c *QQClient) buildRequestChangeSigPacket(mainSigMap uint32) (uint16, []byt
 			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
 		}))
 		// w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
-	})
+	}))
 	sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "wtlogin.exchange_emp", c.deviceInfo.IMEI, c.sigInfo.tgt, c.OutGoingPacketSessionId, req, c.ksid)
-	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, []byte{})
+	packet := packets.BuildLoginPacket(c.Uin, 2, make([]byte, 16), sso, EmptyBytes)
 	return seq, packet
 }
 
@@ -457,7 +477,6 @@ func (c *QQClient) buildClientRegisterPacket() (uint16, []byte) {
 }
 
 func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	svc := &jce.SvcReqRegister{
 		ConnType:        0,
 		Uin:             c.Uin,
@@ -490,13 +509,11 @@ func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "StatSvc.SetStatusFromClient", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
-	return seq, packet
+	return c.uniPacketWithSeq("StatSvc.SetStatusFromClient", pkt.ToBytes())
 }
 
 // ConfigPushSvc.PushResp
 func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := jce.NewJceWriter()
 	req.WriteInt32(t, 1)
 	req.WriteInt64(pktSeq, 2)
@@ -512,13 +529,11 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "ConfigPushSvc.PushResp", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
-	return seq, packet
+	return c.uniPacketWithSeq("ConfigPushSvc.PushResp", pkt.ToBytes())
 }
 
 // friendlist.getFriendGroupList
 func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendListCount, groupStartIndex, groupListCount int16) (uint16, []byte) {
-	seq := c.nextSeq()
 	d50, _ := proto.Marshal(&pb.D50ReqBody{
 		Appid:                   1002,
 		ReqMusicSwitch:          1,
@@ -554,7 +569,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		IfGetDOVId:      0,
 		IfGetBothFlag:   0,
 		D50:             d50,
-		D6B:             []byte{},
+		D6B:             EmptyBytes,
 		SnsTypeList:     []int64{13580, 13581, 13582},
 	}
 	buf := &jce.RequestDataVersion3{
@@ -570,8 +585,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.getFriendGroupList", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
-	return seq, packet
+	return c.uniPacketWithSeq("friendlist.getFriendGroupList", pkt.ToBytes())
 }
 
 // SummaryCard.ReqSummaryCard
@@ -655,8 +669,7 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "SummaryCard.ReqSummaryCard", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
-	return seq, packet
+	return seq, c.uniPacket(seq, "SummaryCard.ReqSummaryCard", pkt.ToBytes())
 }
 
 // friendlist.delFriend
@@ -680,7 +693,7 @@ func (c *QQClient) buildFriendDeletePacket(target int64) (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.delFriend", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "friendlist.delFriend", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -711,7 +724,7 @@ func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopListReqV2", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "friendlist.GetTroopListReqV2", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -739,7 +752,7 @@ func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUi
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.GetTroopMemberListReq", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "friendlist.GetTroopMemberListReq", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -754,7 +767,7 @@ func (c *QQClient) buildGroupMemberInfoRequestPacket(groupCode, uin int64) (uint
 		RichCardNameVer: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "group_member_card.get_group_member_card_info", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "group_member_card.get_group_member_card_info", payload)
 	return seq, packet
 }
 
@@ -780,12 +793,12 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		OnlineSyncFlag:     proto.Int32(1),
 		ContextFlag:        proto.Int32(1),
 		MsgReqType:         proto.Int32(1),
-		PubaccountCookie:   []byte{},
-		MsgCtrlBuf:         []byte{},
-		ServerBuf:          []byte{},
+		PubaccountCookie:   EmptyBytes,
+		MsgCtrlBuf:         EmptyBytes,
+		ServerBuf:          EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbGetMsg", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbGetMsg", payload)
 	return seq, packet
 }
 
@@ -794,7 +807,7 @@ func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint1
 	seq := c.nextSeq()
 	req := &pb.DeleteMessageRequest{Items: msg}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "MessageSvc.PbDeleteMsg", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "MessageSvc.PbDeleteMsg", payload)
 	return seq, packet
 }
 
@@ -822,7 +835,7 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, svrip int32, pushToken
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return packets.BuildUniPacket(c.Uin, seq, "OnlinePush.RespPush", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	return c.uniPacket(seq, "OnlinePush.RespPush", pkt.ToBytes())
 }
 
 // LongConn.OffPicUp
@@ -850,7 +863,7 @@ func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (ui
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "LongConn.OffPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "LongConn.OffPicUp", payload)
 	return seq, packet
 }
 
@@ -871,7 +884,7 @@ func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
 		FriendMsgTypeFlag: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "ProfileService.Pb.ReqSystemMsgNew.Friend", payload)
 	return seq, packet
 }
 
@@ -898,7 +911,7 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "friendlist.ModifyGroupCardReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "friendlist.ModifyGroupCardReq", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -918,7 +931,7 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2300, 2, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8fc_2", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x8fc_2", payload)
 	return seq, packet
 }
 
@@ -927,7 +940,7 @@ func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) (uint16, []
 	seq := c.nextSeq()
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2202, 0, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x89a_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x89a_0", payload)
 	return seq, packet
 }
 
@@ -987,7 +1000,7 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2208, 0, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x8a0_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x8a0_0", payload)
 	return seq, packet
 }
 
@@ -1003,7 +1016,7 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 	})
 	payload := c.packOIDBPackage(1392, 8, b)
 	cl()
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x570_8", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x570_8", payload)
 	return seq, packet
 }
 
@@ -1016,7 +1029,7 @@ func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3795, 1, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0xed3", payload)
 	return seq, packet
 }
 
@@ -1029,7 +1042,7 @@ func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3795, 1, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xed3", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0xed3", payload)
 	return seq, packet
 }
 
@@ -1048,7 +1061,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	})
 	payload := c.packOIDBPackage(1372, 1, b)
 	cl()
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x55c_1", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x55c_1", payload)
 	return seq, packet
 }
 
@@ -1074,7 +1087,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.GroupMngReq", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "ProfileService.GroupMngReq", pkt.ToBytes())
 	return seq, packet
 }
 
@@ -1107,6 +1120,6 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 		Content: data,
 		Qua:     []byte("and_537065262_8.4.5"),
 	})
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xd79", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0xd79", payload)
 	return seq, packet
 }

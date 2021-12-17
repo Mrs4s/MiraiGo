@@ -21,7 +21,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -803,7 +802,7 @@ func decodeSidExpiredPacket(c *QQClient, i *incomingPacketInfo, _ []byte) (inter
 	if err = c.registerClient(); err != nil {
 		return nil, errors.Wrap(err, "register error")
 	}
-	_ = c.sendPacket(packets.BuildUniPacket(c.Uin, i.SequenceId, "OnlinePush.SidTicketExpired", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, EmptyBytes))
+	_ = c.sendPacket(c.uniPacket(i.SequenceId, "OnlinePush.SidTicketExpired", EmptyBytes))
 	return nil, nil
 }
 

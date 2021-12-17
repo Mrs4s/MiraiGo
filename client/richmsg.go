@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -130,6 +129,6 @@ func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *me
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2935, 9, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xb77_9", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0xb77_9", payload)
 	return seq, packet
 }

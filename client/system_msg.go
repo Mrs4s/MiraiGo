@@ -2,7 +2,6 @@ package client
 
 import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
@@ -131,7 +130,7 @@ func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) (uint16, []byte
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgNew.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "ProfileService.Pb.ReqSystemMsgNew.Group", payload)
 	return seq, packet
 }
 
@@ -166,7 +165,7 @@ func (c *QQClient) buildSystemMsgGroupActionPacket(reqID, requester, group int64
 		Language: 1000,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgAction.Group", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "ProfileService.Pb.ReqSystemMsgAction.Group", payload)
 	return seq, packet
 }
 
@@ -191,7 +190,7 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqID, requester int64, acce
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ProfileService.Pb.ReqSystemMsgAction.Friend", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "ProfileService.Pb.ReqSystemMsgAction.Friend", payload)
 	return seq, packet
 }
 

@@ -17,7 +17,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -123,7 +122,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 		Bodybuffer: b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0x88d_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0x88d_0", payload)
 	return seq, packet
 }
 
@@ -187,7 +186,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := packets.BuildUniPacket(c.Uin, seq, "SummaryCard.ReqSearch", 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, pkt.ToBytes())
+	packet := c.uniPacket(seq, "SummaryCard.ReqSearch", pkt.ToBytes())
 	return seq, packet
 }
 

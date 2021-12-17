@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"image"
-	_ "image/gif"
 	"io"
 	"math/rand"
 	"os"
@@ -18,7 +17,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	highway2 "github.com/Mrs4s/MiraiGo/client/pb/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -266,7 +264,7 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 		Extension: EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "ImgStore.GroupPicUp", payload)
 	return seq, packet
 }
 
@@ -292,7 +290,7 @@ func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "ImgStore.GroupPicDown", payload)
 	return seq, packet
 }
 
@@ -340,7 +338,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3591, 0, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacket(seq, "OidbSvc.0xe07_0", payload)
 	return seq, packet
 }
 
