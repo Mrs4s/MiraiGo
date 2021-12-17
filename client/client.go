@@ -7,10 +7,10 @@ import (
 	"net"
 	"sort"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
+	"go.uber.org/atomic"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
@@ -34,18 +34,18 @@ type QQClient struct {
 	AllowSlider bool
 
 	// account info
+	Online        atomic.Bool
 	Nickname      string
 	Age           uint16
 	Gender        uint16
 	FriendList    []*FriendInfo
 	GroupList     []*GroupInfo
 	OnlineClients []*OtherClientInfo
-	Online        bool
 	QiDian        *QiDianAccountInfo
 	GuildService  *GuildService
 
 	// protocol public field
-	SequenceId              int32
+	SequenceId              atomic.Int32
 	OutGoingPacketSessionId []byte
 	RandomKey               []byte
 	TCP                     *utils.TCPListener
@@ -81,7 +81,7 @@ type QQClient struct {
 	ksid             []byte
 
 	// session info
-	qwebSeq        int64
+	qwebSeq        atomic.Int64
 	sigInfo        *loginSigInfo
 	highwaySession *highway.Session
 	dpwd           []byte
@@ -99,11 +99,11 @@ type QQClient struct {
 	groupSysMsgCache       *GroupSystemMessages
 	groupMsgBuilders       sync.Map
 	onlinePushCache        *utils.Cache
-	requestPacketRequestID int32
-	groupSeq               int32
-	friendSeq              int32
 	heartbeatEnabled       bool
-	highwayApplyUpSeq      int32
+	requestPacketRequestID atomic.Int32
+	groupSeq               atomic.Int32
+	friendSeq              atomic.Int32
+	highwayApplyUpSeq      atomic.Int32
 	eventHandlers          *eventHandlers
 
 	groupListLock sync.Mutex
@@ -196,16 +196,11 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	cli := &QQClient{
 		Uin:                     uin,
 		PasswordMd5:             passwordMd5,
-		SequenceId:              0x3635,
 		AllowSlider:             true,
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		TCP:                     &utils.TCPListener{},
 		sigInfo:                 &loginSigInfo{},
-		requestPacketRequestID:  1921334513,
-		groupSeq:                int32(rand.Intn(20000)),
-		friendSeq:               22911,
-		highwayApplyUpSeq:       77918,
 		eventHandlers:           &eventHandlers{},
 		msgSvcCache:             utils.NewCache(time.Second * 15),
 		transCache:              utils.NewCache(time.Second * 15),
@@ -213,6 +208,13 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		servers:                 []*net.TCPAddr{},
 		alive:                   true,
 		ecdh:                    crypto.NewEcdh(),
+	}
+	{ // init atomic values
+		cli.SequenceId.Store(0x3635)
+		cli.requestPacketRequestID.Store(1921334513)
+		cli.groupSeq.Store(int32(rand.Intn(20000)))
+		cli.friendSeq.Store(22911)
+		cli.highwayApplyUpSeq.Store(77918)
 	}
 	cli.GuildService = &GuildService{c: cli}
 	cli.ecdh.FetchPubKey(uin)
@@ -277,7 +279,7 @@ func (c *QQClient) UseDevice(info *DeviceInfo) {
 }
 
 func (c *QQClient) Release() {
-	if c.Online {
+	if c.Online.Load() {
 		c.Disconnect()
 	}
 	c.alive = false
@@ -285,7 +287,7 @@ func (c *QQClient) Release() {
 
 // Login send login request
 func (c *QQClient) Login() (*LoginResponse, error) {
-	if c.Online {
+	if c.Online.Load() {
 		return nil, ErrAlreadyOnline
 	}
 	err := c.connect()
@@ -305,7 +307,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 }
 
 func (c *QQClient) TokenLogin(token []byte) error {
-	if c.Online {
+	if c.Online.Load() {
 		return ErrAlreadyOnline
 	}
 	err := c.connect()
@@ -334,7 +336,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 }
 
 func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
-	if c.Online {
+	if c.Online.Load() {
 		return nil, ErrAlreadyOnline
 	}
 	err := c.connect()
@@ -778,39 +780,39 @@ func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 func (c *QQClient) registerClient() error {
 	_, err := c.sendAndWait(c.buildClientRegisterPacket())
 	if err == nil {
-		c.Online = true
+		c.Online.Store(true)
 	}
 	return err
 }
 
 func (c *QQClient) nextSeq() uint16 {
-	return uint16(atomic.AddInt32(&c.SequenceId, 1) & 0x7FFF)
+	return uint16(c.SequenceId.Add(1) & 0x7FFF)
 }
 
 func (c *QQClient) nextPacketSeq() int32 {
-	return atomic.AddInt32(&c.requestPacketRequestID, 2)
+	return c.requestPacketRequestID.Add(2)
 }
 
 func (c *QQClient) nextGroupSeq() int32 {
-	return atomic.AddInt32(&c.groupSeq, 2)
+	return c.groupSeq.Add(2)
 }
 
 func (c *QQClient) nextFriendSeq() int32 {
-	return atomic.AddInt32(&c.friendSeq, 1)
+	return c.friendSeq.Add(1)
 }
 
 func (c *QQClient) nextQWebSeq() int64 {
-	return atomic.AddInt64(&c.qwebSeq, 1)
+	return c.qwebSeq.Add(1)
 }
 
 func (c *QQClient) nextHighwayApplySeq() int32 {
-	return atomic.AddInt32(&c.highwayApplyUpSeq, 2)
+	return c.highwayApplyUpSeq.Add(2)
 }
 
 func (c *QQClient) doHeartbeat() {
 	c.heartbeatEnabled = true
 	times := 0
-	for c.Online {
+	for c.Online.Load() {
 		time.Sleep(time.Second * 30)
 		seq := c.nextSeq()
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", c.deviceInfo.IMEI, []byte{}, c.OutGoingPacketSessionId, []byte{}, c.ksid)

@@ -4,7 +4,6 @@ import (
 	"net"
 	"runtime/debug"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -33,7 +32,7 @@ type ConnectionQualityInfo struct {
 }
 
 func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
-	if !c.Online {
+	if !c.Online.Load() {
 		return nil
 	}
 	r := &ConnectionQualityInfo{}
@@ -102,19 +101,19 @@ func (c *QQClient) connect() error {
 	}
 	c.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+			c.stat.MessageReceived.Add(1)
+			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
 		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+			c.stat.MessageReceived.Add(1)
+			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
 		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+			c.stat.MessageReceived.Add(1)
+			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
-			atomic.AddUint64(&c.stat.MessageSent, 1)
+			c.stat.MessageSent.Add(1)
 		})
 		go c.netLoop()
 	})
@@ -142,7 +141,7 @@ func (c *QQClient) quickReconnect() {
 
 // Disconnect 中断连接, 不释放资源
 func (c *QQClient) Disconnect() {
-	c.Online = false
+	c.Online.Store(false)
 	c.TCP.Close()
 }
 
@@ -193,9 +192,9 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 func (c *QQClient) sendPacket(pkt []byte) error {
 	err := c.TCP.Write(pkt)
 	if err != nil {
-		atomic.AddUint64(&c.stat.PacketLost, 1)
+		c.stat.PacketLost.Add(1)
 	} else {
-		atomic.AddUint64(&c.stat.PacketSent, 1)
+		c.stat.PacketSent.Add(1)
 	}
 	return errors.Wrap(err, "Packet failed to sendPacket")
 }
@@ -251,15 +250,15 @@ func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 // plannedDisconnect 计划中断线事件
 func (c *QQClient) plannedDisconnect(_ *utils.TCPListener) {
 	c.Debug("planned disconnect.")
-	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
-	c.Online = false
+	c.stat.DisconnectTimes.Add(1)
+	c.Online.Store(false)
 }
 
 // unexpectedDisconnect 非预期断线事件
 func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
 	c.Error("unexpected disconnect: %v", e)
-	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
-	c.Online = false
+	c.stat.DisconnectTimes.Add(1)
+	c.Online.Store(false)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
 		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
@@ -317,7 +316,7 @@ func (c *QQClient) netLoop() {
 		}
 		errCount = 0
 		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
-		atomic.AddUint64(&c.stat.PacketReceived, 1)
+		c.stat.PacketReceived.Add(1)
 		go func(pkt *packets.IncomingPacket) {
 			defer func() {
 				if pan := recover(); pan != nil {

@@ -4,7 +4,6 @@ package client
 
 import (
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -104,9 +103,9 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *incomingPacketInfo
 	case 11, 175: // friend msg
 		if pMsg.Head.GetFromUin() == c.Uin {
 			for {
-				frdSeq := atomic.LoadInt32(&c.friendSeq)
+				frdSeq := c.friendSeq.Load()
 				if frdSeq < pMsg.Head.GetMsgSeq() {
-					if atomic.CompareAndSwapInt32(&c.friendSeq, frdSeq, pMsg.Head.GetMsgSeq()) {
+					if c.friendSeq.CAS(frdSeq, pMsg.Head.GetMsgSeq()) {
 						break
 					}
 				} else {

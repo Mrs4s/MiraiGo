@@ -3,7 +3,6 @@ package client
 import (
 	"math/rand"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -150,7 +149,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		C2CMsg: &jce.SvcReqGetMsgV2{
 			Uin: c.Uin,
 			DateTime: func() int32 {
-				t := atomic.LoadInt64(&c.stat.LastMessageTime)
+				t := c.stat.LastMessageTime.Load()
 				if t == 0 {
 					return 1
 				}
@@ -219,7 +218,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		C2CMsg: &jce.SvcReqGetMsgV2{
 			Uin: c.Uin,
 			DateTime: func() int32 {
-				t := atomic.LoadInt64(&c.stat.LastMessageTime)
+				t := c.stat.LastMessageTime.Load()
 				if t == 0 {
 					return 1
 				}
