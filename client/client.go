@@ -3,7 +3,6 @@ package client
 import (
 	"crypto/md5"
 	"fmt"
-	"math"
 	"math/rand"
 	"net"
 	"sort"
@@ -19,7 +18,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
-	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -544,68 +542,6 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 		}
 	}
 	return r, nil
-}
-
-func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
-	m := c.DownloadForwardMessage(resID)
-	if m == nil {
-		return nil
-	}
-	var item *msg.PbMultiMsgItem
-	ret := &message.ForwardMessage{Nodes: []*message.ForwardNode{}}
-	for _, iter := range m.Items {
-		if iter.GetFileName() == m.FileName {
-			item = iter
-		}
-	}
-	if item == nil {
-		return nil
-	}
-	for _, m := range item.GetBuffer().GetMsg() {
-		name := m.Head.GetFromNick()
-		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-			name = m.Head.GroupInfo.GetGroupCard()
-		}
-		ret.Nodes = append(ret.Nodes, &message.ForwardNode{
-			SenderId:   m.Head.GetFromUin(),
-			SenderName: name,
-			Time:       m.Head.GetMsgTime(),
-			Message:    message.ParseMessageElems(m.Body.RichText.Elems),
-		})
-	}
-	return ret
-}
-
-func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement {
-	i, err := c.sendAndWait(c.buildMultiApplyDownPacket(resId))
-	if err != nil {
-		return nil
-	}
-	multiMsg := i.(*msg.PbMultiMsgTransmit)
-	if multiMsg.GetPbItemList() == nil {
-		return nil
-	}
-	var pv string
-	for i := 0; i < int(math.Min(4, float64(len(multiMsg.GetMsg())))); i++ {
-		m := multiMsg.Msg[i]
-		pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`,
-			func() string {
-				if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-					return m.Head.GroupInfo.GetGroupCard()
-				}
-				return m.Head.GetFromNick()
-			}(),
-			message.ToReadableString(
-				message.ParseMessageElems(multiMsg.Msg[i].GetBody().GetRichText().Elems),
-			),
-		)
-	}
-	return genForwardTemplate(
-		resId, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录",
-		fmt.Sprintf("查看 %d 条转发消息", len(multiMsg.GetMsg())),
-		time.Now().UnixNano(),
-		multiMsg.GetPbItemList(),
-	)
 }
 
 func (c *QQClient) SendGroupPoke(groupCode, target int64) {
