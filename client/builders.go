@@ -509,7 +509,7 @@ func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacketWithSeq("StatSvc.SetStatusFromClient", pkt.ToBytes())
+	return c.uniPacket("StatSvc.SetStatusFromClient", pkt.ToBytes())
 }
 
 // ConfigPushSvc.PushResp
@@ -529,7 +529,7 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacketWithSeq("ConfigPushSvc.PushResp", pkt.ToBytes())
+	return c.uniPacket("ConfigPushSvc.PushResp", pkt.ToBytes())
 }
 
 // friendlist.getFriendGroupList
@@ -585,7 +585,7 @@ func (c *QQClient) buildFriendGroupListRequestPacket(friendStartIndex, friendLis
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacketWithSeq("friendlist.getFriendGroupList", pkt.ToBytes())
+	return c.uniPacket("friendlist.getFriendGroupList", pkt.ToBytes())
 }
 
 // SummaryCard.ReqSummaryCard
@@ -669,12 +669,11 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return seq, c.uniPacket(seq, "SummaryCard.ReqSummaryCard", pkt.ToBytes())
+	return seq, c.uniPacketWithSeq(seq, "SummaryCard.ReqSummaryCard", pkt.ToBytes())
 }
 
 // friendlist.delFriend
 func (c *QQClient) buildFriendDeletePacket(target int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &jce.DelFriendReq{
 		Uin:     c.Uin,
 		DelUin:  target,
@@ -693,13 +692,11 @@ func (c *QQClient) buildFriendDeletePacket(target int64) (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "friendlist.delFriend", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("friendlist.delFriend", pkt.ToBytes())
 }
 
 // friendlist.GetTroopListReqV2
 func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &jce.TroopListRequest{
 		Uin:              c.Uin,
 		GetMSFMsgFlag:    1,
@@ -724,13 +721,11 @@ func (c *QQClient) buildGroupListRequestPacket(vecCookie []byte) (uint16, []byte
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "friendlist.GetTroopListReqV2", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("friendlist.GetTroopListReqV2", pkt.ToBytes())
 }
 
 // friendlist.GetTroopMemberListReq
 func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUin int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &jce.TroopMemberListRequest{
 		Uin:       c.Uin,
 		GroupCode: groupCode,
@@ -752,13 +747,11 @@ func (c *QQClient) buildGroupMemberListRequestPacket(groupUin, groupCode, nextUi
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "friendlist.GetTroopMemberListReq", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("friendlist.GetTroopMemberListReq", pkt.ToBytes())
 }
 
 // group_member_card.get_group_member_card_info
 func (c *QQClient) buildGroupMemberInfoRequestPacket(groupCode, uin int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &pb.GroupMemberReqBody{
 		GroupCode:       groupCode,
 		Uin:             uin,
@@ -767,13 +760,11 @@ func (c *QQClient) buildGroupMemberInfoRequestPacket(groupCode, uin int64) (uint
 		RichCardNameVer: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "group_member_card.get_group_member_card_info", payload)
-	return seq, packet
+	return c.uniPacket("group_member_card.get_group_member_card_info", payload)
 }
 
 // MessageSvc.PbGetMsg
 func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	cook := c.syncCookie
 	if cook == nil {
 		cook, _ = proto.Marshal(&msg.SyncCookie{
@@ -798,17 +789,14 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		ServerBuf:          EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "MessageSvc.PbGetMsg", payload)
-	return seq, packet
+	return c.uniPacket("MessageSvc.PbGetMsg", payload)
 }
 
 // MessageSvc.PbDeleteMsg
 func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &pb.DeleteMessageRequest{Items: msg}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "MessageSvc.PbDeleteMsg", payload)
-	return seq, packet
+	return c.uniPacket("MessageSvc.PbDeleteMsg", payload)
 }
 
 // OnlinePush.RespPush
@@ -835,12 +823,11 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, svrip int32, pushToken
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacket(seq, "OnlinePush.RespPush", pkt.ToBytes())
+	return c.uniPacketWithSeq(seq, "OnlinePush.RespPush", pkt.ToBytes())
 }
 
 // LongConn.OffPicUp
 func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &cmd0x352.ReqBody{
 		Subcmd: proto.Uint32(1),
 		TryupImgReq: []*cmd0x352.D352TryUpImgReq{
@@ -863,13 +850,11 @@ func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (ui
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "LongConn.OffPicUp", payload)
-	return seq, packet
+	return c.uniPacket("LongConn.OffPicUp", payload)
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Friend
 func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &structmsg.ReqSystemMsgNew{
 		MsgNum:    20,
 		Version:   1000,
@@ -884,13 +869,11 @@ func (c *QQClient) buildSystemMsgNewFriendPacket() (uint16, []byte) {
 		FriendMsgTypeFlag: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "ProfileService.Pb.ReqSystemMsgNew.Friend", payload)
-	return seq, packet
+	return c.uniPacket("ProfileService.Pb.ReqSystemMsgNew.Friend", payload)
 }
 
 // friendlist.ModifyGroupCardReq
 func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag string) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &jce.ModifyGroupCardRequest{
 		GroupCode: groupCode,
 		UinInfo: []jce.IJceStruct{
@@ -911,13 +894,11 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := c.uniPacket(seq, "friendlist.ModifyGroupCardReq", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("friendlist.ModifyGroupCardReq", pkt.ToBytes())
 }
 
 // OidbSvc.0x8fc_2
 func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D8FCReqBody{
 		GroupCode: &groupCode,
 		MemLevelInfo: []*oidb.D8FCMemberInfo{
@@ -931,17 +912,14 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2300, 2, b)
-	packet := c.uniPacket(seq, "OidbSvc.0x8fc_2", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x8fc_2", payload)
 }
 
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) (uint16, []byte) {
-	seq := c.nextSeq()
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2202, 0, b)
-	packet := c.uniPacket(seq, "OidbSvc.0x89a_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x89a_0", payload)
 }
 
 // OidbSvc.0x89a_0
@@ -982,7 +960,6 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 
 // OidbSvc.0x8a0_0
 func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string, block bool) (uint16, []byte) {
-	seq := c.nextSeq()
 	flagBlock := 0
 	if block {
 		flagBlock = 1
@@ -1000,13 +977,11 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2208, 0, b)
-	packet := c.uniPacket(seq, "OidbSvc.0x8a0_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x8a0_0", payload)
 }
 
 // OidbSvc.0x570_8
 func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32) (uint16, []byte) {
-	seq := c.nextSeq()
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(groupCode))
 		w.WriteByte(32)
@@ -1016,39 +991,33 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 	})
 	payload := c.packOIDBPackage(1392, 8, b)
 	cl()
-	packet := c.uniPacket(seq, "OidbSvc.0x570_8", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x570_8", payload)
 }
 
 // OidbSvc.0xed3
 func (c *QQClient) buildGroupPokePacket(groupCode, target int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.DED3ReqBody{
 		ToUin:     target,
 		GroupCode: groupCode,
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3795, 1, b)
-	packet := c.uniPacket(seq, "OidbSvc.0xed3", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0xed3", payload)
 }
 
 // OidbSvc.0xed3
 func (c *QQClient) buildFriendPokePacket(target int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.DED3ReqBody{
 		ToUin:  target,
 		AioUin: target,
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3795, 1, b)
-	packet := c.uniPacket(seq, "OidbSvc.0xed3", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0xed3", payload)
 }
 
 // OidbSvc.0x55c_1
 func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) (uint16, []byte) {
-	seq := c.nextSeq()
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(groupCode))
 		w.WriteUInt32(uint32(member))
@@ -1061,13 +1030,11 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	})
 	payload := c.packOIDBPackage(1372, 1, b)
 	cl()
-	packet := c.uniPacket(seq, "OidbSvc.0x55c_1", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x55c_1", payload)
 }
 
 // ProfileService.GroupMngReq
 func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	jw := jce.NewJceWriter()
 	jw.WriteInt32(2, 0)
 	jw.WriteInt64(c.Uin, 1)
@@ -1087,8 +1054,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	packet := c.uniPacket(seq, "ProfileService.GroupMngReq", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("ProfileService.GroupMngReq", pkt.ToBytes())
 }
 
 /* this function is unused
@@ -1114,12 +1080,10 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 */
 
 func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
-	seq := c.nextSeq()
 	payload := c.packOIDBPackageProto(3449, 1, &oidb.D79ReqBody{
 		Uin:     uint64(c.Uin),
 		Content: data,
 		Qua:     []byte("and_537065262_8.4.5"),
 	})
-	packet := c.uniPacket(seq, "OidbSvc.0xd79", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0xd79", payload)
 }

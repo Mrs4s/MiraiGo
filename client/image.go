@@ -239,7 +239,6 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 
 // ImgStore.GroupPicUp
 func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	name := utils.RandomString(16) + ".gif"
 	req := &cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
@@ -264,12 +263,10 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 		Extension: EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "ImgStore.GroupPicUp", payload)
-	return seq, packet
+	return c.uniPacket("ImgStore.GroupPicUp", payload)
 }
 
 func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd5 []byte) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
 		Subcmd:  proto.Uint32(2),
@@ -290,8 +287,7 @@ func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "ImgStore.GroupPicDown", payload)
-	return seq, packet
+	return c.uniPacket("ImgStore.GroupPicDown", payload)
 }
 
 func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
@@ -322,7 +318,6 @@ func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 
 // OidbSvc.0xe07_0
 func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, height int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.DE07ReqBody{
 		Version:  1,
 		Entrance: 3,
@@ -338,8 +333,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3591, 0, b)
-	packet := c.uniPacket(seq, "OidbSvc.0xe07_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0xe07_0", payload)
 }
 
 // ImgStore.GroupPicUp

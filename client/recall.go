@@ -44,7 +44,6 @@ func (c *QQClient) RecallPrivateMessage(uin, ts int64, msgID, msgInternalId int3
 
 // PbMessageSvc.PbMsgWithDraw
 func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &msg.MsgWithDrawReq{
 		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
 			{
@@ -62,12 +61,10 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgWithDraw", payload)
-	return seq, packet
+	return c.uniPacket("PbMessageSvc.PbMsgWithDraw", payload)
 }
 
 func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &msg.MsgWithDrawReq{C2CWithDraw: []*msg.C2CMsgWithDrawReq{
 		{
 			MsgInfo: []*msg.C2CMsgInfo{
@@ -91,8 +88,7 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		},
 	}}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgWithDraw", payload)
-	return seq, packet
+	return c.uniPacket("PbMessageSvc.PbMsgWithDraw", payload)
 }
 
 func decodeMsgWithDrawResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {

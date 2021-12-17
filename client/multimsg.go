@@ -23,7 +23,6 @@ func init() {
 
 // MultiMsg.ApplyUp
 func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &multimsg.MultiReqBody{
 		Subcmd:       1,
 		TermType:     5,
@@ -41,8 +40,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 		BuType: buType,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "MultiMsg.ApplyUp", payload)
-	return seq, packet
+	return c.uniPacket("MultiMsg.ApplyUp", payload)
 }
 
 // MultiMsg.ApplyUp
@@ -66,7 +64,6 @@ func decodeMultiApplyUpResponse(_ *QQClient, _ *incomingPacketInfo, payload []by
 
 // MultiMsg.ApplyDown
 func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &multimsg.MultiReqBody{
 		Subcmd:       2,
 		TermType:     5,
@@ -83,8 +80,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
 		ReqChannelType: 2,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "MultiMsg.ApplyDown", payload)
-	return seq, packet
+	return c.uniPacket("MultiMsg.ApplyDown", payload)
 }
 
 // MultiMsg.ApplyDown

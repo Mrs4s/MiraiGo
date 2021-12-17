@@ -247,7 +247,7 @@ func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []
 		},
 	}
 	payload, _ := proto.Marshal(body)
-	packet := c.uniPacket(seq, "PttCenterSvr.ShortVideoDownReq", payload)
+	packet := c.uniPacketWithSeq(seq, "PttCenterSvr.ShortVideoDownReq", payload)
 	return seq, packet
 }
 
@@ -286,10 +286,8 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 
 // PttCenterSvr.GroupShortVideoUpReq
 func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize, 1))
-	packet := c.uniPacket(seq, "PttCenterSvr.GroupShortVideoUpReq", payload)
-	return seq, packet
+	return c.uniPacket("PttCenterSvr.GroupShortVideoUpReq", payload)
 }
 
 // PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500

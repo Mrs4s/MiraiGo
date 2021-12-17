@@ -90,8 +90,7 @@ func (c *QQClient) webSsoRequest(host, webCmd, data string) (string, error) {
 		Type: proto.Uint32(0),
 		Data: &data,
 	})
-	seq := c.nextSeq()
-	rspData, err := c.sendAndWaitDynamic(seq, c.uniPacket(seq, cmd, req))
+	rspData, err := c.sendAndWaitDynamic(c.uniPacket(cmd, req))
 	if err != nil {
 		return "", errors.Wrap(err, "send web sso request error")
 	}

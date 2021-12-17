@@ -28,7 +28,7 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, [
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload)
+	packet := c.uniPacketWithSeq(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload)
 	return seq, packet
 }
 

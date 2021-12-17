@@ -8,7 +8,6 @@ import (
 )
 
 func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.TranslateReqBody{
 		BatchTranslateReq: &oidb.BatchTranslateReq{
 			SrcLanguage: src,
@@ -23,8 +22,7 @@ func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) 
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x990", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x990", payload)
 }
 
 func (c *QQClient) Translate(src, dst, text string) (string, error) {

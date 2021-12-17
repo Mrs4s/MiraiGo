@@ -17,7 +17,7 @@ func (c *QQClient) buildOicqRequestPacket(uin int64, command uint16, body []byte
 }
 
 //go:noinline
-func (c *QQClient) uniPacketWithSeq(command string, body []byte) (uint16, []byte) {
+func (c *QQClient) uniPacket(command string, body []byte) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := codec.Uni{
 		Uin:         c.Uin,
@@ -33,7 +33,7 @@ func (c *QQClient) uniPacketWithSeq(command string, body []byte) (uint16, []byte
 }
 
 //go:noinline
-func (c *QQClient) uniPacket(seq uint16, command string, body []byte) []byte {
+func (c *QQClient) uniPacketWithSeq(seq uint16, command string, body []byte) []byte {
 	req := codec.Uni{
 		Uin:         c.Uin,
 		Seq:         seq,

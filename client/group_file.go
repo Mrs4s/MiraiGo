@@ -275,7 +275,6 @@ func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32
 }
 
 func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string, groupCode, fileSize int64, md5, sha1 []byte) (uint16, []byte) {
-	seq := c.nextSeq()
 	b, _ := proto.Marshal(&oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
 		GroupCode:          &groupCode,
 		AppId:              proto.Int32(3),
@@ -296,12 +295,10 @@ func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x6d6_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d6_0", payload)
 }
 
 func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, busId, msgRand int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := c.packOIDBPackageProto(1753, 4, &oidb.D6D9ReqBody{FeedsInfoReq: &oidb.FeedsReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
@@ -312,13 +309,11 @@ func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, bu
 			MsgRandom: proto.Uint32(uint32(msgRand)),
 		}},
 	}})
-	packet := c.uniPacket(seq, "OidbSvc.0x6d9_4", req)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d9_4", req)
 }
 
 // OidbSvc.0x6d8_1
 func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID string, startIndex uint32) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{FileListInfoReq: &oidb.GetFileListReqBody{
 		GroupCode:    proto.Uint64(uint64(groupCode)),
 		AppId:        proto.Uint32(3),
@@ -340,12 +335,10 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x6d8_1", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d8_1", payload)
 }
 
 func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{GroupFileCountReq: &oidb.GetFileCountReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
@@ -359,12 +352,10 @@ func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x6d8_1", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d8_1", payload)
 }
 
 func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D6D8ReqBody{GroupSpaceReq: &oidb.GetSpaceReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
@@ -377,48 +368,40 @@ func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x6d8_1", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d8_1", payload)
 }
 
 func (c *QQClient) buildGroupFileCreateFolderPacket(groupCode int64, parentFolder, name string) (uint16, []byte) {
-	seq := c.nextSeq()
 	payload := c.packOIDBPackageProto(1751, 0, &oidb.D6D7ReqBody{CreateFolderReq: &oidb.CreateFolderReqBody{
 		GroupCode:      proto.Uint64(uint64(groupCode)),
 		AppId:          proto.Uint32(3),
 		ParentFolderId: &parentFolder,
 		FolderName:     &name,
 	}})
-	packet := c.uniPacket(seq, "OidbSvc.0x6d7_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d7_0", payload)
 }
 
 func (c *QQClient) buildGroupFileRenameFolderPacket(groupCode int64, folderId, newName string) (uint16, []byte) {
-	seq := c.nextSeq()
 	payload := c.packOIDBPackageProto(1751, 2, &oidb.D6D7ReqBody{RenameFolderReq: &oidb.RenameFolderReqBody{
 		GroupCode:     proto.Uint64(uint64(groupCode)),
 		AppId:         proto.Uint32(3),
 		FolderId:      proto.String(folderId),
 		NewFolderName: proto.String(newName),
 	}})
-	packet := c.uniPacket(seq, "OidbSvc.0x6d7_2", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d7_2", payload)
 }
 
 func (c *QQClient) buildGroupFileDeleteFolderPacket(groupCode int64, folderId string) (uint16, []byte) {
-	seq := c.nextSeq()
 	payload := c.packOIDBPackageProto(1751, 1, &oidb.D6D7ReqBody{DeleteFolderReq: &oidb.DeleteFolderReqBody{
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 		FolderId:  proto.String(folderId),
 	}})
-	packet := c.uniPacket(seq, "OidbSvc.0x6d7_1", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d7_1", payload)
 }
 
 // OidbSvc.0x6d6_2
 func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId string, busId int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D6D6ReqBody{
 		DownloadFileReq: &oidb.DownloadFileReqBody{
 			GroupCode: &groupCode,
@@ -434,12 +417,10 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x6d6_2", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d6_2", payload)
 }
 
 func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId, fileId string, busId int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D6D6ReqBody{DeleteFileReq: &oidb.DeleteFileReqBody{
 		GroupCode:      &groupCode,
 		AppId:          proto.Int32(3),
@@ -455,8 +436,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x6d6_3", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x6d6_3", payload)
 }
 
 func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {

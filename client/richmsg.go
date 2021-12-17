@@ -98,7 +98,6 @@ func (c *QQClient) SendGuildMusicShare(guildID, channelID uint64, msg *message.M
 
 // OidbSvc.0xb77_9
 func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
-	seq := c.nextSeq()
 	tp := musicType[msg.MusicType] // MusicType
 	msgStyle := uint32(0)
 	if msg.MusicUrl != "" {
@@ -129,6 +128,5 @@ func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *me
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2935, 9, b)
-	packet := c.uniPacket(seq, "OidbSvc.0xb77_9", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0xb77_9", payload)
 }

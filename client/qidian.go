@@ -63,7 +63,6 @@ func (c *QQClient) getQiDianAddressDetailList() ([]*FriendInfo, error) {
 }
 
 func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &cmd0x3f6.C3F6ReqBody{
 		SubCmd: proto.Uint32(69),
 		CrmCommonHead: &cmd0x3f6.C3F6CRMMsgHead{
@@ -86,12 +85,10 @@ func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "qidianservice.69", payload)
-	return seq, packet
+	return c.uniPacket("qidianservice.69", payload)
 }
 
 func (c *QQClient) buildConnKeyRequestPacket() (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &cmd0x6ff.C501ReqBody{
 		ReqBody: &cmd0x6ff.SubCmd0X501ReqBody{
 			Uin:          proto.Uint64(uint64(c.Uin)),
@@ -103,8 +100,7 @@ func (c *QQClient) buildConnKeyRequestPacket() (uint16, []byte) {
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "HttpConn.0x6ff_501", payload)
-	return seq, packet
+	return c.uniPacket("HttpConn.0x6ff_501", payload)
 }
 
 func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, error) {

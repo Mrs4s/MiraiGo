@@ -802,7 +802,7 @@ func decodeSidExpiredPacket(c *QQClient, i *incomingPacketInfo, _ []byte) (inter
 	if err = c.registerClient(); err != nil {
 		return nil, errors.Wrap(err, "register error")
 	}
-	_ = c.sendPacket(c.uniPacket(i.SequenceId, "OnlinePush.SidTicketExpired", EmptyBytes))
+	_ = c.sendPacket(c.uniPacketWithSeq(i.SequenceId, "OnlinePush.SidTicketExpired", EmptyBytes))
 	return nil, nil
 }
 

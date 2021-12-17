@@ -237,7 +237,6 @@ func (c *QQClient) multiMsgApplyUp(groupCode int64, data []byte, hash []byte, bu
 
 // MessageSvc.PbSendMsg
 func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex, pkgDiv int32, forward bool, m []message.IMessageElement) (uint16, []byte) {
-	seq := c.nextSeq()
 	var ptt *message.GroupVoiceElement
 	if len(m) > 0 {
 		if p, ok := m[0].(*message.GroupVoiceElement); ok {
@@ -271,12 +270,10 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "MessageSvc.PbSendMsg", payload)
-	return seq, packet
+	return c.uniPacket("MessageSvc.PbSendMsg", payload)
 }
 
 func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &msg.GetGroupMsgReq{
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		BeginSeq:    proto.Uint64(uint64(beginSeq)),
@@ -284,12 +281,10 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (u
 		PublicGroup: proto.Bool(false),
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "MessageSvc.PbGetGroupMsg", payload)
-	return seq, packet
+	return c.uniPacket("MessageSvc.PbGetGroupMsg", payload)
 }
 
 func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	payload := c.packOIDBPackageProto(2215, 0, &oidb.D8A7ReqBody{
 		SubCmd:                    proto.Uint32(1),
 		LimitIntervalTypeForUin:   proto.Uint32(2),
@@ -297,8 +292,7 @@ func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byt
 		Uin:                       proto.Uint64(uint64(c.Uin)),
 		GroupCode:                 proto.Uint64(uint64(groupCode)),
 	})
-	packet := c.uniPacket(seq, "OidbSvc.0x8a7_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x8a7_0", payload)
 }
 
 // OnlinePush.PbPushGroupMsg
@@ -593,15 +587,13 @@ func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgID, msgInternalId in
 }
 
 func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand, opType uint32) (uint16, []byte) {
-	seq := c.nextSeq()
 	commandName := "OidbSvc.0xeac_" + strconv.FormatInt(int64(opType), 10)
 	payload := c.packOIDBPackageProto(3756, int32(opType), &oidb.EACReqBody{ // serviceType 2 取消
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		Seq:       proto.Uint32(msgSeq),
 		Random:    proto.Uint32(msgRand),
 	})
-	packet := c.uniPacket(seq, commandName, payload)
-	return seq, packet
+	return c.uniPacket(commandName, payload)
 }
 
 // OidbSvc.0xeac_1/2

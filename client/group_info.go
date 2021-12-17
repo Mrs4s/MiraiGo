@@ -79,7 +79,6 @@ func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
 
 // OidbSvc.0x88d_0
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.D88DReqBody{
 		AppId: proto.Uint32(c.version.AppId),
 		ReqGroupInfo: []*oidb.ReqGroupInfo{
@@ -122,8 +121,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 		Bodybuffer: b,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacket(seq, "OidbSvc.0x88d_0", payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0x88d_0", payload)
 }
 
 // SearchGroupByKeyword 通过关键词搜索陌生群组
@@ -137,7 +135,6 @@ func (c *QQClient) SearchGroupByKeyword(keyword string) ([]GroupSearchInfo, erro
 
 // SummaryCard.ReqSearch
 func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
-	seq := c.nextSeq()
 	comm, _ := proto.Marshal(&profilecard.BusiComm{
 		Ver:      proto.Int32(1),
 		Seq:      proto.Int32(rand.Int31()),
@@ -186,8 +183,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "SummaryCard.ReqSearch", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("SummaryCard.ReqSearch", pkt.ToBytes())
 }
 
 // SummaryCard.ReqSearch

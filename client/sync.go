@@ -119,7 +119,6 @@ func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
 
 // StatSvc.GetDevLoginInfo
 func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &jce.SvcReqGetDevLoginInfo{
 		Guid:           c.deviceInfo.Guid,
 		LoginType:      1,
@@ -136,13 +135,11 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "StatSvc.GetDevLoginInfo", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("StatSvc.GetDevLoginInfo", pkt.ToBytes())
 }
 
 // RegPrxySvc.getOffMsg
 func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
-	seq := c.nextSeq()
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional: 0x101C2 | 32,
 		C2CMsg: &jce.SvcReqGetMsgV2{
@@ -192,13 +189,11 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "RegPrxySvc.getOffMsg", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("RegPrxySvc.getOffMsg", pkt.ToBytes())
 }
 
 // RegPrxySvc.PbSyncMsg
 func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
-	seq := c.nextSeq()
 	oidbReq, _ := proto.Marshal(&oidb.D769RspBody{
 		ConfigList: []*oidb.D769ConfigSeq{
 			{
@@ -266,31 +261,26 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	packet := c.uniPacket(seq, "RegPrxySvc.infoSync", pkt.ToBytes())
-	return seq, packet
+	return c.uniPacket("RegPrxySvc.infoSync", pkt.ToBytes())
 }
 
 // PbMessageSvc.PbMsgReadedReport
 func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{GrpReadReport: []*msg.PbGroupReadedReportReq{{
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		LastReadSeq: proto.Uint64(uint64(msgSeq)),
 	}}})
-	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgReadedReport", req)
-	return seq, packet
+	return c.uniPacket("PbMessageSvc.PbMsgReadedReport", req)
 }
 
 func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte) {
-	seq := c.nextSeq()
 	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{C2CReadReport: &msg.PbC2CReadedReportReq{PairInfo: []*msg.UinPairReadInfo{
 		{
 			PeerUin:      proto.Uint64(uint64(uin)),
 			LastReadTime: proto.Uint32(uint32(time)),
 		},
 	}, SyncCookie: c.syncCookie}})
-	packet := c.uniPacket(seq, "PbMessageSvc.PbMsgReadedReport", req)
-	return seq, packet
+	return c.uniPacket("PbMessageSvc.PbMsgReadedReport", req)
 }
 
 // StatSvc.GetDevLoginInfo
