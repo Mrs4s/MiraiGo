@@ -90,6 +90,9 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 				// todo: direct message decode
 				continue
 			}
+			if m.Head.RoutingHead.GetFromTinyid() == c.GuildService.TinyId {
+				continue
+			}
 			if cm := c.GuildService.parseGuildChannelMessage(m); cm != nil {
 				c.dispatchGuildChannelMessage(cm)
 			}
