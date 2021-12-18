@@ -499,13 +499,13 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				}
 			}
 			if face.Name == "[猜拳]" {
-				v    := strings.SplitN(face.MagicValue, "=", 2)[1]
+				v := strings.SplitN(face.MagicValue, "=", 2)[1]
 				t, _ := strconv.ParseInt(v, 10, 32)
 				return []IMessageElement{
 					&FingerGuessingElement{
 						MarketFaceElement: face,
-						Value: int32(t),
-						Name : fingerGuessingName[int32(t)],
+						Value:             int32(t),
+						Name:              fingerGuessingName[int32(t)],
 					},
 				}
 			}
