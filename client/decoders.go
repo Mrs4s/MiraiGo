@@ -44,9 +44,9 @@ func decodeLoginResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (in
 		c.g = h[:]
 	}
 	if t == 0 { // login success
-		if t150, ok := m[0x150]; ok {
-			c.t150 = t150
-		}
+		// if t150, ok := m[0x150]; ok {
+		// 	 c.t150 = t150
+		// }
 		if t161, ok := m[0x161]; ok {
 			c.decodeT161(t161)
 		}
@@ -209,7 +209,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ *incomingPacketInfo, payload []byt
 		c.decodeT119R(m[0x119])
 	}
 	if cmd == 11 {
-		h := md5.Sum(c.sigInfo.d2Key)
+		h := md5.Sum(c.sigInfo.D2Key)
 		c.decodeT119(m[0x119], h[:])
 	}
 	return nil, nil

@@ -290,7 +290,7 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		data, _ := c.TCP.ReadBytes(int(l) - 4)
-		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
+		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.D2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
 			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
@@ -305,7 +305,7 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		if pkt.Flag2 == 2 {
-			pkt.Payload, err = pkt.DecryptPayload(c.ecdh.InitialShareKey, c.RandomKey, c.sigInfo.wtSessionTicketKey)
+			pkt.Payload, err = pkt.DecryptPayload(c.ecdh.InitialShareKey, c.RandomKey, c.sigInfo.WtSessionTicketKey)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
 				if errors.Is(err, packets.ErrUnknownFlag) {

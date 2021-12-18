@@ -41,7 +41,7 @@ const (
 func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *incomingPacketInfo) {
 	c.syncCookie = rsp.SyncCookie
 	c.pubAccountCookie = rsp.PubAccountCookie
-	c.msgCtrlBuf = rsp.MsgCtrlBuf
+	// c.msgCtrlBuf = rsp.MsgCtrlBuf
 	if rsp.UinPairMsgs == nil {
 		return
 	}

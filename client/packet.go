@@ -26,7 +26,7 @@ func (c *QQClient) uniPacket(command string, body []byte) (uint16, []byte) {
 		EncryptType: 1,
 		SessionID:   c.OutGoingPacketSessionId,
 		ExtraData:   EmptyBytes,
-		Key:         c.sigInfo.d2Key,
+		Key:         c.sigInfo.D2Key,
 		Body:        body,
 	}
 	return seq, req.Encode()
@@ -41,7 +41,7 @@ func (c *QQClient) uniPacketWithSeq(seq uint16, command string, body []byte) []b
 		EncryptType: 1,
 		SessionID:   c.OutGoingPacketSessionId,
 		ExtraData:   EmptyBytes,
-		Key:         c.sigInfo.d2Key,
+		Key:         c.sigInfo.D2Key,
 		Body:        body,
 	}
 	return req.Encode()

@@ -15,6 +15,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
@@ -58,36 +59,36 @@ type QQClient struct {
 	servers         []*net.TCPAddr
 	currServerIndex int
 	retryTimes      int
-	version         *versionInfo
-	deviceInfo      *DeviceInfo
+	version         *auth.AppVersion
+	deviceInfo      *auth.Device
 	alive           bool
 	ecdh            *crypto.EncryptECDH
 
 	// tlv cache
-	t104        []byte
-	t174        []byte
-	g           []byte
-	t402        []byte
-	t150        []byte
-	t149        []byte
-	t528        []byte
-	t530        []byte
-	randSeed    []byte // t403
-	rollbackSig []byte
+	t104     []byte
+	t174     []byte
+	g        []byte
+	t402     []byte
+	randSeed []byte // t403
+	// rollbackSig []byte
+	// t149        []byte
+	// t150        []byte
+	// t528        []byte
+	// t530        []byte
 
 	// sync info
 	syncCookie       []byte
 	pubAccountCookie []byte
-	msgCtrlBuf       []byte
 	ksid             []byte
+	// msgCtrlBuf       []byte
 
 	// session info
 	qwebSeq        atomic.Int64
-	sigInfo        *loginSigInfo
+	sigInfo        *auth.SigInfo
 	highwaySession *highway.Session
 	dpwd           []byte
-	timeDiff       int64
-	pwdFlag        bool
+	// pwdFlag        bool
+	// timeDiff       int64
 
 	// address
 	otherSrvAddrs   []string
@@ -108,27 +109,6 @@ type QQClient struct {
 	eventHandlers          *eventHandlers
 
 	groupListLock sync.Mutex
-}
-
-type loginSigInfo struct {
-	loginBitmap uint64
-	tgt         []byte
-	tgtKey      []byte
-
-	srmToken           []byte // study room manager | 0x16a
-	t133               []byte
-	encryptedA1        []byte
-	userStKey          []byte
-	userStWebSig       []byte
-	sKey               []byte
-	sKeyExpiredTime    int64
-	d2                 []byte
-	d2Key              []byte
-	wtSessionTicketKey []byte
-	deviceToken        []byte
-
-	psKeyMap    map[string][]byte
-	pt4TokenMap map[string][]byte
 }
 
 type QiDianAccountInfo struct {
@@ -201,7 +181,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		TCP:                     &utils.TCPListener{},
-		sigInfo:                 &loginSigInfo{},
+		sigInfo:                 &auth.SigInfo{},
 		eventHandlers:           &eventHandlers{},
 		msgSvcCache:             utils.NewCache(time.Second * 15),
 		transCache:              utils.NewCache(time.Second * 15),
@@ -274,8 +254,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	return cli
 }
 
-func (c *QQClient) UseDevice(info *DeviceInfo) {
-	c.version = genVersionInfo(info.Protocol)
+func (c *QQClient) UseDevice(info *auth.Device) {
+	c.version = info.Protocol.Version()
 	c.highwaySession.AppID = int32(c.version.AppId)
 	c.ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
 	c.deviceInfo = info
@@ -320,13 +300,13 @@ func (c *QQClient) TokenLogin(token []byte) error {
 	{
 		r := binary.NewReader(token)
 		c.Uin = r.ReadInt64()
-		c.sigInfo.d2 = r.ReadBytesShort()
-		c.sigInfo.d2Key = r.ReadBytesShort()
-		c.sigInfo.tgt = r.ReadBytesShort()
-		c.sigInfo.srmToken = r.ReadBytesShort()
-		c.sigInfo.t133 = r.ReadBytesShort()
-		c.sigInfo.encryptedA1 = r.ReadBytesShort()
-		c.sigInfo.wtSessionTicketKey = r.ReadBytesShort()
+		c.sigInfo.D2 = r.ReadBytesShort()
+		c.sigInfo.D2Key = r.ReadBytesShort()
+		c.sigInfo.TGT = r.ReadBytesShort()
+		c.sigInfo.SrmToken = r.ReadBytesShort()
+		c.sigInfo.T133 = r.ReadBytesShort()
+		c.sigInfo.EncryptedA1 = r.ReadBytesShort()
+		c.sigInfo.WtSessionTicketKey = r.ReadBytesShort()
 		c.OutGoingPacketSessionId = r.ReadBytesShort()
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
@@ -455,7 +435,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 		go c.doHeartbeat()
 	}
 	_ = c.RefreshStatus()
-	if c.version.Protocol == QiDian {
+	if c.version.Protocol == auth.QiDian {
 		_, _ = c.sendAndWait(c.buildLoginExtraPacket())     // 小登录
 		_, _ = c.sendAndWait(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
 	}
@@ -468,13 +448,13 @@ func (c *QQClient) init(tokenLogin bool) error {
 func (c *QQClient) GenToken() []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt64(uint64(c.Uin))
-		w.WriteBytesShort(c.sigInfo.d2)
-		w.WriteBytesShort(c.sigInfo.d2Key)
-		w.WriteBytesShort(c.sigInfo.tgt)
-		w.WriteBytesShort(c.sigInfo.srmToken)
-		w.WriteBytesShort(c.sigInfo.t133)
-		w.WriteBytesShort(c.sigInfo.encryptedA1)
-		w.WriteBytesShort(c.sigInfo.wtSessionTicketKey)
+		w.WriteBytesShort(c.sigInfo.D2)
+		w.WriteBytesShort(c.sigInfo.D2Key)
+		w.WriteBytesShort(c.sigInfo.TGT)
+		w.WriteBytesShort(c.sigInfo.SrmToken)
+		w.WriteBytesShort(c.sigInfo.T133)
+		w.WriteBytesShort(c.sigInfo.EncryptedA1)
+		w.WriteBytesShort(c.sigInfo.WtSessionTicketKey)
 		w.WriteBytesShort(c.OutGoingPacketSessionId)
 		w.WriteBytesShort(c.deviceInfo.TgtgtKey)
 	})
@@ -525,7 +505,7 @@ func (c *QQClient) ReloadFriendList() error {
 // 当使用普通QQ时: 请求好友列表
 // 当使用企点QQ时: 请求外部联系人列表
 func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
-	if c.version.Protocol == QiDian {
+	if c.version.Protocol == auth.QiDian {
 		rsp, err := c.getQiDianAddressDetailList()
 		if err != nil {
 			return nil, err
@@ -700,11 +680,11 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 }
 
 func (c *QQClient) getSKey() string {
-	if c.sigInfo.sKeyExpiredTime < time.Now().Unix() && len(c.g) > 0 {
+	if c.sigInfo.SKeyExpiredTime < time.Now().Unix() && len(c.g) > 0 {
 		c.Debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
 	}
-	return string(c.sigInfo.sKey)
+	return string(c.sigInfo.SKey)
 }
 
 func (c *QQClient) getCookies() string {
@@ -714,7 +694,7 @@ func (c *QQClient) getCookies() string {
 func (c *QQClient) getCookiesWithDomain(domain string) string {
 	cookie := c.getCookies()
 
-	if psKey, ok := c.sigInfo.psKeyMap[domain]; ok {
+	if psKey, ok := c.sigInfo.PsKeyMap[domain]; ok {
 		return fmt.Sprintf("%s p_uin=o%d; p_skey=%s;", cookie, c.Uin, psKey)
 	} else {
 		return cookie
