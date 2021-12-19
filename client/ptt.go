@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
@@ -24,6 +25,22 @@ func init() {
 }
 
 var pttWaiter = utils.NewUploadWaiter()
+
+var c2cPttExtraInfo = binary.NewWriterF(func(w *binary.Writer) {
+	w.WriteByte(2) // tlv count
+
+	w.WriteByte(8)
+	w.WriteUInt16(4)
+	w.WriteUInt32(1) // codec
+
+	w.WriteByte(9)
+	w.WriteUInt16(4)
+	w.WriteUInt32(0) // 时长
+
+	w.WriteByte(10)
+	reserveInfo := []byte{0x08, 0x00, 0x28, 0x00, 0x38, 0x00} // todo
+	w.WriteBytesShort(reserveInfo)
+})
 
 // UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
 func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*message.GroupVoiceElement, error) {
@@ -103,13 +120,13 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	}
 	return &message.PrivateVoiceElement{
 		Ptt: &msg.Ptt{
-			FileType: proto.Int32(4),
-			SrcUin:   &c.Uin,
-			FileUuid: pkt.ApplyUploadRsp.Uuid,
-			FileMd5:  fh,
-			FileName: proto.String(hex.EncodeToString(fh) + ".amr"),
-			FileSize: proto.Int32(int32(length)),
-			// Reserve:   constructPTTExtraInfo(1, int32(len(voice))), // todo length
+			FileType:  proto.Int32(4),
+			SrcUin:    &c.Uin,
+			FileUuid:  pkt.ApplyUploadRsp.Uuid,
+			FileMd5:   fh,
+			FileName:  proto.String(hex.EncodeToString(fh) + ".amr"),
+			FileSize:  proto.Int32(int32(length)),
+			Reserve:   c2cPttExtraInfo,
 			BoolValid: proto.Bool(true),
 		},
 	}, nil
