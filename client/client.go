@@ -17,6 +17,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
@@ -50,7 +51,7 @@ type QQClient struct {
 	SequenceId              atomic.Int32
 	OutGoingPacketSessionId []byte
 	RandomKey               []byte
-	TCP                     *utils.TCPListener
+	TCP                     *network.TCPListener // todo: combine other protocol state into one struct
 	ConnectTime             time.Time
 
 	// internal state
@@ -123,17 +124,17 @@ type QiDianAccountInfo struct {
 type handlerInfo struct {
 	fun     func(i interface{}, err error)
 	dynamic bool
-	params  requestParams
+	params  network.RequestParams
 }
 
-func (h *handlerInfo) getParams() requestParams {
+func (h *handlerInfo) getParams() network.RequestParams {
 	if h == nil {
 		return nil
 	}
 	return h.params
 }
 
-var decoders = map[string]func(*QQClient, *incomingPacketInfo, []byte) (interface{}, error){
+var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (interface{}, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 	"wtlogin.trans_emp":                            decodeTransEmpResponse,
@@ -180,7 +181,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		AllowSlider:             true,
 		RandomKey:               make([]byte, 16),
 		OutGoingPacketSessionId: []byte{0x02, 0xB0, 0x5B, 0x8B},
-		TCP:                     &utils.TCPListener{},
+		TCP:                     &network.TCPListener{},
 		sigInfo:                 &auth.SigInfo{},
 		eventHandlers:           &eventHandlers{},
 		msgSvcCache:             utils.NewCache(time.Second * 15),
@@ -440,7 +441,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 		_, _ = c.sendAndWait(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
 	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
-	_, _ = c.sendAndWait(seq, pkt, requestParams{"used_reg_proxy": true, "init": true})
+	_, _ = c.sendAndWait(seq, pkt, network.RequestParams{"used_reg_proxy": true, "init": true})
 	c.syncChannelFirstView()
 	return nil
 }
@@ -802,7 +803,7 @@ func (c *QQClient) doHeartbeat() {
 		sso := packets.BuildSsoPacket(seq, c.version.AppId, c.version.SubAppId, "Heartbeat.Alive", c.deviceInfo.IMEI, EmptyBytes, c.OutGoingPacketSessionId, EmptyBytes, c.ksid)
 		packet := packets.BuildLoginPacket(c.Uin, 0, EmptyBytes, sso, EmptyBytes)
 		_, err := c.sendAndWait(seq, packet)
-		if errors.Is(err, utils.ErrConnectionClosed) {
+		if errors.Is(err, network.ErrConnectionClosed) {
 			continue
 		}
 		times++

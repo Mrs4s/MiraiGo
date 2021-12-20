@@ -9,6 +9,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210"
 	"github.com/Mrs4s/MiraiGo/client/pb/notify"
@@ -22,7 +23,7 @@ var msg0x210Decoders = map[int64]func(*QQClient, []byte) error{
 }
 
 // OnlinePush.ReqPush
-func decodeOnlinePushReqPacket(c *QQClient, info *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}

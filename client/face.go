@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/faceroam"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
@@ -40,7 +41,7 @@ func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
 	return c.uniPacket("Faceroam.OpReq", payload)
 }
 
-func decodeFaceroamResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeFaceroamResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := faceroam.FaceroamRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

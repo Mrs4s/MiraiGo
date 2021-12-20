@@ -30,14 +30,6 @@ type (
 	groupMessageBuilder struct {
 		MessageSlices []*msg.Message
 	}
-
-	incomingPacketInfo struct {
-		CommandName string
-		SequenceId  uint16
-		Params      requestParams
-	}
-
-	requestParams map[string]interface{}
 )
 
 var SystemDeviceInfo = &DeviceInfo{
@@ -306,28 +298,6 @@ func genLongTemplate(resID, brief string, ts int64) *message.ServiceElement {
 		ResId:   resID,
 		SubType: "Long",
 	}
-}
-
-func (p requestParams) bool(k string) bool {
-	if p == nil {
-		return false
-	}
-	i, ok := p[k]
-	if !ok {
-		return false
-	}
-	return i.(bool)
-}
-
-func (p requestParams) int32(k string) int32 {
-	if p == nil {
-		return 0
-	}
-	i, ok := p[k]
-	if !ok {
-		return 0
-	}
-	return i.(int32)
 }
 
 func (c *QQClient) getWebDeviceInfo() (i string) {

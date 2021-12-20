@@ -14,6 +14,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	highway2 "github.com/Mrs4s/MiraiGo/client/pb/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
@@ -337,7 +338,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := cmd0x388.D388RspBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -364,7 +365,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := cmd0x388.D388RspBody{}
 	if err := proto.Unmarshal(payload, &pkt); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
@@ -379,7 +380,7 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *incomingPacketInfo, payloa
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.DE07RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {

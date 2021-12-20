@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -146,13 +147,13 @@ func (c *QQClient) Disconnect() {
 }
 
 // sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) (interface{}, error) {
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (interface{}, error) {
 	type T struct {
 		Response interface{}
 		Error    error
 	}
 	ch := make(chan T, 1)
-	var p requestParams
+	var p network.RequestParams
 
 	if len(params) != 0 {
 		p = params[0]
@@ -248,14 +249,14 @@ func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 }
 
 // plannedDisconnect 计划中断线事件
-func (c *QQClient) plannedDisconnect(_ *utils.TCPListener) {
+func (c *QQClient) plannedDisconnect(_ *network.TCPListener) {
 	c.Debug("planned disconnect.")
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
 }
 
 // unexpectedDisconnect 非预期断线事件
-func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
+func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
 	c.Error("unexpected disconnect: %v", e)
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
@@ -331,7 +332,7 @@ func (c *QQClient) netLoop() {
 				var decoded interface{}
 				decoded = pkt.Payload
 				if info == nil || !info.dynamic {
-					decoded, err = decoder(c, &incomingPacketInfo{
+					decoded, err = decoder(c, &network.IncomingPacketInfo{
 						SequenceId:  pkt.SequenceId,
 						CommandName: pkt.CommandName,
 						Params:      info.getParams(),

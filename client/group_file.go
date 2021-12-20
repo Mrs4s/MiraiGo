@@ -12,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
@@ -439,7 +440,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 	return c.uniPacket("OidbSvc.0x6d6_3", payload)
 }
 
-func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOIDB6d81Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D8RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -452,7 +453,7 @@ func decodeOIDB6d81Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d62Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -469,7 +470,7 @@ func decodeOIDB6d62Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
-func decodeOIDB6d63Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOIDB6d63Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -484,7 +485,7 @@ func decodeOIDB6d63Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return rsp.DeleteFileRsp.GetClientWording(), nil
 }
 
-func decodeOIDB6d60Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOIDB6d60Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D6RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
@@ -496,7 +497,7 @@ func decodeOIDB6d60Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) 
 	return rsp.UploadFileRsp, nil
 }
 
-func decodeOIDB6d7Response(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOIDB6d7Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D6D7RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {

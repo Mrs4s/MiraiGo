@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
@@ -14,9 +15,9 @@ func init() {
 type UrlSecurityLevel int
 
 const (
-	Safe    UrlSecurityLevel = 1
-	Unknown UrlSecurityLevel = 2
-	Danger  UrlSecurityLevel = 3
+	Safe UrlSecurityLevel = iota + 1
+	Unknown
+	Danger
 )
 
 // CheckUrlSafely 通过TX服务器检查URL安全性
@@ -47,7 +48,7 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xbcb_0", payload)
 }
 
-func decodeUrlCheckResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeUrlCheckResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := &oidb.OIDBSSOPkg{}
 	rsp := &oidb.DBCBRspBody{}
 	if err := proto.Unmarshal(payload, pkg); err != nil {

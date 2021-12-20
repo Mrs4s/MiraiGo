@@ -3,6 +3,7 @@ package client
 import (
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
@@ -40,7 +41,7 @@ func (c *QQClient) Translate(src, dst, text string) (string, error) {
 }
 
 // OidbSvc.0x990
-func decodeTranslateResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeTranslateResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.TranslateRspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {

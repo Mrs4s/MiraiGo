@@ -1070,7 +1070,7 @@ func (c *QQClient) buildAppInfoRequestPacket(id string) (uint16, []byte) {
 	body := &qweb.QWebReq{
 		Seq:        proto.Int64(1),
 		Qua:        proto.String("V1_AND_SQ_8.4.8_1492_YYB_D"),
-		Device: proto.String(c.getWebDeviceInfo()),
+		device: proto.String(c.getWebDeviceInfo()),
 		BusiBuff:   b,
 		TraceId:    proto.String(fmt.Sprintf("%v_%v_%v", c.Uin, time.Now().Format("0102150405"), rand.Int63())),
 	}

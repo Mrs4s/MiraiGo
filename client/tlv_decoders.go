@@ -90,7 +90,9 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		// readT138(t138) // chg time
 	}
 
-	c.sigInfo = &auth.SigInfo{
+	// we don't use `c.sigInfo = &auth.SigInfo{...}` here,
+	// because we need spread `SigInfo` to other places
+	*c.sigInfo = auth.SigInfo{
 		LoginBitmap:        0,
 		SrmToken:           utils.Select(m[0x16a], c.sigInfo.SrmToken),
 		T133:               utils.Select(m[0x133], c.sigInfo.T133),
