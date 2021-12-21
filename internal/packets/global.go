@@ -139,13 +139,13 @@ func parseSsoFrame(payload []byte, flag2 byte) (*IncomingPacket, error) {
 		}, nil
 	}
 	compressedFlag := head.ReadInt32()
-	bodyLen := reader.ReadInt32()
+	reader.ReadInt32()
 	packet := func() []byte {
 		if compressedFlag == 0 {
-			return reader.ReadBytes(int(bodyLen) - 4)
+			return reader.ReadAvailable()
 		}
 		if compressedFlag == 1 {
-			return binary.ZlibUncompress(reader.ReadBytes(int(bodyLen) - 4))
+			return binary.ZlibUncompress(reader.ReadAvailable())
 		}
 		if compressedFlag == 8 {
 			return reader.ReadAvailable()
