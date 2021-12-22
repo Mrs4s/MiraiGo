@@ -22,6 +22,6 @@ type Request struct {
 	EncryptType EncryptType
 	SequenceID  int32
 	Uin         int64
-	Method      string
+	CommandName string
 	Body        []byte
 }

@@ -11,95 +11,96 @@ import (
 // Transport is a network transport.
 type Transport struct {
 	sessionMu sync.Mutex
-	// todo: combine session fields to a struct
-	tgt       []byte
-	d2key     []byte
-	sessionID []byte
-	ksid      []byte
-
-	version *auth.AppVersion
-	device  *auth.Device
+	Sig       *auth.SigInfo
+	Version   *auth.AppVersion
+	Device    *auth.Device
 
 	// connection
-	conn *TCPListener
+	// conn *TCPListener
 }
 
-func (t *Transport) packBody(req *Request, w *binary.Writer) {
+func (t *Transport) packBody(req *Request) []byte {
+	w := binary.SelectWriter()
+	defer binary.PutWriter(w)
 	w.WriteIntLvPacket(4, func(writer *binary.Writer) {
 		if req.Type == RequestTypeLogin {
 			writer.WriteUInt32(uint32(req.SequenceID))
-			writer.WriteUInt32(t.version.AppId)
-			writer.WriteUInt32(t.version.SubAppId)
+			writer.WriteUInt32(t.Version.AppId)
+			writer.WriteUInt32(t.Version.SubAppId)
 			writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
-			if len(t.tgt) == 0 || len(t.tgt) == 4 {
+			tgt := t.Sig.TGT
+			if len(tgt) == 0 || len(tgt) == 4 {
 				writer.WriteUInt32(0x04)
 			} else {
-				writer.WriteUInt32(uint32(len(t.tgt) + 4))
-				writer.Write(t.tgt)
+				writer.WriteUInt32(uint32(len(tgt) + 4))
+				writer.Write(tgt)
 			}
 		}
-
-		writer.WriteString(req.Method)
-		writer.WriteUInt32(uint32(len(t.sessionID) + 4))
-		w.Write(t.sessionID)
+		writer.WriteString(req.CommandName)
+		writer.WriteIntLvPacket(4, func(w *binary.Writer) {
+			w.Write(t.Sig.OutPacketSessionID)
+		})
+		// writer.WriteUInt32(uint32(len(t.Sig.OutPacketSessionID) + 4))
+		// w.Write(t.Sig.OutPacketSessionID)
 		if req.Type == RequestTypeLogin {
-			writer.WriteString(t.device.IMEI)
+			writer.WriteString(t.Device.IMEI)
 			writer.WriteUInt32(0x04)
 			{
-				writer.WriteUInt16(uint16(len(t.ksid)) + 2)
-				writer.Write(t.ksid)
+				writer.WriteUInt16(uint16(len(t.Sig.Ksid)) + 2)
+				writer.Write(t.Sig.Ksid)
 			}
 		}
 		writer.WriteUInt32(0x04)
 	})
 
-	w.WriteUInt32(uint32(len(req.Body) + 4))
-	w.Write(req.Body)
+	w.WriteIntLvPacket(4, func(w *binary.Writer) {
+		w.Write(req.Body)
+	})
+	// w.WriteUInt32(uint32(len(req.Body) + 4))
+	// w.Write(req.Body)
+	return append([]byte(nil), w.Bytes()...)
 }
 
-func (t *Transport) Send(req *Request) error {
-	// todo: return response
+// PackPacket packs a packet.
+func (t *Transport) PackPacket(req *Request) []byte {
+	// todo(wdvxdr): combine pack packet, send packet and return the response
+	if len(t.Sig.D2) == 0 {
+		req.EncryptType = EncryptTypeEmptyKey
+	}
+	body := t.packBody(req)
+	// encrypt body
+	switch req.EncryptType {
+	case EncryptTypeD2Key:
+		body = binary.NewTeaCipher(t.Sig.D2Key).Encrypt(body)
+	case EncryptTypeEmptyKey:
+		body = binary.NewTeaCipher(emptyKey).Encrypt(body)
+	}
+
 	head := binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(req.Type))
-		w.WriteUInt32(uint32(req.EncryptType))
+		w.WriteByte(byte(req.EncryptType))
 		switch req.Type {
 		case RequestTypeLogin:
 			switch req.EncryptType {
 			case EncryptTypeD2Key:
-				w.WriteUInt32(uint32(len(t.d2key) + 4))
-				w.Write(t.d2key)
+				w.WriteUInt32(uint32(len(t.Sig.D2) + 4))
+				w.Write(t.Sig.D2)
 			default:
 				w.WriteUInt32(4)
 			}
 		case RequestTypeSimple:
 			w.WriteUInt32(uint32(req.SequenceID))
 		}
+		w.WriteByte(0x00)
 		w.WriteString(strconv.FormatInt(req.Uin, 10))
 	})
 
 	w := binary.SelectWriter()
 	defer binary.PutWriter(w)
-	t.packBody(req, w)
-	body := w.Bytes()
-
-	// encrypt body
-	switch req.EncryptType {
-	case EncryptTypeD2Key:
-		body = binary.NewTeaCipher(t.d2key).Encrypt(body)
-	case EncryptTypeEmptyKey:
-		body = binary.NewTeaCipher(emptyKey).Encrypt(body)
-	}
-
-	w2 := binary.SelectWriter()
-	defer binary.PutWriter(w2)
-	w2.WriteUInt32(uint32(len(head) + len(body) + 4))
-	w2.Write(head)
-	w2.Write(body)
-	err := t.conn.Write(w2.Bytes())
-	if err != nil {
-		return err
-	}
-	return nil
+	w.WriteUInt32(uint32(len(head)+len(body)) + 4)
+	w.Write(head)
+	w.Write(body)
+	return append([]byte(nil), w.Bytes()...) // copy
 }
 
 func (t *Transport) parse(head []byte) *Request {
@@ -119,7 +120,7 @@ func (t *Transport) parse(head []byte) *Request {
 	case EncryptTypeNoEncrypt:
 		req.Body = body
 	case EncryptTypeD2Key:
-		req.Body = binary.NewTeaCipher(t.d2key).Decrypt(body)
+		req.Body = binary.NewTeaCipher(t.Sig.D2Key).Decrypt(body)
 	case EncryptTypeEmptyKey:
 		req.Body = binary.NewTeaCipher(emptyKey).Decrypt(body)
 	}

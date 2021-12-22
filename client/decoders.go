@@ -39,10 +39,10 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 	reader.ReadUInt16()
 	m := reader.ReadTlvMap(2)
 	if m.Exists(0x402) {
-		c.dpwd = []byte(utils.RandomString(16))
-		c.t402 = m[0x402]
-		h := md5.Sum(append(append(c.deviceInfo.Guid, c.dpwd...), c.t402...))
-		c.g = h[:]
+		c.sig.Dpwd = []byte(utils.RandomString(16))
+		c.sig.T402 = m[0x402]
+		h := md5.Sum(append(append(c.deviceInfo.Guid, c.sig.Dpwd...), c.sig.T402...))
+		c.sig.G = h[:]
 	}
 	if t == 0 { // login success
 		// if t150, ok := m[0x150]; ok {
@@ -52,7 +52,7 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 			c.decodeT161(t161)
 		}
 		if m.Exists(0x403) {
-			c.randSeed = m[0x403]
+			c.sig.RandSeed = m[0x403]
 		}
 		c.decodeT119(m[0x119], c.deviceInfo.TgtgtKey)
 		return LoginResponse{
@@ -60,7 +60,7 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 		}, nil
 	}
 	if t == 2 {
-		c.t104 = m[0x104]
+		c.sig.T104 = m[0x104]
 		if m.Exists(0x192) {
 			return LoginResponse{
 				Success:   false,
@@ -97,9 +97,9 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 
 	if t == 160 || t == 239 {
 		if t174, ok := m[0x174]; ok { // 短信验证
-			c.t104 = m[0x104]
-			c.t174 = t174
-			c.randSeed = m[0x403]
+			c.sig.T104 = m[0x104]
+			c.sig.T174 = t174
+			c.sig.RandSeed = m[0x403]
 			phone := func() string {
 				r := binary.NewReader(m[0x178])
 				return r.ReadStringLimit(int(r.ReadInt32()))
@@ -122,7 +122,7 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 		}
 
 		if _, ok := m[0x17b]; ok { // 二次验证
-			c.t104 = m[0x104]
+			c.sig.T104 = m[0x104]
 			return LoginResponse{
 				Success: false,
 				Error:   SMSNeededError,
@@ -146,8 +146,8 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 	}
 
 	if t == 204 {
-		c.t104 = m[0x104]
-		c.randSeed = m[0x403]
+		c.sig.T104 = m[0x104]
+		c.sig.RandSeed = m[0x403]
 		return c.sendAndWait(c.buildDeviceLockLoginPacket())
 	} // drive lock
 
@@ -210,7 +210,7 @@ func decodeExchangeEmpResponse(c *QQClient, _ *network.IncomingPacketInfo, paylo
 		c.decodeT119R(m[0x119])
 	}
 	if cmd == 11 {
-		h := md5.Sum(c.sigInfo.D2Key)
+		h := md5.Sum(c.sig.D2Key)
 		c.decodeT119(m[0x119], h[:])
 	}
 	return nil, nil

@@ -46,38 +46,6 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 	})
 }
 
-func BuildSsoPacket(seq uint16, appID, subAppID uint32, commandName, imei string, extData, outPacketSessionId, body, ksid []byte) []byte {
-	return binary.NewWriterF(func(p *binary.Writer) {
-		p.WriteIntLvPacket(4, func(writer *binary.Writer) {
-			writer.WriteUInt32(uint32(seq))
-			writer.WriteUInt32(appID)
-			writer.WriteUInt32(subAppID)
-			writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
-			if len(extData) == 0 || len(extData) == 4 {
-				writer.WriteUInt32(0x04)
-			} else {
-				writer.WriteUInt32(uint32(len(extData) + 4))
-				writer.Write(extData)
-			}
-			writer.WriteString(commandName)
-			writer.WriteIntLvPacket(4, func(w *binary.Writer) {
-				w.Write(outPacketSessionId)
-			})
-			writer.WriteString(imei)
-			writer.WriteUInt32(0x04)
-			{
-				writer.WriteUInt16(uint16(len(ksid)) + 2)
-				writer.Write(ksid)
-			}
-			writer.WriteUInt32(0x04)
-		})
-
-		p.WriteIntLvPacket(4, func(writer *binary.Writer) {
-			writer.Write(body)
-		})
-	})
-}
-
 func ParseIncomingPacket(payload, d2key []byte) (*IncomingPacket, error) {
 	if len(payload) < 6 {
 		return nil, errors.WithStack(ErrInvalidPayload)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -44,7 +43,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		}
 	*/
 	if t108, ok := m[0x108]; ok {
-		c.ksid = t108
+		c.sig.Ksid = t108
 	}
 
 	var (
@@ -91,29 +90,28 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 	}
 
 	// we don't use `c.sigInfo = &auth.SigInfo{...}` here,
-	// because we need spread `SigInfo` to other places
-	*c.sigInfo = auth.SigInfo{
-		LoginBitmap:        0,
-		SrmToken:           utils.Select(m[0x16a], c.sigInfo.SrmToken),
-		T133:               utils.Select(m[0x133], c.sigInfo.T133),
-		EncryptedA1:        utils.Select(m[0x106], c.sigInfo.EncryptedA1),
-		TGT:                m[0x10a],
-		TGTKey:             m[0x10d],
-		UserStKey:          m[0x10e],
-		UserStWebSig:       m[0x103],
-		SKey:               m[0x120],
-		SKeyExpiredTime:    time.Now().Unix() + 21600,
-		D2:                 m[0x143],
-		D2Key:              m[0x305],
-		WtSessionTicketKey: utils.Select(m[0x134], c.sigInfo.WtSessionTicketKey),
-		DeviceToken:        m[0x322],
+	// because we need keep other fields in `c.sigInfo`
+	s := c.sig
+	s.LoginBitmap = 0
+	s.SrmToken = utils.Select(m[0x16a], s.SrmToken)
+	s.T133 = utils.Select(m[0x133], s.T133)
+	s.EncryptedA1 = utils.Select(m[0x106], s.EncryptedA1)
+	s.TGT = m[0x10a]
+	s.TGTKey = m[0x10d]
+	s.UserStKey = m[0x10e]
+	s.UserStWebSig = m[0x103]
+	s.SKey = m[0x120]
+	s.SKeyExpiredTime = time.Now().Unix() + 21600
+	s.D2 = m[0x143]
+	s.D2Key = m[0x305]
+	s.WtSessionTicketKey = utils.Select(m[0x134], s.WtSessionTicketKey)
+	s.DeviceToken = m[0x322]
 
-		PsKeyMap:    psKeyMap,
-		Pt4TokenMap: pt4TokenMap,
-	}
+	s.PsKeyMap = psKeyMap
+	s.Pt4TokenMap = pt4TokenMap
 	if len(c.PasswordMd5[:]) > 0 {
 		key := md5.Sum(append(append(c.PasswordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt32(uint32(c.Uin)) })...))
-		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sigInfo.EncryptedA1)
+		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sig.EncryptedA1)
 		if len(decrypted) > 51+16 {
 			dr := binary.NewReader(decrypted)
 			dr.ReadBytes(51)
@@ -132,9 +130,9 @@ func (c *QQClient) decodeT119R(data []byte) {
 	reader.ReadBytes(2)
 	m := reader.ReadTlvMap(2)
 	if t120, ok := m[0x120]; ok {
-		c.sigInfo.SKey = t120
-		c.sigInfo.SKeyExpiredTime = time.Now().Unix() + 21600
-		c.Debug("skey updated: %v", c.sigInfo.SKey)
+		c.sig.SKey = t120
+		c.sig.SKeyExpiredTime = time.Now().Unix() + 21600
+		c.Debug("skey updated: %v", c.sig.SKey)
 	}
 	if t11a, ok := m[0x11a]; ok {
 		c.Nickname, c.Age, c.Gender = readT11A(t11a)

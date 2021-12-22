@@ -127,4 +127,26 @@ type SigInfo struct {
 
 	PsKeyMap    map[string][]byte
 	Pt4TokenMap map[string][]byte
+
+	// Others
+	OutPacketSessionID []byte
+	Dpwd               []byte
+
+	// tlv cache
+	T104     []byte
+	T174     []byte
+	G        []byte
+	T402     []byte
+	RandSeed []byte // t403
+	// rollbackSig []byte
+	// t149        []byte
+	// t150        []byte
+	// t528        []byte
+	// t530        []byte
+
+	// sync info
+	SyncCookie       []byte
+	PubAccountCookie []byte
+	Ksid             []byte
+	// msgCtrlBuf       []byte
 }
