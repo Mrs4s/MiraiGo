@@ -12,7 +12,7 @@ import (
 func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable bool, guid, tgtgtKey []byte, wtf uint32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x106)
-		pos := w.AllocUInt16Head()
+		pos := w.FillUInt16()
 		keydata, kcl := binary.OpenWriterF(func(w *binary.Writer) {
 			w.Write(passwordMd5[:])
 			w.WriteUInt32(0) // []byte{0x00, 0x00, 0x00, 0x00}...
@@ -56,7 +56,7 @@ func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable b
 			w.WriteUInt16(0)
 		})
 		w.EncryptAndWrite(key[:], body)
-		w.WriteUInt16HeadExcludeSelfAt(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 		cl()
 	})
 }

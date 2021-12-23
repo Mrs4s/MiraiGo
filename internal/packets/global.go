@@ -32,7 +32,7 @@ type IncomingPacket struct {
 func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteByte(2)
-		pos := w.AllocUInt16Head()
+		pos := w.FillUInt16()
 		w.WriteUInt16(cmd)
 		w.Write(make([]byte, 21))
 		w.WriteByte(3)
@@ -42,7 +42,7 @@ func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(wr
 		w.WriteUInt64(j)
 		bodyFunc(w)
 		w.WriteByte(3)
-		w.WriteUInt16HeadUsingTotalBufferLenAt(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()))
 	})
 }
 

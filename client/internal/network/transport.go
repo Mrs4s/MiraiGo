@@ -66,7 +66,7 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	}
 
 	return binary.NewWriterF(func(w *binary.Writer) {
-		pos := w.AllocUInt32Head()
+		pos := w.FillUInt32()
 		// vvv w.Write(head) vvv
 		w.WriteUInt32(uint32(req.Type))
 		w.WriteByte(byte(req.EncryptType))
@@ -100,7 +100,7 @@ func (t *Transport) PackPacket(req *Request) []byte {
 				t.packBody(req, w)
 			}
 		}))
-		w.WriteUInt32HeadAt(pos)
+		w.WriteUInt32At(pos, uint32(w.Len()))
 	})
 }
 
