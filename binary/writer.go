@@ -35,6 +35,10 @@ func (w *Writer) WriteHead16(pos int) {
 	binary.BigEndian.PutUint16(newdata, uint16(len(newdata)))
 }
 
+func (w *Writer) WriteHead16TotalBufferLen(pos int) {
+	binary.BigEndian.PutUint16((*bytes.Buffer)(w).Bytes()[pos:], uint16((*bytes.Buffer)(w).Len()))
+}
+
 func (w *Writer) WriteHead16ExcludeSelf(pos int) {
 	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
 	binary.BigEndian.PutUint16(newdata, uint16(len(newdata)-2))
