@@ -306,7 +306,7 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		if pkt.Flag2 == 2 {
-			pkt.Payload, err = pkt.DecryptPayload(c.ecdh.InitialShareKey, c.RandomKey, c.sig.WtSessionTicketKey)
+			m, err := c.oicq.Unmarshal(pkt.Payload)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
 				if errors.Is(err, packets.ErrUnknownFlag) {
@@ -314,6 +314,7 @@ func (c *QQClient) netLoop() {
 				}
 				continue
 			}
+			pkt.Payload = m.Body
 		}
 		errCount = 0
 		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)

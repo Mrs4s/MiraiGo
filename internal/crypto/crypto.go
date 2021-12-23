@@ -8,14 +8,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
-	"github.com/Mrs4s/MiraiGo/binary"
 )
 
-type EncryptECDH struct {
-	InitialShareKey []byte
+type ECDH struct {
+	SvrPublicKeyVer uint16
 	PublicKey       []byte
-	PublicKeyVer    uint16
+	ShareKey        []byte
 }
 
 type EncryptSession struct {
@@ -24,63 +22,23 @@ type EncryptSession struct {
 
 const serverPublicKey = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E"
 
-func NewEcdh() *EncryptECDH {
-	e := &EncryptECDH{
-		PublicKeyVer: 1,
+func NewECDH() *ECDH {
+	e := &ECDH{
+		SvrPublicKeyVer: 1,
 	}
 	e.generateKey(serverPublicKey)
 	return e
 }
 
-func (e *EncryptECDH) generateKey(sPubKey string) {
-	pub, err := hex.DecodeString(sPubKey)
-	if err != nil {
-		panic(err)
-	}
+func (e *ECDH) generateKey(sPubKey string) {
+	pub, _ := hex.DecodeString(sPubKey)
 	p256 := elliptic.P256()
-	key, sx, sy, err := elliptic.GenerateKey(p256, rand.Reader)
-	if err != nil {
-		panic(err)
-	}
+	key, sx, sy, _ := elliptic.GenerateKey(p256, rand.Reader)
 	tx, ty := elliptic.Unmarshal(p256, pub)
 	x, _ := p256.ScalarMult(tx, ty, key)
 	hash := md5.Sum(x.Bytes()[:16])
-	e.InitialShareKey = hash[:]
+	e.ShareKey = hash[:]
 	e.PublicKey = elliptic.Marshal(p256, sx, sy)
-}
-
-func (e *EncryptECDH) Encrypt(d, k []byte) []byte {
-	w := binary.SelectWriter()
-	w.WriteByte(0x02)
-	w.WriteByte(0x01)
-	w.Write(k)
-	w.WriteUInt16(0x01_31)
-	w.WriteUInt16(e.PublicKeyVer)
-	w.WriteUInt16(uint16(len(e.PublicKey)))
-	w.Write(e.PublicKey)
-	w.EncryptAndWrite(e.InitialShareKey, d)
-	return w.Bytes()
-}
-
-func (e *EncryptECDH) ID() byte {
-	return 0x87
-}
-
-func NewEncryptSession(t133 []byte) *EncryptSession {
-	return &EncryptSession{T133: t133}
-}
-
-func (e *EncryptSession) Encrypt(d, k []byte) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
-		encrypt := binary.NewTeaCipher(k).Encrypt(d)
-		w.WriteUInt16(uint16(len(e.T133)))
-		w.Write(e.T133)
-		w.Write(encrypt)
-	})
-}
-
-func (e *EncryptSession) ID() byte {
-	return 69
 }
 
 type pubKeyResp struct {
@@ -91,7 +49,7 @@ type pubKeyResp struct {
 }
 
 // FetchPubKey 从服务器获取PubKey
-func (e *EncryptECDH) FetchPubKey(uin int64) {
+func (e *ECDH) FetchPubKey(uin int64) {
 	resp, err := http.Get("https://keyrotate.qq.com/rotate_key?cipher_suite_ver=305&uin=" + strconv.FormatInt(uin, 10))
 	if err != nil {
 		return
@@ -102,6 +60,6 @@ func (e *EncryptECDH) FetchPubKey(uin int64) {
 	if err != nil {
 		return
 	}
-	e.PublicKeyVer = pubKey.Meta.PubKeyVer
+	e.SvrPublicKeyVer = pubKey.Meta.PubKeyVer
 	e.generateKey(pubKey.Meta.PubKey) // todo check key sign
 }

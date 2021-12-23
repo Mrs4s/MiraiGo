@@ -113,17 +113,16 @@ type SigInfo struct {
 	TGT         []byte
 	TGTKey      []byte
 
-	SrmToken           []byte // study room manager | 0x16a
-	T133               []byte
-	EncryptedA1        []byte
-	UserStKey          []byte
-	UserStWebSig       []byte
-	SKey               []byte
-	SKeyExpiredTime    int64
-	D2                 []byte
-	D2Key              []byte
-	WtSessionTicketKey []byte
-	DeviceToken        []byte
+	SrmToken        []byte // study room manager | 0x16a
+	T133            []byte
+	EncryptedA1     []byte
+	UserStKey       []byte
+	UserStWebSig    []byte
+	SKey            []byte
+	SKeyExpiredTime int64
+	D2              []byte
+	D2Key           []byte
+	DeviceToken     []byte
 
 	PsKeyMap    map[string][]byte
 	Pt4TokenMap map[string][]byte

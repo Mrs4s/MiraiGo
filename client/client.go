@@ -18,8 +18,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
+	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -54,6 +54,7 @@ type QQClient struct {
 	ConnectTime time.Time
 
 	transport *network.Transport
+	oicq      *oicq.Codec
 
 	// internal state
 	handlers        HandlerMap
@@ -64,7 +65,6 @@ type QQClient struct {
 	version         *auth.AppVersion
 	deviceInfo      *auth.Device
 	alive           bool
-	ecdh            *crypto.EncryptECDH
 
 	// session info
 	qwebSeq        atomic.Int64
@@ -161,7 +161,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		Uin:         uin,
 		PasswordMd5: passwordMd5,
 		AllowSlider: true,
-		RandomKey:   make([]byte, 16),
 		TCP:         &network.TCPListener{},
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
@@ -172,7 +171,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		onlinePushCache: utils.NewCache(time.Second * 15),
 		servers:         []*net.TCPAddr{},
 		alive:           true,
-		ecdh:            crypto.NewEcdh(),
 		highwaySession:  new(highway.Session),
 
 		version:    new(auth.AppVersion),
@@ -184,7 +182,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		Version: cli.version,
 		Device:  cli.deviceInfo,
 	}
-
+	cli.oicq = oicq.NewCodec(cli.Uin)
 	{ // init atomic values
 		cli.SequenceId.Store(0x3635)
 		cli.requestPacketRequestID.Store(1921334513)
@@ -194,7 +192,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	cli.highwaySession.Uin = strconv.FormatInt(cli.Uin, 10)
 	cli.GuildService = &GuildService{c: cli}
-	cli.ecdh.FetchPubKey(uin)
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
@@ -300,7 +297,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		c.sig.SrmToken = r.ReadBytesShort()
 		c.sig.T133 = r.ReadBytesShort()
 		c.sig.EncryptedA1 = r.ReadBytesShort()
-		c.sig.WtSessionTicketKey = r.ReadBytesShort()
+		c.oicq.WtSessionTicketKey = r.ReadBytesShort()
 		c.sig.OutPacketSessionID = r.ReadBytesShort()
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
@@ -448,7 +445,7 @@ func (c *QQClient) GenToken() []byte {
 		w.WriteBytesShort(c.sig.SrmToken)
 		w.WriteBytesShort(c.sig.T133)
 		w.WriteBytesShort(c.sig.EncryptedA1)
-		w.WriteBytesShort(c.sig.WtSessionTicketKey)
+		w.WriteBytesShort(c.oicq.WtSessionTicketKey)
 		w.WriteBytesShort(c.sig.OutPacketSessionID)
 		w.WriteBytesShort(c.deviceInfo.TgtgtKey)
 	})

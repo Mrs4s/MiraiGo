@@ -89,6 +89,8 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		// readT138(t138) // chg time
 	}
 
+	c.oicq.WtSessionTicketKey = utils.Select(m[0x134], c.oicq.WtSessionTicketKey)
+
 	// we don't use `c.sigInfo = &auth.SigInfo{...}` here,
 	// because we need keep other fields in `c.sigInfo`
 	s := c.sig
@@ -104,7 +106,6 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 	s.SKeyExpiredTime = time.Now().Unix() + 21600
 	s.D2 = m[0x143]
 	s.D2Key = m[0x305]
-	s.WtSessionTicketKey = utils.Select(m[0x134], s.WtSessionTicketKey)
 	s.DeviceToken = m[0x322]
 
 	s.PsKeyMap = psKeyMap
