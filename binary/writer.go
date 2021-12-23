@@ -100,9 +100,9 @@ func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(*Writer)) {
-	w.FillUInt32()
+	pos := w.FillUInt32()
 	f(w)
-	w.WriteUInt32At(0, uint32(w.Len()-4+offset))
+	w.WriteUInt32At(pos, uint32(w.Len()+offset-pos-4))
 }
 
 func (w *Writer) WriteBytesShort(data []byte) {
