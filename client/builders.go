@@ -9,15 +9,14 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
-	"github.com/Mrs4s/MiraiGo/client/internal/codec"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
+	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/internal/crypto"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
@@ -426,12 +425,11 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		w.Write(tlv.T545([]byte(c.deviceInfo.IMEI)))
 	})
 
-	oicq := codec.OICQ{
-		Uin:           uint32(c.Uin),
-		Command:       0x810,
-		EncryptMethod: crypto.NewEncryptSession(c.sig.T133),
-		Key:           c.sig.WtSessionTicketKey,
-		Body:          req,
+	m := oicq.Message{
+		Uin:              uint32(c.Uin),
+		Command:          0x810,
+		EncryptionMethod: oicq.EM_ST,
+		Body:             req,
 	}
 
 	nreq := network.Request{
@@ -440,7 +438,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		Uin:         c.Uin,
 		SequenceID:  int32(seq),
 		CommandName: "wtlogin.exchange_emp",
-		Body:        oicq.Encode(),
+		Body:        c.oicq.Marshal(&m),
 	}
 	return seq, c.transport.PackPacket(&nreq)
 }

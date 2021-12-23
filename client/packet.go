@@ -1,20 +1,19 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/client/internal/codec"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
+	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 )
 
 //go:noinline
 func (c *QQClient) buildOicqRequestPacket(uin int64, command uint16, body []byte) []byte {
-	req := codec.OICQ{
-		Uin:           uint32(uin),
-		Command:       command,
-		EncryptMethod: c.ecdh,
-		Key:           c.RandomKey,
-		Body:          body,
+	req := oicq.Message{
+		Uin:              uint32(uin),
+		Command:          command,
+		EncryptionMethod: oicq.EM_ECDH,
+		Body:             body,
 	}
-	return req.Encode()
+	return c.oicq.Marshal(&req)
 }
 
 //go:noinline
