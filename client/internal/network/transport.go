@@ -19,46 +19,43 @@ type Transport struct {
 	// conn *TCPListener
 }
 
-func (t *Transport) packBody(req *Request) ([]byte, func()) {
-	return binary.OpenWriterF(func(w *binary.Writer) {
-		w.WriteIntLvPacket(4, func(writer *binary.Writer) {
-			if req.Type == RequestTypeLogin {
-				writer.WriteUInt32(uint32(req.SequenceID))
-				writer.WriteUInt32(t.Version.AppId)
-				writer.WriteUInt32(t.Version.SubAppId)
-				writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
-				tgt := t.Sig.TGT
-				if len(tgt) == 0 || len(tgt) == 4 {
-					writer.WriteUInt32(0x04)
-				} else {
-					writer.WriteUInt32(uint32(len(tgt) + 4))
-					writer.Write(tgt)
-				}
-			}
-			writer.WriteString(req.CommandName)
-			writer.WriteIntLvPacket(4, func(w *binary.Writer) {
-				w.Write(t.Sig.OutPacketSessionID)
-			})
-			// writer.WriteUInt32(uint32(len(t.Sig.OutPacketSessionID) + 4))
-			// w.Write(t.Sig.OutPacketSessionID)
-			if req.Type == RequestTypeLogin {
-				writer.WriteString(t.Device.IMEI)
+func (t *Transport) packBody(req *Request, w *binary.Writer) {
+	w.WriteIntLvPacket(4, func(writer *binary.Writer) {
+		if req.Type == RequestTypeLogin {
+			writer.WriteUInt32(uint32(req.SequenceID))
+			writer.WriteUInt32(t.Version.AppId)
+			writer.WriteUInt32(t.Version.SubAppId)
+			writer.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
+			tgt := t.Sig.TGT
+			if len(tgt) == 0 || len(tgt) == 4 {
 				writer.WriteUInt32(0x04)
-				{
-					pos := writer.AllocUInt16Head()
-					writer.Write(t.Sig.Ksid)
-					writer.WriteUInt16HeadAt(pos)
-				}
+			} else {
+				writer.WriteUInt32(uint32(len(tgt) + 4))
+				writer.Write(tgt)
 			}
+		}
+		writer.WriteString(req.CommandName)
+		writer.WriteIntLvPacket(4, func(w *binary.Writer) {
+			w.Write(t.Sig.OutPacketSessionID)
+		})
+		// writer.WriteUInt32(uint32(len(t.Sig.OutPacketSessionID) + 4))
+		// w.Write(t.Sig.OutPacketSessionID)
+		if req.Type == RequestTypeLogin {
+			writer.WriteString(t.Device.IMEI)
 			writer.WriteUInt32(0x04)
-		})
-
-		w.WriteIntLvPacket(4, func(w *binary.Writer) {
-			w.Write(req.Body)
-		})
-		// w.WriteUInt32(uint32(len(req.Body) + 4))
-		// w.Write(req.Body)
+			{
+				writer.WriteUInt16(uint16(len(t.Sig.Ksid)) + 2)
+				writer.Write(t.Sig.Ksid)
+			}
+		}
+		writer.WriteUInt32(0x04)
 	})
+
+	w.WriteIntLvPacket(4, func(w *binary.Writer) {
+		w.Write(req.Body)
+	})
+	// w.WriteUInt32(uint32(len(req.Body) + 4))
+	// w.Write(req.Body)
 }
 
 // PackPacket packs a packet.
@@ -67,15 +64,6 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	if len(t.Sig.D2) == 0 {
 		req.EncryptType = EncryptTypeEmptyKey
 	}
-	body, cl := t.packBody(req)
-	// encrypt body
-	switch req.EncryptType {
-	case EncryptTypeD2Key:
-		body = binary.NewTeaCipher(t.Sig.D2Key).Encrypt(body)
-	case EncryptTypeEmptyKey:
-		body = binary.NewTeaCipher(emptyKey).Encrypt(body)
-	}
-	cl()
 
 	return binary.NewWriterF(func(w *binary.Writer) {
 		pos := w.AllocUInt32Head()
@@ -97,7 +85,21 @@ func (t *Transport) PackPacket(req *Request) []byte {
 		w.WriteByte(0x00)
 		w.WriteString(strconv.FormatInt(req.Uin, 10))
 		// ^^^ w.Write(head) ^^^
-		w.Write(body)
+		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+			// encrypt body
+			switch req.EncryptType {
+			case EncryptTypeD2Key:
+				wt, cl := binary.OpenWriterF(func(w *binary.Writer) { t.packBody(req, w) })
+				w.EncryptAndWrite(t.Sig.D2Key, wt)
+				cl()
+			case EncryptTypeEmptyKey:
+				wt, cl := binary.OpenWriterF(func(w *binary.Writer) { t.packBody(req, w) })
+				w.EncryptAndWrite(emptyKey, wt)
+				cl()
+			default:
+				t.packBody(req, w)
+			}
+		}))
 		w.WriteUInt32HeadAt(pos)
 	})
 }

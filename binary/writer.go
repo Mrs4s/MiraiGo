@@ -30,10 +30,12 @@ func (w *Writer) AllocUInt16Head() (pos int) {
 	return
 }
 
+/*
 func (w *Writer) WriteUInt16HeadAt(pos int) {
 	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
 	binary.BigEndian.PutUint16(newdata, uint16(len(newdata)))
 }
+*/
 
 func (w *Writer) WriteUInt16HeadUsingTotalBufferLenAt(pos int) {
 	binary.BigEndian.PutUint16((*bytes.Buffer)(w).Bytes()[pos:], uint16((*bytes.Buffer)(w).Len()))
@@ -113,25 +115,6 @@ func (w *Writer) WriteIntLvPacket(offset int, f func(*Writer)) {
 	w.WriteUInt32(uint32(len(data) + offset))
 	w.Write(data)
 	cl()
-}
-
-func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body []byte) {
-	pos := w.AllocUInt32Head()
-	// vvv WriteIntLvPacket vvv
-	w.WriteString(commandName)
-	w.WriteUInt32(8)
-	w.Write(sessionId)
-	if len(extraData) == 0 {
-		w.WriteUInt32(0x04)
-	} else {
-		w.WriteUInt32(uint32(len(extraData) + 4))
-		w.Write(extraData)
-	}
-	// ^^^ WriteIntLvPacket ^^^
-	w.WriteUInt32HeadAt(pos)
-
-	w.WriteUInt32(uint32(len(body) + 4)) // WriteIntLvPacket
-	w.Write(body)
 }
 
 func (w *Writer) WriteBytesShort(data []byte) {

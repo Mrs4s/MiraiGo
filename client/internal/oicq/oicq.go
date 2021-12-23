@@ -1,6 +1,7 @@
 package oicq
 
 import (
+	goBinary "encoding/binary"
 	"math/rand"
 
 	"github.com/pkg/errors"
@@ -41,47 +42,51 @@ type Message struct {
 }
 
 func (c *Codec) Marshal(m *Message) []byte {
-	return binary.NewWriterF(func(w *binary.Writer) {
+	w := binary.SelectWriter()
+	defer binary.PutWriter(w)
+
+	w.WriteByte(0x02)
+	w.WriteUInt16(0)    // len 占位
+	w.WriteUInt16(8001) // version?
+	w.WriteUInt16(m.Command)
+	w.WriteUInt16(1)
+	w.WriteUInt32(m.Uin)
+	w.WriteByte(0x03)
+	switch m.EncryptionMethod {
+	case EM_ECDH:
+		w.WriteByte(0x87)
+	case EM_ST:
+		w.WriteByte(0x45)
+	}
+	w.WriteByte(0)
+	w.WriteUInt32(2)
+	w.WriteUInt32(0)
+	w.WriteUInt32(0)
+
+	switch m.EncryptionMethod {
+	case EM_ECDH:
 		w.WriteByte(0x02)
-		pos := w.AllocUInt16Head() // len 占位
-		w.WriteUInt16(8001)        // version?
-		w.WriteUInt16(m.Command)
-		w.WriteUInt16(1)
-		w.WriteUInt32(m.Uin)
-		w.WriteByte(0x03)
-		switch m.EncryptionMethod {
-		case EM_ECDH:
-			w.WriteByte(0x87)
-		case EM_ST:
-			w.WriteByte(0x45)
-		}
-		w.WriteByte(0)
-		w.WriteUInt32(2)
-		w.WriteUInt32(0)
-		w.WriteUInt32(0)
+		w.WriteByte(0x01)
+		w.Write(c.randomKey)
+		w.WriteUInt16(0x01_31)
+		w.WriteUInt16(c.ecdh.SvrPublicKeyVer)
+		w.WriteUInt16(uint16(len(c.ecdh.PublicKey)))
+		w.Write(c.ecdh.PublicKey)
+		w.EncryptAndWrite(c.ecdh.ShareKey, m.Body)
 
-		switch m.EncryptionMethod {
-		case EM_ECDH:
-			w.WriteByte(0x02)
-			w.WriteByte(0x01)
-			w.Write(c.randomKey)
-			w.WriteUInt16(0x01_31)
-			w.WriteUInt16(c.ecdh.SvrPublicKeyVer)
-			w.WriteUInt16(uint16(len(c.ecdh.PublicKey)))
-			w.Write(c.ecdh.PublicKey)
-			w.EncryptAndWrite(c.ecdh.ShareKey, m.Body)
-
-		case EM_ST:
-			w.WriteByte(0x01)
-			w.WriteByte(0x03)
-			w.Write(c.randomKey)
-			w.WriteUInt16(0x0102)
-			w.WriteUInt16(0x0000)
-			w.EncryptAndWrite(c.randomKey, m.Body)
-		}
+	case EM_ST:
+		w.WriteByte(0x01)
 		w.WriteByte(0x03)
-		w.WriteUInt16HeadUsingTotalBufferLenAt(pos)
-	})
+		w.Write(c.randomKey)
+		w.WriteUInt16(0x0102)
+		w.WriteUInt16(0x0000)
+		w.EncryptAndWrite(c.randomKey, m.Body)
+	}
+	w.WriteByte(0x03)
+
+	buf := append([]byte(nil), w.Bytes()...)
+	goBinary.BigEndian.PutUint16(buf[1:3], uint16(len(buf)))
+	return buf
 }
 
 var (
