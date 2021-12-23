@@ -12,6 +12,6 @@ func T124(osType, osVersion, simInfo, apn []byte) []byte {
 		w.WriteTlvLimitedSize(simInfo, 16)
 		w.WriteTlvLimitedSize([]byte{}, 16)
 		w.WriteTlvLimitedSize(apn, 16)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

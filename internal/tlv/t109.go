@@ -12,6 +12,6 @@ func T109(androidId []byte) []byte {
 		pos := w.FillUInt16()
 		h := md5.Sum(androidId)
 		w.Write(h[:])
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

@@ -7,6 +7,6 @@ func T166(imageType byte) []byte {
 		w.WriteUInt16(0x166)
 		pos := w.FillUInt16()
 		w.WriteByte(imageType)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

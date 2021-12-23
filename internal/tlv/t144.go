@@ -21,6 +21,6 @@ func T144(
 			w.Write(T128(isGuidFromFileNull, isGuidAvailable, isGuidChanged, guidFlag, buildModel, guid, buildBrand))
 			w.Write(T16E(buildModel))
 		}))
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

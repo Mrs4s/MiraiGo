@@ -7,6 +7,6 @@ func T17C(code string) []byte {
 		w.WriteUInt16(0x17c)
 		pos := w.FillUInt16()
 		w.WriteStringShort(code)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

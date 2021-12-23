@@ -7,6 +7,6 @@ func T191(k byte) []byte {
 		w.WriteUInt16(0x191)
 		pos := w.FillUInt16()
 		w.WriteByte(k)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

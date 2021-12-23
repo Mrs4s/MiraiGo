@@ -9,6 +9,6 @@ func T147(appId uint32, apkVersionName, apkSignatureMd5 []byte) []byte {
 		w.WriteUInt32(appId)
 		w.WriteTlvLimitedSize(apkVersionName, 32)
 		w.WriteTlvLimitedSize(apkSignatureMd5, 32)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

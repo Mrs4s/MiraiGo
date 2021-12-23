@@ -8,6 +8,6 @@ func T202(wifiBSSID, wifiSSID []byte) []byte {
 		pos := w.FillUInt16()
 		w.WriteTlvLimitedSize(wifiBSSID, 16)
 		w.WriteTlvLimitedSize(wifiSSID, 32)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

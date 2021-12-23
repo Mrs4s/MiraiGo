@@ -8,6 +8,6 @@ func T525(t536 []byte) []byte {
 		pos := w.FillUInt16()
 		w.WriteUInt16(1)
 		w.Write(t536)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

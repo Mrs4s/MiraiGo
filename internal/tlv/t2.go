@@ -9,6 +9,6 @@ func T2(result string, sign []byte) []byte {
 		w.WriteUInt16(0)
 		w.WriteStringShort(result)
 		w.WriteBytesShort(sign)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

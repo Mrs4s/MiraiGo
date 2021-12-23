@@ -20,6 +20,6 @@ func T1(uin uint32, ip []byte) []byte {
 		w.WriteUInt32(uint32(time.Now().UnixNano() / 1e6))
 		w.Write(ip)
 		w.WriteUInt16(0)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

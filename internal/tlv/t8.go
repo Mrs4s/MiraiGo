@@ -9,6 +9,6 @@ func T8(localId uint32) []byte {
 		w.WriteUInt16(0)
 		w.WriteUInt32(localId)
 		w.WriteUInt16(0)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

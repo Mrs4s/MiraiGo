@@ -59,6 +59,6 @@ func T511(domains []string) []byte {
 				}
 			}*/
 		}
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

@@ -7,6 +7,6 @@ func T194(imsiMd5 []byte) []byte {
 		w.WriteUInt16(0x194)
 		pos := w.FillUInt16()
 		w.Write(imsiMd5)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

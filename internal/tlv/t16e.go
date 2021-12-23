@@ -7,6 +7,6 @@ func T16E(buildModel []byte) []byte {
 		w.WriteUInt16(0x16e)
 		pos := w.FillUInt16()
 		w.Write(buildModel)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

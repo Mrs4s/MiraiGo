@@ -12,6 +12,6 @@ func T187(macAddress []byte) []byte {
 		pos := w.FillUInt16()
 		h := md5.Sum(macAddress)
 		w.Write(h[:])
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

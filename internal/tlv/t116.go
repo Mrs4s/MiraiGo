@@ -11,6 +11,6 @@ func T116(miscBitmap, subSigMap uint32) []byte {
 		w.WriteUInt32(subSigMap)
 		w.WriteByte(0x01)
 		w.WriteUInt32(1600000226) // app id list
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

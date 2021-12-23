@@ -35,11 +35,6 @@ func (w *Writer) WriteUInt16At(pos int, v uint16) {
 	binary.BigEndian.PutUint16(newdata, v)
 }
 
-func (w *Writer) WriteShortBufLenExcludeSelfAfterPos(pos int) {
-	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
-	binary.BigEndian.PutUint16(newdata, uint16(len(newdata)-2))
-}
-
 func (w *Writer) FillUInt32() (pos int) {
 	pos = w.Len()
 	(*bytes.Buffer)(w).Write([]byte{0, 0, 0, 0})
@@ -105,10 +100,9 @@ func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(*Writer)) {
-	data, cl := OpenWriterF(f)
-	w.WriteUInt32(uint32(len(data) + offset))
-	w.Write(data)
-	cl()
+	w.FillUInt32()
+	f(w)
+	w.WriteUInt32At(0, uint32(w.Len()-4+offset))
 }
 
 func (w *Writer) WriteBytesShort(data []byte) {

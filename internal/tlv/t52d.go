@@ -7,6 +7,6 @@ func T52D(devInfo []byte) []byte {
 		w.WriteUInt16(0x52d)
 		pos := w.FillUInt16()
 		w.Write(devInfo)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

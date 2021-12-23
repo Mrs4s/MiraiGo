@@ -14,6 +14,6 @@ func T100(ssoVersion, protocol, mainSigMap uint32) []byte {
 		w.WriteUInt32(protocol)
 		w.WriteUInt32(0)          // App client version
 		w.WriteUInt32(mainSigMap) // 34869472
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

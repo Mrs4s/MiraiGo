@@ -10,6 +10,6 @@ func T141(simInfo, apn []byte) []byte {
 		w.WriteBytesShort(simInfo)
 		w.WriteUInt16(2) // network type wifi
 		w.WriteBytesShort(apn)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

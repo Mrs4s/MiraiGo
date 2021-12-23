@@ -8,6 +8,6 @@ func T142(apkId string) []byte {
 		pos := w.FillUInt16()
 		w.WriteUInt16(0)
 		w.WriteTlvLimitedSize([]byte(apkId), 32)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

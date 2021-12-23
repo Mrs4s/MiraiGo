@@ -10,6 +10,6 @@ func T107(picType uint16) []byte {
 		w.WriteByte(0x00)
 		w.WriteUInt16(0)
 		w.WriteByte(0x01)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

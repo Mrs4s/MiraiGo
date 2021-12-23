@@ -14,6 +14,6 @@ func T128(isGuidFromFileNull, isGuidAvailable, isGuidChanged bool, guidFlag uint
 		w.WriteTlvLimitedSize(buildModel, 32)
 		w.WriteTlvLimitedSize(guid, 16)
 		w.WriteTlvLimitedSize(buildBrand, 16)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

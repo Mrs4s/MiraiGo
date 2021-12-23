@@ -7,6 +7,6 @@ func T35(productType uint32) []byte {
 		w.WriteUInt16(0x35)
 		pos := w.FillUInt16()
 		w.WriteUInt32(productType)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

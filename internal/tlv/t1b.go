@@ -14,6 +14,6 @@ func T1B(micro, version, size, margin, dpi, ecLevel, hint uint32) []byte {
 		w.WriteUInt32(ecLevel)
 		w.WriteUInt32(hint)
 		w.WriteUInt16(0)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

@@ -199,12 +199,10 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		wb, cl := binary.OpenWriterF(func(bw *binary.Writer) {
-			bw.WriteUInt16(0x106)
-			bw.WriteBytesShort(t106)
-		})
-		w.Write(wb)
-		cl()
+
+		w.WriteUInt16(0x106)
+		w.WriteBytesShort(t106)
+
 		// w.Write(tlv.T106(uint32(c.Uin), 0, c.version.AppId, c.version.SSOVersion, c.PasswordMd5, true, c.deviceInfo.Guid, c.deviceInfo.TgtgtKey, 0))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, c.version.SubAppId, c.version.MainSigMap))
@@ -226,12 +224,10 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 		w.Write(tlv.T145(c.deviceInfo.Guid))
 		w.Write(tlv.T147(16, []byte(c.version.SortVersionName), c.version.ApkSign))
-		wb, cl = binary.OpenWriterF(func(bw *binary.Writer) {
-			bw.WriteUInt16(0x16A)
-			bw.WriteBytesShort(t16a)
-		})
-		w.Write(wb)
-		cl()
+
+		w.WriteUInt16(0x16A)
+		w.WriteBytesShort(t16a)
+
 		w.Write(tlv.T154(seq))
 		w.Write(tlv.T141(c.deviceInfo.SimInfo, c.deviceInfo.APN))
 		w.Write(tlv.T8(2052))
@@ -253,12 +249,9 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 		w.Write(tlv.T516())
 		w.Write(tlv.T521(8))
 		// w.Write(tlv.T525(tlv.T536([]byte{0x01, 0x00})))
-		wb, cl = binary.OpenWriterF(func(bw *binary.Writer) {
-			bw.WriteUInt16(0x318)
-			bw.WriteBytesShort(t318)
-		})
-		w.Write(wb)
-		cl()
+
+		w.WriteUInt16(0x318)
+		w.WriteBytesShort(t318)
 	}))
 
 	req2 := network.Request{
@@ -377,12 +370,10 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 
 		w.Write(tlv.T18(16, uint32(c.Uin)))
 		w.Write(tlv.T1(uint32(c.Uin), c.deviceInfo.IpAddress))
-		wb, cl := binary.OpenWriterF(func(bw *binary.Writer) {
-			bw.WriteUInt16(0x106)
-			bw.WriteBytesShort(c.sig.EncryptedA1)
-		})
-		w.Write(wb)
-		cl()
+
+		w.WriteUInt16(0x106)
+		w.WriteBytesShort(c.sig.EncryptedA1)
+
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T100(c.version.SSOVersion, 2, c.version.MainSigMap))
 		w.Write(tlv.T107(0))

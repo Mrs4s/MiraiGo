@@ -13,6 +13,6 @@ func T16(ssoVersion, appId, subAppId uint32, guid, apkId, apkVersionName, apkSig
 		w.WriteBytesShort(apkId)
 		w.WriteBytesShort(apkVersionName)
 		w.WriteBytesShort(apkSign)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }

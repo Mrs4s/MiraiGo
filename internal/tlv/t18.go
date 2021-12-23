@@ -13,6 +13,6 @@ func T18(appId uint32, uin uint32) []byte {
 		w.WriteUInt32(uin)
 		w.WriteUInt16(0)
 		w.WriteUInt16(0)
-		w.WriteShortBufLenExcludeSelfAfterPos(pos)
+		w.WriteUInt16At(pos, uint16(w.Len()-4))
 	})
 }
