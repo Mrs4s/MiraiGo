@@ -110,7 +110,13 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 	s.PsKeyMap = psKeyMap
 	s.Pt4TokenMap = pt4TokenMap
 	if len(c.PasswordMd5[:]) > 0 {
-		key := md5.Sum(append(append(c.PasswordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt32(uint32(c.Uin)) })...))
+		data, cl := binary.OpenWriterF(func(w *binary.Writer) {
+			w.Write(c.PasswordMd5[:])
+			w.WriteUInt32(0) // []byte{0x00, 0x00, 0x00, 0x00}...
+			w.WriteUInt32(uint32(c.Uin))
+		})
+		key := md5.Sum(data)
+		cl()
 		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sig.EncryptedA1)
 		if len(decrypted) > 51+16 {
 			dr := binary.NewReader(decrypted)

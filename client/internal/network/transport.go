@@ -46,8 +46,9 @@ func (t *Transport) packBody(req *Request) []byte {
 			writer.WriteString(t.Device.IMEI)
 			writer.WriteUInt32(0x04)
 			{
-				writer.WriteUInt16(uint16(len(t.Sig.Ksid)) + 2)
+				pos := writer.AllocHead16()
 				writer.Write(t.Sig.Ksid)
+				writer.WriteHead16(pos)
 			}
 		}
 		writer.WriteUInt32(0x04)

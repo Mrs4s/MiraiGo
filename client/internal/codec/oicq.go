@@ -16,25 +16,21 @@ type OICQ struct {
 }
 
 func (m *OICQ) Encode() []byte {
-	body := m.EncryptMethod.Encrypt(m.Body, m.Key)
-
-	p := binary.SelectWriter()
-	defer binary.PutWriter(p)
-
-	p.WriteByte(0x02)
-	p.WriteUInt16(27 + 2 + uint16(len(body)))
-	p.WriteUInt16(8001)
-	p.WriteUInt16(m.Command)
-	p.WriteUInt16(1)
-	p.WriteUInt32(m.Uin)
-	p.WriteByte(3)
-	p.WriteByte(m.EncryptMethod.ID())
-	p.WriteByte(0)
-	p.WriteUInt32(2)
-	p.WriteUInt32(0)
-	p.WriteUInt32(0)
-	p.Write(body)
-	p.WriteByte(0x03)
-
-	return append([]byte(nil), p.Bytes()...)
+	return binary.NewWriterF(func(w *binary.Writer) {
+		body := m.EncryptMethod.Encrypt(m.Body, m.Key)
+		w.WriteByte(0x02)                         // 1
+		w.WriteUInt16(27 + 2 + uint16(len(body))) // 2
+		w.WriteUInt16(8001)                       // 2
+		w.WriteUInt16(m.Command)                  // 2
+		w.WriteUInt16(1)                          // 2
+		w.WriteUInt32(m.Uin)                      // 4
+		w.WriteByte(3)                            // 1
+		w.WriteByte(m.EncryptMethod.ID())         // 1
+		w.WriteByte(0)                            // 1
+		w.WriteUInt32(2)                          // 4
+		w.WriteUInt32(0)                          // 4
+		w.WriteUInt32(0)                          // 4
+		w.Write(body)                             // len(body)
+		w.WriteByte(0x03)                         // 1
+	})
 }
