@@ -19,9 +19,7 @@ type Transport struct {
 	// conn *TCPListener
 }
 
-func (t *Transport) packBody(req *Request) []byte {
-	w := binary.SelectWriter()
-	defer binary.PutWriter(w)
+func (t *Transport) packBody(req *Request, w *binary.Writer) {
 	w.WriteIntLvPacket(4, func(writer *binary.Writer) {
 		if req.Type == RequestTypeLogin {
 			writer.WriteUInt32(uint32(req.SequenceID))
@@ -58,7 +56,6 @@ func (t *Transport) packBody(req *Request) []byte {
 	})
 	// w.WriteUInt32(uint32(len(req.Body) + 4))
 	// w.Write(req.Body)
-	return append([]byte(nil), w.Bytes()...)
 }
 
 // PackPacket packs a packet.
@@ -67,16 +64,10 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	if len(t.Sig.D2) == 0 {
 		req.EncryptType = EncryptTypeEmptyKey
 	}
-	body := t.packBody(req)
-	// encrypt body
-	switch req.EncryptType {
-	case EncryptTypeD2Key:
-		body = binary.NewTeaCipher(t.Sig.D2Key).Encrypt(body)
-	case EncryptTypeEmptyKey:
-		body = binary.NewTeaCipher(emptyKey).Encrypt(body)
-	}
 
-	head := binary.NewWriterF(func(w *binary.Writer) {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		pos := w.AllocUInt32Head()
+		// vvv w.Write(head) vvv
 		w.WriteUInt32(uint32(req.Type))
 		w.WriteByte(byte(req.EncryptType))
 		switch req.Type {
@@ -93,14 +84,24 @@ func (t *Transport) PackPacket(req *Request) []byte {
 		}
 		w.WriteByte(0x00)
 		w.WriteString(strconv.FormatInt(req.Uin, 10))
+		// ^^^ w.Write(head) ^^^
+		w.Write(binary.NewWriterF(func(w *binary.Writer) {
+			// encrypt body
+			switch req.EncryptType {
+			case EncryptTypeD2Key:
+				wt, cl := binary.OpenWriterF(func(w *binary.Writer) { t.packBody(req, w) })
+				w.EncryptAndWrite(t.Sig.D2Key, wt)
+				cl()
+			case EncryptTypeEmptyKey:
+				wt, cl := binary.OpenWriterF(func(w *binary.Writer) { t.packBody(req, w) })
+				w.EncryptAndWrite(emptyKey, wt)
+				cl()
+			default:
+				t.packBody(req, w)
+			}
+		}))
+		w.WriteUInt32HeadAt(pos)
 	})
-
-	w := binary.SelectWriter()
-	defer binary.PutWriter(w)
-	w.WriteUInt32(uint32(len(head)+len(body)) + 4)
-	w.Write(head)
-	w.Write(body)
-	return append([]byte(nil), w.Bytes()...) // copy
 }
 
 func (t *Transport) parse(head []byte) *Request {
