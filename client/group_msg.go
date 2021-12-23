@@ -49,7 +49,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 		}
 	}
 	msgLen := message.EstimateLength(m.Elements)
-	if msgLen > 5000 || imgCount > 50 {
+	if msgLen > message.MaxMessageSize || imgCount > 50 {
 		return nil
 	}
 	if !useFram && (msgLen > 100 || imgCount > 2) {
