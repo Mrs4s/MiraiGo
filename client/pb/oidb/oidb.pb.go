@@ -222,7 +222,7 @@ type D89AGroupinfo struct {
 	StGroupNewguidelines   *D89AGroupNewGuidelinesInfo `protobuf:"bytes,14,opt"`
 	GroupFace              int32                       `protobuf:"varint,15,opt"`
 	AddOption              int32                       `protobuf:"varint,16,opt"`
-	ShutupTime             int32                       `protobuf:"varint,17,opt"`
+	ShutupTime             *int32                      `protobuf:"varint,17,opt"`
 	GroupTypeFlag          int32                       `protobuf:"varint,18,opt"`
 	StringGroupTag         []byte                      `protobuf:"bytes,19,opt"`
 	MsgGroupGeoInfo        *D89AGroupGeoInfo           `protobuf:"bytes,20,opt"`
@@ -359,8 +359,8 @@ func (x *D89AGroupinfo) GetAddOption() int32 {
 }
 
 func (x *D89AGroupinfo) GetShutupTime() int32 {
-	if x != nil {
-		return x.ShutupTime
+	if x != nil && x.ShutupTime != nil {
+		return *x.ShutupTime
 	}
 	return 0
 }
