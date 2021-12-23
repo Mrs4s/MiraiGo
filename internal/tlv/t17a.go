@@ -5,8 +5,8 @@ import "github.com/Mrs4s/MiraiGo/binary"
 func T17A(value int32) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x17a)
-		pos := w.AllocHead16()
+		pos := w.AllocUInt16Head()
 		w.WriteUInt32(uint32(value))
-		w.WriteHead16ExcludeSelf(pos)
+		w.WriteUInt16HeadExcludeSelfAt(pos)
 	})
 }

@@ -24,33 +24,33 @@ func OpenWriterF(f func(*Writer)) (b []byte, cl func()) {
 	return w.Bytes(), w.put
 }
 
-func (w *Writer) AllocHead16() (pos int) {
+func (w *Writer) AllocUInt16Head() (pos int) {
 	pos = (*bytes.Buffer)(w).Len()
 	(*bytes.Buffer)(w).Write([]byte{0, 0})
 	return
 }
 
-func (w *Writer) WriteHead16(pos int) {
+func (w *Writer) WriteUInt16HeadAt(pos int) {
 	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
 	binary.BigEndian.PutUint16(newdata, uint16(len(newdata)))
 }
 
-func (w *Writer) WriteHead16TotalBufferLen(pos int) {
+func (w *Writer) WriteUInt16HeadUsingTotalBufferLenAt(pos int) {
 	binary.BigEndian.PutUint16((*bytes.Buffer)(w).Bytes()[pos:], uint16((*bytes.Buffer)(w).Len()))
 }
 
-func (w *Writer) WriteHead16ExcludeSelf(pos int) {
+func (w *Writer) WriteUInt16HeadExcludeSelfAt(pos int) {
 	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
 	binary.BigEndian.PutUint16(newdata, uint16(len(newdata)-2))
 }
 
-func (w *Writer) AllocHead32() (pos int) {
+func (w *Writer) AllocUInt32Head() (pos int) {
 	pos = (*bytes.Buffer)(w).Len()
 	(*bytes.Buffer)(w).Write([]byte{0, 0, 0, 0})
 	return
 }
 
-func (w *Writer) WriteHead32(pos int) {
+func (w *Writer) WriteUInt32HeadAt(pos int) {
 	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
 	binary.BigEndian.PutUint32(newdata, uint32(len(newdata)))
 }
@@ -116,7 +116,7 @@ func (w *Writer) WriteIntLvPacket(offset int, f func(*Writer)) {
 }
 
 func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body []byte) {
-	pos := w.AllocHead32()
+	pos := w.AllocUInt32Head()
 	// vvv WriteIntLvPacket vvv
 	w.WriteString(commandName)
 	w.WriteUInt32(8)
@@ -128,7 +128,7 @@ func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body [
 		w.Write(extraData)
 	}
 	// ^^^ WriteIntLvPacket ^^^
-	w.WriteHead32(pos)
+	w.WriteUInt32HeadAt(pos)
 
 	w.WriteUInt32(uint32(len(body) + 4)) // WriteIntLvPacket
 	w.Write(body)

@@ -45,9 +45,9 @@ func (t *Transport) packBody(req *Request) ([]byte, func()) {
 				writer.WriteString(t.Device.IMEI)
 				writer.WriteUInt32(0x04)
 				{
-					pos := writer.AllocHead16()
+					pos := writer.AllocUInt16Head()
 					writer.Write(t.Sig.Ksid)
-					writer.WriteHead16(pos)
+					writer.WriteUInt16HeadAt(pos)
 				}
 			}
 			writer.WriteUInt32(0x04)
@@ -78,7 +78,7 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	cl()
 
 	return binary.NewWriterF(func(w *binary.Writer) {
-		pos := w.AllocHead32()
+		pos := w.AllocUInt32Head()
 		// vvv w.Write(head) vvv
 		w.WriteUInt32(uint32(req.Type))
 		w.WriteByte(byte(req.EncryptType))
@@ -98,7 +98,7 @@ func (t *Transport) PackPacket(req *Request) []byte {
 		w.WriteString(strconv.FormatInt(req.Uin, 10))
 		// ^^^ w.Write(head) ^^^
 		w.Write(body)
-		w.WriteHead32(pos)
+		w.WriteUInt32HeadAt(pos)
 	})
 }
 

@@ -43,8 +43,8 @@ type Message struct {
 func (c *Codec) Marshal(m *Message) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteByte(0x02)
-		pos := w.AllocHead16() // len 占位
-		w.WriteUInt16(8001)    // version?
+		pos := w.AllocUInt16Head() // len 占位
+		w.WriteUInt16(8001)        // version?
 		w.WriteUInt16(m.Command)
 		w.WriteUInt16(1)
 		w.WriteUInt32(m.Uin)
@@ -80,7 +80,7 @@ func (c *Codec) Marshal(m *Message) []byte {
 			w.EncryptAndWrite(c.randomKey, m.Body)
 		}
 		w.WriteByte(0x03)
-		w.WriteHead16TotalBufferLen(pos)
+		w.WriteUInt16HeadUsingTotalBufferLenAt(pos)
 	})
 }
 

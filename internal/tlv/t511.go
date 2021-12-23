@@ -26,7 +26,7 @@ func T511(domains []string) []byte {
 	*/
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x511)
-		pos := w.AllocHead16()
+		pos := w.AllocUInt16Head()
 		w.WriteUInt16(uint16(len(nonnildomains)))
 		for _, d := range nonnildomains {
 			// 目前的所有调用均不会出现 ()
@@ -59,6 +59,6 @@ func T511(domains []string) []byte {
 				}
 			}*/
 		}
-		w.WriteHead16ExcludeSelf(pos)
+		w.WriteUInt16HeadExcludeSelfAt(pos)
 	})
 }

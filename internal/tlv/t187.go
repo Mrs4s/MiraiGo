@@ -9,9 +9,9 @@ import (
 func T187(macAddress []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x187)
-		pos := w.AllocHead16()
+		pos := w.AllocUInt16Head()
 		h := md5.Sum(macAddress)
 		w.Write(h[:])
-		w.WriteHead16ExcludeSelf(pos)
+		w.WriteUInt16HeadExcludeSelfAt(pos)
 	})
 }
