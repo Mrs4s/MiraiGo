@@ -12,7 +12,7 @@ func T144(
 ) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x144)
-		pos := w.AllocUInt16Head()
+		pos := w.FillUInt16()
 		w.EncryptAndWrite(tgtgtKey, binary.NewWriterF(func(w *binary.Writer) {
 			w.WriteUInt16(5)
 			w.Write(T109(imei))
@@ -21,6 +21,6 @@ func T144(
 			w.Write(T128(isGuidFromFileNull, isGuidAvailable, isGuidChanged, guidFlag, buildModel, guid, buildBrand))
 			w.Write(T16E(buildModel))
 		}))
-		w.WriteUInt16HeadExcludeSelfAt(pos)
+		w.WriteShortBufLenExcludeSelfAfterPos(pos)
 	})
 }

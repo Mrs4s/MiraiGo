@@ -9,9 +9,9 @@ import (
 func T188(androidId []byte) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(0x188)
-		pos := w.AllocUInt16Head()
+		pos := w.FillUInt16()
 		h := md5.Sum(androidId)
 		w.Write(h[:])
-		w.WriteUInt16HeadExcludeSelfAt(pos)
+		w.WriteShortBufLenExcludeSelfAfterPos(pos)
 	})
 }
