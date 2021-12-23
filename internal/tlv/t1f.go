@@ -11,7 +11,7 @@ func T1F(isRoot bool, osName, osVersion, simOperatorName, apn []byte, networkTyp
 		w.WriteBytesShort(osVersion)
 		w.WriteUInt16(networkType)
 		w.WriteBytesShort(simOperatorName)
-		w.WriteBytesShort([]byte{})
+		w.WriteUInt16(0) // w.WriteBytesShort([]byte{})
 		w.WriteBytesShort(apn)
 		w.WriteHead16ExcludeSelf(pos)
 	})

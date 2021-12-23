@@ -1099,12 +1099,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(groupCode))
 		w.WriteUInt32(uint32(member))
-		w.WriteByte(func() byte {
-			if flag {
-				return 1
-			}
-			return 0
-		}())
+		w.WriteBool(flag)
 	})
 	payload := c.packOIDBPackage(1372, 1, b)
 	cl()

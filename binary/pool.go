@@ -26,7 +26,7 @@ func SelectWriter() *Writer {
 func PutWriter(w *Writer) {
 	// See https://golang.org/issue/23199
 	const maxSize = 1 << 16
-	if w.Cap() < maxSize { // 对于大Buffer直接丢弃
+	if (*bytes.Buffer)(w).Cap() < maxSize { // 对于大Buffer直接丢弃
 		w.Reset()
 		bufferPool.Put(w)
 	}

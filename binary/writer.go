@@ -60,8 +60,8 @@ func (w *Writer) WriteHex(h string) {
 	w.Write(b)
 }
 
-func (w *Writer) WriteByte(b byte) {
-	(*bytes.Buffer)(w).WriteByte(b)
+func (w *Writer) WriteByte(b byte) error {
+	return (*bytes.Buffer)(w).WriteByte(b)
 }
 
 func (w *Writer) WriteUInt16(v uint16) {
@@ -145,10 +145,6 @@ func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {
 
 func (w *Writer) Bytes() []byte {
 	return (*bytes.Buffer)(w).Bytes()
-}
-
-func (w *Writer) Cap() int {
-	return (*bytes.Buffer)(w).Cap()
 }
 
 func (w *Writer) Reset() {
