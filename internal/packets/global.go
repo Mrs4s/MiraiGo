@@ -4,14 +4,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 )
 
-type IncomingPacket struct {
-	SequenceId  uint16
-	Flag2       byte
-	CommandName string
-	SessionId   []byte
-	Payload     []byte
-}
-
 func BuildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
 	return binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteByte(2)

@@ -39,7 +39,7 @@ const (
 	AddressBookSource                            // 来自通讯录
 )
 
-func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *network.IncomingPacketInfo) {
+func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, resp *network.Response) {
 	c.sig.SyncCookie = rsp.SyncCookie
 	c.sig.PubAccountCookie = rsp.PubAccountCookie
 	// c.msgCtrlBuf = rsp.MsgCtrlBuf
@@ -64,7 +64,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *ne
 			if (int64(pairMsg.GetLastReadTime()) & 4294967295) > int64(pMsg.Head.GetMsgTime()) {
 				continue
 			}
-			c.commMsgProcessor(pMsg, info)
+			c.commMsgProcessor(pMsg, resp)
 		}
 	}
 	if delItems != nil {
@@ -73,11 +73,11 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *ne
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag)
 		seq, pkt := c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix())
-		_, _ = c.sendAndWait(seq, pkt, info.Params)
+		_, _ = c.sendAndWaitParams(seq, pkt, resp.Params)
 	}
 }
 
-func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *network.IncomingPacketInfo) {
+func (c *QQClient) commMsgProcessor(pMsg *msg.Message, resp *network.Response) {
 	strKey := fmt.Sprintf("%d%d%d%d", pMsg.Head.GetFromUin(), pMsg.Head.GetToUin(), pMsg.Head.GetMsgSeq(), pMsg.Head.GetMsgUid())
 	if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Hour); ok {
 		c.Debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
@@ -89,17 +89,17 @@ func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *network.IncomingPac
 		return
 	}
 	c.lastC2CMsgTime = int64(pMsg.Head.GetMsgTime())
-	if info.Params.Bool("init") {
+	if resp.Params.Bool("init") {
 		return
 	}
 	if decoder, _ := peekC2CDecoder(pMsg.Head.GetMsgType()); decoder != nil {
-		decoder(c, pMsg, info)
+		decoder(c, pMsg, resp)
 	} else {
 		c.Debug("unknown msg type on c2c processor: %v - %v", pMsg.Head.GetMsgType(), pMsg.Head.GetC2CCmd())
 	}
 }
 
-func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacketInfo) {
+func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *network.Response) {
 	switch pMsg.Head.GetC2CCmd() {
 	case 11, 175: // friend msg
 		if pMsg.Head.GetFromUin() == c.Uin {
@@ -127,7 +127,7 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPa
 	}
 }
 
-func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacketInfo) {
+func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *network.Response) {
 	if pMsg.Body == nil || pMsg.Body.RichText == nil || pMsg.Body.RichText.Ptt == nil {
 		return
 	}
@@ -138,7 +138,7 @@ func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacket
 	c.dispatchPrivateMessage(c.parsePrivateMessage(pMsg))
 }
 
-func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacketInfo) {
+func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *network.Response) {
 	if pMsg.Head.C2CTmpMsgHead == nil || pMsg.Body == nil {
 		return
 	}
@@ -199,7 +199,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacke
 	}
 }
 
-func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacketInfo) {
+func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, resp *network.Response) {
 	groupJoinLock.Lock()
 	defer groupJoinLock.Unlock()
 	group := c.FindGroupByUin(pMsg.Head.GetFromUin())
@@ -226,12 +226,12 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *network.I
 	}
 }
 
-func systemMessageDecoder(c *QQClient, _ *msg.Message, _ *network.IncomingPacketInfo) {
+func systemMessageDecoder(c *QQClient, _ *msg.Message, _ *network.Response) {
 	_, pkt := c.buildSystemMsgNewFriendPacket()
 	_ = c.sendPacket(pkt)
 }
 
-func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.IncomingPacketInfo) {
+func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.Response) {
 	if !info.Params.Bool("used_reg_proxy") && pMsg.Head.GetMsgType() != 85 && pMsg.Head.GetMsgType() != 36 {
 		c.exceptAndDispatchGroupSysMsg()
 	}
@@ -246,7 +246,7 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.Inc
 	}
 }
 
-func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *network.IncomingPacketInfo) {
+func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *network.Response) {
 	if pMsg.Head.GetC2CCmd() == 6 || pMsg.Head.C2CTmpMsgHead != nil {
 		tempSessionDecoder(c, pMsg, info)
 	}

@@ -10,7 +10,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -147,25 +146,24 @@ func (c *QQClient) Disconnect() {
 	c.TCP.Close()
 }
 
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
+	return c.sendAndWaitParams(seq, pkt, nil)
+}
+
 // sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (interface{}, error) {
+func (c *QQClient) sendAndWaitParams(seq uint16, pkt []byte, params network.RequestParams) (interface{}, error) {
 	type T struct {
 		Response interface{}
 		Error    error
 	}
 	ch := make(chan T, 1)
-	var p network.RequestParams
-
-	if len(params) != 0 {
-		p = params[0]
-	}
 
 	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
 		ch <- T{
 			Response: i,
 			Error:    err,
 		}
-	}, params: p, dynamic: false})
+	}, params: params, dynamic: false})
 
 	err := c.sendPacket(pkt)
 	if err != nil {
@@ -292,8 +290,7 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		data, _ := c.TCP.ReadBytes(int(l) - 4)
-		resp, err := c.transport.ReadResponse(data)
-		// pkt, err := packets.ParseIncomingPacket(data, c.sig.D2Key)
+		req, err := c.transport.ReadRequest(data)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
 			if errors.Is(err, network.ErrSessionExpired) || errors.Is(err, network.ErrPacketDropped) {
@@ -307,8 +304,8 @@ func (c *QQClient) netLoop() {
 			}
 			continue
 		}
-		if resp.EncryptType == network.EncryptTypeEmptyKey {
-			m, err := c.oicq.Unmarshal(resp.Body)
+		if req.EncryptType == network.EncryptTypeEmptyKey {
+			m, err := c.oicq.Unmarshal(req.Body)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
 				if errors.Is(err, oicq.ErrUnknownFlag) {
@@ -316,50 +313,47 @@ func (c *QQClient) netLoop() {
 				}
 				continue
 			}
-			resp.Body = m.Body
+			req.Body = m.Body
 		}
 		errCount = 0
-		c.Debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
+		c.Debug("rev pkt: %v seq: %v", req.CommandName, req.SequenceID)
 		c.stat.PacketReceived.Add(1)
-		pkt := &packets.IncomingPacket{
-			SequenceId:  uint16(resp.SequenceID),
-			CommandName: resp.CommandName,
-			Payload:     resp.Body,
-		}
-		go func(pkt *packets.IncomingPacket) {
+		go func(req *network.Request) {
 			defer func() {
 				if pan := recover(); pan != nil {
-					c.Error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
-					c.Dump("packet decode error: %v - %v", pkt.Payload, pkt.CommandName, pan)
+					c.Error("panic on decoder %v : %v\n%s", req.CommandName, pan, debug.Stack())
+					c.Dump("packet decode error: %v - %v", req.Body, req.CommandName, pan)
 				}
 			}()
-
-			if decoder, ok := decoders[pkt.CommandName]; ok {
+			if decoder, ok := decoders[req.CommandName]; ok {
 				// found predefined decoder
-				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
+				info, ok := c.handlers.LoadAndDelete(uint16(req.SequenceID))
 				var decoded interface{}
-				decoded = pkt.Payload
+				decoded = req.Body
 				if info == nil || !info.dynamic {
-					decoded, err = decoder(c, &network.IncomingPacketInfo{
-						SequenceId:  pkt.SequenceId,
-						CommandName: pkt.CommandName,
+					resp := network.Response{
+						SequenceID:  req.SequenceID,
+						CommandName: req.CommandName,
 						Params:      info.getParams(),
-					}, pkt.Payload)
+						Body:        req.Body,
+						// Request:     nil,
+					}
+					decoded, err = decoder(c, &resp)
 					if err != nil {
-						c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
+						c.Debug("decode req %v error: %+v", req.CommandName, err)
 					}
 				}
 				if ok {
 					info.fun(decoded, err)
-				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
+				} else if f, ok := c.waiters.Load(req.CommandName); ok { // 在不存在handler的情况下触发wait
 					f.(func(interface{}, error))(decoded, err)
 				}
-			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
+			} else if f, ok := c.handlers.LoadAndDelete(uint16(req.SequenceID)); ok {
 				// does not need decoder
-				f.fun(pkt.Payload, nil)
+				f.fun(req.Body, nil)
 			} else {
-				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
+				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", req.CommandName, req.SequenceID)
 			}
-		}(pkt)
+		}(req)
 	}
 }

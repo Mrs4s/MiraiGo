@@ -81,7 +81,7 @@ func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardEl
 // GetGroupMessages 从服务器获取历史信息
 func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*message.GroupMessage, error) {
 	seq, pkt := c.buildGetGroupMsgRequest(groupCode, beginSeq, endSeq)
-	i, err := c.sendAndWait(seq, pkt, network.RequestParams{"raw": false})
+	i, err := c.sendAndWaitParams(seq, pkt, network.RequestParams{"raw": false})
 	if err != nil {
 		return nil, err
 	}
@@ -297,9 +297,9 @@ func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byt
 }
 
 // OnlinePush.PbPushGroupMsg
-func decodeGroupMessagePacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupMessagePacket(c *QQClient, resp *network.Response) (interface{}, error) {
 	pkt := msg.PushMessagePacket{}
-	err := proto.Unmarshal(payload, &pkt)
+	err := proto.Unmarshal(resp.Body, &pkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
@@ -338,9 +338,9 @@ func decodeGroupMessagePacket(c *QQClient, _ *network.IncomingPacketInfo, payloa
 	return nil, nil
 }
 
-func decodeMsgSendResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgSendResponse(c *QQClient, resp *network.Response) (interface{}, error) {
 	rsp := msg.SendMessageResponse{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(resp.Body, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	switch rsp.GetResult() {
@@ -353,9 +353,9 @@ func decodeMsgSendResponse(c *QQClient, _ *network.IncomingPacketInfo, payload [
 	return nil, nil
 }
 
-func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGetGroupMsgResponse(c *QQClient, resp *network.Response) (interface{}, error) {
 	rsp := msg.GetGroupMsgResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(resp.Body, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.GetResult() != 0 {
@@ -367,7 +367,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 		if m.Head.FromUin == nil {
 			continue
 		}
-		if m.Content != nil && m.Content.GetPkgNum() > 1 && !info.Params.Bool("raw") {
+		if m.Content != nil && m.Content.GetPkgNum() > 1 && !resp.Params.Bool("raw") {
 			if m.Content.GetPkgIndex() == 0 {
 				c.Debug("build fragmented message from history")
 				i := m.Head.GetMsgSeq() - m.Content.GetPkgNum()
@@ -375,7 +375,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 				for {
 					end := int32(math.Min(float64(i+19), float64(m.Head.GetMsgSeq()+m.Content.GetPkgNum())))
 					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GetGroupCode(), int64(i), int64(end))
-					data, err := c.sendAndWait(seq, pkt, network.RequestParams{"raw": true})
+					data, err := c.sendAndWaitParams(seq, pkt, network.RequestParams{"raw": true})
 					if err != nil {
 						return nil, errors.Wrap(err, "build fragmented message error")
 					}
@@ -402,10 +402,10 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 	return ret, nil
 }
 
-func decodeAtAllRemainResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeAtAllRemainResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D8A7RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := proto.Unmarshal(resp.Body, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
@@ -598,10 +598,10 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 }
 
 // OidbSvc.0xeac_1/2
-func decodeEssenceMsgResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeEssenceMsgResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := &oidb.EACRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := proto.Unmarshal(resp.Body, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {

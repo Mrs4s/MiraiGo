@@ -116,7 +116,7 @@ func (h *handlerInfo) getParams() network.RequestParams {
 	return h.params
 }
 
-var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (interface{}, error){
+var decoders = map[string]func(*QQClient, *network.Response) (interface{}, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 	"wtlogin.trans_emp":                            decodeTransEmpResponse,
@@ -435,7 +435,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 		_, _ = c.sendAndWait(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
 	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
-	_, _ = c.sendAndWait(seq, pkt, network.RequestParams{"used_reg_proxy": true, "init": true})
+	_, _ = c.sendAndWaitParams(seq, pkt, network.RequestParams{"used_reg_proxy": true, "init": true})
 	c.syncChannelFirstView()
 	return nil
 }

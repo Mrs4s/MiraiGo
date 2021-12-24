@@ -48,10 +48,10 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xbcb_0", payload)
 }
 
-func decodeUrlCheckResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeUrlCheckResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	pkg := &oidb.OIDBSSOPkg{}
 	rsp := &oidb.DBCBRspBody{}
-	if err := proto.Unmarshal(payload, pkg); err != nil {
+	if err := proto.Unmarshal(resp.Body, pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
