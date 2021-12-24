@@ -124,7 +124,7 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 	return seq, c.transport.PackPacket(&req2)
 }
 
-func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildQRCodeFetchRequestPacket(size, margin, ecLevel uint32) (uint16, []byte) {
 	watch := auth.AndroidWatch.Version()
 	seq := c.nextSeq()
 	req := c.buildOicqRequestPacket(0, 0x0812, binary.NewWriterF(func(w *binary.Writer) {
@@ -139,7 +139,7 @@ func (c *QQClient) buildQRCodeFetchRequestPacket() (uint16, []byte) {
 
 			w.WriteUInt16(6)
 			w.Write(tlv.T16(watch.SSOVersion, 16, watch.AppId, c.deviceInfo.Guid, []byte(watch.ApkId), []byte(watch.SortVersionName), watch.ApkSign))
-			w.Write(tlv.T1B(0, 0, 3, 4, 72, 2, 2))
+			w.Write(tlv.T1B(0, 0, size, margin, 72, ecLevel, 2))
 			w.Write(tlv.T1D(watch.MiscBitmap))
 			w.Write(tlv.T1F(false, c.deviceInfo.OSType, []byte("7.1.2"), []byte("China Mobile GSM"), c.deviceInfo.APN, 2))
 			w.Write(tlv.T33(c.deviceInfo.Guid))

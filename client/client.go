@@ -309,7 +309,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 	return c.init(true)
 }
 
-func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
+func (c *QQClient) FetchQRCode(size, margin, ecLevel uint32) (*QRCodeLoginResponse, error) {
 	if c.Online.Load() {
 		return nil, ErrAlreadyOnline
 	}
@@ -317,7 +317,7 @@ func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	i, err := c.sendAndWait(c.buildQRCodeFetchRequestPacket())
+	i, err := c.sendAndWait(c.buildQRCodeFetchRequestPacket(size, margin, ecLevel))
 	if err != nil {
 		return nil, errors.Wrap(err, "fetch qrcode error")
 	}
