@@ -192,7 +192,7 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0Xfc9Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	// todo: 解析个性档案
@@ -231,7 +231,7 @@ func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, s
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0Xf5BRsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	var ret []*GuildMemberInfo
@@ -286,7 +286,7 @@ func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0Xf88Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	roles, err := s.fetchMemberRoles(guildId, tinyId)
@@ -311,7 +311,7 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0X1019Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	roles := make([]*GuildRole, 0, len(body.GetRoles()))
@@ -351,7 +351,7 @@ func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32
 		return 0, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0X1016Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return 0, errors.Wrap(err, "decode packet error")
 	}
 	return body.GetRoleId(), nil
@@ -434,7 +434,7 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0Xf57Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	return &GuildMeta{
@@ -463,7 +463,7 @@ func (s *GuildService) FetchChannelList(guildId uint64) (r []*ChannelInfo, e err
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0Xf5DRsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	for _, info := range body.Rsp.Channels {
@@ -479,7 +479,7 @@ func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0Xf55Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	return convertChannelInfo(body.Info), nil
@@ -632,7 +632,7 @@ func (s *GuildService) fetchMemberRoles(guildId uint64, tinyId uint64) ([]*Guild
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.ChannelOidb0X1017Rsp)
-	if err = s.c.unpackOIDBPackage(rsp, body); err != nil {
+	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	p1 := body.GetP1()

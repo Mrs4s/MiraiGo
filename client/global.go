@@ -330,7 +330,7 @@ func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Messag
 	return c.packOIDBPackage(cmd, serviceType, b)
 }
 
-func (c *QQClient) unpackOIDBPackage(buff []byte, payload proto.Message) error {
+func unpackOIDBPackage(buff []byte, payload proto.Message) error {
 	pkg := new(oidb.OIDBSSOPkg)
 	if err := proto.Unmarshal(buff, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")

@@ -55,8 +55,8 @@ func (w *Writer) WriteHex(h string) {
 	w.Write(b)
 }
 
-func (w *Writer) WriteByte(b byte) error {
-	return (*bytes.Buffer)(w).WriteByte(b)
+func (w *Writer) WriteByte(b byte) {
+	(*bytes.Buffer)(w).WriteByte(b)
 }
 
 func (w *Writer) WriteUInt16(v uint16) {
