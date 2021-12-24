@@ -9,15 +9,11 @@ import (
 )
 
 type Response struct {
-	Type        RequestType
-	EncryptType EncryptType
 	SequenceID  int32
-	Uin         int64
 	CommandName string
 	Body        []byte
 
-	Message string
-
+	Params RequestParams
 	// Request is the original request that obtained this response.
 	// Request *Request
 }
@@ -28,19 +24,19 @@ var (
 	ErrInvalidPacketType = errors.New("invalid packet type")
 )
 
-func (t *Transport) ReadResponse(head []byte) (*Response, error) {
-	resp := new(Response)
+func (t *Transport) ReadRequest(head []byte) (*Request, error) {
+	req := new(Request)
 	r := binary.NewReader(head)
-	resp.Type = RequestType(r.ReadInt32())
-	if resp.Type != RequestTypeLogin && resp.Type != RequestTypeSimple {
-		return resp, ErrInvalidPacketType
+	req.Type = RequestType(r.ReadInt32())
+	if req.Type != RequestTypeLogin && req.Type != RequestTypeSimple {
+		return req, ErrInvalidPacketType
 	}
-	resp.EncryptType = EncryptType(r.ReadByte())
+	req.EncryptType = EncryptType(r.ReadByte())
 	_ = r.ReadByte() // 0x00?
 
-	resp.Uin, _ = strconv.ParseInt(r.ReadString(), 10, 64)
+	req.Uin, _ = strconv.ParseInt(r.ReadString(), 10, 64)
 	body := r.ReadAvailable()
-	switch resp.EncryptType {
+	switch req.EncryptType {
 	case EncryptTypeNoEncrypt:
 		// nothing to do
 	case EncryptTypeD2Key:
@@ -48,11 +44,11 @@ func (t *Transport) ReadResponse(head []byte) (*Response, error) {
 	case EncryptTypeEmptyKey:
 		body = binary.NewTeaCipher(emptyKey).Decrypt(body)
 	}
-	err := t.readSSOFrame(resp, body)
-	return resp, err
+	err := t.readSSOFrame(req, body)
+	return req, err
 }
 
-func (t *Transport) readSSOFrame(resp *Response, payload []byte) error {
+func (t *Transport) readSSOFrame(req *Request, payload []byte) error {
 	reader := binary.NewReader(payload)
 	headLen := reader.ReadInt32()
 	if headLen-4 > int32(reader.Len()) {
@@ -60,18 +56,19 @@ func (t *Transport) readSSOFrame(resp *Response, payload []byte) error {
 	}
 
 	head := binary.NewReader(reader.ReadBytes(int(headLen) - 4))
-	resp.SequenceID = head.ReadInt32()
-	switch retCode := head.ReadInt32(); retCode {
+	req.SequenceID = head.ReadInt32()
+	retCode := head.ReadInt32()
+	message := head.ReadString()
+	switch retCode {
 	case 0:
 		// ok
 	case -10008:
-		return errors.WithStack(ErrSessionExpired)
+		return errors.WithMessage(ErrSessionExpired, message)
 	default:
-		return errors.Errorf("return code unsuccessful: %d", retCode)
+		return errors.Errorf("return code unsuccessful: %d message: %s", retCode, message)
 	}
-	resp.Message = head.ReadString()
-	resp.CommandName = head.ReadString()
-	if resp.CommandName == "Heartbeat.Alive" {
+	req.CommandName = head.ReadString()
+	if req.CommandName == "Heartbeat.Alive" {
 		return nil
 	}
 	_ = head.ReadInt32Bytes() // session id
@@ -87,6 +84,6 @@ func (t *Transport) readSSOFrame(resp *Response, payload []byte) error {
 	case 1:
 		body = binary.ZlibUncompress(body)
 	}
-	resp.Body = body
+	req.Body = body
 	return nil
 }

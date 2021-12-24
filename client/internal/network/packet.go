@@ -1,11 +1,5 @@
 package network
 
-type IncomingPacketInfo struct {
-	CommandName string
-	SequenceId  uint16
-	Params      RequestParams
-}
-
 type RequestParams map[string]interface{}
 
 func (p RequestParams) Bool(k string) bool {

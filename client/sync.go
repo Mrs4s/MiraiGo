@@ -285,9 +285,9 @@ func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte)
 }
 
 // StatSvc.GetDevLoginInfo
-func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeDevListResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(resp.Body))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	rsp := jce.NewJceReader(data.Map["SvcRspGetDevLoginInfo"]["QQService.SvcRspGetDevLoginInfo"][1:])
@@ -307,9 +307,9 @@ func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload [
 }
 
 // RegPrxySvc.PushParam
-func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodePushParamPacket(c *QQClient, resp *network.Response) (interface{}, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(resp.Body))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	reader := jce.NewJceReader(data.Map["SvcRespParam"]["RegisterProxySvcPack.SvcRespParam"][1:])
@@ -352,9 +352,9 @@ func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload [
 }
 
 // RegPrxySvc.PbSyncMsg
-func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgSyncResponse(c *QQClient, resp *network.Response) (interface{}, error) {
 	rsp := &msf.SvcRegisterProxyMsgResp{}
-	if err := proto.Unmarshal(payload, rsp); err != nil {
+	if err := proto.Unmarshal(resp.Body, rsp); err != nil {
 		return nil, err
 	}
 	ret := &sessionSyncEvent{
@@ -389,26 +389,26 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 	if len(rsp.C2CMsg) > 4 {
 		c2cRsp := &msg.GetMessageResponse{}
 		if proto.Unmarshal(rsp.C2CMsg[4:], c2cRsp) == nil {
-			c.c2cMessageSyncProcessor(c2cRsp, info)
+			c.c2cMessageSyncProcessor(c2cRsp, resp)
 		}
 	}
 	return ret, nil
 }
 
 // OnlinePush.PbC2CMsgSync
-func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeC2CSyncPacket(c *QQClient, resp *network.Response) (interface{}, error) {
 	m := msg.PbPushMsg{}
-	if err := proto.Unmarshal(payload, &m); err != nil {
+	if err := proto.Unmarshal(resp.Body, &m); err != nil {
 		return nil, err
 	}
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
-	c.commMsgProcessor(m.Msg, info)
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), uint16(resp.SequenceID), nil))
+	c.commMsgProcessor(m.Msg, resp)
 	return nil, nil
 }
 
-func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgReadedResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	rsp := msg.PbMsgReadedReportResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(resp.Body, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.GrpReadReport) > 0 {
@@ -420,9 +420,9 @@ func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload
 var loginNotifyLock sync.Mutex
 
 // StatSvc.SvcReqMSFLoginNotify
-func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeLoginNotifyPacket(c *QQClient, resp *network.Response) (interface{}, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(resp.Body))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	reader := jce.NewJceReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])

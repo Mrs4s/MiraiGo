@@ -45,9 +45,9 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 }
 
 // MultiMsg.ApplyUp
-func decodeMultiApplyUpResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMultiApplyUpResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	body := multimsg.MultiRspBody{}
-	if err := proto.Unmarshal(payload, &body); err != nil {
+	if err := proto.Unmarshal(resp.Body, &body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(body.MultimsgApplyupRsp) == 0 {
@@ -85,9 +85,9 @@ func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
 }
 
 // MultiMsg.ApplyDown
-func decodeMultiApplyDownResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMultiApplyDownResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	body := multimsg.MultiRspBody{}
-	if err := proto.Unmarshal(payload, &body); err != nil {
+	if err := proto.Unmarshal(resp.Body, &body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(body.MultimsgApplydownRsp) == 0 {

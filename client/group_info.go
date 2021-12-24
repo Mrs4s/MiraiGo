@@ -188,9 +188,9 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 }
 
 // SummaryCard.ReqSearch
-func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupSearchResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(resp.Body))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	if len(data.Map["RespHead"]["SummaryCard.RespHead"]) > 20 {
@@ -226,10 +226,10 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 }
 
 // OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupInfoResponse(c *QQClient, resp *network.Response) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := proto.Unmarshal(resp.Body, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {

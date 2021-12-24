@@ -338,9 +338,9 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	pkt := cmd0x388.D388RspBody{}
-	err := proto.Unmarshal(payload, &pkt)
+	err := proto.Unmarshal(resp.Body, &pkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
@@ -365,9 +365,9 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageDownloadResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	pkt := cmd0x388.D388RspBody{}
-	if err := proto.Unmarshal(payload, &pkt); err != nil {
+	if err := proto.Unmarshal(resp.Body, &pkt); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
 	}
 	if len(pkt.GetimgUrlRsp) == 0 {
@@ -380,10 +380,10 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeImageOcrResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.DE07RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
+	if err := proto.Unmarshal(resp.Body, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
