@@ -310,7 +310,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 }
 
 func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
-	return c.FetchQRCode(3, 4, 2)
+	return c.FetchQRCodeCustomSize(3, 4, 2)
 }
 
 func (c *QQClient) FetchQRCodeCustomSize(size, margin, ecLevel uint32) (*QRCodeLoginResponse, error) {
