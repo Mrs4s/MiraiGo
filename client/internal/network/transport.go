@@ -97,27 +97,3 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	w.WriteUInt32At(pos, uint32(w.Len()))
 	return append([]byte(nil), w.Bytes()...)
 }
-
-func (t *Transport) parse(head []byte) *Request {
-	req := new(Request)
-	r := binary.NewReader(head)
-	req.Type = RequestType(r.ReadInt32())
-	encryptType := EncryptType(r.ReadInt32())
-	switch req.Type {
-	case RequestTypeLogin:
-	// req.Key = r.ReadBytes(int(encryptType))
-	case RequestTypeSimple:
-		req.SequenceID = r.ReadInt32()
-	}
-	_ = r.ReadString() // req.Uin
-	body := r.ReadAvailable()
-	switch encryptType {
-	case EncryptTypeNoEncrypt:
-		req.Body = body
-	case EncryptTypeD2Key:
-		req.Body = binary.NewTeaCipher(t.Sig.D2Key).Decrypt(body)
-	case EncryptTypeEmptyKey:
-		req.Body = binary.NewTeaCipher(emptyKey).Decrypt(body)
-	}
-	return req
-}

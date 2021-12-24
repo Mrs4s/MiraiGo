@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
+	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -291,10 +292,11 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		data, _ := c.TCP.ReadBytes(int(l) - 4)
-		pkt, err := packets.ParseIncomingPacket(data, c.sig.D2Key)
+		resp, err := c.transport.ReadResponse(data)
+		// pkt, err := packets.ParseIncomingPacket(data, c.sig.D2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
-			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
+			if errors.Is(err, network.ErrSessionExpired) || errors.Is(err, network.ErrPacketDropped) {
 				c.Disconnect()
 				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
 				continue
@@ -305,20 +307,25 @@ func (c *QQClient) netLoop() {
 			}
 			continue
 		}
-		if pkt.Flag2 == 2 {
-			m, err := c.oicq.Unmarshal(pkt.Payload)
+		if resp.EncryptType == network.EncryptTypeEmptyKey {
+			m, err := c.oicq.Unmarshal(resp.Body)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
-				if errors.Is(err, packets.ErrUnknownFlag) {
+				if errors.Is(err, oicq.ErrUnknownFlag) {
 					go c.quickReconnect()
 				}
 				continue
 			}
-			pkt.Payload = m.Body
+			resp.Body = m.Body
 		}
 		errCount = 0
-		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
+		c.Debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
 		c.stat.PacketReceived.Add(1)
+		pkt := &packets.IncomingPacket{
+			SequenceId:  uint16(resp.SequenceID),
+			CommandName: resp.CommandName,
+			Payload:     resp.Body,
+		}
 		go func(pkt *packets.IncomingPacket) {
 			defer func() {
 				if pan := recover(); pan != nil {
