@@ -387,7 +387,7 @@ func decodeSvcNotify(c *QQClient, resp *network.Response) (interface{}, error) {
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	if len(data.Map) == 0 {
-		_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
+		_, err := c.callAndDecode(c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix()), decodeMessageSvcPacket)
 		return nil, err
 	}
 	notify := &jce.RequestPushNotify{}
@@ -403,7 +403,7 @@ func decodeSvcNotify(c *QQClient, resp *network.Response) (interface{}, error) {
 			return nil, err
 		}
 	}
-	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
+	_, err := c.callAndDecode(c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix()), decodeMessageSvcPacket)
 	return nil, err
 }
 
@@ -824,7 +824,3 @@ func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo) (interface{}, err
 	return rsp.AppInfo, nil
 }
 */
-
-func ignoreDecoder(_ *QQClient, _ *network.Response) (interface{}, error) {
-	return nil, nil
-}

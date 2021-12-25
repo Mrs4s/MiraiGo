@@ -29,7 +29,8 @@ func (c *QQClient) uniRequest(command string, body []byte) *network.Request {
 	}
 }
 
-func (c *QQClient) commandCall(command string, body []byte) (*network.Response, error) {
+//go:noinline
+func (c *QQClient) uniCall(command string, body []byte) (*network.Response, error) {
 	seq := c.nextSeq()
 	req := network.Request{
 		Type:        network.RequestTypeSimple,
@@ -40,23 +41,6 @@ func (c *QQClient) commandCall(command string, body []byte) (*network.Response, 
 		Body:        body,
 	}
 	return c.call(&req)
-}
-
-func (c *QQClient) commandCallAndDecode(command string, body []byte, decode func(*QQClient, *network.Response) (interface{}, error)) (interface{}, error) {
-	seq := c.nextSeq()
-	req := network.Request{
-		Type:        network.RequestTypeSimple,
-		EncryptType: network.EncryptTypeD2Key,
-		Uin:         c.Uin,
-		SequenceID:  int32(seq),
-		CommandName: command,
-		Body:        body,
-	}
-	resp, err := c.call(&req)
-	if err != nil {
-		return nil, err
-	}
-	return decode(c, resp)
 }
 
 //go:noinline

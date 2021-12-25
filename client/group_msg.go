@@ -26,8 +26,6 @@ import (
 
 func init() {
 	decoders["OnlinePush.PbPushGroupMsg"] = decodeGroupMessagePacket
-	decoders["MessageSvc.PbSendMsg"] = decodeMsgSendResponse
-	decoders["MessageSvc.PbGetGroupMsg"] = decodeGetGroupMsgResponse
 }
 
 // SendGroupMessage 发送群消息
@@ -78,7 +76,8 @@ func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardEl
 // GetGroupMessages 从服务器获取历史信息
 func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*message.GroupMessage, error) {
 	req := c.buildGetGroupMsgRequest(groupCode, beginSeq, endSeq)
-	i, err := c.sendAndWaitParams(uint16(req.SequenceID), c.transport.PackPacket(req), network.RequestParams{"raw": false})
+	req.Params = network.Params{"raw": false}
+	i, err := c.callAndDecode(req, decodeGetGroupMsgResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -335,21 +334,6 @@ func decodeGroupMessagePacket(c *QQClient, resp *network.Response) (interface{},
 	return nil, nil
 }
 
-func decodeMsgSendResponse(c *QQClient, resp *network.Response) (interface{}, error) {
-	rsp := msg.SendMessageResponse{}
-	if err := proto.Unmarshal(resp.Body, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	switch rsp.GetResult() {
-	case 0: // OK.
-	case 55:
-		c.Error("sendPacket msg error: %v Bot has blocked target's content", rsp.GetResult())
-	default:
-		c.Error("sendPacket msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
-	}
-	return nil, nil
-}
-
 func decodeGetGroupMsgResponse(c *QQClient, resp *network.Response) (interface{}, error) {
 	rsp := msg.GetGroupMsgResp{}
 	if err := proto.Unmarshal(resp.Body, &rsp); err != nil {
@@ -372,7 +356,8 @@ func decodeGetGroupMsgResponse(c *QQClient, resp *network.Response) (interface{}
 				for {
 					end := int32(math.Min(float64(i+19), float64(m.Head.GetMsgSeq()+m.Content.GetPkgNum())))
 					req := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GetGroupCode(), int64(i), int64(end))
-					data, err := c.sendAndWaitParams(uint16(req.SequenceID), c.transport.PackPacket(req), network.RequestParams{"raw": true})
+					req.Params = network.Params{"raw": true}
+					data, err := c.callAndDecode(req, decodeGetGroupMsgResponse)
 					if err != nil {
 						return nil, errors.Wrap(err, "build fragmented message error")
 					}
