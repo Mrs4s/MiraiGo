@@ -2,7 +2,6 @@ package network
 
 import (
 	"encoding/binary"
-	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -16,26 +15,26 @@ type TCPListener struct {
 	lock                 sync.RWMutex
 	conn                 *net.TCPConn
 	connected            bool
-	plannedDisconnect    func(*TCPListener)
-	unexpectedDisconnect func(*TCPListener, error)
+	PlannedDisconnect    func(*TCPListener)
+	UnexpectedDisconnect func(*TCPListener, error)
 }
 
 var ErrConnectionClosed = errors.New("connection closed")
 
 // PlannedDisconnect 预料中的断开连接
 // 如调用 Close() Connect()
-func (t *TCPListener) PlannedDisconnect(f func(*TCPListener)) {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	t.plannedDisconnect = f
-}
+//func (t *TCPListener) PlannedDisconnect(f func(*TCPListener)) {
+//	t.lock.Lock()
+//	defer t.lock.Unlock()
+//	t.plannedDisconnect = f
+//}
 
 // UnexpectedDisconnect 未预料的断开连接
-func (t *TCPListener) UnexpectedDisconnect(f func(*TCPListener, error)) {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	t.unexpectedDisconnect = f
-}
+//func (t *TCPListener) UnexpectedDisconnect(f func(*TCPListener, error)) {
+//	t.lock.Lock()
+//	defer t.lock.Unlock()
+//	t.unexpectedDisconnect = f
+//}
 
 func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 	t.Close()
@@ -129,22 +128,19 @@ func (t *TCPListener) getConn() net.Conn {
 	return t.conn
 }
 
-type PktHandler func(pkt *Request, netErr error)
-type RequestHandler func(head []byte) (*Request, error)
-
-func (t *Transport) GetConn() *net.TCPConn {
+func (t *TCPListener) GetConn() *net.TCPConn {
 	return (*net.TCPConn)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn))))
 }
 
-func (t *Transport) setConn(conn *net.TCPConn) (swapped bool) {
+func (t *TCPListener) setConn(conn *net.TCPConn) (swapped bool) {
 	return atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn)), unsafe.Pointer(nil), unsafe.Pointer(conn))
 }
 
-func (t *Transport) closeConn() *net.TCPConn {
+func (t *TCPListener) closeConn() *net.TCPConn {
 	return (*net.TCPConn)(atomic.SwapPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn)), unsafe.Pointer(nil)))
 }
 
-func (t *Transport) CloseConn() {
+func (t *TCPListener) CloseConn() {
 	if conn := t.closeConn(); conn != nil {
 		_ = conn.Close()
 	}
@@ -152,7 +148,7 @@ func (t *Transport) CloseConn() {
 
 // ConnectFastest 连接到最快的服务器
 // TODO 禁用不可用服务器
-func (t *Transport) ConnectFastest(servers []*net.TCPAddr) (net.Addr, error) {
+func (t *TCPListener) ConnectFastest(servers []*net.TCPAddr) (net.Addr, error) {
 	ch := make(chan error)
 	wg := sync.WaitGroup{}
 	wg.Add(len(servers))
@@ -183,54 +179,4 @@ func (t *Transport) ConnectFastest(servers []*net.TCPAddr) (net.Addr, error) {
 	}
 	conn := t.GetConn()
 	return conn.RemoteAddr(), nil
-}
-
-func readPacket(conn *net.TCPConn, minSize, maxSize uint32) ([]byte, error) {
-	lBuf := make([]byte, 4)
-	_, err := io.ReadFull(conn, lBuf)
-	if err != nil {
-		return nil, err
-	}
-	l := binary.BigEndian.Uint32(lBuf)
-	if l < minSize || l > maxSize {
-		return nil, fmt.Errorf("parse incoming packet error: invalid packet length %v", l)
-	}
-	data := make([]byte, l-4)
-	_, err = io.ReadFull(conn, data)
-	return data, err
-}
-
-func (t *Transport) NetLoop(pktHandler PktHandler, respHandler RequestHandler) {
-	go t.netLoop(t.GetConn(), pktHandler, respHandler)
-}
-
-func (t *Transport) netLoop(conn *net.TCPConn, pktHandler PktHandler, respHandler RequestHandler) {
-	defer func() {
-		if r := recover(); r != nil {
-			pktHandler(nil, fmt.Errorf("panic: %v", r))
-		}
-		_ = conn.Close()
-	}()
-	errCount := 0
-	for {
-		data, err := readPacket(conn, 4, 10<<20) // max 10MB
-		if err != nil {
-			// 连接未改变，没有建立新连接
-			if t.GetConn() == conn {
-				pktHandler(nil, errors.Wrap(ErrConnectionBroken, err.Error()))
-			}
-			return
-		}
-		req, err := respHandler(data)
-		if err == nil {
-			errCount = 0
-			goto ok
-		}
-		errCount++
-		if errCount > 2 {
-			err = errors.Wrap(ErrConnectionBroken, err.Error())
-		}
-	ok:
-		go pktHandler(req, err)
-	}
 }

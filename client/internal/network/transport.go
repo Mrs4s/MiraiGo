@@ -1,6 +1,11 @@
 package network
 
 import (
+	goBinary "encoding/binary"
+	"fmt"
+	"github.com/pkg/errors"
+	"io"
+	"net"
 	"strconv"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -95,4 +100,58 @@ func (t *Transport) PackPacket(req *Request) []byte {
 
 	w.WriteUInt32At(pos, uint32(w.Len()))
 	return append([]byte(nil), w.Bytes()...)
+}
+
+type PktHandler func(pkt *Request, netErr error)
+type RequestHandler func(head []byte) (*Request, error)
+
+func (t *Transport) NetLoop(pktHandler PktHandler, respHandler RequestHandler) {
+	go t.netLoop(pktHandler, respHandler)
+}
+
+func readPacket(conn *net.TCPConn, minSize, maxSize uint32) ([]byte, error) {
+	lBuf := make([]byte, 4)
+	_, err := io.ReadFull(conn, lBuf)
+	if err != nil {
+		return nil, err
+	}
+	l := goBinary.BigEndian.Uint32(lBuf)
+	if l < minSize || l > maxSize {
+		return nil, fmt.Errorf("parse incoming packet error: invalid packet length %v", l)
+	}
+	data := make([]byte, l-4)
+	_, err = io.ReadFull(conn, data)
+	return data, err
+}
+
+func (t *Transport) netLoop(pktHandler PktHandler, respHandler RequestHandler) {
+	conn := t.conn.GetConn()
+	defer func() {
+		if r := recover(); r != nil {
+			pktHandler(nil, fmt.Errorf("panic: %v", r))
+		}
+		_ = conn.Close()
+	}()
+	errCount := 0
+	for {
+		data, err := readPacket(conn, 4, 10<<20) // max 10MB
+		if err != nil {
+			// 连接未改变，没有建立新连接
+			if t.conn.GetConn() == conn {
+				pktHandler(nil, errors.Wrap(ErrConnectionBroken, err.Error()))
+			}
+			return
+		}
+		req, err := respHandler(data)
+		if err == nil {
+			errCount = 0
+			goto ok
+		}
+		errCount++
+		if errCount > 2 {
+			err = errors.Wrap(ErrConnectionBroken, err.Error())
+		}
+	ok:
+		go pktHandler(req, err)
+	}
 }

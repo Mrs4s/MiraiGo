@@ -210,8 +210,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	if len(cli.servers) > 3 {
 		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
 	}*/
-	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
-	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
+	cli.TCP.PlannedDisconnect = cli.plannedDisconnect
+	cli.TCP.UnexpectedDisconnect = cli.unexpectedDisconnect
 	rand.Read(cli.RandomKey)
 	return cli
 }
@@ -221,6 +221,13 @@ func (c *QQClient) UseDevice(info *auth.Device) {
 	*c.deviceInfo = *info
 	c.highwaySession.AppID = int32(c.version.AppId)
 	c.sig.Ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
+}
+
+func (c *QQClient) Release() {
+	if c.Online.Load() {
+		c.Disconnect()
+	}
+	c.alive = false
 }
 
 // Login send login request
