@@ -8,7 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
-func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) {
+func (c *QQClient) buildTranslatePacket(src, dst, text string) *network.Request {
 	body := &oidb.TranslateReqBody{
 		BatchTranslateReq: &oidb.BatchTranslateReq{
 			SrcLanguage: src,
@@ -23,11 +23,11 @@ func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) 
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("OidbSvc.0x990", payload)
+	return c.uniRequest("OidbSvc.0x990", payload)
 }
 
 func (c *QQClient) Translate(src, dst, text string) (string, error) {
-	rsp, err := c.sendAndWait(c.buildTranslatePacket(src, dst, text))
+	rsp, err := c.callAndDecode(c.buildTranslatePacket(src, dst, text), decodeTranslateResponse)
 	if err != nil {
 		return "", err
 	}

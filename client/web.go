@@ -90,12 +90,12 @@ func (c *QQClient) webSsoRequest(host, webCmd, data string) (string, error) {
 		Type: proto.Uint32(0),
 		Data: &data,
 	})
-	rspData, err := c.sendAndWaitDynamic(c.uniPacket(cmd, req))
+	rspData, err := c.call(c.uniRequest(cmd, req))
 	if err != nil {
 		return "", errors.Wrap(err, "send web sso request error")
 	}
 	rsp := &web.WebSsoResponseBody{}
-	if err = proto.Unmarshal(rspData, rsp); err != nil {
+	if err = proto.Unmarshal(rspData.Body, rsp); err != nil {
 		return "", errors.Wrap(err, "unmarshal response error")
 	}
 	return rsp.GetData(), nil

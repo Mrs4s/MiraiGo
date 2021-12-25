@@ -148,7 +148,7 @@ func decodeLoginResponse(c *QQClient, resp *network.Response) (interface{}, erro
 	if t == 204 {
 		c.sig.T104 = m[0x104]
 		c.sig.RandSeed = m[0x403]
-		return c.sendAndWait(c.buildDeviceLockLoginPacket())
+		return c.callAndDecode(c.buildDeviceLockLoginRequest(), decodeLoginResponse)
 	} // drive lock
 
 	if t149, ok := m[0x149]; ok {
@@ -365,8 +365,8 @@ func decodePushReqPacket(c *QQClient, resp *network.Response) (interface{}, erro
 	}
 
 	seq := r.ReadInt64(3)
-	_, pkt := c.buildConfPushRespPacket(t, seq, jceBuf)
-	return nil, c.sendPacket(pkt)
+	err := c.sendPacket(c.transport.PackPacket(c.buildConfPushRespPacket(t, seq, jceBuf)))
+	return nil, err
 }
 
 // MessageSvc.PbGetMsg
@@ -399,8 +399,8 @@ func decodeSvcNotify(c *QQClient, resp *network.Response) (interface{}, error) {
 			return nil, nil
 		}
 		if typ == sysMsgDecoders {
-			_, pkt := c.buildSystemMsgNewFriendPacket()
-			return nil, c.sendPacket(pkt)
+			_, err := c.callAndDecode(c.buildSystemMsgNewFriendRequest(), decodeSystemMsgFriendPacket)
+			return nil, err
 		}
 	}
 	_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
@@ -516,7 +516,7 @@ func decodeGroupListResponse(c *QQClient, resp *network.Response) (interface{}, 
 		})
 	}
 	if len(vecCookie) > 0 {
-		rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(vecCookie))
+		rsp, err := c.callAndDecode(c.buildGroupListRequest(vecCookie), decodeGroupListResponse)
 		if err != nil {
 			return nil, err
 		}
@@ -796,14 +796,14 @@ func decodeWordSegmentation(_ *QQClient, resp *network.Response) (interface{}, e
 }
 
 func decodeSidExpiredPacket(c *QQClient, resp *network.Response) (interface{}, error) {
-	_, err := c.sendAndWait(c.buildRequestChangeSigPacket(3554528))
+	_, err := c.callAndDecode(c.buildRequestChangeSigRequest(3554528), decodeExchangeEmpResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "resign client error")
 	}
 	if err = c.registerClient(); err != nil {
 		return nil, errors.Wrap(err, "register error")
 	}
-	_ = c.sendPacket(c.uniPacketWithSeq(uint16(resp.SequenceID), "OnlinePush.SidTicketExpired", EmptyBytes))
+	_, _ = c.call(c.uniPacketWithSeq(uint16(resp.SequenceID), "OnlinePush.SidTicketExpired", EmptyBytes))
 	return nil, nil
 }
 

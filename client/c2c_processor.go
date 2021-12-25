@@ -68,7 +68,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, resp *ne
 		}
 	}
 	if delItems != nil {
-		_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
+		_, _ = c.call(c.buildDeleteMessageRequestPacket(delItems))
 	}
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag)
@@ -227,8 +227,7 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, resp *networ
 }
 
 func systemMessageDecoder(c *QQClient, _ *msg.Message, _ *network.Response) {
-	_, pkt := c.buildSystemMsgNewFriendPacket()
-	_ = c.sendPacket(pkt)
+	_, _ = c.call(c.buildSystemMsgNewFriendRequest())
 }
 
 func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.Response) {
@@ -257,7 +256,8 @@ func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *network.Response)
 		return
 	}
 	if sub4.NotOnlineFile != nil && sub4.NotOnlineFile.GetSubcmd() == 1 { // subcmd: 1 -> sendPacket, 2-> recv
-		rsp, err := c.sendAndWait(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
+		rsp, err := c.callAndDecode(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid),
+			decodeOfflineFileDownloadResponse) // offline_file.go
 		if err != nil {
 			return
 		}

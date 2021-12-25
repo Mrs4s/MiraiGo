@@ -44,12 +44,12 @@ type (
 )
 
 func (c *QQClient) GetGroupSystemMessages() (*GroupSystemMessages, error) {
-	i, err := c.sendAndWait(c.buildSystemMsgNewGroupPacket(false))
+	i, err := c.callAndDecode(c.buildSystemMsgNewGroupPacket(false), decodeSystemMsgGroupPacket)
 	if err != nil {
 		return nil, err
 	}
 	msg := i.(*GroupSystemMessages)
-	i, err = c.sendAndWait(c.buildSystemMsgNewGroupPacket(true))
+	i, err = c.callAndDecode(c.buildSystemMsgNewGroupPacket(true), decodeSystemMsgGroupPacket)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (c *QQClient) exceptAndDispatchGroupSysMsg() {
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Group
-func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) (uint16, []byte) {
+func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) *network.Request {
 	req := &structmsg.ReqSystemMsgNew{
 		MsgNum:    100,
 		Version:   1000,
@@ -130,11 +130,11 @@ func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) (uint16, []byte
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("ProfileService.Pb.ReqSystemMsgNew.Group", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgNew.Group", payload)
 }
 
 // ProfileService.Pb.ReqSystemMsgAction.Group
-func (c *QQClient) buildSystemMsgGroupActionPacket(reqID, requester, group int64, msgType int32, isInvite, accept, block bool, reason string) (uint16, []byte) {
+func (c *QQClient) buildSystemMsgGroupActionPacket(reqID, requester, group int64, msgType int32, isInvite, accept, block bool, reason string) *network.Request {
 	subSrcId := int32(31)
 	groupMsgType := int32(1)
 	if isInvite {
@@ -163,11 +163,11 @@ func (c *QQClient) buildSystemMsgGroupActionPacket(reqID, requester, group int64
 		Language: 1000,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("ProfileService.Pb.ReqSystemMsgAction.Group", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgAction.Group", payload)
 }
 
 // ProfileService.Pb.ReqSystemMsgAction.Friend
-func (c *QQClient) buildSystemMsgFriendActionPacket(reqID, requester int64, accept bool) (uint16, []byte) {
+func (c *QQClient) buildSystemMsgFriendActionPacket(reqID, requester int64, accept bool) *network.Request {
 	infoType := int32(3)
 	if accept {
 		infoType = 2
@@ -186,7 +186,7 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqID, requester int64, acce
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("ProfileService.Pb.ReqSystemMsgAction.Friend", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgAction.Friend", payload)
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Group

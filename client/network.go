@@ -146,6 +146,52 @@ func (c *QQClient) Disconnect() {
 	c.TCP.Close()
 }
 
+func (c *QQClient) send(call *network.Call) {
+	if call.Done == nil {
+		call.Done = make(chan *network.Call, 3) // use buffered channel
+	}
+	seq := uint16(call.Request.SequenceID)
+	c.pendingMu.Lock()
+	c.pending[seq] = call
+	c.pendingMu.Unlock()
+
+	err := c.sendPacket(c.transport.PackPacket(call.Request))
+	if err != nil {
+		c.pendingMu.Lock()
+		call = c.pending[seq]
+		delete(c.pending, seq)
+		call.Err = err
+		call.Done <- call
+		c.pendingMu.Unlock()
+	}
+}
+
+func (c *QQClient) sendReq(req *network.Request) {
+	c.send(&network.Call{Request: req})
+}
+
+func (c *QQClient) call(req *network.Request) (*network.Response, error) {
+	call := &network.Call{
+		Request: req,
+		Done:    make(chan *network.Call, 3),
+	}
+	c.send(call)
+	select {
+	case <-call.Done:
+		return call.Response, call.Err
+	case <-time.After(time.Second * 15):
+		return nil, errors.New("Packet timed out")
+	}
+}
+
+func (c *QQClient) callAndDecode(req *network.Request, decoder func(*QQClient, *network.Response) (interface{}, error)) (interface{}, error) {
+	resp, err := c.call(req)
+	if err != nil {
+		return nil, err
+	}
+	return decoder(c, resp)
+}
+
 func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
 	return c.sendAndWaitParams(seq, pkt, nil)
 }
@@ -325,6 +371,26 @@ func (c *QQClient) netLoop() {
 					c.Dump("packet decode error: %v - %v", req.Body, req.CommandName, pan)
 				}
 			}()
+
+			// snapshot of read call
+			c.pendingMu.Lock()
+			call := c.pending[uint16(req.SequenceID)]
+			if call != nil {
+				call.Response = &network.Response{
+					SequenceID:  req.SequenceID,
+					CommandName: req.CommandName,
+					Body:        req.Body,
+					// Request:     nil,
+				}
+			}
+			c.pendingMu.Unlock()
+			if call != nil {
+				select {
+				case call.Done <- call:
+				default:
+				}
+			}
+
 			if decoder, ok := decoders[req.CommandName]; ok {
 				// found predefined decoder
 				info, ok := c.handlers.LoadAndDelete(uint16(req.SequenceID))

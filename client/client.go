@@ -50,9 +50,12 @@ type QQClient struct {
 	SequenceId  atomic.Int32
 	SessionId   []byte
 	RandomKey   []byte
-	TCP         *network.TCPListener // todo: combine other protocol state into one struct
+	TCP         *network.TCPListener
 	ConnectTime time.Time
 
+	// todo: combine net conn, transport, pending into one struct
+	pendingMu sync.Mutex
+	pending   map[uint16]*network.Call
 	transport *network.Transport
 	oicq      *oicq.Codec
 
@@ -117,30 +120,14 @@ func (h *handlerInfo) getParams() network.RequestParams {
 }
 
 var decoders = map[string]func(*QQClient, *network.Response) (interface{}, error){
-	"wtlogin.login":                                decodeLoginResponse,
-	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
-	"wtlogin.trans_emp":                            decodeTransEmpResponse,
-	"StatSvc.register":                             decodeClientRegisterResponse,
-	"StatSvc.ReqMSFOffline":                        decodeMSFOfflinePacket,
-	"MessageSvc.PushNotify":                        decodeSvcNotify,
-	"OnlinePush.ReqPush":                           decodeOnlinePushReqPacket,
-	"OnlinePush.PbPushTransMsg":                    decodeOnlinePushTransPacket,
-	"OnlinePush.SidTicketExpired":                  decodeSidExpiredPacket,
-	"ConfigPushSvc.PushReq":                        decodePushReqPacket,
-	"MessageSvc.PbGetMsg":                          decodeMessageSvcPacket,
-	"MessageSvc.PushForceOffline":                  decodeForceOfflinePacket,
-	"PbMessageSvc.PbMsgWithDraw":                   decodeMsgWithDrawResponse,
-	"friendlist.getFriendGroupList":                decodeFriendGroupListResponse,
-	"friendlist.delFriend":                         decodeFriendDeleteResponse,
-	"friendlist.GetTroopListReqV2":                 decodeGroupListResponse,
-	"friendlist.GetTroopMemberListReq":             decodeGroupMemberListResponse,
-	"group_member_card.get_group_member_card_info": decodeGroupMemberInfoResponse,
-	"LongConn.OffPicUp":                            decodeOffPicUpResponse,
-	"ProfileService.Pb.ReqSystemMsgNew.Group":      decodeSystemMsgGroupPacket,
-	"ProfileService.Pb.ReqSystemMsgNew.Friend":     decodeSystemMsgFriendPacket,
-	"OidbSvc.0xd79":                                decodeWordSegmentation,
-	"OidbSvc.0x990":                                decodeTranslateResponse,
-	"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
+	"StatSvc.ReqMSFOffline":       decodeMSFOfflinePacket,
+	"MessageSvc.PushNotify":       decodeSvcNotify,
+	"OnlinePush.ReqPush":          decodeOnlinePushReqPacket,
+	"OnlinePush.PbPushTransMsg":   decodeOnlinePushTransPacket,
+	"OnlinePush.SidTicketExpired": decodeSidExpiredPacket,
+	"ConfigPushSvc.PushReq":       decodePushReqPacket,
+	"MessageSvc.PbGetMsg":         decodeMessageSvcPacket,
+	"MessageSvc.PushForceOffline": decodeForceOfflinePacket,
 }
 
 func init() {
@@ -173,6 +160,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		alive:           true,
 		highwaySession:  new(highway.Session),
 
+		pending:    make(map[uint16]*network.Call),
 		version:    new(auth.AppVersion),
 		deviceInfo: new(auth.Device),
 	}
@@ -268,7 +256,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	rsp, err := c.sendAndWait(c.buildLoginPacket())
+	rsp, err := c.callAndDecode(c.buildLoginRequest(), decodeLoginResponse)
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -302,7 +290,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
 	}
-	_, err = c.sendAndWait(c.buildRequestChangeSigPacket(c.version.MainSigMap))
+	_, err = c.callAndDecode(c.buildRequestChangeSigRequest(c.version.MainSigMap), decodeExchangeEmpResponse)
 	if err != nil {
 		return err
 	}
@@ -321,7 +309,9 @@ func (c *QQClient) FetchQRCodeCustomSize(size, margin, ecLevel uint32) (*QRCodeL
 	if err != nil {
 		return nil, err
 	}
-	i, err := c.sendAndWait(c.buildQRCodeFetchRequestPacket(size, margin, ecLevel))
+	c.transport.Version = auth.AndroidWatch.Version()
+	i, err := c.callAndDecode(c.buildQRCodeFetchRequest(size, margin, ecLevel), decodeTransEmpResponse)
+	c.transport.Version = c.version
 	if err != nil {
 		return nil, errors.Wrap(err, "fetch qrcode error")
 	}
@@ -329,7 +319,9 @@ func (c *QQClient) FetchQRCodeCustomSize(size, margin, ecLevel uint32) (*QRCodeL
 }
 
 func (c *QQClient) QueryQRCodeStatus(sig []byte) (*QRCodeLoginResponse, error) {
-	i, err := c.sendAndWait(c.buildQRCodeResultQueryRequestPacket(sig))
+	c.transport.Version = auth.AndroidWatch.Version()
+	i, err := c.callAndDecode(c.buildQRCodeResultQueryRequest(sig), decodeTransEmpResponse)
+	c.transport.Version = c.version
 	if err != nil {
 		return nil, errors.Wrap(err, "query result error")
 	}
@@ -337,7 +329,7 @@ func (c *QQClient) QueryQRCodeStatus(sig []byte) (*QRCodeLoginResponse, error) {
 }
 
 func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
-	i, err := c.sendAndWait(c.buildQRCodeLoginPacket(info.tmpPwd, info.tmpNoPicSig, info.tgtQR))
+	i, err := c.callAndDecode(c.buildQRCodeLoginRequest(info.tmpPwd, info.tmpNoPicSig, info.tgtQR), decodeLoginResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "qrcode login error")
 	}
@@ -350,8 +342,8 @@ func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
 
 // SubmitCaptcha send captcha to server
 func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, error) {
-	seq, packet := c.buildCaptchaPacket(result, sign)
-	rsp, err := c.sendAndWait(seq, packet)
+	req := c.buildCaptchaRequest(result, sign)
+	rsp, err := c.callAndDecode(req, decodeLoginResponse)
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -364,8 +356,8 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 }
 
 func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
-	seq, packet := c.buildTicketSubmitPacket(ticket)
-	rsp, err := c.sendAndWait(seq, packet)
+	req := c.buildTicketSubmitRequest(ticket)
+	rsp, err := c.callAndDecode(req, decodeLoginResponse)
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -378,7 +370,7 @@ func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
 }
 
 func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
-	rsp, err := c.sendAndWait(c.buildSMSCodeSubmitPacket(code))
+	rsp, err := c.callAndDecode(c.buildSMSCodeSubmitRequest(code), decodeLoginResponse)
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -391,7 +383,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 }
 
 func (c *QQClient) RequestSMS() bool {
-	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
+	rsp, err := c.callAndDecode(c.buildSMSRequest(), decodeLoginResponse)
 	if err != nil {
 		c.Error("request sms error: %v", err)
 		return false
@@ -431,8 +423,8 @@ func (c *QQClient) init(tokenLogin bool) error {
 	}
 	_ = c.RefreshStatus()
 	if c.version.Protocol == auth.QiDian {
-		_, _ = c.sendAndWait(c.buildLoginExtraPacket())     // 小登录
-		_, _ = c.sendAndWait(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
+		_, _ = c.callAndDecode(c.buildLoginExtraPacket(), decodeLoginExtraResponse)  // 小登录
+		_, _ = c.callAndDecode(c.buildConnKeyRequestPacket(), decodeConnKeyResponse) // big data key 如果等待 config push 的话时间来不及
 	}
 	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
 	_, _ = c.sendAndWaitParams(seq, pkt, network.RequestParams{"used_reg_proxy": true, "init": true})
@@ -457,14 +449,14 @@ func (c *QQClient) GenToken() []byte {
 
 func (c *QQClient) SetOnlineStatus(s UserOnlineStatus) {
 	if s < 1000 {
-		_, _ = c.sendAndWait(c.buildStatusSetPacket(int32(s), 0))
+		_, _ = c.call(c.buildStatusSetPacket(int32(s), 0))
 		return
 	}
-	_, _ = c.sendAndWait(c.buildStatusSetPacket(11, int32(s)))
+	_, _ = c.call(c.buildStatusSetPacket(11, int32(s)))
 }
 
 func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
-	rsp, err := c.sendAndWait(c.buildWordSegmentationPacket([]byte(text)))
+	rsp, err := c.callAndDecode(c.buildWordSegmentationPacket([]byte(text)), decodeWordSegmentation)
 	if err != nil {
 		return nil, err
 	}
@@ -479,7 +471,7 @@ func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
 }
 
 func (c *QQClient) GetSummaryInfo(target int64) (*SummaryCardInfo, error) {
-	rsp, err := c.sendAndWait(c.buildSummaryCardRequestPacket(target))
+	rsp, err := c.callAndDecode(c.buildSummaryCardRequest(target), decodeSummaryCardResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -510,7 +502,8 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	curFriendCount := 0
 	r := &FriendListResponse{}
 	for {
-		rsp, err := c.sendAndWait(c.buildFriendGroupListRequestPacket(int16(curFriendCount), 150, 0, 0))
+		call := c.buildFriendGroupListRequest(int16(curFriendCount), 150, 0, 0)
+		rsp, err := c.callAndDecode(call, decodeFriendGroupListResponse)
 		if err != nil {
 			return nil, err
 		}
@@ -526,11 +519,11 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 }
 
 func (c *QQClient) SendGroupPoke(groupCode, target int64) {
-	_, _ = c.sendAndWait(c.buildGroupPokePacket(groupCode, target))
+	_, _ = c.call(c.buildGroupPokeRequest(groupCode, target))
 }
 
 func (c *QQClient) SendFriendPoke(target int64) {
-	_, _ = c.sendAndWait(c.buildFriendPokePacket(target))
+	_, _ = c.call(c.buildFriendPokeRequest(target))
 }
 
 func (c *QQClient) ReloadGroupList() error {
@@ -545,7 +538,7 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
-	rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(EmptyBytes))
+	rsp, err := c.callAndDecode(c.buildGroupListRequest(EmptyBytes), decodeGroupListResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -577,7 +570,7 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 	var nextUin int64
 	var list []*GroupMemberInfo
 	for {
-		data, err := c.sendAndWait(c.buildGroupMemberListRequestPacket(group.Uin, group.Code, nextUin))
+		data, err := c.callAndDecode(c.buildGroupMemberListRequest(group.Uin, group.Code, nextUin), decodeGroupMemberListResponse)
 		if err != nil {
 			return nil, err
 		}
@@ -603,7 +596,7 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 }
 
 func (c *QQClient) GetMemberInfo(groupCode, memberUin int64) (*GroupMemberInfo, error) {
-	info, err := c.sendAndWait(c.buildGroupMemberInfoRequestPacket(groupCode, memberUin))
+	info, err := c.callAndDecode(c.buildGroupMemberInfoRequest(groupCode, memberUin), decodeGroupMemberInfoResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -624,7 +617,7 @@ func (c *QQClient) DeleteFriend(uin int64) error {
 	if c.FindFriend(uin) == nil {
 		return errors.New("friend not found")
 	}
-	_, err := c.sendAndWait(c.buildFriendDeletePacket(uin))
+	_, err := c.callAndDecode(c.buildFriendDeletePacket(uin), decodeFriendDeleteResponse)
 	return errors.Wrap(err, "delete friend error")
 }
 
@@ -655,29 +648,28 @@ func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reas
 
 	switch req := i.(type) {
 	case *UserJoinGroupRequest:
-		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, func() int32 {
+		call := c.buildSystemMsgGroupActionPacket(req.RequestId, req.RequesterUin, req.GroupCode, func() int32 {
 			if req.Suspicious {
 				return 2
 			} else {
 				return 1
 			}
 		}(), false, accept, block, reason)
-		_ = c.sendPacket(pkt)
+		_, _ = c.call(call)
 	case *GroupInvitedRequest:
-		_, pkt := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, 1, true, accept, block, reason)
-		_ = c.sendPacket(pkt)
+		call := c.buildSystemMsgGroupActionPacket(req.RequestId, req.InvitorUin, req.GroupCode, 1, true, accept, block, reason)
+		_, _ = c.call(call)
 	}
 }
 
 func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
-	_, pkt := c.buildSystemMsgFriendActionPacket(req.RequestId, req.RequesterUin, accept)
-	_ = c.sendPacket(pkt)
+	_, _ = c.call(c.buildSystemMsgFriendActionPacket(req.RequestId, req.RequesterUin, accept))
 }
 
 func (c *QQClient) getSKey() string {
 	if c.sig.SKeyExpiredTime < time.Now().Unix() && len(c.sig.G) > 0 {
 		c.Debug("skey expired. refresh...")
-		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
+		_, _ = c.callAndDecode(c.buildRequestTgtgtNopicsigRequest(), decodeExchangeEmpResponse)
 	}
 	return string(c.sig.SKey)
 }
@@ -705,39 +697,39 @@ func (c *QQClient) getCSRFToken() int {
 }
 
 func (c *QQClient) editMemberCard(groupCode, memberUin int64, card string) {
-	_, _ = c.sendAndWait(c.buildEditGroupTagPacket(groupCode, memberUin, card))
+	_, _ = c.call(c.buildEditGroupTagPacket(groupCode, memberUin, card))
 }
 
 func (c *QQClient) editMemberSpecialTitle(groupCode, memberUin int64, title string) {
-	_, _ = c.sendAndWait(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
+	_, _ = c.call(c.buildEditSpecialTitlePacket(groupCode, memberUin, title))
 }
 
 func (c *QQClient) setGroupAdmin(groupCode, memberUin int64, flag bool) {
-	_, _ = c.sendAndWait(c.buildGroupAdminSetPacket(groupCode, memberUin, flag))
+	_, _ = c.call(c.buildGroupAdminSetPacket(groupCode, memberUin, flag))
 }
 
 func (c *QQClient) updateGroupName(groupCode int64, newName string) {
-	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
+	_, _ = c.call(c.buildGroupNameUpdateRequest(groupCode, newName))
 }
 
 func (c *QQClient) updateGroupMemo(groupCode int64, newMemo string) {
-	_, _ = c.sendAndWait(c.buildGroupMemoUpdatePacket(groupCode, newMemo))
+	_, _ = c.call(c.buildGroupMemoUpdatePacket(groupCode, newMemo))
 }
 
 func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {
-	_, _ = c.sendAndWait(c.buildGroupMuteAllPacket(groupCode, mute))
+	_, _ = c.call(c.buildGroupMuteAllPacket(groupCode, mute))
 }
 
 func (c *QQClient) groupMute(groupCode, memberUin int64, time uint32) {
-	_, _ = c.sendAndWait(c.buildGroupMutePacket(groupCode, memberUin, time))
+	_, _ = c.call(c.buildGroupMutePacket(groupCode, memberUin, time))
 }
 
 func (c *QQClient) quitGroup(groupCode int64) {
-	_, _ = c.sendAndWait(c.buildQuitGroupPacket(groupCode))
+	_, _ = c.call(c.buildQuitGroupPacket(groupCode))
 }
 
 func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string, block bool) {
-	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg, block))
+	_, _ = c.call(c.buildGroupKickPacket(groupCode, memberUin, msg, block))
 }
 
 func (g *GroupInfo) removeMember(uin int64) {
@@ -757,7 +749,7 @@ func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 }
 
 func (c *QQClient) registerClient() error {
-	_, err := c.sendAndWait(c.buildClientRegisterPacket())
+	_, err := c.callAndDecode(c.buildClientRegisterPacket(), decodeClientRegisterResponse)
 	if err == nil {
 		c.Online.Store(true)
 	}

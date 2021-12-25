@@ -147,7 +147,8 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	i, err := c.sendAndWait(c.buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash, groupCode, videoLen, thumbLen))
+	i, err := c.callAndDecode(c.buildPttGroupShortVideoUploadReq(videoHash, thumbHash, groupCode, videoLen, thumbLen),
+		decodeGroupShortVideoUploadResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
 	}
@@ -210,7 +211,7 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 }
 
 func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
-	i, err := c.sendAndWait(c.buildPttShortVideoDownReqPacket(uuid, md5))
+	i, err := c.callAndDecode(c.buildPttShortVideoDownReq(uuid, md5), decodePttShortVideoDownResponse)
 	if err != nil {
 		return ""
 	}
@@ -245,7 +246,7 @@ func (c *QQClient) buildGroupPttStoreBDHExt(groupCode int64, md5 []byte, size, c
 }
 
 // PttCenterSvr.ShortVideoDownReq
-func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []byte) {
+func (c *QQClient) buildPttShortVideoDownReq(uuid, md5 []byte) *network.Request {
 	seq := c.nextSeq()
 	body := &pttcenter.ShortVideoReqBody{
 		Cmd: 400,
@@ -265,8 +266,7 @@ func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []
 		},
 	}
 	payload, _ := proto.Marshal(body)
-	packet := c.uniPacketWithSeq(seq, "PttCenterSvr.ShortVideoDownReq", payload)
-	return seq, packet
+	return c.uniPacketWithSeq(seq, "PttCenterSvr.ShortVideoDownReq", payload)
 }
 
 func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64, chattype int32) *pttcenter.ShortVideoReqBody {
@@ -303,9 +303,9 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 }
 
 // PttCenterSvr.GroupShortVideoUpReq
-func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) (uint16, []byte) {
+func (c *QQClient) buildPttGroupShortVideoUploadReq(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) *network.Request {
 	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize, 1))
-	return c.uniPacket("PttCenterSvr.GroupShortVideoUpReq", payload)
+	return c.uniRequest("PttCenterSvr.GroupShortVideoUpReq", payload)
 }
 
 // PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500

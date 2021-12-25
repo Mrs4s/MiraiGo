@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -76,7 +77,7 @@ func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElem
 		}
 	})
 	defer c.onGroupMessageReceipt(eid)
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(0, target, msg, 1)) // rsp is empty chunk
+	_, _ = c.call(c.buildRichMsgSendingPacket(0, target, msg, 1)) // rsp is empty chunk
 	select {
 	case ret := <-ch:
 		return ret, nil
@@ -87,17 +88,17 @@ func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElem
 
 // SendFriendMusicShare 发送好友音乐卡片
 func (c *QQClient) SendFriendMusicShare(target int64, msg *message.MusicShareElement) {
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(0, target, msg, 0))
+	_, _ = c.call(c.buildRichMsgSendingPacket(0, target, msg, 0))
 }
 
 // SendGuildMusicShare 发送频道音乐卡片
 func (c *QQClient) SendGuildMusicShare(guildID, channelID uint64, msg *message.MusicShareElement) {
 	// todo(wdvxdr): message receipt?
-	_, _ = c.sendAndWait(c.buildRichMsgSendingPacket(guildID, int64(channelID), msg, 3))
+	_, _ = c.call(c.buildRichMsgSendingPacket(guildID, int64(channelID), msg, 3))
 }
 
 // OidbSvc.0xb77_9
-func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *message.MusicShareElement, sendType uint32) (uint16, []byte) {
+func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *message.MusicShareElement, sendType uint32) *network.Request {
 	tp := musicType[msg.MusicType] // MusicType
 	msgStyle := uint32(0)
 	if msg.MusicUrl != "" {
@@ -128,5 +129,5 @@ func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *me
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2935, 9, b)
-	return c.uniPacket("OidbSvc.0xb77_9", payload)
+	return c.uniRequest("OidbSvc.0xb77_9", payload)
 }

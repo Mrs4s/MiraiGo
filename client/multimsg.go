@@ -17,13 +17,8 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
-func init() {
-	decoders["MultiMsg.ApplyUp"] = decodeMultiApplyUpResponse
-	decoders["MultiMsg.ApplyDown"] = decodeMultiApplyDownResponse
-}
-
 // MultiMsg.ApplyUp
-func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) (uint16, []byte) {
+func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, groupUin int64) *network.Request {
 	req := &multimsg.MultiReqBody{
 		Subcmd:       1,
 		TermType:     5,
@@ -41,7 +36,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 		BuType: buType,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("MultiMsg.ApplyUp", payload)
+	return c.uniRequest("MultiMsg.ApplyUp", payload)
 }
 
 // MultiMsg.ApplyUp
@@ -64,7 +59,7 @@ func decodeMultiApplyUpResponse(_ *QQClient, resp *network.Response) (interface{
 }
 
 // MultiMsg.ApplyDown
-func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
+func (c *QQClient) buildMultiApplyDownPacket(resID string) *network.Request {
 	req := &multimsg.MultiReqBody{
 		Subcmd:       2,
 		TermType:     5,
@@ -81,7 +76,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
 		ReqChannelType: 2,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("MultiMsg.ApplyDown", payload)
+	return c.uniRequest("MultiMsg.ApplyDown", payload)
 }
 
 // MultiMsg.ApplyDown
@@ -182,7 +177,7 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 }
 
 func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement {
-	i, err := c.sendAndWait(c.buildMultiApplyDownPacket(resId))
+	i, err := c.callAndDecode(c.buildMultiApplyDownPacket(resId), decodeMultiApplyDownResponse)
 	if err != nil {
 		return nil
 	}

@@ -1,5 +1,15 @@
 package network
 
+// Call is a client-side RPC call.
+// refer to `net/rpc`
+type Call struct {
+	Request  *Request
+	Response *Response
+	Err      error
+	Params   RequestParams
+	Done     chan *Call
+}
+
 type RequestParams map[string]interface{}
 
 func (p RequestParams) Bool(k string) bool {

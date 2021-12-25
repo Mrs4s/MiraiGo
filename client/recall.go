@@ -22,7 +22,7 @@ func (c *QQClient) RecallGroupMessage(groupCode int64, msgID, msgInternalId int3
 			}
 		}
 	}
-	_, err := c.sendAndWait(c.buildGroupRecallPacket(groupCode, msgID, msgInternalId))
+	_, err := c.callAndDecode(c.buildGroupRecallPacket(groupCode, msgID, msgInternalId), decodeMsgWithDrawResponse)
 	return err
 }
 
@@ -30,7 +30,7 @@ func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalID int32, m [
 	for _, item := range m {
 		if item.InternalId == msgInternalID {
 			flag = true
-			if _, err := c.sendAndWait(c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId)); err != nil {
+			if _, err := c.callAndDecode(c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId), decodeMsgWithDrawResponse); err != nil {
 				return false, err
 			}
 		}
@@ -39,12 +39,12 @@ func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalID int32, m [
 }
 
 func (c *QQClient) RecallPrivateMessage(uin, ts int64, msgID, msgInternalId int32) error {
-	_, err := c.sendAndWait(c.buildPrivateRecallPacket(uin, ts, msgID, msgInternalId))
+	_, err := c.callAndDecode(c.buildPrivateRecallPacket(uin, ts, msgID, msgInternalId), decodeMsgWithDrawResponse)
 	return err
 }
 
 // PbMessageSvc.PbMsgWithDraw
-func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32) (uint16, []byte) {
+func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32) *network.Request {
 	req := &msg.MsgWithDrawReq{
 		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
 			{
@@ -62,10 +62,10 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("PbMessageSvc.PbMsgWithDraw", payload)
+	return c.uniRequest("PbMessageSvc.PbMsgWithDraw", payload)
 }
 
-func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32) (uint16, []byte) {
+func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32) *network.Request {
 	req := &msg.MsgWithDrawReq{C2CWithDraw: []*msg.C2CMsgWithDrawReq{
 		{
 			MsgInfo: []*msg.C2CMsgInfo{
@@ -89,7 +89,7 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		},
 	}}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("PbMessageSvc.PbMsgWithDraw", payload)
+	return c.uniRequest("PbMessageSvc.PbMsgWithDraw", payload)
 }
 
 func decodeMsgWithDrawResponse(_ *QQClient, resp *network.Response) (interface{}, error) {
