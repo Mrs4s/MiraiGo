@@ -68,7 +68,7 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 	if g == nil {
 		return nil, errors.New("group not found")
 	}
-	rsp, e := c.callAndDecode(c.buildGroupFileCountRequest(groupCode), decodeOIDB6d81Response)
+	rsp, e := c.callAndDecode(c.buildGroupFileCountRequest(groupCode))
 	if e != nil {
 		return nil, e
 	}
@@ -78,7 +78,7 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 		GroupCode:  groupCode,
 		client:     c,
 	}
-	rsp, err = c.callAndDecode(c.buildGroupFileSpaceRequest(groupCode), decodeOIDB6d81Response)
+	rsp, err = c.callAndDecode(c.buildGroupFileSpaceRequest(groupCode))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 }
 
 func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) string {
-	i, err := c.callAndDecode(c.buildGroupFileDownloadReq(groupCode, fileId, busId), decodeOIDB6d62Response)
+	i, err := c.callAndDecode(c.buildGroupFileDownloadReq(groupCode, fileId, busId))
 	if err != nil {
 		return ""
 	}
@@ -107,7 +107,7 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderID string) ([]*GroupFile, []*G
 	var folders []*GroupFolder
 	for {
 		req := fs.client.buildGroupFileListRequest(fs.GroupCode, folderID, startIndex)
-		i, err := fs.client.callAndDecode(req, decodeOIDB6d81Response)
+		i, err := fs.client.callAndDecode(req)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -168,7 +168,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	sha1Hash := sha1H.Sum(nil)
 	_, _ = file.Seek(0, io.SeekStart)
 	req := fs.client.buildGroupFileUploadReq(folderId, name, fs.GroupCode, size, md5Hash, sha1Hash)
-	i, err := fs.client.callAndDecode(req, decodeOIDB6d60Response)
+	i, err := fs.client.callAndDecode(req)
 	if err != nil {
 		return errors.Wrap(err, "query upload failed")
 	}
@@ -238,21 +238,21 @@ func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {
 }
 
 func (fs *GroupFileSystem) CreateFolder(parentFolder, name string) error {
-	if _, err := fs.client.callAndDecode(fs.client.buildGroupFileCreateFolderRequest(fs.GroupCode, parentFolder, name), decodeOIDB6d7Response); err != nil {
+	if _, err := fs.client.callAndDecode(fs.client.buildGroupFileCreateFolderRequest(fs.GroupCode, parentFolder, name)); err != nil {
 		return errors.Wrap(err, "create folder error")
 	}
 	return nil
 }
 
 func (fs *GroupFileSystem) RenameFolder(folderId, newName string) error {
-	if _, err := fs.client.callAndDecode(fs.client.buildGroupFileRenameFolderRequest(fs.GroupCode, folderId, newName), decodeOIDB6d7Response); err != nil {
+	if _, err := fs.client.callAndDecode(fs.client.buildGroupFileRenameFolderRequest(fs.GroupCode, folderId, newName)); err != nil {
 		return errors.Wrap(err, "rename folder error")
 	}
 	return nil
 }
 
 func (fs *GroupFileSystem) DeleteFolder(folderId string) error {
-	if _, err := fs.client.callAndDecode(fs.client.buildGroupFileDeleteFolderRequest(fs.GroupCode, folderId), decodeOIDB6d7Response); err != nil {
+	if _, err := fs.client.callAndDecode(fs.client.buildGroupFileDeleteFolderRequest(fs.GroupCode, folderId)); err != nil {
 		return errors.Wrap(err, "rename folder error")
 	}
 	return nil
@@ -261,7 +261,7 @@ func (fs *GroupFileSystem) DeleteFolder(folderId string) error {
 // DeleteFile 删除群文件，需要管理权限.
 // 返回错误, 空为删除成功
 func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32) string {
-	i, err := fs.client.callAndDecode(fs.client.buildGroupFileDeleteReq(fs.GroupCode, parentFolderID, fileId, busId), decodeOIDB6d63Response)
+	i, err := fs.client.callAndDecode(fs.client.buildGroupFileDeleteReq(fs.GroupCode, parentFolderID, fileId, busId))
 	if err != nil {
 		return err.Error()
 	}
@@ -289,7 +289,7 @@ func (c *QQClient) buildGroupFileUploadReq(parentFolderID, fileName string, grou
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x6d6_0", payload)
+	return c.uniRequest("OidbSvc.0x6d6_0", payload, decodeOIDB6d60Response)
 }
 
 func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, busId, msgRand int32) *network.Request {
@@ -303,7 +303,7 @@ func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, bu
 			MsgRandom: proto.Uint32(uint32(msgRand)),
 		}},
 	}})
-	return c.uniRequest("OidbSvc.0x6d9_4", req)
+	return c.uniRequest("OidbSvc.0x6d9_4", req, nil)
 }
 
 // OidbSvc.0x6d8_1
@@ -329,7 +329,7 @@ func (c *QQClient) buildGroupFileListRequest(groupCode int64, folderID string, s
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x6d8_1", payload)
+	return c.uniRequest("OidbSvc.0x6d8_1", payload, decodeOIDB6d81Response)
 }
 
 func (c *QQClient) buildGroupFileCountRequest(groupCode int64) *network.Request {
@@ -346,7 +346,7 @@ func (c *QQClient) buildGroupFileCountRequest(groupCode int64) *network.Request 
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x6d8_1", payload)
+	return c.uniRequest("OidbSvc.0x6d8_1", payload, decodeOIDB6d81Response)
 }
 
 func (c *QQClient) buildGroupFileSpaceRequest(groupCode int64) *network.Request {
@@ -362,7 +362,7 @@ func (c *QQClient) buildGroupFileSpaceRequest(groupCode int64) *network.Request 
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x6d8_1", payload)
+	return c.uniRequest("OidbSvc.0x6d8_1", payload, decodeOIDB6d81Response)
 }
 
 func (c *QQClient) buildGroupFileCreateFolderRequest(groupCode int64, parentFolder, name string) *network.Request {
@@ -372,7 +372,7 @@ func (c *QQClient) buildGroupFileCreateFolderRequest(groupCode int64, parentFold
 		ParentFolderId: &parentFolder,
 		FolderName:     &name,
 	}})
-	return c.uniRequest("OidbSvc.0x6d7_0", payload)
+	return c.uniRequest("OidbSvc.0x6d7_0", payload, decodeOIDB6d7Response)
 }
 
 func (c *QQClient) buildGroupFileRenameFolderRequest(groupCode int64, folderId, newName string) *network.Request {
@@ -382,7 +382,7 @@ func (c *QQClient) buildGroupFileRenameFolderRequest(groupCode int64, folderId, 
 		FolderId:      proto.String(folderId),
 		NewFolderName: proto.String(newName),
 	}})
-	return c.uniRequest("OidbSvc.0x6d7_2", payload)
+	return c.uniRequest("OidbSvc.0x6d7_2", payload, decodeOIDB6d7Response)
 }
 
 func (c *QQClient) buildGroupFileDeleteFolderRequest(groupCode int64, folderId string) *network.Request {
@@ -391,7 +391,7 @@ func (c *QQClient) buildGroupFileDeleteFolderRequest(groupCode int64, folderId s
 		AppId:     proto.Uint32(3),
 		FolderId:  proto.String(folderId),
 	}})
-	return c.uniRequest("OidbSvc.0x6d7_1", payload)
+	return c.uniRequest("OidbSvc.0x6d7_1", payload, decodeOIDB6d7Response)
 }
 
 // OidbSvc.0x6d6_2
@@ -411,7 +411,7 @@ func (c *QQClient) buildGroupFileDownloadReq(groupCode int64, fileId string, bus
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x6d6_2", payload)
+	return c.uniRequest("OidbSvc.0x6d6_2", payload, decodeOIDB6d62Response)
 }
 
 func (c *QQClient) buildGroupFileDeleteReq(groupCode int64, parentFolderId, fileId string, busId int32) *network.Request {
@@ -430,7 +430,7 @@ func (c *QQClient) buildGroupFileDeleteReq(groupCode int64, parentFolderId, file
 		ClientVersion: "android 8.4.8",
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x6d6_3", payload)
+	return c.uniRequest("OidbSvc.0x6d6_3", payload, decodeOIDB6d63Response)
 }
 
 func decodeOIDB6d81Response(_ *QQClient, resp *network.Response) (interface{}, error) {

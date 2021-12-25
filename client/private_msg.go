@@ -179,7 +179,7 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload, nil)
 }
 
 // MessageSvc.PbSendMsg
@@ -211,7 +211,7 @@ func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload, nil)
 }
 
 func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r int32, time int64, m *message.SendingMessage) *network.Request {
@@ -242,5 +242,5 @@ func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r in
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload, nil)
 }

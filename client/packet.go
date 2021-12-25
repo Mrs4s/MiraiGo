@@ -16,9 +16,21 @@ func (c *QQClient) buildOicqRequestPacket(uin int64, command uint16, body []byte
 	return c.oicq.Marshal(&req)
 }
 
+type decoderFunc = func(*QQClient, *network.Response) (interface{}, error)
+
+func bindDecoder(c *QQClient, decoder decoderFunc) func(*network.Response) (interface{}, error) {
+	return func(response *network.Response) (interface{}, error) {
+		return decoder(c, response)
+	}
+}
+
 //go:noinline
-func (c *QQClient) uniRequest(command string, body []byte) *network.Request {
+func (c *QQClient) uniRequest(command string, body []byte, decoder decoderFunc) *network.Request {
 	seq := c.nextSeq()
+	var decode func(*network.Response) (interface{}, error)
+	if decoder != nil {
+		decode = bindDecoder(c, decoder)
+	}
 	return &network.Request{
 		Type:        network.RequestTypeSimple,
 		EncryptType: network.EncryptTypeD2Key,
@@ -26,6 +38,7 @@ func (c *QQClient) uniRequest(command string, body []byte) *network.Request {
 		SequenceID:  int32(seq),
 		CommandName: command,
 		Body:        body,
+		Decode:      decode,
 	}
 }
 
@@ -44,7 +57,11 @@ func (c *QQClient) uniCall(command string, body []byte) (*network.Response, erro
 }
 
 //go:noinline
-func (c *QQClient) uniPacketWithSeq(seq uint16, command string, body []byte) *network.Request {
+func (c *QQClient) uniPacketWithSeq(seq uint16, command string, body []byte, decoder decoderFunc) *network.Request {
+	var decode func(*network.Response) (interface{}, error)
+	if decoder != nil {
+		decode = bindDecoder(c, decoder)
+	}
 	req := network.Request{
 		Type:        network.RequestTypeSimple,
 		EncryptType: network.EncryptTypeD2Key,
@@ -52,6 +69,7 @@ func (c *QQClient) uniPacketWithSeq(seq uint16, command string, body []byte) *ne
 		SequenceID:  int32(seq),
 		CommandName: command,
 		Body:        body,
+		Decode:      decode,
 	}
 	return &req
 }

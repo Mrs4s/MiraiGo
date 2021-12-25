@@ -148,7 +148,7 @@ func decodeLoginResponse(c *QQClient, resp *network.Response) (interface{}, erro
 	if t == 204 {
 		c.sig.T104 = m[0x104]
 		c.sig.RandSeed = m[0x403]
-		return c.callAndDecode(c.buildDeviceLockLoginRequest(), decodeLoginResponse)
+		return c.callAndDecode(c.buildDeviceLockLoginRequest())
 	} // drive lock
 
 	if t149, ok := m[0x149]; ok {
@@ -387,7 +387,7 @@ func decodeSvcNotify(c *QQClient, resp *network.Response) (interface{}, error) {
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	if len(data.Map) == 0 {
-		_, err := c.callAndDecode(c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix()), decodeMessageSvcPacket)
+		_, err := c.callAndDecode(c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix()))
 		return nil, err
 	}
 	notify := &jce.RequestPushNotify{}
@@ -399,11 +399,11 @@ func decodeSvcNotify(c *QQClient, resp *network.Response) (interface{}, error) {
 			return nil, nil
 		}
 		if typ == sysMsgDecoders {
-			_, err := c.callAndDecode(c.buildSystemMsgNewFriendRequest(), decodeSystemMsgFriendPacket)
+			_, err := c.callAndDecode(c.buildSystemMsgNewFriendRequest())
 			return nil, err
 		}
 	}
-	_, err := c.callAndDecode(c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix()), decodeMessageSvcPacket)
+	_, err := c.callAndDecode(c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix()))
 	return nil, err
 }
 
@@ -516,7 +516,7 @@ func decodeGroupListResponse(c *QQClient, resp *network.Response) (interface{}, 
 		})
 	}
 	if len(vecCookie) > 0 {
-		rsp, err := c.callAndDecode(c.buildGroupListRequest(vecCookie), decodeGroupListResponse)
+		rsp, err := c.callAndDecode(c.buildGroupListRequest(vecCookie))
 		if err != nil {
 			return nil, err
 		}
@@ -796,14 +796,14 @@ func decodeWordSegmentation(_ *QQClient, resp *network.Response) (interface{}, e
 }
 
 func decodeSidExpiredPacket(c *QQClient, resp *network.Response) (interface{}, error) {
-	_, err := c.callAndDecode(c.buildRequestChangeSigRequest(3554528), decodeExchangeEmpResponse)
+	_, err := c.callAndDecode(c.buildRequestChangeSigRequest(3554528))
 	if err != nil {
 		return nil, errors.Wrap(err, "resign client error")
 	}
 	if err = c.registerClient(); err != nil {
 		return nil, errors.Wrap(err, "register error")
 	}
-	_, _ = c.call(c.uniPacketWithSeq(uint16(resp.SequenceID), "OnlinePush.SidTicketExpired", EmptyBytes))
+	_, _ = c.call(c.uniPacketWithSeq(uint16(resp.SequenceID), "OnlinePush.SidTicketExpired", EmptyBytes, nil))
 	return nil, nil
 }
 

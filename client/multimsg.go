@@ -36,7 +36,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 		BuType: buType,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MultiMsg.ApplyUp", payload)
+	return c.uniRequest("MultiMsg.ApplyUp", payload, decodeMultiApplyUpResponse)
 }
 
 // MultiMsg.ApplyUp
@@ -76,7 +76,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resID string) *network.Request {
 		ReqChannelType: 2,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MultiMsg.ApplyDown", payload)
+	return c.uniRequest("MultiMsg.ApplyDown", payload, decodeMultiApplyDownResponse)
 }
 
 // MultiMsg.ApplyDown
@@ -177,7 +177,7 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 }
 
 func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement {
-	i, err := c.callAndDecode(c.buildMultiApplyDownPacket(resId), decodeMultiApplyDownResponse)
+	i, err := c.callAndDecode(c.buildMultiApplyDownPacket(resId))
 	if err != nil {
 		return nil
 	}

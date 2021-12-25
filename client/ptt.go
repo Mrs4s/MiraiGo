@@ -147,8 +147,7 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	i, err := c.callAndDecode(c.buildPttGroupShortVideoUploadReq(videoHash, thumbHash, groupCode, videoLen, thumbLen),
-		decodeGroupShortVideoUploadResponse)
+	i, err := c.callAndDecode(c.buildPttGroupShortVideoUploadReq(videoHash, thumbHash, groupCode, videoLen, thumbLen))
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
 	}
@@ -211,7 +210,7 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 }
 
 func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
-	i, err := c.callAndDecode(c.buildPttShortVideoDownReq(uuid, md5), decodePttShortVideoDownResponse)
+	i, err := c.callAndDecode(c.buildPttShortVideoDownReq(uuid, md5))
 	if err != nil {
 		return ""
 	}
@@ -266,7 +265,7 @@ func (c *QQClient) buildPttShortVideoDownReq(uuid, md5 []byte) *network.Request 
 		},
 	}
 	payload, _ := proto.Marshal(body)
-	return c.uniPacketWithSeq(seq, "PttCenterSvr.ShortVideoDownReq", payload)
+	return c.uniPacketWithSeq(seq, "PttCenterSvr.ShortVideoDownReq", payload, decodePttShortVideoDownResponse)
 }
 
 func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64, chattype int32) *pttcenter.ShortVideoReqBody {
@@ -305,7 +304,7 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 // PttCenterSvr.GroupShortVideoUpReq
 func (c *QQClient) buildPttGroupShortVideoUploadReq(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) *network.Request {
 	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize, 1))
-	return c.uniRequest("PttCenterSvr.GroupShortVideoUpReq", payload)
+	return c.uniRequest("PttCenterSvr.GroupShortVideoUpReq", payload, decodeGroupShortVideoUploadResponse)
 }
 
 // PttCenterSvr.pb_pttCenter_CMD_REQ_APPLY_UPLOAD-500

@@ -66,7 +66,7 @@ type (
 )
 
 func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
-	i, err := c.callAndDecode(c.buildGroupInfoRequestPacket(groupCode), decodeGroupInfoResponse)
+	i, err := c.callAndDecode(c.buildGroupInfoRequestPacket(groupCode))
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +117,12 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) *network.Request
 		Bodybuffer: b,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x88d_0", payload)
+	return c.uniRequest("OidbSvc.0x88d_0", payload, decodeGroupInfoResponse)
 }
 
 // SearchGroupByKeyword 通过关键词搜索陌生群组
 func (c *QQClient) SearchGroupByKeyword(keyword string) ([]GroupSearchInfo, error) {
-	rsp, err := c.callAndDecode(c.buildGroupSearchPacket(keyword), decodeGroupSearchResponse)
+	rsp, err := c.callAndDecode(c.buildGroupSearchPacket(keyword))
 	if err != nil {
 		return nil, errors.Wrap(err, "group search failed")
 	}
@@ -179,7 +179,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("SummaryCard.ReqSearch", pkt.ToBytes())
+	return c.uniRequest("SummaryCard.ReqSearch", pkt.ToBytes(), decodeGroupSearchResponse)
 }
 
 // SummaryCard.ReqSearch

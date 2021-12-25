@@ -98,6 +98,7 @@ func (c *QQClient) buildLoginRequest() *network.Request {
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -119,6 +120,7 @@ func (c *QQClient) buildDeviceLockLoginRequest() *network.Request {
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -152,6 +154,7 @@ func (c *QQClient) buildQRCodeFetchRequest(size, margin, ecLevel uint32) *networ
 		Uin:         0,
 		CommandName: "wtlogin.trans_emp",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeTransEmpResponse),
 	}
 }
 
@@ -180,6 +183,7 @@ func (c *QQClient) buildQRCodeResultQueryRequest(sig []byte) *network.Request {
 		Uin:         0,
 		CommandName: "wtlogin.trans_emp",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeTransEmpResponse),
 	}
 }
 
@@ -253,6 +257,7 @@ func (c *QQClient) buildQRCodeLoginRequest(t106, t16a, t318 []byte) *network.Req
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -275,6 +280,7 @@ func (c *QQClient) buildCaptchaRequest(result string, sign []byte) *network.Requ
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -299,6 +305,7 @@ func (c *QQClient) buildSMSRequest() *network.Request {
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -324,6 +331,7 @@ func (c *QQClient) buildSMSCodeSubmitRequest(code string) *network.Request {
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -346,6 +354,7 @@ func (c *QQClient) buildTicketSubmitRequest(ticket string) *network.Request {
 		Uin:         c.Uin,
 		CommandName: "wtlogin.login",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeLoginResponse),
 	}
 }
 
@@ -416,6 +425,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigRequest() *network.Request {
 		Uin:         c.Uin,
 		SequenceID:  int32(seq),
 		CommandName: "wtlogin.exchange_emp",
+		Decode:      bindDecoder(c, decodeExchangeEmpResponse),
 		Body:        c.oicq.Marshal(&m),
 	}
 }
@@ -470,6 +480,7 @@ func (c *QQClient) buildRequestChangeSigRequest(mainSigMap uint32) *network.Requ
 		Uin:         c.Uin,
 		CommandName: "wtlogin.exchange_emp",
 		Body:        req,
+		Decode:      bindDecoder(c, decodeExchangeEmpResponse),
 	}
 }
 
@@ -524,6 +535,7 @@ func (c *QQClient) buildClientRegisterPacket() *network.Request {
 		Uin:         c.Uin,
 		CommandName: "StatSvc.register",
 		Body:        pkt.ToBytes(),
+		Decode:      bindDecoder(c, decodeClientRegisterResponse),
 	}
 }
 
@@ -560,7 +572,7 @@ func (c *QQClient) buildStatusSetPacket(status, extStatus int32) *network.Reques
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("StatSvc.SetStatusFromClient", pkt.ToBytes())
+	return c.uniRequest("StatSvc.SetStatusFromClient", pkt.ToBytes(), nil)
 }
 
 // ConfigPushSvc.PushResp
@@ -580,7 +592,7 @@ func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte)
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("ConfigPushSvc.PushResp", pkt.ToBytes())
+	return c.uniRequest("ConfigPushSvc.PushResp", pkt.ToBytes(), nil)
 }
 
 // friendlist.getFriendGroupList
@@ -636,7 +648,7 @@ func (c *QQClient) buildFriendGroupListRequest(friendStartIndex, friendListCount
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("friendlist.getFriendGroupList", pkt.ToBytes())
+	return c.uniRequest("friendlist.getFriendGroupList", pkt.ToBytes(), decodeFriendGroupListResponse)
 }
 
 // SummaryCard.ReqSummaryCard
@@ -720,7 +732,7 @@ func (c *QQClient) buildSummaryCardRequest(target int64) *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacketWithSeq(seq, "SummaryCard.ReqSummaryCard", pkt.ToBytes())
+	return c.uniPacketWithSeq(seq, "SummaryCard.ReqSummaryCard", pkt.ToBytes(), decodeSummaryCardResponse)
 }
 
 // friendlist.delFriend
@@ -743,7 +755,7 @@ func (c *QQClient) buildFriendDeletePacket(target int64) *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("friendlist.delFriend", pkt.ToBytes())
+	return c.uniRequest("friendlist.delFriend", pkt.ToBytes(), decodeFriendDeleteResponse)
 }
 
 // friendlist.GetTroopListReqV2
@@ -772,7 +784,7 @@ func (c *QQClient) buildGroupListRequest(vecCookie []byte) *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("friendlist.GetTroopListReqV2", pkt.ToBytes())
+	return c.uniRequest("friendlist.GetTroopListReqV2", pkt.ToBytes(), decodeGroupListResponse)
 }
 
 // friendlist.GetTroopMemberListReq
@@ -798,7 +810,7 @@ func (c *QQClient) buildGroupMemberListRequest(groupUin, groupCode, nextUin int6
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("friendlist.GetTroopMemberListReq", pkt.ToBytes())
+	return c.uniRequest("friendlist.GetTroopMemberListReq", pkt.ToBytes(), decodeGroupMemberListResponse)
 }
 
 // group_member_card.get_group_member_card_info
@@ -811,7 +823,7 @@ func (c *QQClient) buildGroupMemberInfoRequest(groupCode, uin int64) *network.Re
 		RichCardNameVer: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("group_member_card.get_group_member_card_info", payload)
+	return c.uniRequest("group_member_card.get_group_member_card_info", payload, decodeGroupMemberInfoResponse)
 }
 
 // MessageSvc.PbGetMsg
@@ -840,14 +852,14 @@ func (c *QQClient) buildGetMessageRequest(flag msg.SyncFlag, msgTime int64) *net
 		ServerBuf:          EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbGetMsg", payload)
+	return c.uniRequest("MessageSvc.PbGetMsg", payload, decodeMessageSvcPacket)
 }
 
 // MessageSvc.PbDeleteMsg
 func (c *QQClient) buildDeleteMessageRequestPacket(msg []*pb.MessageItem) *network.Request {
 	req := &pb.DeleteMessageRequest{Items: msg}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbDeleteMsg", payload)
+	return c.uniRequest("MessageSvc.PbDeleteMsg", payload, nil)
 }
 
 // OnlinePush.RespPush
@@ -874,7 +886,7 @@ func (c *QQClient) buildDeleteOnlinePushPacket(uin int64, svrip int32, pushToken
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.transport.PackPacket(c.uniPacketWithSeq(seq, "OnlinePush.RespPush", pkt.ToBytes()))
+	return c.transport.PackPacket(c.uniPacketWithSeq(seq, "OnlinePush.RespPush", pkt.ToBytes(), nil))
 }
 
 // LongConn.OffPicUp
@@ -901,7 +913,7 @@ func (c *QQClient) buildOffPicUpRequest(target int64, md5 []byte, size int32) *n
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("LongConn.OffPicUp", payload)
+	return c.uniRequest("LongConn.OffPicUp", payload, decodeOffPicUpResponse)
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Friend
@@ -920,7 +932,7 @@ func (c *QQClient) buildSystemMsgNewFriendRequest() *network.Request {
 		FriendMsgTypeFlag: 1,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("ProfileService.Pb.ReqSystemMsgNew.Friend", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgNew.Friend", payload, decodeSystemMsgFriendPacket)
 }
 
 // friendlist.ModifyGroupCardReq
@@ -945,7 +957,7 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	return c.uniRequest("friendlist.ModifyGroupCardReq", pkt.ToBytes())
+	return c.uniRequest("friendlist.ModifyGroupCardReq", pkt.ToBytes(), nil)
 }
 
 // OidbSvc.0x8fc_2
@@ -963,14 +975,14 @@ func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTi
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2300, 2, b)
-	return c.uniRequest("OidbSvc.0x8fc_2", payload)
+	return c.uniRequest("OidbSvc.0x8fc_2", payload, nil)
 }
 
 // OidbSvc.0x89a_0
 func (c *QQClient) buildGroupOperationPacket(body *oidb.D89AReqBody) *network.Request {
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2202, 0, b)
-	return c.uniRequest("OidbSvc.0x89a_0", payload)
+	return c.uniRequest("OidbSvc.0x89a_0", payload, nil)
 }
 
 // OidbSvc.0x89a_0
@@ -1028,7 +1040,7 @@ func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg stri
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2208, 0, b)
-	return c.uniRequest("OidbSvc.0x8a0_0", payload)
+	return c.uniRequest("OidbSvc.0x8a0_0", payload, nil)
 }
 
 // OidbSvc.0x570_8
@@ -1042,7 +1054,7 @@ func (c *QQClient) buildGroupMutePacket(groupCode, memberUin int64, time uint32)
 	})
 	payload := c.packOIDBPackage(1392, 8, b)
 	cl()
-	return c.uniRequest("OidbSvc.0x570_8", payload)
+	return c.uniRequest("OidbSvc.0x570_8", payload, nil)
 }
 
 // OidbSvc.0xed3
@@ -1053,7 +1065,7 @@ func (c *QQClient) buildGroupPokeRequest(groupCode, target int64) *network.Reque
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3795, 1, b)
-	return c.uniRequest("OidbSvc.0xed3", payload)
+	return c.uniRequest("OidbSvc.0xed3", payload, nil)
 }
 
 // OidbSvc.0xed3
@@ -1064,7 +1076,7 @@ func (c *QQClient) buildFriendPokeRequest(target int64) *network.Request {
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3795, 1, b)
-	return c.uniRequest("OidbSvc.0xed3", payload)
+	return c.uniRequest("OidbSvc.0xed3", payload, nil)
 }
 
 // OidbSvc.0x55c_1
@@ -1076,7 +1088,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 	})
 	payload := c.packOIDBPackage(1372, 1, b)
 	cl()
-	return c.uniRequest("OidbSvc.0x55c_1", payload)
+	return c.uniRequest("OidbSvc.0x55c_1", payload, nil)
 }
 
 // ProfileService.GroupMngReq
@@ -1100,7 +1112,7 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) *network.Request {
 		Context:      map[string]string{},
 		Status:       map[string]string{},
 	}
-	return c.uniRequest("ProfileService.GroupMngReq", pkt.ToBytes())
+	return c.uniRequest("ProfileService.GroupMngReq", pkt.ToBytes(), nil)
 }
 
 /* this function is unused
@@ -1131,5 +1143,5 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) *network.Request {
 		Content: data,
 		Qua:     []byte("and_537065262_8.4.5"),
 	})
-	return c.uniRequest("OidbSvc.0xd79", payload)
+	return c.uniRequest("OidbSvc.0xd79", payload, decodeWordSegmentation)
 }

@@ -74,7 +74,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, resp *ne
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag)
 		req := c.buildGetMessageRequest(rsp.GetSyncFlag(), time.Now().Unix())
 		req.Params = resp.Params
-		_, _ = c.callAndDecode(req, decodeMessageSvcPacket)
+		_, _ = c.callAndDecode(req)
 	}
 }
 
@@ -257,8 +257,7 @@ func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *network.Response)
 		return
 	}
 	if sub4.NotOnlineFile != nil && sub4.NotOnlineFile.GetSubcmd() == 1 { // subcmd: 1 -> sendPacket, 2-> recv
-		rsp, err := c.callAndDecode(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid),
-			decodeOfflineFileDownloadResponse) // offline_file.go
+		rsp, err := c.callAndDecode(c.buildOfflineFileDownloadRequestPacket(sub4.NotOnlineFile.FileUuid)) // offline_file.go
 		if err != nil {
 			return
 		}

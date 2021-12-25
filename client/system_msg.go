@@ -44,12 +44,12 @@ type (
 )
 
 func (c *QQClient) GetGroupSystemMessages() (*GroupSystemMessages, error) {
-	i, err := c.callAndDecode(c.buildSystemMsgNewGroupPacket(false), decodeSystemMsgGroupPacket)
+	i, err := c.callAndDecode(c.buildSystemMsgNewGroupPacket(false))
 	if err != nil {
 		return nil, err
 	}
 	msg := i.(*GroupSystemMessages)
-	i, err = c.callAndDecode(c.buildSystemMsgNewGroupPacket(true), decodeSystemMsgGroupPacket)
+	i, err = c.callAndDecode(c.buildSystemMsgNewGroupPacket(true))
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (c *QQClient) buildSystemMsgNewGroupPacket(suspicious bool) *network.Reques
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("ProfileService.Pb.ReqSystemMsgNew.Group", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgNew.Group", payload, decodeSystemMsgGroupPacket)
 }
 
 // ProfileService.Pb.ReqSystemMsgAction.Group
@@ -163,7 +163,7 @@ func (c *QQClient) buildSystemMsgGroupActionPacket(reqID, requester, group int64
 		Language: 1000,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("ProfileService.Pb.ReqSystemMsgAction.Group", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgAction.Group", payload, nil)
 }
 
 // ProfileService.Pb.ReqSystemMsgAction.Friend
@@ -186,7 +186,7 @@ func (c *QQClient) buildSystemMsgFriendActionPacket(reqID, requester int64, acce
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("ProfileService.Pb.ReqSystemMsgAction.Friend", payload)
+	return c.uniRequest("ProfileService.Pb.ReqSystemMsgAction.Friend", payload, nil)
 }
 
 // ProfileService.Pb.ReqSystemMsgNew.Group

@@ -23,11 +23,11 @@ func (c *QQClient) buildTranslatePacket(src, dst, text string) *network.Request 
 		Bodybuffer:  b,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("OidbSvc.0x990", payload)
+	return c.uniRequest("OidbSvc.0x990", payload, decodeTranslateResponse)
 }
 
 func (c *QQClient) Translate(src, dst, text string) (string, error) {
-	rsp, err := c.callAndDecode(c.buildTranslatePacket(src, dst, text), decodeTranslateResponse)
+	rsp, err := c.callAndDecode(c.buildTranslatePacket(src, dst, text))
 	if err != nil {
 		return "", err
 	}

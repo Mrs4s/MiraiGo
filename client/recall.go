@@ -22,7 +22,7 @@ func (c *QQClient) RecallGroupMessage(groupCode int64, msgID, msgInternalId int3
 			}
 		}
 	}
-	_, err := c.callAndDecode(c.buildGroupRecallPacket(groupCode, msgID, msgInternalId), decodeMsgWithDrawResponse)
+	_, err := c.callAndDecode(c.buildGroupRecallPacket(groupCode, msgID, msgInternalId))
 	return err
 }
 
@@ -30,7 +30,7 @@ func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalID int32, m [
 	for _, item := range m {
 		if item.InternalId == msgInternalID {
 			flag = true
-			if _, err := c.callAndDecode(c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId), decodeMsgWithDrawResponse); err != nil {
+			if _, err := c.callAndDecode(c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId)); err != nil {
 				return false, err
 			}
 		}
@@ -39,7 +39,7 @@ func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalID int32, m [
 }
 
 func (c *QQClient) RecallPrivateMessage(uin, ts int64, msgID, msgInternalId int32) error {
-	_, err := c.callAndDecode(c.buildPrivateRecallPacket(uin, ts, msgID, msgInternalId), decodeMsgWithDrawResponse)
+	_, err := c.callAndDecode(c.buildPrivateRecallPacket(uin, ts, msgID, msgInternalId))
 	return err
 }
 
@@ -62,7 +62,7 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("PbMessageSvc.PbMsgWithDraw", payload)
+	return c.uniRequest("PbMessageSvc.PbMsgWithDraw", payload, decodeMsgWithDrawResponse)
 }
 
 func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32) *network.Request {
@@ -89,7 +89,7 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		},
 	}}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("PbMessageSvc.PbMsgWithDraw", payload)
+	return c.uniRequest("PbMessageSvc.PbMsgWithDraw", payload, decodeMsgWithDrawResponse)
 }
 
 func decodeMsgWithDrawResponse(_ *QQClient, resp *network.Response) (interface{}, error) {

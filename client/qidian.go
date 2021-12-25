@@ -86,7 +86,7 @@ func (c *QQClient) buildLoginExtraPacket() *network.Request {
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("qidianservice.69", payload)
+	return c.uniRequest("qidianservice.69", payload, nil)
 }
 
 func (c *QQClient) buildConnKeyRequestPacket() *network.Request {
@@ -101,7 +101,7 @@ func (c *QQClient) buildConnKeyRequestPacket() *network.Request {
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("HttpConn.0x6ff_501", payload)
+	return c.uniRequest("HttpConn.0x6ff_501", payload, nil)
 }
 
 func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, error) {

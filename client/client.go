@@ -52,8 +52,8 @@ type QQClient struct {
 
 	// todo: combine net conn, transport, pending into one struct
 	pendingMu sync.Mutex
-	pending   map[uint16]*network.Call
-	//TCP         *network.TCPListener
+	pending   map[int32]*network.Call
+	// TCP         *network.TCPListener
 	transport *network.Transport
 	oicq      *oicq.Codec
 
@@ -131,7 +131,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		Uin:         uin,
 		PasswordMd5: passwordMd5,
 		AllowSlider: true,
-		//TCP:         &network.TCPListener{},
+		// TCP:         &network.TCPListener{},
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
@@ -143,7 +143,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		alive:           true,
 		highwaySession:  new(highway.Session),
 
-		pending:    make(map[uint16]*network.Call),
+		pending:    make(map[int32]*network.Call),
 		version:    new(auth.AppVersion),
 		deviceInfo: new(auth.Device),
 	}
@@ -239,7 +239,7 @@ func (c *QQClient) Login() (*LoginResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	rsp, err := c.callAndDecode(c.buildLoginRequest(), decodeLoginResponse)
+	rsp, err := c.callAndDecode(c.buildLoginRequest())
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -270,7 +270,7 @@ func (c *QQClient) ReLogin() error {
 	if err != nil {
 		return err
 	}
-	_, err = c.callAndDecode(c.buildRequestChangeSigRequest(c.version.MainSigMap), decodeExchangeEmpResponse)
+	_, err = c.callAndDecode(c.buildRequestChangeSigRequest(c.version.MainSigMap))
 	if err != nil {
 		return err
 	}
@@ -397,7 +397,7 @@ func (c *QQClient) FetchQRCodeCustomSize(size, margin, ecLevel uint32) (*QRCodeL
 		return nil, err
 	}
 	c.transport.Version = auth.AndroidWatch.Version()
-	i, err := c.callAndDecode(c.buildQRCodeFetchRequest(size, margin, ecLevel), decodeTransEmpResponse)
+	i, err := c.callAndDecode(c.buildQRCodeFetchRequest(size, margin, ecLevel))
 	c.transport.Version = c.version
 	if err != nil {
 		return nil, errors.Wrap(err, "fetch qrcode error")
@@ -407,7 +407,7 @@ func (c *QQClient) FetchQRCodeCustomSize(size, margin, ecLevel uint32) (*QRCodeL
 
 func (c *QQClient) QueryQRCodeStatus(sig []byte) (*QRCodeLoginResponse, error) {
 	c.transport.Version = auth.AndroidWatch.Version()
-	i, err := c.callAndDecode(c.buildQRCodeResultQueryRequest(sig), decodeTransEmpResponse)
+	i, err := c.callAndDecode(c.buildQRCodeResultQueryRequest(sig))
 	c.transport.Version = c.version
 	if err != nil {
 		return nil, errors.Wrap(err, "query result error")
@@ -416,7 +416,7 @@ func (c *QQClient) QueryQRCodeStatus(sig []byte) (*QRCodeLoginResponse, error) {
 }
 
 func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
-	i, err := c.callAndDecode(c.buildQRCodeLoginRequest(info.tmpPwd, info.tmpNoPicSig, info.tgtQR), decodeLoginResponse)
+	i, err := c.callAndDecode(c.buildQRCodeLoginRequest(info.tmpPwd, info.tmpNoPicSig, info.tgtQR))
 	if err != nil {
 		return nil, errors.Wrap(err, "qrcode login error")
 	}
@@ -430,7 +430,7 @@ func (c *QQClient) QRCodeLogin(info *QRCodeLoginInfo) (*LoginResponse, error) {
 // SubmitCaptcha send captcha to server
 func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, error) {
 	req := c.buildCaptchaRequest(result, sign)
-	rsp, err := c.callAndDecode(req, decodeLoginResponse)
+	rsp, err := c.callAndDecode(req)
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -444,7 +444,7 @@ func (c *QQClient) SubmitCaptcha(result string, sign []byte) (*LoginResponse, er
 
 func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
 	req := c.buildTicketSubmitRequest(ticket)
-	rsp, err := c.callAndDecode(req, decodeLoginResponse)
+	rsp, err := c.callAndDecode(req)
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -457,7 +457,7 @@ func (c *QQClient) SubmitTicket(ticket string) (*LoginResponse, error) {
 }
 
 func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
-	rsp, err := c.callAndDecode(c.buildSMSCodeSubmitRequest(code), decodeLoginResponse)
+	rsp, err := c.callAndDecode(c.buildSMSCodeSubmitRequest(code))
 	if err != nil {
 		c.Disconnect()
 		return nil, err
@@ -470,7 +470,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 }
 
 func (c *QQClient) RequestSMS() bool {
-	rsp, err := c.callAndDecode(c.buildSMSRequest(), decodeLoginResponse)
+	rsp, err := c.callAndDecode(c.buildSMSRequest())
 	if err != nil {
 		c.Error("request sms error: %v", err)
 		return false
@@ -507,13 +507,13 @@ func (c *QQClient) init(tokenLogin bool) error {
 	go c.doHeartbeat()
 	_ = c.RefreshStatus()
 	if c.version.Protocol == auth.QiDian {
-		_, _ = c.callAndDecode(c.buildLoginExtraPacket(), decodeLoginExtraResponse)  // 小登录
-		_, _ = c.callAndDecode(c.buildConnKeyRequestPacket(), decodeConnKeyResponse) // big data key 如果等待 config push 的话时间来不及
+		_, _ = c.callAndDecode(c.buildLoginExtraPacket())     // 小登录
+		_, _ = c.callAndDecode(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
 	}
 	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	req := c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix())
 	req.Params = network.Params{"used_reg_proxy": true, "init": true}
-	_, _ = c.callAndDecode(req, decodeMessageSvcPacket)
+	_, _ = c.callAndDecode(req)
 	c.syncChannelFirstView()
 	return nil
 }
@@ -542,7 +542,7 @@ func (c *QQClient) SetOnlineStatus(s UserOnlineStatus) {
 }
 
 func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
-	rsp, err := c.callAndDecode(c.buildWordSegmentationPacket([]byte(text)), decodeWordSegmentation)
+	rsp, err := c.callAndDecode(c.buildWordSegmentationPacket([]byte(text)))
 	if err != nil {
 		return nil, err
 	}
@@ -557,7 +557,7 @@ func (c *QQClient) GetWordSegmentation(text string) ([]string, error) {
 }
 
 func (c *QQClient) GetSummaryInfo(target int64) (*SummaryCardInfo, error) {
-	rsp, err := c.callAndDecode(c.buildSummaryCardRequest(target), decodeSummaryCardResponse)
+	rsp, err := c.callAndDecode(c.buildSummaryCardRequest(target))
 	if err != nil {
 		return nil, err
 	}
@@ -589,7 +589,7 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	r := &FriendListResponse{}
 	for {
 		call := c.buildFriendGroupListRequest(int16(curFriendCount), 150, 0, 0)
-		rsp, err := c.callAndDecode(call, decodeFriendGroupListResponse)
+		rsp, err := c.callAndDecode(call)
 		if err != nil {
 			return nil, err
 		}
@@ -624,7 +624,7 @@ func (c *QQClient) ReloadGroupList() error {
 }
 
 func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
-	rsp, err := c.callAndDecode(c.buildGroupListRequest(EmptyBytes), decodeGroupListResponse)
+	rsp, err := c.callAndDecode(c.buildGroupListRequest(EmptyBytes))
 	if err != nil {
 		return nil, err
 	}
@@ -656,7 +656,7 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 	var nextUin int64
 	var list []*GroupMemberInfo
 	for {
-		data, err := c.callAndDecode(c.buildGroupMemberListRequest(group.Uin, group.Code, nextUin), decodeGroupMemberListResponse)
+		data, err := c.callAndDecode(c.buildGroupMemberListRequest(group.Uin, group.Code, nextUin))
 		if err != nil {
 			return nil, err
 		}
@@ -682,7 +682,7 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 }
 
 func (c *QQClient) GetMemberInfo(groupCode, memberUin int64) (*GroupMemberInfo, error) {
-	info, err := c.callAndDecode(c.buildGroupMemberInfoRequest(groupCode, memberUin), decodeGroupMemberInfoResponse)
+	info, err := c.callAndDecode(c.buildGroupMemberInfoRequest(groupCode, memberUin))
 	if err != nil {
 		return nil, err
 	}
@@ -703,7 +703,7 @@ func (c *QQClient) DeleteFriend(uin int64) error {
 	if c.FindFriend(uin) == nil {
 		return errors.New("friend not found")
 	}
-	_, err := c.callAndDecode(c.buildFriendDeletePacket(uin), decodeFriendDeleteResponse)
+	_, err := c.callAndDecode(c.buildFriendDeletePacket(uin))
 	return errors.Wrap(err, "delete friend error")
 }
 
@@ -755,7 +755,7 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 func (c *QQClient) getSKey() string {
 	if c.sig.SKeyExpiredTime < time.Now().Unix() && len(c.sig.G) > 0 {
 		c.Debug("skey expired. refresh...")
-		_, _ = c.callAndDecode(c.buildRequestTgtgtNopicsigRequest(), decodeExchangeEmpResponse)
+		_, _ = c.callAndDecode(c.buildRequestTgtgtNopicsigRequest())
 	}
 	return string(c.sig.SKey)
 }
@@ -835,7 +835,7 @@ func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 }
 
 func (c *QQClient) registerClient() error {
-	_, err := c.callAndDecode(c.buildClientRegisterPacket(), decodeClientRegisterResponse)
+	_, err := c.callAndDecode(c.buildClientRegisterPacket())
 	if err == nil {
 		c.Online.Store(true)
 	}

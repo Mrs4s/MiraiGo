@@ -77,7 +77,7 @@ func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardEl
 func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*message.GroupMessage, error) {
 	req := c.buildGetGroupMsgRequest(groupCode, beginSeq, endSeq)
 	req.Params = network.Params{"raw": false}
-	i, err := c.callAndDecode(req, decodeGetGroupMsgResponse)
+	i, err := c.callAndDecode(req)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*messa
 }
 
 func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
-	i, err := c.callAndDecode(c.buildAtAllRemainRequestPacket(groupCode), decodeAtAllRemainResponse)
+	i, err := c.callAndDecode(c.buildAtAllRemainRequestPacket(groupCode))
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +210,7 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 }
 
 func (c *QQClient) multiMsgApplyUp(groupCode int64, data []byte, hash []byte, buType int32) (*multimsg.MultiMsgApplyUpRsp, []byte, error) {
-	i, err := c.callAndDecode(c.buildMultiApplyUpPacket(data, hash, buType, utils.ToGroupUin(groupCode)), decodeMultiApplyUpResponse)
+	i, err := c.callAndDecode(c.buildMultiApplyUpPacket(data, hash, buType, utils.ToGroupUin(groupCode)))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -267,7 +267,7 @@ func (c *QQClient) buildGroupSendingReq(groupCode int64, r, pkgNum, pkgIndex, pk
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload, nil)
 }
 
 func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) *network.Request {
@@ -278,7 +278,7 @@ func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) *n
 		PublicGroup: proto.Bool(false),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("MessageSvc.PbGetGroupMsg", payload)
+	return c.uniRequest("MessageSvc.PbGetGroupMsg", payload, decodeGetGroupMsgResponse)
 }
 
 func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) *network.Request {
@@ -289,7 +289,7 @@ func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) *network.Reque
 		Uin:                       proto.Uint64(uint64(c.Uin)),
 		GroupCode:                 proto.Uint64(uint64(groupCode)),
 	})
-	return c.uniRequest("OidbSvc.0x8a7_0", payload)
+	return c.uniRequest("OidbSvc.0x8a7_0", payload, decodeAtAllRemainResponse)
 }
 
 // OnlinePush.PbPushGroupMsg
@@ -357,7 +357,7 @@ func decodeGetGroupMsgResponse(c *QQClient, resp *network.Response) (interface{}
 					end := int32(math.Min(float64(i+19), float64(m.Head.GetMsgSeq()+m.Content.GetPkgNum())))
 					req := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GetGroupCode(), int64(i), int64(end))
 					req.Params = network.Params{"raw": true}
-					data, err := c.callAndDecode(req, decodeGetGroupMsgResponse)
+					data, err := c.callAndDecode(req)
 					if err != nil {
 						return nil, errors.Wrap(err, "build fragmented message error")
 					}
@@ -545,7 +545,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 
 // SetEssenceMessage 设为群精华消息
 func (c *QQClient) SetEssenceMessage(groupCode int64, msgID, msgInternalId int32) error {
-	r, err := c.callAndDecode(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgID), uint32(msgInternalId), 1), decodeEssenceMsgResponse)
+	r, err := c.callAndDecode(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgID), uint32(msgInternalId), 1))
 	if err != nil {
 		return errors.Wrap(err, "set essence msg network")
 	}
@@ -558,7 +558,7 @@ func (c *QQClient) SetEssenceMessage(groupCode int64, msgID, msgInternalId int32
 
 // DeleteEssenceMessage 移出群精华消息
 func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgID, msgInternalId int32) error {
-	r, err := c.callAndDecode(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgID), uint32(msgInternalId), 2), decodeEssenceMsgResponse)
+	r, err := c.callAndDecode(c.buildEssenceMsgOperatePacket(groupCode, uint32(msgID), uint32(msgInternalId), 2))
 	if err != nil {
 		return errors.Wrap(err, "set essence msg networ")
 	}
@@ -576,7 +576,7 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 		Seq:       proto.Uint32(msgSeq),
 		Random:    proto.Uint32(msgRand),
 	})
-	return c.uniRequest(commandName, payload)
+	return c.uniRequest(commandName, payload, decodeEssenceMsgResponse)
 }
 
 // OidbSvc.0xeac_1/2

@@ -18,7 +18,7 @@ const (
 
 // CheckUrlSafely 通过TX服务器检查URL安全性
 func (c *QQClient) CheckUrlSafely(url string) UrlSecurityLevel {
-	i, err := c.callAndDecode(c.buildUrlCheckRequest(url), decodeUrlCheckResponse)
+	i, err := c.callAndDecode(c.buildUrlCheckRequest(url))
 	if err != nil {
 		return Unknown
 	}
@@ -41,7 +41,7 @@ func (c *QQClient) buildUrlCheckRequest(url string) *network.Request {
 			Qua:         proto.String("AQQ_2013 4.6/2013 8.4.184945&NA_0/000000&ADR&null18&linux&2017&C2293D02BEE31158&7.1.2&V3"),
 		},
 	})
-	return c.uniRequest("OidbSvc.0xbcb_0", payload)
+	return c.uniRequest("OidbSvc.0xbcb_0", payload, decodeUrlCheckResponse)
 }
 
 func decodeUrlCheckResponse(_ *QQClient, resp *network.Response) (interface{}, error) {

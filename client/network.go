@@ -1,11 +1,12 @@
 package client
 
 import (
-	"github.com/Mrs4s/MiraiGo/message"
 	"net"
 	"runtime/debug"
 	"sync"
 	"time"
+
+	"github.com/Mrs4s/MiraiGo/message"
 
 	"github.com/pkg/errors"
 
@@ -116,7 +117,7 @@ func (c *QQClient) connect() error {
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
 			c.stat.MessageSent.Add(1)
 		})
-		//go c.netLoop()
+		// go c.netLoop()
 	})
 	return c.connectFastest() // 暂时?
 	/*c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
@@ -169,12 +170,13 @@ func (c *QQClient) send(call *network.Call) {
 	if call.Done == nil {
 		call.Done = make(chan *network.Call, 3) // use buffered channel
 	}
-	seq := uint16(call.Request.SequenceID)
+	seq := call.Request.SequenceID
 	c.pendingMu.Lock()
 	c.pending[seq] = call
 	c.pendingMu.Unlock()
 
 	err := c.sendPacket(c.transport.PackPacket(call.Request))
+	c.Debug("send pkt: %v seq: %d", call.Request.CommandName, call.Request.SequenceID)
 	if err != nil {
 		c.pendingMu.Lock()
 		call = c.pending[seq]
@@ -203,12 +205,12 @@ func (c *QQClient) call(req *network.Request) (*network.Response, error) {
 	}
 }
 
-func (c *QQClient) callAndDecode(req *network.Request, decoder func(*QQClient, *network.Response) (interface{}, error)) (interface{}, error) {
+func (c *QQClient) callAndDecode(req *network.Request) (interface{}, error) {
 	resp, err := c.call(req)
 	if err != nil {
 		return nil, err
 	}
-	return decoder(c, resp)
+	return req.Decode(resp)
 }
 
 // sendPacket 向服务器发送一个数据包
@@ -313,7 +315,7 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 
 	// snapshot of read call
 	c.pendingMu.Lock()
-	call := c.pending[uint16(req.SequenceID)]
+	call := c.pending[req.SequenceID]
 	if call != nil {
 		call.Response = &network.Response{
 			SequenceID:  req.SequenceID,

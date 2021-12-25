@@ -94,7 +94,7 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 }
 
 func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size uint64) (*message.GuildImageElement, error) {
-	rsp, err := s.c.callAndDecode(s.c.buildGuildImageStorePacket(guildId, channelId, hash, size), decodeGuildImageStoreResponse)
+	rsp, err := s.c.callAndDecode(s.c.buildGuildImageStorePacket(guildId, channelId, hash, size))
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
@@ -117,7 +117,7 @@ func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSe
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
-	rsp, err := s.c.callAndDecode(s.c.buildGuildImageStorePacket(guildId, channelId, fh, uint64(length)), decodeGuildImageStoreResponse)
+	rsp, err := s.c.callAndDecode(s.c.buildGuildImageStorePacket(guildId, channelId, fh, uint64(length)))
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []
 		},
 		CommandId: proto.Uint32(83),
 	})
-	return c.uniRequest("ImgStore.QQMeetPicUp", payload)
+	return c.uniRequest("ImgStore.QQMeetPicUp", payload, decodeGuildImageStoreResponse)
 }
 
 func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*message.GuildMessageEmojiReaction) {
@@ -349,7 +349,7 @@ func (c *QQClient) buildPttGuildVideoUpReq(videoHash, thumbHash []byte, guildId,
 	pb.PttShortVideoUploadReq.ToUin = channelId
 	pb.ExtensionReq[0].SubBusiType = 4601
 	payload, _ := proto.Marshal(pb)
-	return c.uniRequest("PttCenterSvr.GroupShortVideoUpReq", payload)
+	return c.uniRequest("PttCenterSvr.GroupShortVideoUpReq", payload, decodeGroupShortVideoUploadResponse)
 }
 
 func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb io.ReadSeeker) (*message.ShortVideoElement, error) {
@@ -361,7 +361,7 @@ func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	i, err := c.callAndDecode(c.buildPttGuildVideoUpReq(videoHash, thumbHash, int64(guildId), int64(channelId), videoLen, thumbLen), decodeGroupShortVideoUploadResponse)
+	i, err := c.callAndDecode(c.buildPttGuildVideoUpReq(videoHash, thumbHash, int64(guildId), int64(channelId), videoLen, thumbLen))
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
 	}

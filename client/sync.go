@@ -45,7 +45,7 @@ type (
 
 // GetAllowedClients 获取已允许的其他客户端
 func (c *QQClient) GetAllowedClients() ([]*OtherClientInfo, error) {
-	i, err := c.callAndDecode(c.buildDeviceListRequestPacket(), decodeDevListResponse)
+	i, err := c.callAndDecode(c.buildDeviceListRequestPacket())
 	if err != nil {
 		return nil, err
 	}
@@ -104,11 +104,11 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 
 // MarkGroupMessageReaded 标记群消息已读, 适当调用应该能减少风控
 func (c *QQClient) MarkGroupMessageReaded(groupCode, seq int64) {
-	_, _ = c.callAndDecode(c.buildGroupMsgReadedPacket(groupCode, seq), decodeMsgReadedResponse)
+	_, _ = c.callAndDecode(c.buildGroupMsgReadedPacket(groupCode, seq))
 }
 
 func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
-	_, _ = c.callAndDecode(c.buildPrivateMsgReadedPacket(uin, time), decodeMsgReadedResponse)
+	_, _ = c.callAndDecode(c.buildPrivateMsgReadedPacket(uin, time))
 }
 
 // StatSvc.GetDevLoginInfo
@@ -129,7 +129,7 @@ func (c *QQClient) buildDeviceListRequestPacket() *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("StatSvc.GetDevLoginInfo", pkt.ToBytes())
+	return c.uniRequest("StatSvc.GetDevLoginInfo", pkt.ToBytes(), decodeDevListResponse)
 }
 
 // RegPrxySvc.getOffMsg
@@ -183,7 +183,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("RegPrxySvc.getOffMsg", pkt.ToBytes())
+	return c.uniRequest("RegPrxySvc.getOffMsg", pkt.ToBytes(), nil)
 }
 
 // RegPrxySvc.PbSyncMsg
@@ -255,7 +255,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() *network.Request {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniRequest("RegPrxySvc.infoSync", pkt.ToBytes())
+	return c.uniRequest("RegPrxySvc.infoSync", pkt.ToBytes(), nil)
 }
 
 // PbMessageSvc.PbMsgReadedReport
@@ -264,7 +264,7 @@ func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) *network.R
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		LastReadSeq: proto.Uint64(uint64(msgSeq)),
 	}}})
-	return c.uniRequest("PbMessageSvc.PbMsgReadedReport", req)
+	return c.uniRequest("PbMessageSvc.PbMsgReadedReport", req, decodeMsgReadedResponse)
 }
 
 func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) *network.Request {
@@ -274,7 +274,7 @@ func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) *network.Request
 			LastReadTime: proto.Uint32(uint32(time)),
 		},
 	}, SyncCookie: c.sig.SyncCookie}})
-	return c.uniRequest("PbMessageSvc.PbMsgReadedReport", req)
+	return c.uniRequest("PbMessageSvc.PbMsgReadedReport", req, decodeMsgReadedResponse)
 }
 
 // StatSvc.GetDevLoginInfo

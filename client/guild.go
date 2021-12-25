@@ -301,7 +301,7 @@ func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 
 func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	req := s.c.uniRequest("OidbSvcTrpcTcp.0x1019_1",
-		s.c.packOIDBPackageDynamically(4121, 1, binary.DynamicProtoMessage{1: guildId}))
+		s.c.packOIDBPackageDynamically(4121, 1, binary.DynamicProtoMessage{1: guildId}), nil)
 	rsp, err := s.c.call(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -341,7 +341,7 @@ func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32
 			3: independent,
 		},
 		4: initialUsers,
-	}))
+	}), nil)
 	rsp, err := s.c.call(req)
 	if err != nil {
 		return 0, errors.Wrap(err, "send packet error")
@@ -357,7 +357,7 @@ func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
 	req := s.c.uniRequest("OidbSvcTrpcTcp.0x100e_1", s.c.packOIDBPackageDynamically(4110, 1, binary.DynamicProtoMessage{
 		1: guildId,
 		2: roleId,
-	}))
+	}), nil)
 	_, err := s.c.call(req)
 	if err != nil {
 		return errors.Wrap(err, "send packet error")
@@ -377,7 +377,7 @@ func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint6
 	req := s.c.uniRequest("OidbSvcTrpcTcp.0x101a_1", s.c.packOIDBPackageDynamically(4122, 1, binary.DynamicProtoMessage{
 		1: guildId,
 		2: setOrRemove,
-	}))
+	}), nil)
 	_, err := s.c.call(req)
 	if err != nil {
 		return errors.Wrap(err, "send packet error")
@@ -400,7 +400,7 @@ func (s *GuildService) ModifyRoleInGuild(guildId uint64, roleId uint64, name str
 			2: color,
 			3: indepedent,
 		},
-	}))
+	}), nil)
 	_, err := s.c.call(req)
 	if err != nil {
 		return errors.Wrap(err, "send packet error")
@@ -424,7 +424,7 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 			1: guildId,
 		},
 	})
-	req := s.c.uniRequest("OidbSvcTrpcTcp.0xf57_9", payload)
+	req := s.c.uniRequest("OidbSvcTrpcTcp.0xf57_9", payload, nil)
 	rsp, err := s.c.call(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -453,7 +453,7 @@ func (s *GuildService) FetchChannelList(guildId uint64) (r []*ChannelInfo, e err
 				3: binary.DynamicProtoMessage{
 					1: uint32(1),
 				},
-			}))
+			}), nil)
 	rsp, err := s.c.call(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -469,7 +469,11 @@ func (s *GuildService) FetchChannelList(guildId uint64) (r []*ChannelInfo, e err
 }
 
 func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo, error) {
-	req := s.c.uniRequest("OidbSvcTrpcTcp.0xf55_1", s.c.packOIDBPackageDynamically(3925, 1, binary.DynamicProtoMessage{1: guildId, 2: channelId}))
+	req := s.c.uniRequest("OidbSvcTrpcTcp.0xf55_1",
+		s.c.packOIDBPackageDynamically(3925, 1, binary.DynamicProtoMessage{
+			1: guildId,
+			2: channelId,
+		}), nil)
 	rsp, err := s.c.call(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -523,7 +527,7 @@ func (s *GuildService) GetTopicChannelFeeds(guildId, channelId uint64) ([]*topic
 			},
 		},
 	})
-	call := s.c.uniRequest("QChannelSvr.trpc.qchannel.commreader.ComReader.GetChannelTimelineFeeds", payload)
+	call := s.c.uniRequest("QChannelSvr.trpc.qchannel.commreader.ComReader.GetChannelTimelineFeeds", payload, nil)
 	rsp, err := s.c.call(call)
 	if err != nil {
 		return nil, errors.New("send packet error")
@@ -593,7 +597,7 @@ func (s *GuildService) PostTopicChannelFeed(guildId, channelId uint64, feed *top
 			},
 		},
 	})
-	rsp, err := s.c.call(s.c.uniRequest("QChannelSvr.trpc.qchannel.commwriter.ComWriter.PublishFeed", payload))
+	rsp, err := s.c.call(s.c.uniRequest("QChannelSvr.trpc.qchannel.commwriter.ComWriter.PublishFeed", payload, nil))
 	if err != nil {
 		return errors.New("send packet error")
 	}
@@ -621,7 +625,7 @@ func (s *GuildService) fetchMemberRoles(guildId uint64, tinyId uint64) ([]*Guild
 			2: u1,
 			3: u1,
 		},
-	}))
+	}), nil)
 	rsp, err := s.c.call(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -730,7 +734,7 @@ func (c *QQClient) buildSyncChannelFirstViewPacket() *network.Request {
 		DirectMessageFlag: proto.Uint32(1),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("trpc.group_pro.synclogic.SyncLogic.SyncFirstView", payload)
+	return c.uniRequest("trpc.group_pro.synclogic.SyncLogic.SyncFirstView", payload, nil)
 }
 
 func decodeGuildPushFirstView(c *QQClient, resp *network.Response) (interface{}, error) {

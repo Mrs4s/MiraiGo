@@ -48,7 +48,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	defer imgWaiter.Done(key)
 
 	req := c.buildGroupImageStoreRequest(groupCode, fh, int32(length))
-	r, err := c.callAndDecode(req, decodeGroupImageStoreResponse)
+	r, err := c.callAndDecode(req)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	defer imgWaiter.Done(key)
 
 	req := c.buildGroupImageStoreRequest(groupCode, fh, int32(length))
-	r, err := c.callAndDecode(req, decodeGroupImageStoreResponse)
+	r, err := c.callAndDecode(req)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message
 }
 
 func (c *QQClient) GetGroupImageDownloadUrl(fileId, groupCode int64, fileMd5 []byte) (string, error) {
-	i, err := c.callAndDecode(c.buildGroupImageDownloadRequest(fileId, groupCode, fileMd5), decodeGroupImageDownloadResponse)
+	i, err := c.callAndDecode(c.buildGroupImageDownloadRequest(fileId, groupCode, fileMd5))
 	if err != nil {
 		return "", err
 	}
@@ -186,7 +186,7 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 			_ = b.Close()
 		}
 		call := c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height)
-		rsp, err := c.callAndDecode(call, decodeImageOcrResponse)
+		rsp, err := c.callAndDecode(call)
 		if err != nil {
 			return nil, err
 		}
@@ -196,7 +196,7 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 }
 
 func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*message.GroupImageElement, error) {
-	r, err := c.callAndDecode(c.buildGroupImageStoreRequest(groupCode, hash, size), decodeGroupImageStoreResponse)
+	r, err := c.callAndDecode(c.buildGroupImageStoreRequest(groupCode, hash, size))
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 }
 
 func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*message.FriendImageElement, error) {
-	i, err := c.callAndDecode(c.buildOffPicUpRequest(target, hash, size), decodeOffPicUpResponse)
+	i, err := c.callAndDecode(c.buildOffPicUpRequest(target, hash, size))
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +259,7 @@ func (c *QQClient) buildGroupImageStoreRequest(groupCode int64, md5 []byte, size
 		Extension: EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("ImgStore.GroupPicUp", payload)
+	return c.uniRequest("ImgStore.GroupPicUp", payload, decodeGroupImageStoreResponse)
 }
 
 func (c *QQClient) buildGroupImageDownloadRequest(fileId, groupCode int64, fileMd5 []byte) *network.Request {
@@ -283,7 +283,7 @@ func (c *QQClient) buildGroupImageDownloadRequest(fileId, groupCode int64, fileM
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniRequest("ImgStore.GroupPicDown", payload)
+	return c.uniRequest("ImgStore.GroupPicDown", payload, decodeGroupImageDownloadResponse)
 }
 
 func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
@@ -329,7 +329,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3591, 0, b)
-	return c.uniRequest("OidbSvc.0xe07_0", payload)
+	return c.uniRequest("OidbSvc.0xe07_0", payload, decodeImageOcrResponse)
 }
 
 // ImgStore.GroupPicUp

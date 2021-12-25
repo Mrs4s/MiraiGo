@@ -26,4 +26,5 @@ type Request struct {
 	Body        []byte
 
 	Params Params
+	Decode func(*Response) (interface{}, error) // callAndDecode use this function to decode response
 }

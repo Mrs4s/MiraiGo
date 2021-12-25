@@ -25,7 +25,7 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) *network.R
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacketWithSeq(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload)
+	return c.uniPacketWithSeq(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload, decodeOfflineFileDownloadResponse)
 }
 
 func decodeOfflineFileDownloadResponse(c *QQClient, resp *network.Response) (interface{}, error) {
