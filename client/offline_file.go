@@ -8,11 +8,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
-func init() {
-	decoders["OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200"] = decodeOfflineFileDownloadResponse
-}
-
-func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, []byte) {
+func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) *network.Request {
 	seq := c.nextSeq()
 	req := &cmd0x346.C346ReqBody{
 		Cmd:        1200,
@@ -29,8 +25,7 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, [
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := c.uniPacketWithSeq(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload)
-	return seq, packet
+	return c.uniPacketWithSeq(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload)
 }
 
 func decodeOfflineFileDownloadResponse(c *QQClient, resp *network.Response) (interface{}, error) {

@@ -17,16 +17,9 @@ import (
 )
 
 func init() {
-	decoders["StatSvc.GetDevLoginInfo"] = decodeDevListResponse
 	decoders["StatSvc.SvcReqMSFLoginNotify"] = decodeLoginNotifyPacket
-	decoders["RegPrxySvc.getOffMsg"] = ignoreDecoder
-	decoders["RegPrxySvc.GetMsgV2"] = ignoreDecoder
-	decoders["RegPrxySvc.PbGetMsg"] = ignoreDecoder
-	decoders["RegPrxySvc.NoticeEnd"] = ignoreDecoder
 	decoders["RegPrxySvc.PushParam"] = decodePushParamPacket
 	decoders["RegPrxySvc.PbSyncMsg"] = decodeMsgSyncResponse
-	decoders["PbMessageSvc.PbMsgReadedReport"] = decodeMsgReadedResponse
-	decoders["MessageSvc.PushReaded"] = ignoreDecoder
 	decoders["OnlinePush.PbC2CMsgSync"] = decodeC2CSyncPacket
 }
 
@@ -52,7 +45,7 @@ type (
 
 // GetAllowedClients 获取已允许的其他客户端
 func (c *QQClient) GetAllowedClients() ([]*OtherClientInfo, error) {
-	i, err := c.sendAndWait(c.buildDeviceListRequestPacket())
+	i, err := c.callAndDecode(c.buildDeviceListRequestPacket(), decodeDevListResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +63,7 @@ func (c *QQClient) GetAllowedClients() ([]*OtherClientInfo, error) {
 
 // RefreshStatus 刷新客户端状态
 func (c *QQClient) RefreshStatus() error {
-	_, err := c.sendAndWait(c.buildGetOfflineMsgRequestPacket())
+	_, err := c.call(c.buildGetOfflineMsgRequestPacket())
 	return err
 }
 
@@ -95,8 +88,8 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 			notifyChan <- true
 		}
 	})
-	_, pkt := c.buildSyncMsgRequestPacket()
-	if err := c.sendPacket(pkt); err != nil {
+	pkt := c.buildSyncMsgRequestPacket()
+	if _, err := c.call(pkt); err != nil {
 		stop()
 		return nil, err
 	}
@@ -111,15 +104,15 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 
 // MarkGroupMessageReaded 标记群消息已读, 适当调用应该能减少风控
 func (c *QQClient) MarkGroupMessageReaded(groupCode, seq int64) {
-	_, _ = c.sendAndWait(c.buildGroupMsgReadedPacket(groupCode, seq))
+	_, _ = c.callAndDecode(c.buildGroupMsgReadedPacket(groupCode, seq), decodeMsgReadedResponse)
 }
 
 func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
-	_, _ = c.sendAndWait(c.buildPrivateMsgReadedPacket(uin, time))
+	_, _ = c.callAndDecode(c.buildPrivateMsgReadedPacket(uin, time), decodeMsgReadedResponse)
 }
 
 // StatSvc.GetDevLoginInfo
-func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildDeviceListRequestPacket() *network.Request {
 	req := &jce.SvcReqGetDevLoginInfo{
 		Guid:           c.deviceInfo.Guid,
 		LoginType:      1,
@@ -136,11 +129,11 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacket("StatSvc.GetDevLoginInfo", pkt.ToBytes())
+	return c.uniRequest("StatSvc.GetDevLoginInfo", pkt.ToBytes())
 }
 
 // RegPrxySvc.getOffMsg
-func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildGetOfflineMsgRequestPacket() *network.Request {
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional: 0x101C2 | 32,
 		C2CMsg: &jce.SvcReqGetMsgV2{
@@ -190,11 +183,11 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacket("RegPrxySvc.getOffMsg", pkt.ToBytes())
+	return c.uniRequest("RegPrxySvc.getOffMsg", pkt.ToBytes())
 }
 
 // RegPrxySvc.PbSyncMsg
-func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildSyncMsgRequestPacket() *network.Request {
 	oidbReq, _ := proto.Marshal(&oidb.D769RspBody{
 		ConfigList: []*oidb.D769ConfigSeq{
 			{
@@ -262,26 +255,26 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 		Context:      make(map[string]string),
 		Status:       make(map[string]string),
 	}
-	return c.uniPacket("RegPrxySvc.infoSync", pkt.ToBytes())
+	return c.uniRequest("RegPrxySvc.infoSync", pkt.ToBytes())
 }
 
 // PbMessageSvc.PbMsgReadedReport
-func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) (uint16, []byte) {
+func (c *QQClient) buildGroupMsgReadedPacket(groupCode, msgSeq int64) *network.Request {
 	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{GrpReadReport: []*msg.PbGroupReadedReportReq{{
 		GroupCode:   proto.Uint64(uint64(groupCode)),
 		LastReadSeq: proto.Uint64(uint64(msgSeq)),
 	}}})
-	return c.uniPacket("PbMessageSvc.PbMsgReadedReport", req)
+	return c.uniRequest("PbMessageSvc.PbMsgReadedReport", req)
 }
 
-func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte) {
+func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) *network.Request {
 	req, _ := proto.Marshal(&msg.PbMsgReadedReportReq{C2CReadReport: &msg.PbC2CReadedReportReq{PairInfo: []*msg.UinPairReadInfo{
 		{
 			PeerUin:      proto.Uint64(uint64(uin)),
 			LastReadTime: proto.Uint32(uint32(time)),
 		},
 	}, SyncCookie: c.sig.SyncCookie}})
-	return c.uniPacket("PbMessageSvc.PbMsgReadedReport", req)
+	return c.uniRequest("PbMessageSvc.PbMsgReadedReport", req)
 }
 
 // StatSvc.GetDevLoginInfo

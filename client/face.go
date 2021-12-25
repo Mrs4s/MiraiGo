@@ -15,19 +15,15 @@ type CustomFace struct {
 	Url   string
 }
 
-func init() {
-	decoders["Faceroam.OpReq"] = decodeFaceroamResponse
-}
-
 func (c *QQClient) GetCustomFaces() ([]*CustomFace, error) {
-	i, err := c.sendAndWait(c.buildFaceroamRequestPacket())
+	i, err := c.callAndDecode(c.buildFaceroamRequestPacket(), decodeFaceroamResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "get faces error")
 	}
 	return i.([]*CustomFace), nil
 }
 
-func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
+func (c *QQClient) buildFaceroamRequestPacket() *network.Request {
 	payload, _ := proto.Marshal(&faceroam.FaceroamReqBody{
 		Comm: &faceroam.PlatInfo{
 			Implat: proto.Int64(109),
@@ -38,7 +34,7 @@ func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
 		SubCmd:      proto.Uint32(1),
 		ReqUserInfo: &faceroam.ReqUserInfo{},
 	})
-	return c.uniPacket("Faceroam.OpReq", payload)
+	return c.uniRequest("Faceroam.OpReq", payload)
 }
 
 func decodeFaceroamResponse(c *QQClient, resp *network.Response) (interface{}, error) {

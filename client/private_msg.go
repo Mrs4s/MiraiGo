@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
@@ -37,13 +38,13 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 			if i == 0 {
 				seq = fseq
 			}
-			_, pkt := c.buildFriendSendingPacket(target, fseq, mr, int32(len(fragmented)), int32(i), div, t, elems)
-			_ = c.sendPacket(pkt)
+			req := c.buildFriendSendingPacket(target, fseq, mr, int32(len(fragmented)), int32(i), div, t, elems)
+			c.sendReq(req)
 		}
 	} else {
 		seq = c.nextFriendSeq()
-		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
-		_ = c.sendPacket(pkt)
+		pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
+		c.sendReq(pkt)
 	}
 	c.stat.MessageSent.Add(1)
 	ret := &message.PrivateMessage{
@@ -82,8 +83,8 @@ func (c *QQClient) SendGroupTempMessage(groupCode, target int64, m *message.Send
 	mr := int32(rand.Uint32())
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
-	_, pkt := c.buildGroupTempSendingPacket(group.Uin, target, seq, mr, t, m)
-	_ = c.sendPacket(pkt)
+	pkt := c.buildGroupTempSendingPacket(group.Uin, target, seq, mr, t, m)
+	c.sendReq(pkt)
 	c.stat.MessageSent.Add(1)
 	return &message.TempMessage{
 		Id:        seq,
@@ -103,8 +104,8 @@ func (c *QQClient) sendWPATempMessage(target int64, sig []byte, m *message.Sendi
 	mr := int32(rand.Uint32())
 	seq := c.nextFriendSeq()
 	t := time.Now().Unix()
-	_, pkt := c.buildWPATempSendingPacket(target, sig, seq, mr, t, m)
-	_ = c.sendPacket(pkt)
+	pkt := c.buildWPATempSendingPacket(target, sig, seq, mr, t, m)
+	c.sendReq(pkt)
 	c.stat.MessageSent.Add(1)
 	return &message.TempMessage{
 		Id:   seq,
@@ -130,7 +131,7 @@ func (s *TempSessionInfo) SendMessage(m *message.SendingMessage) (*message.TempM
 }
 
 /* this function is unused
-func (c *QQClient) buildGetOneDayRoamMsgRequest(target, lastMsgTime, random int64, count uint32) (uint16, []byte) {
+func (c *QQClient) buildGetOneDayRoamMsgRequest(target, lastMsgTime, random int64, count uint32) *network.Request {
 	seq := c.nextSeq()
 	req := &msg.PbGetOneDayRoamMsgReq{
 		PeerUin:     proto.Uint64(uint64(target)),
@@ -145,7 +146,7 @@ func (c *QQClient) buildGetOneDayRoamMsgRequest(target, lastMsgTime, random int6
 */
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) (uint16, []byte) {
+func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkgIndex, pkgDiv int32, time int64, m []message.IMessageElement) *network.Request {
 	var ptt *msg.Ptt
 	if len(m) > 0 {
 		if p, ok := m[0].(*message.PrivateVoiceElement); ok {
@@ -178,11 +179,11 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload)
 }
 
 // MessageSvc.PbSendMsg
-func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r int32, time int64, m *message.SendingMessage) *network.Request {
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{GrpTmp: &msg.GrpTmp{
 			GroupUin: &groupUin,
@@ -210,10 +211,10 @@ func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload)
 }
 
-func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
+func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r int32, time int64, m *message.SendingMessage) *network.Request {
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{WpaTmp: &msg.WPATmp{
 			ToUin: proto.Uint64(uint64(uin)),
@@ -241,5 +242,5 @@ func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r in
 		}(),
 	}
 	payload, _ := proto.Marshal(req)
-	return c.uniPacket("MessageSvc.PbSendMsg", payload)
+	return c.uniRequest("MessageSvc.PbSendMsg", payload)
 }

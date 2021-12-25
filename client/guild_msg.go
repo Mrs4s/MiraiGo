@@ -35,10 +35,6 @@ type guildImageUploadResponse struct {
 	IsExists      bool
 }
 
-func init() {
-	decoders["ImgStore.QQMeetPicUp"] = decodeGuildImageStoreResponse
-}
-
 func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *message.SendingMessage) (*message.GuildChannelMessage, error) {
 	mr := rand.Uint32() // 客户端似乎是生成的 u32 虽然类型是u64
 	for _, elem := range m.Elements {
@@ -68,13 +64,12 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 		},
 	}}
 	payload, _ := proto.Marshal(req)
-	seq, packet := s.c.uniPacket("MsgProxy.SendMsg", payload)
-	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	rsp, err := s.c.commandCall("MsgProxy.SendMsg", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	body := new(channel.DF62RspBody)
-	if err = proto.Unmarshal(rsp, body); err != nil {
+	if err = proto.Unmarshal(rsp.Body, body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if body.GetResult() != 0 {
@@ -99,7 +94,7 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 }
 
 func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size uint64) (*message.GuildImageElement, error) {
-	rsp, err := s.c.sendAndWait(s.c.buildGuildImageStorePacket(guildId, channelId, hash, size))
+	rsp, err := s.c.callAndDecode(s.c.buildGuildImageStorePacket(guildId, channelId, hash, size), decodeGuildImageStoreResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
@@ -122,7 +117,7 @@ func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSe
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
-	rsp, err := s.c.sendAndWait(s.c.buildGuildImageStorePacket(guildId, channelId, fh, uint64(length)))
+	rsp, err := s.c.callAndDecode(s.c.buildGuildImageStorePacket(guildId, channelId, fh, uint64(length)), decodeGuildImageStoreResponse)
 	if err != nil {
 		return nil, err
 	}
@@ -215,19 +210,18 @@ func (s *GuildService) pullChannelMessages(guildId, channelId, beginSeq, endSeq,
 		WithVersionFlag:   &withVersionFlag,
 		DirectMessageFlag: &directFlag,
 	})
-	seq, packet := s.c.uniPacket("trpc.group_pro.synclogic.SyncLogic.GetChannelMsg", payload)
-	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
+	rsp, err := s.c.commandCall("trpc.group_pro.synclogic.SyncLogic.GetChannelMsg", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
 	msgRsp := new(channel.ChannelMsgRsp)
-	if err = proto.Unmarshal(rsp, msgRsp); err != nil {
+	if err = proto.Unmarshal(rsp.Body, msgRsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return msgRsp.ChannelMsg.Msgs, nil
 }
 
-func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []byte, size uint64) (uint16, []byte) {
+func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []byte, size uint64) *network.Request {
 	payload, _ := proto.Marshal(&cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
 		Subcmd:  proto.Uint32(1),
@@ -252,7 +246,7 @@ func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []
 		},
 		CommandId: proto.Uint32(83),
 	})
-	return c.uniPacket("ImgStore.QQMeetPicUp", payload)
+	return c.uniRequest("ImgStore.QQMeetPicUp", payload)
 }
 
 func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*message.GuildMessageEmojiReaction) {
@@ -345,13 +339,13 @@ func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) 
 }
 
 // PttCenterSvr.GroupShortVideoUpReq
-func (c *QQClient) buildPttGuildVideoUpReq(videoHash, thumbHash []byte, guildId, channelId int64, videoSize, thumbSize int64) (uint16, []byte) {
+func (c *QQClient) buildPttGuildVideoUpReq(videoHash, thumbHash []byte, guildId, channelId int64, videoSize, thumbSize int64) *network.Request {
 	pb := c.buildPttGroupShortVideoProto(videoHash, thumbHash, guildId, videoSize, thumbSize, 4)
 	pb.PttShortVideoUploadReq.BusinessType = 4601
 	pb.PttShortVideoUploadReq.ToUin = channelId
 	pb.ExtensionReq[0].SubBusiType = 4601
 	payload, _ := proto.Marshal(pb)
-	return c.uniPacket("PttCenterSvr.GroupShortVideoUpReq", payload)
+	return c.uniRequest("PttCenterSvr.GroupShortVideoUpReq", payload)
 }
 
 func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb io.ReadSeeker) (*message.ShortVideoElement, error) {
@@ -363,7 +357,7 @@ func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	i, err := c.sendAndWait(c.buildPttGuildVideoUpReq(videoHash, thumbHash, int64(guildId), int64(channelId), videoLen, thumbLen))
+	i, err := c.callAndDecode(c.buildPttGuildVideoUpReq(videoHash, thumbHash, int64(guildId), int64(channelId), videoLen, thumbLen), decodeGroupShortVideoUploadResponse)
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
 	}
