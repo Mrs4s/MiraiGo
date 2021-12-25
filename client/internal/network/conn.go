@@ -12,9 +12,9 @@ import (
 )
 
 type TCPListener struct {
-	lock                 sync.RWMutex
-	conn                 *net.TCPConn
-	connected            bool
+	//lock                 sync.RWMutex
+	conn *net.TCPConn
+	//connected            bool
 	PlannedDisconnect    func(*TCPListener)
 	UnexpectedDisconnect func(*TCPListener, error)
 }
@@ -36,17 +36,69 @@ var ErrConnectionClosed = errors.New("connection closed")
 //	t.unexpectedDisconnect = f
 //}
 
+func (t *TCPListener) getConn() *net.TCPConn {
+	return (*net.TCPConn)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn))))
+}
+
+func (t *TCPListener) setConn(conn *net.TCPConn) (swapped bool) {
+	return atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn)), unsafe.Pointer(nil), unsafe.Pointer(conn))
+}
+
+func (t *TCPListener) closeConn() *net.TCPConn {
+	return (*net.TCPConn)(atomic.SwapPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn)), unsafe.Pointer(nil)))
+}
+
+func (t *TCPListener) Connected() bool {
+	// 等同于 t.getConn() != nil (? copilot写的)
+	return atomic.LoadInt32((*int32)(unsafe.Pointer(&t.conn))) != 0
+}
+
 func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 	t.Close()
 	conn, err := net.DialTCP("tcp", nil, addr)
 	if err != nil {
 		return errors.Wrap(err, "dial tcp error")
 	}
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	t.conn = conn
-	t.connected = true
+	t.setConn(conn)
+	//t.lock.Lock()
+	//defer t.lock.Unlock()
+	//t.conn = conn
 	return nil
+}
+
+// ConnectFastest 连接到最快的服务器
+// TODO 禁用不可用服务器
+func (t *TCPListener) ConnectFastest(addr []*net.TCPAddr) (net.Addr, error) {
+	ch := make(chan error)
+	wg := sync.WaitGroup{}
+	wg.Add(len(addr))
+	for _, remote := range addr {
+		go func(remote *net.TCPAddr) {
+			defer wg.Done()
+			conn, err := net.DialTCP("tcp", nil, remote)
+			if err != nil {
+				return
+			}
+			//addrs = append(addrs, remote)
+			if !t.setConn(conn) {
+				_ = conn.Close()
+				return
+			}
+			ch <- nil
+		}(remote)
+	}
+	go func() {
+		wg.Wait()
+		if t.getConn() == nil {
+			ch <- errors.New("All addr are unreachable")
+		}
+	}()
+	err := <-ch
+	if err != nil {
+		return nil, err
+	}
+	conn := t.getConn()
+	return conn.RemoteAddr(), nil
 }
 
 func (t *TCPListener) Write(buf []byte) error {
@@ -96,87 +148,37 @@ func (t *TCPListener) unexpectedClose(err error) {
 }
 
 func (t *TCPListener) close() {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-	if t.conn != nil {
-		_ = t.conn.Close()
-		t.conn = nil
-	}
-}
-
-func (t *TCPListener) invokePlannedDisconnect() {
-	t.lock.RLock()
-	defer t.lock.RUnlock()
-	if t.plannedDisconnect != nil && t.connected {
-		go t.plannedDisconnect(t)
-		t.connected = false
-	}
-}
-
-func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
-	t.lock.RLock()
-	defer t.lock.RUnlock()
-	if t.unexpectedDisconnect != nil && t.connected {
-		go t.unexpectedDisconnect(t, err)
-		t.connected = false
-	}
-}
-
-func (t *TCPListener) getConn() net.Conn {
-	t.lock.RLock()
-	defer t.lock.RUnlock()
-	return t.conn
-}
-
-func (t *TCPListener) GetConn() *net.TCPConn {
-	return (*net.TCPConn)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn))))
-}
-
-func (t *TCPListener) setConn(conn *net.TCPConn) (swapped bool) {
-	return atomic.CompareAndSwapPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn)), unsafe.Pointer(nil), unsafe.Pointer(conn))
-}
-
-func (t *TCPListener) closeConn() *net.TCPConn {
-	return (*net.TCPConn)(atomic.SwapPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn)), unsafe.Pointer(nil)))
-}
-
-func (t *TCPListener) CloseConn() {
 	if conn := t.closeConn(); conn != nil {
 		_ = conn.Close()
 	}
 }
 
-// ConnectFastest 连接到最快的服务器
-// TODO 禁用不可用服务器
-func (t *TCPListener) ConnectFastest(servers []*net.TCPAddr) (net.Addr, error) {
-	ch := make(chan error)
-	wg := sync.WaitGroup{}
-	wg.Add(len(servers))
-	for _, remote := range servers {
-		go func(remote *net.TCPAddr) {
-			defer wg.Done()
-			conn, err := net.DialTCP("tcp", nil, remote)
-			if err != nil {
-				return
-			}
-			//addrs = append(addrs, remote)
-			if !t.setConn(conn) {
-				_ = conn.Close()
-				return
-			}
-			ch <- nil
-		}(remote)
+func (t *TCPListener) invokePlannedDisconnect() {
+	if t.Connected() {
+		t.PlannedDisconnect(t)
 	}
-	go func() {
-		wg.Wait()
-		if t.GetConn() == nil {
-			ch <- errors.New("All servers are unreachable")
-		}
-	}()
-	err := <-ch
-	if err != nil {
-		return nil, err
-	}
-	conn := t.GetConn()
-	return conn.RemoteAddr(), nil
+	//t.lock.RLock()
+	//defer t.lock.RUnlock()
+	//if t.plannedDisconnect != nil && t.connected {
+	//	go t.plannedDisconnect(t)
+	//	t.connected = false
+	//}
 }
+
+func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
+	if t.Connected() {
+		t.UnexpectedDisconnect(t, err)
+	}
+	//t.lock.RLock()
+	//defer t.lock.RUnlock()
+	//if t.unexpectedDisconnect != nil && t.connected {
+	//	go t.unexpectedDisconnect(t, err)
+	//	t.connected = false
+	//}
+}
+
+//func (t *TCPListener) getConn() net.Conn {
+//	t.lock.RLock()
+//	defer t.lock.RUnlock()
+//	return t.conn
+//}
