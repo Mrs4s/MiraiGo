@@ -892,11 +892,11 @@ func (c *QQClient) doHeartbeat() {
 			Body:        EmptyBytes,
 		}
 		_, err := c.call(&req)
-		//if err != nil {
-		//	if errors.Is(err, ErrNotConnected) {
-		//		continue
-		//	}
-		//}
+		if err != nil {
+			if errors.Is(err, network.ErrConnectionBroken) {
+				break
+			}
+		}
 		times++
 		if times >= 7 {
 			_ = c.registerClient()

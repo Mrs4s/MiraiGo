@@ -19,8 +19,6 @@ type TCPListener struct {
 	UnexpectedDisconnect func(*TCPListener, error)
 }
 
-var ErrConnectionClosed = errors.New("connection closed")
-
 // PlannedDisconnect 预料中的断开连接
 // 如调用 Close() Connect()
 //func (t *TCPListener) PlannedDisconnect(f func(*TCPListener)) {
@@ -106,12 +104,12 @@ func (t *TCPListener) Write(buf []byte) error {
 		_, err := conn.Write(buf)
 		if err != nil {
 			t.unexpectedClose(err)
-			return ErrConnectionClosed
+			return ErrConnectionBroken
 		}
 		return nil
 	}
 
-	return ErrConnectionClosed
+	return ErrConnectionBroken
 }
 
 func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
@@ -121,12 +119,12 @@ func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
 		if err != nil {
 			// time.Sleep(time.Millisecond * 100) // 服务器会发送offline包后立即断开连接, 此时还没解析, 可能还是得加锁
 			t.unexpectedClose(err)
-			return nil, ErrConnectionClosed
+			return nil, ErrConnectionBroken
 		}
 		return buf, nil
 	}
 
-	return nil, ErrConnectionClosed
+	return nil, ErrConnectionBroken
 }
 
 func (t *TCPListener) ReadInt32() (int32, error) {

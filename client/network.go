@@ -84,9 +84,8 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 }
 
 func (c *QQClient) connectFastest() error {
-	c.handlers = HandlerMap{}
 	c.Disconnect()
-	addr, err := c.transport.ConnectFastest(c.servers)
+	addr, err := c.TCP.ConnectFastest(c.servers)
 	if err != nil {
 		c.Disconnect()
 		return err
