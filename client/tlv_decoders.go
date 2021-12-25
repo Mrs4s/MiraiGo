@@ -111,7 +111,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 
 	s.PsKeyMap = psKeyMap
 	s.Pt4TokenMap = pt4TokenMap
-	if len(c.sigInfo.encryptedA1) > 51+16 {
+	if len(c.sig.encryptedA1) > 51+16 {
 		data, cl := binary.OpenWriterF(func(w *binary.Writer) {
 			w.Write(c.PasswordMd5[:])
 			w.WriteUInt32(0) // []byte{0x00, 0x00, 0x00, 0x00}...
