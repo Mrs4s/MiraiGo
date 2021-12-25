@@ -10,10 +10,7 @@ import (
 
 var client = &http.Client{
 	Transport: &http.Transport{
-		ForceAttemptHTTP2:   true,
-		MaxConnsPerHost:     0,
-		MaxIdleConns:        0,
-		MaxIdleConnsPerHost: 999,
+		ForceAttemptHTTP2: true,
 	},
 }
 
