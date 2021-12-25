@@ -125,7 +125,7 @@ func readPacket(conn *net.TCPConn, minSize, maxSize uint32) ([]byte, error) {
 }
 
 func (t *Transport) netLoop(pktHandler PktHandler, respHandler RequestHandler) {
-	conn := t.conn.GetConn()
+	conn := t.conn.getConn()
 	defer func() {
 		if r := recover(); r != nil {
 			pktHandler(nil, fmt.Errorf("panic: %v", r))
@@ -137,7 +137,7 @@ func (t *Transport) netLoop(pktHandler PktHandler, respHandler RequestHandler) {
 		data, err := readPacket(conn, 4, 10<<20) // max 10MB
 		if err != nil {
 			// 连接未改变，没有建立新连接
-			if t.conn.GetConn() == conn {
+			if t.conn.getConn() == conn {
 				pktHandler(nil, errors.Wrap(ErrConnectionBroken, err.Error()))
 			}
 			return
