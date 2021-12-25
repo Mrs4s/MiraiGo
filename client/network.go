@@ -192,48 +192,6 @@ func (c *QQClient) callAndDecode(req *network.Request, decoder func(*QQClient, *
 	return decoder(c, resp)
 }
 
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte) (interface{}, error) {
-	return c.sendAndWaitParams(seq, pkt, nil)
-}
-
-// sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWaitParams(seq uint16, pkt []byte, params network.RequestParams) (interface{}, error) {
-	type T struct {
-		Response interface{}
-		Error    error
-	}
-	ch := make(chan T, 1)
-
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
-		ch <- T{
-			Response: i,
-			Error:    err,
-		}
-	}, params: params, dynamic: false})
-
-	err := c.sendPacket(pkt)
-	if err != nil {
-		c.handlers.Delete(seq)
-		return nil, err
-	}
-
-	retry := 0
-	for {
-		select {
-		case rsp := <-ch:
-			return rsp.Response, rsp.Error
-		case <-time.After(time.Second * 15):
-			retry++
-			if retry < 2 {
-				_ = c.sendPacket(pkt)
-				continue
-			}
-			c.handlers.Delete(seq)
-			return nil, errors.New("Packet timed out")
-		}
-	}
-}
-
 // sendPacket 向服务器发送一个数据包
 func (c *QQClient) sendPacket(pkt []byte) error {
 	err := c.TCP.Write(pkt)
@@ -271,25 +229,6 @@ func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, fil
 		return
 	case <-time.After(timeout):
 		return nil, errors.New("timeout")
-	}
-}
-
-// sendAndWaitDynamic
-// 发送数据包并返回需要解析的 response
-func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
-	ch := make(chan []byte, 1)
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) { ch <- i.([]byte) }, dynamic: true})
-	err := c.sendPacket(pkt)
-	if err != nil {
-		c.handlers.Delete(seq)
-		return nil, err
-	}
-	select {
-	case rsp := <-ch:
-		return rsp, nil
-	case <-time.After(time.Second * 15):
-		c.handlers.Delete(seq)
-		return nil, errors.New("Packet timed out")
 	}
 }
 
@@ -380,43 +319,35 @@ func (c *QQClient) netLoop() {
 					SequenceID:  req.SequenceID,
 					CommandName: req.CommandName,
 					Body:        req.Body,
+					Params:      call.Request.Params,
 					// Request:     nil,
 				}
 			}
 			c.pendingMu.Unlock()
-			if call != nil {
+			if call != nil && call.Request.CommandName == req.CommandName {
 				select {
 				case call.Done <- call:
 				default:
+					// we don't want blocking
 				}
+				return
 			}
 
 			if decoder, ok := decoders[req.CommandName]; ok {
 				// found predefined decoder
-				info, ok := c.handlers.LoadAndDelete(uint16(req.SequenceID))
-				var decoded interface{}
-				decoded = req.Body
-				if info == nil || !info.dynamic {
-					resp := network.Response{
-						SequenceID:  req.SequenceID,
-						CommandName: req.CommandName,
-						Params:      info.getParams(),
-						Body:        req.Body,
-						// Request:     nil,
-					}
-					decoded, err = decoder(c, &resp)
-					if err != nil {
-						c.Debug("decode req %v error: %+v", req.CommandName, err)
-					}
+				resp := network.Response{
+					SequenceID:  req.SequenceID,
+					CommandName: req.CommandName,
+					Body:        req.Body,
+					// Request:     nil,
 				}
-				if ok {
-					info.fun(decoded, err)
-				} else if f, ok := c.waiters.Load(req.CommandName); ok { // 在不存在handler的情况下触发wait
+				decoded, err := decoder(c, &resp)
+				if err != nil {
+					c.Debug("decode req %v error: %+v", req.CommandName, err)
+				}
+				if f, ok := c.waiters.Load(req.CommandName); ok { // 在不存在handler的情况下触发wait
 					f.(func(interface{}, error))(decoded, err)
 				}
-			} else if f, ok := c.handlers.LoadAndDelete(uint16(req.SequenceID)); ok {
-				// does not need decoder
-				f.fun(req.Body, nil)
 			} else {
 				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", req.CommandName, req.SequenceID)
 			}

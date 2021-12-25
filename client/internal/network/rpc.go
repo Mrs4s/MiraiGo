@@ -6,13 +6,12 @@ type Call struct {
 	Request  *Request
 	Response *Response
 	Err      error
-	Params   RequestParams
 	Done     chan *Call
 }
 
-type RequestParams map[string]interface{}
+type Params map[string]interface{}
 
-func (p RequestParams) Bool(k string) bool {
+func (p Params) Bool(k string) bool {
 	if p == nil {
 		return false
 	}
@@ -23,7 +22,7 @@ func (p RequestParams) Bool(k string) bool {
 	return i.(bool)
 }
 
-func (p RequestParams) Int32(k string) int32 {
+func (p Params) Int32(k string) int32 {
 	if p == nil {
 		return 0
 	}

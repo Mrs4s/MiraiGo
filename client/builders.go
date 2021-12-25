@@ -815,7 +815,7 @@ func (c *QQClient) buildGroupMemberInfoRequest(groupCode, uin int64) *network.Re
 }
 
 // MessageSvc.PbGetMsg
-func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64) (uint16, []byte) {
+func (c *QQClient) buildGetMessageRequest(flag msg.SyncFlag, msgTime int64) *network.Request {
 	cook := c.sig.SyncCookie
 	if cook == nil {
 		cook, _ = proto.Marshal(&msg.SyncCookie{
@@ -840,8 +840,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		ServerBuf:          EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	req2 := c.uniRequest("MessageSvc.PbGetMsg", payload)
-	return uint16(req2.SequenceID), c.transport.PackPacket(req2)
+	return c.uniRequest("MessageSvc.PbGetMsg", payload)
 }
 
 // MessageSvc.PbDeleteMsg

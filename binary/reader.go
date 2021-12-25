@@ -120,10 +120,6 @@ func (r *Reader) Len() int {
 	return r.buf.Len()
 }
 
-func (r *Reader) Index() int64 {
-	return r.buf.Size()
-}
-
 func (tlv TlvMap) Exists(key uint16) bool {
 	_, ok := tlv[key]
 	return ok

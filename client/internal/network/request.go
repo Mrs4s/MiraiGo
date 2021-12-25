@@ -24,4 +24,6 @@ type Request struct {
 	Uin         int64
 	CommandName string
 	Body        []byte
+
+	Params Params
 }

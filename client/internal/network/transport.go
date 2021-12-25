@@ -2,7 +2,6 @@ package network
 
 import (
 	"strconv"
-	"sync"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
@@ -10,10 +9,10 @@ import (
 
 // Transport is a network transport.
 type Transport struct {
-	sessionMu sync.Mutex
-	Sig       *auth.SigInfo
-	Version   *auth.AppVersion
-	Device    *auth.Device
+	// sessionMu sync.Mutex
+	Sig     *auth.SigInfo
+	Version *auth.AppVersion
+	Device  *auth.Device
 
 	// connection
 	// conn *TCPListener

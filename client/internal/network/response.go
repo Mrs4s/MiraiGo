@@ -13,7 +13,7 @@ type Response struct {
 	CommandName string
 	Body        []byte
 
-	Params RequestParams
+	Params Params
 	// Request is the original request that obtained this response.
 	// Request *Request
 }

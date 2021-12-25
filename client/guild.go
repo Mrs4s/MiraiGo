@@ -187,7 +187,7 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 		3: tinyId,
 		4: uint32(0),
 	})
-	rsp, err := s.c.commandCall("OidbSvcTrpcTcp.0xfc9_1", payload)
+	rsp, err := s.c.uniCall("OidbSvcTrpcTcp.0xfc9_1", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
@@ -224,7 +224,7 @@ func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, s
 		m[13] = param
 	}
 	m[14] = roleIdIndex
-	rsp, err := s.c.commandCall("OidbSvcTrpcTcp.0xf5b_1", s.c.packOIDBPackageDynamically(3931, 1, m))
+	rsp, err := s.c.uniCall("OidbSvcTrpcTcp.0xf5b_1", s.c.packOIDBPackageDynamically(3931, 1, m))
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
@@ -277,7 +277,7 @@ func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 		3: tinyId,
 		4: guildId,
 	})
-	rsp, err := s.c.commandCall("OidbSvcTrpcTcp.0xf88_1", payload)
+	rsp, err := s.c.uniCall("OidbSvcTrpcTcp.0xf88_1", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}

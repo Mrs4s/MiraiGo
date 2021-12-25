@@ -64,7 +64,7 @@ func (s *GuildService) SendGuildChannelMessage(guildId, channelId uint64, m *mes
 		},
 	}}
 	payload, _ := proto.Marshal(req)
-	rsp, err := s.c.commandCall("MsgProxy.SendMsg", payload)
+	rsp, err := s.c.uniCall("MsgProxy.SendMsg", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
@@ -210,7 +210,7 @@ func (s *GuildService) pullChannelMessages(guildId, channelId, beginSeq, endSeq,
 		WithVersionFlag:   &withVersionFlag,
 		DirectMessageFlag: &directFlag,
 	})
-	rsp, err := s.c.commandCall("trpc.group_pro.synclogic.SyncLogic.GetChannelMsg", payload)
+	rsp, err := s.c.uniCall("trpc.group_pro.synclogic.SyncLogic.GetChannelMsg", payload)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}

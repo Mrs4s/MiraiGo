@@ -23,8 +23,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
-//go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]*handlerInfo"
-
 type QQClient struct {
 	Uin         int64
 	PasswordMd5 [16]byte
@@ -60,7 +58,6 @@ type QQClient struct {
 	oicq      *oicq.Codec
 
 	// internal state
-	handlers        HandlerMap
 	waiters         sync.Map
 	servers         []*net.TCPAddr
 	currServerIndex int
@@ -106,19 +103,6 @@ type QiDianAccountInfo struct {
 	bigDataReqSession *bigDataSessionInfo
 }
 
-type handlerInfo struct {
-	fun     func(i interface{}, err error)
-	dynamic bool
-	params  network.RequestParams
-}
-
-func (h *handlerInfo) getParams() network.RequestParams {
-	if h == nil {
-		return nil
-	}
-	return h.params
-}
-
 var decoders = map[string]func(*QQClient, *network.Response) (interface{}, error){
 	"StatSvc.ReqMSFOffline":       decodeMSFOfflinePacket,
 	"MessageSvc.PushNotify":       decodeSvcNotify,
@@ -126,7 +110,6 @@ var decoders = map[string]func(*QQClient, *network.Response) (interface{}, error
 	"OnlinePush.PbPushTransMsg":   decodeOnlinePushTransPacket,
 	"OnlinePush.SidTicketExpired": decodeSidExpiredPacket,
 	"ConfigPushSvc.PushReq":       decodePushReqPacket,
-	"MessageSvc.PbGetMsg":         decodeMessageSvcPacket,
 	"MessageSvc.PushForceOffline": decodeForceOfflinePacket,
 }
 
@@ -426,8 +409,9 @@ func (c *QQClient) init(tokenLogin bool) error {
 		_, _ = c.callAndDecode(c.buildLoginExtraPacket(), decodeLoginExtraResponse)  // 小登录
 		_, _ = c.callAndDecode(c.buildConnKeyRequestPacket(), decodeConnKeyResponse) // big data key 如果等待 config push 的话时间来不及
 	}
-	seq, pkt := c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix())
-	_, _ = c.sendAndWaitParams(seq, pkt, network.RequestParams{"used_reg_proxy": true, "init": true})
+	req := c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix())
+	req.Params = network.Params{"used_reg_proxy": true, "init": true}
+	_, _ = c.callAndDecode(req, decodeMessageSvcPacket)
 	c.syncChannelFirstView()
 	return nil
 }
@@ -794,8 +778,7 @@ func (c *QQClient) doHeartbeat() {
 			CommandName: "Heartbeat.Alive",
 			Body:        EmptyBytes,
 		}
-		packet := c.transport.PackPacket(&req)
-		_, err := c.sendAndWait(seq, packet)
+		_, err := c.call(&req)
 		if errors.Is(err, network.ErrConnectionClosed) {
 			continue
 		}
