@@ -42,7 +42,7 @@ type (
 )
 
 func (c *QQClient) getGtk(domain string) int {
-	if psKey, ok := c.sigInfo.psKeyMap[domain]; ok {
+	if psKey, ok := c.sig.PsKeyMap[domain]; ok {
 		accu := 5381
 		for _, b := range psKey {
 			accu = accu + (accu << 5) + int(b)

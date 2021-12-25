@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"image"
-	_ "image/gif"
 	"io"
 	"math/rand"
 	"os"
@@ -15,10 +14,10 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	highway2 "github.com/Mrs4s/MiraiGo/client/pb/highway"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -32,27 +31,25 @@ func init() {
 
 var imgWaiter = utils.NewUploadWaiter()
 
-type (
-	imageUploadResponse struct {
-		UploadKey  []byte
-		UploadIp   []uint32
-		UploadPort []uint32
-		ResourceId string
-		Message    string
-		FileId     int64
-		Width      int32
-		Height     int32
-		ResultCode int32
-		IsExists   bool
-	}
-)
+type imageUploadResponse struct {
+	UploadKey  []byte
+	UploadIp   []uint32
+	UploadPort []uint32
+	ResourceId string
+	Message    string
+	FileId     int64
+	Width      int32
+	Height     int32
+	ResultCode int32
+	IsExists   bool
+}
 
 func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
 
-	key := hex.EncodeToString(fh)
+	key := string(fh)
 	imgWaiter.Wait(key)
 	defer imgWaiter.Done(key)
 
@@ -243,7 +240,6 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 
 // ImgStore.GroupPicUp
 func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	name := utils.RandomString(16) + ".gif"
 	req := &cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
@@ -268,12 +264,10 @@ func (c *QQClient) buildGroupImageStorePacket(groupCode int64, md5 []byte, size 
 		Extension: EmptyBytes,
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicUp", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
+	return c.uniPacket("ImgStore.GroupPicUp", payload)
 }
 
 func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd5 []byte) (uint16, []byte) {
-	seq := c.nextSeq()
 	req := &cmd0x388.D388ReqBody{
 		NetType: proto.Uint32(3),
 		Subcmd:  proto.Uint32(2),
@@ -294,8 +288,7 @@ func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "ImgStore.GroupPicDown", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
+	return c.uniPacket("ImgStore.GroupPicDown", payload)
 }
 
 func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
@@ -326,7 +319,6 @@ func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 
 // OidbSvc.0xe07_0
 func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, height int32) (uint16, []byte) {
-	seq := c.nextSeq()
 	body := &oidb.DE07ReqBody{
 		Version:  1,
 		Entrance: 3,
@@ -342,12 +334,11 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(3591, 0, b)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OidbSvc.0xe07_0", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
-	return seq, packet
+	return c.uniPacket("OidbSvc.0xe07_0", payload)
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := cmd0x388.D388RspBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -374,7 +365,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *incomingPacketInfo, payload [
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkt := cmd0x388.D388RspBody{}
 	if err := proto.Unmarshal(payload, &pkt); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
@@ -389,7 +380,7 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *incomingPacketInfo, payloa
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.DE07RspBody{}
 	if err := proto.Unmarshal(payload, &pkg); err != nil {

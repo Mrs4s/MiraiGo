@@ -3,8 +3,8 @@ package client
 import (
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
@@ -29,11 +29,11 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, [
 		},
 	}
 	payload, _ := proto.Marshal(req)
-	packet := packets.BuildUniPacket(c.Uin, seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", 1, c.OutGoingPacketSessionId, EmptyBytes, c.sigInfo.d2Key, payload)
+	packet := c.uniPacketWithSeq(seq, "OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_DOWNLOAD-1200", payload)
 	return seq, packet
 }
 
-func decodeOfflineFileDownloadResponse(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOfflineFileDownloadResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	rsp := cmd0x346.C346RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		c.Error("unmarshal cmd0x346 rsp body error: %v", err)

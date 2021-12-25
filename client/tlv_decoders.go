@@ -13,12 +13,14 @@ import (
 // --- tlv decoders for qq client ---
 
 func (c *QQClient) decodeT161(data []byte) {
-	reader := binary.NewReader(data)
-	reader.ReadBytes(2)
-	t := reader.ReadTlvMap(2)
-	if t172, ok := t[0x172]; ok {
-		c.rollbackSig = t172
-	}
+	/*
+		reader := binary.NewReader(data)
+		reader.ReadBytes(2)
+		t := reader.ReadTlvMap(2)
+		if t172, ok := t[0x172]; ok {
+			c.rollbackSig = t172
+		}
+	*/
 }
 
 func (c *QQClient) decodeT119(data, ek []byte) {
@@ -32,14 +34,16 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 	if t113, ok := m[0x113]; ok {
 		c.decodeT113(t113)
 	}
-	if t528, ok := m[0x528]; ok {
-		c.t528 = t528
-	}
-	if t530, ok := m[0x530]; ok {
-		c.t530 = t530
-	}
+	/*
+		if t528, ok := m[0x528]; ok {
+			c.t528 = t528
+		}
+		if t530, ok := m[0x530]; ok {
+			c.t530 = t530
+		}
+	*/
 	if t108, ok := m[0x108]; ok {
-		c.ksid = t108
+		c.sig.Ksid = t108
 	}
 
 	var (
@@ -85,28 +89,37 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		// readT138(t138) // chg time
 	}
 
-	c.sigInfo = &loginSigInfo{
-		loginBitmap:        0,
-		srmToken:           utils.Select(m[0x16a], c.sigInfo.srmToken),
-		t133:               utils.Select(m[0x133], c.sigInfo.t133),
-		encryptedA1:        utils.Select(m[0x106], c.sigInfo.encryptedA1),
-		tgt:                m[0x10a],
-		tgtKey:             m[0x10d],
-		userStKey:          m[0x10e],
-		userStWebSig:       m[0x103],
-		sKey:               m[0x120],
-		sKeyExpiredTime:    time.Now().Unix() + 21600,
-		d2:                 m[0x143],
-		d2Key:              m[0x305],
-		wtSessionTicketKey: utils.Select(m[0x134], c.sigInfo.wtSessionTicketKey),
-		deviceToken:        m[0x322],
 
-		psKeyMap:    psKeyMap,
-		pt4TokenMap: pt4TokenMap,
-	}
+	c.oicq.WtSessionTicketKey = utils.Select(m[0x134], c.oicq.WtSessionTicketKey)
+
+	// we don't use `c.sigInfo = &auth.SigInfo{...}` here,
+	// because we need keep other fields in `c.sigInfo`
+	s := c.sig
+	s.LoginBitmap = 0
+	s.SrmToken = utils.Select(m[0x16a], s.SrmToken)
+	s.T133 = utils.Select(m[0x133], s.T133)
+	s.EncryptedA1 = utils.Select(m[0x106], s.EncryptedA1)
+	s.TGT = m[0x10a]
+	s.TGTKey = m[0x10d]
+	s.UserStKey = m[0x10e]
+	s.UserStWebSig = m[0x103]
+	s.SKey = m[0x120]
+	s.SKeyExpiredTime = time.Now().Unix() + 21600
+	s.D2 = m[0x143]
+	s.D2Key = m[0x305]
+	s.DeviceToken = m[0x322]
+
+	s.PsKeyMap = psKeyMap
+	s.Pt4TokenMap = pt4TokenMap
 	if len(c.sigInfo.encryptedA1) > 51+16 {
-		key := md5.Sum(append(append(c.PasswordMd5[:], []byte{0x00, 0x00, 0x00, 0x00}...), binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt32(uint32(c.Uin)) })...))
-		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sigInfo.encryptedA1)
+		data, cl := binary.OpenWriterF(func(w *binary.Writer) {
+			w.Write(c.PasswordMd5[:])
+			w.WriteUInt32(0) // []byte{0x00, 0x00, 0x00, 0x00}...
+			w.WriteUInt32(uint32(c.Uin))
+		})
+		key := md5.Sum(data)
+		cl()
+		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sig.EncryptedA1)
 		if len(decrypted) > 51+16 {
 			dr := binary.NewReader(decrypted)
 			dr.ReadBytes(51)
@@ -125,9 +138,9 @@ func (c *QQClient) decodeT119R(data []byte) {
 	reader.ReadBytes(2)
 	m := reader.ReadTlvMap(2)
 	if t120, ok := m[0x120]; ok {
-		c.sigInfo.sKey = t120
-		c.sigInfo.sKeyExpiredTime = time.Now().Unix() + 21600
-		c.Debug("skey updated: %v", c.sigInfo.sKey)
+		c.sig.SKey = t120
+		c.sig.SKeyExpiredTime = time.Now().Unix() + 21600
+		c.Debug("skey updated: %v", c.sig.SKey)
 	}
 	if t11a, ok := m[0x11a]; ok {
 		c.Nickname, c.Age, c.Gender = readT11A(t11a)
@@ -138,8 +151,8 @@ func (c *QQClient) decodeT119R(data []byte) {
 func (c *QQClient) decodeT130(data []byte) {
 	reader := binary.NewReader(data)
 	reader.ReadBytes(2)
-	c.timeDiff = int64(reader.ReadInt32()) - time.Now().Unix()
-	c.t149 = reader.ReadBytes(4)
+	// c.timeDiff = int64(reader.ReadInt32()) - time.Now().Unix()
+	// c.t149 = reader.ReadBytes(4)
 }
 
 func (c *QQClient) decodeT113(data []byte) {
@@ -149,7 +162,7 @@ func (c *QQClient) decodeT113(data []byte) {
 }
 
 func (c *QQClient) decodeT186(data []byte) {
-	c.pwdFlag = data[1] == 1
+	// c.pwdFlag = data[1] == 1
 }
 
 // --- tlv readers ---

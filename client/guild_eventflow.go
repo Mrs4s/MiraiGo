@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
@@ -26,7 +27,7 @@ type tipsPushInfo struct {
 	ChannelId uint64
 }
 
-func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGuildEventFlowPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
 	push := new(channel.MsgOnlinePush)
 	if err := proto.Unmarshal(payload, push); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -88,6 +89,9 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *incomingPacketInfo, payload []by
 		if m.Head.ContentHead.GetType() == 3840 {
 			if m.Head.RoutingHead.GetDirectMessageFlag() == 1 {
 				// todo: direct message decode
+				continue
+			}
+			if m.Head.RoutingHead.GetFromTinyid() == c.GuildService.TinyId {
 				continue
 			}
 			if cm := c.GuildService.parseGuildChannelMessage(m); cm != nil {

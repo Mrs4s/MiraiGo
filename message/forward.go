@@ -3,6 +3,8 @@ package message
 import (
 	"bytes"
 	"crypto/md5"
+	"regexp"
+	"sync"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -33,6 +35,10 @@ type ForwardElement struct {
 }
 
 // *----- Implementations -----* //
+
+func (f *ForwardMessage) Type() ElementType {
+	return Forward
+}
 
 // Type impl IMessageElement
 func (e *ForwardElement) Type() ElementType {
@@ -160,4 +166,37 @@ func (f *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64
 		})
 	}
 	return ml
+}
+
+type lazyRegex struct {
+	once    sync.Once
+	reg     *regexp.Regexp
+	Pattern string
+}
+
+func (l *lazyRegex) init() {
+	l.reg = regexp.MustCompile(l.Pattern)
+}
+
+func (l *lazyRegex) findMatch1(content string) string {
+	l.once.Do(l.init)
+	matches := l.reg.FindStringSubmatch(content)
+	if matches == nil {
+		return ""
+	}
+	return matches[1]
+}
+
+var (
+	mResID    = lazyRegex{Pattern: `m_resid="(.*?)"`}
+	mFileName = lazyRegex{Pattern: `m_fileName="(.*?)"`}
+)
+
+func forwardMsgFromXML(xml string) *ForwardElement {
+	resid := mResID.findMatch1(xml)
+	fileName := mFileName.findMatch1(xml)
+	if resid == "" && fileName == "" {
+		return nil
+	}
+	return &ForwardElement{FileName: fileName, ResId: resid}
 }

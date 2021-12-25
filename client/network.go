@@ -4,11 +4,12 @@ import (
 	"net"
 	"runtime/debug"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
+	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -33,7 +34,7 @@ type ConnectionQualityInfo struct {
 }
 
 func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
-	if !c.Online {
+	if !c.Online.Load() {
 		return nil
 	}
 	r := &ConnectionQualityInfo{}
@@ -75,7 +76,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	}()
 	start := time.Now()
 	if _, err := utils.HttpGetBytes("https://ssl.htdata.qq.com", ""); err == nil {
-		r.LongMessageServerResponseLatency = time.Now().Sub(start).Milliseconds()
+		r.LongMessageServerResponseLatency = time.Since(start).Milliseconds()
 	} else {
 		c.Error("test long message server response latency error: %v", err)
 		r.LongMessageServerResponseLatency = 9999
@@ -102,19 +103,19 @@ func (c *QQClient) connect() error {
 	}
 	c.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+			c.stat.MessageReceived.Add(1)
+			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
 		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+			c.stat.MessageReceived.Add(1)
+			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
 		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
-			atomic.AddUint64(&c.stat.MessageReceived, 1)
-			atomic.StoreInt64(&c.stat.LastMessageTime, time.Now().Unix())
+			c.stat.MessageReceived.Add(1)
+			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
-			atomic.AddUint64(&c.stat.MessageSent, 1)
+			c.stat.MessageSent.Add(1)
 		})
 		go c.netLoop()
 	})
@@ -142,18 +143,18 @@ func (c *QQClient) quickReconnect() {
 
 // Disconnect 中断连接, 不释放资源
 func (c *QQClient) Disconnect() {
-	c.Online = false
+	c.Online.Store(false)
 	c.TCP.Close()
 }
 
 // sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) (interface{}, error) {
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (interface{}, error) {
 	type T struct {
 		Response interface{}
 		Error    error
 	}
 	ch := make(chan T, 1)
-	var p requestParams
+	var p network.RequestParams
 
 	if len(params) != 0 {
 		p = params[0]
@@ -193,9 +194,9 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...requestParams) 
 func (c *QQClient) sendPacket(pkt []byte) error {
 	err := c.TCP.Write(pkt)
 	if err != nil {
-		atomic.AddUint64(&c.stat.PacketLost, 1)
+		c.stat.PacketLost.Add(1)
 	} else {
-		atomic.AddUint64(&c.stat.PacketSent, 1)
+		c.stat.PacketSent.Add(1)
 	}
 	return errors.Wrap(err, "Packet failed to sendPacket")
 }
@@ -249,17 +250,17 @@ func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 }
 
 // plannedDisconnect 计划中断线事件
-func (c *QQClient) plannedDisconnect(_ *utils.TCPListener) {
+func (c *QQClient) plannedDisconnect(_ *network.TCPListener) {
 	c.Debug("planned disconnect.")
-	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
-	c.Online = false
+	c.stat.DisconnectTimes.Add(1)
+	c.Online.Store(false)
 }
 
 // unexpectedDisconnect 非预期断线事件
-func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
+func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
 	c.Error("unexpected disconnect: %v", e)
-	atomic.AddUint32(&c.stat.DisconnectTimes, 1)
-	c.Online = false
+	c.stat.DisconnectTimes.Add(1)
+	c.Online.Store(false)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
 		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
@@ -291,10 +292,11 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		data, _ := c.TCP.ReadBytes(int(l) - 4)
-		pkt, err := packets.ParseIncomingPacket(data, c.sigInfo.d2Key)
+		resp, err := c.transport.ReadResponse(data)
+		// pkt, err := packets.ParseIncomingPacket(data, c.sig.D2Key)
 		if err != nil {
 			c.Error("parse incoming packet error: %v", err)
-			if errors.Is(err, packets.ErrSessionExpired) || errors.Is(err, packets.ErrPacketDropped) {
+			if errors.Is(err, network.ErrSessionExpired) || errors.Is(err, network.ErrPacketDropped) {
 				c.Disconnect()
 				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
 				continue
@@ -305,19 +307,25 @@ func (c *QQClient) netLoop() {
 			}
 			continue
 		}
-		if pkt.Flag2 == 2 {
-			pkt.Payload, err = pkt.DecryptPayload(c.ecdh.InitialShareKey, c.RandomKey, c.sigInfo.wtSessionTicketKey)
+		if resp.EncryptType == network.EncryptTypeEmptyKey {
+			m, err := c.oicq.Unmarshal(resp.Body)
 			if err != nil {
 				c.Error("decrypt payload error: %v", err)
-				if errors.Is(err, packets.ErrUnknownFlag) {
+				if errors.Is(err, oicq.ErrUnknownFlag) {
 					go c.quickReconnect()
 				}
 				continue
 			}
+			resp.Body = m.Body
 		}
 		errCount = 0
-		c.Debug("rev pkt: %v seq: %v", pkt.CommandName, pkt.SequenceId)
-		atomic.AddUint64(&c.stat.PacketReceived, 1)
+		c.Debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
+		c.stat.PacketReceived.Add(1)
+		pkt := &packets.IncomingPacket{
+			SequenceId:  uint16(resp.SequenceID),
+			CommandName: resp.CommandName,
+			Payload:     resp.Body,
+		}
 		go func(pkt *packets.IncomingPacket) {
 			defer func() {
 				if pan := recover(); pan != nil {
@@ -332,15 +340,10 @@ func (c *QQClient) netLoop() {
 				var decoded interface{}
 				decoded = pkt.Payload
 				if info == nil || !info.dynamic {
-					decoded, err = decoder(c, &incomingPacketInfo{
+					decoded, err = decoder(c, &network.IncomingPacketInfo{
 						SequenceId:  pkt.SequenceId,
 						CommandName: pkt.CommandName,
-						Params: func() requestParams {
-							if !ok {
-								return nil
-							}
-							return info.params
-						}(),
+						Params:      info.getParams(),
 					}, pkt.Payload)
 					if err != nil {
 						c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)

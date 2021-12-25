@@ -138,8 +138,7 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 	return []*msg.Elem{elem}
 }
 
-func (e *FriendImageElement) Pack() (r []*msg.Elem) {
-	r = []*msg.Elem{}
+func (e *FriendImageElement) Pack() []*msg.Elem {
 	image := &msg.NotOnlineImage{
 		FilePath:     &e.ImageId,
 		ResId:        &e.ImageId,

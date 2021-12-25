@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/message"
 )
 
@@ -22,7 +23,7 @@ type (
 
 	UserOnlineStatus int
 
-	ClientProtocol int
+	ClientProtocol = auth.Protocol
 
 	LoginResponse struct {
 		Success bool
@@ -343,11 +344,12 @@ const (
 	Administrator MemberPermission = 2
 	Member        MemberPermission = 3
 
-	AndroidPhone ClientProtocol = 1
-	IPad         ClientProtocol = 2
-	AndroidWatch ClientProtocol = 3
-	MacOS        ClientProtocol = 4
-	QiDian       ClientProtocol = 5
+	Unset        = auth.Unset
+	AndroidPhone = auth.AndroidPhone
+	AndroidWatch = auth.AndroidWatch
+	MacOS        = auth.MacOS
+	QiDian       = auth.QiDian
+	IPad         = auth.IPad
 )
 
 func (r *UserJoinGroupRequest) Accept() {

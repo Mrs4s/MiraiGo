@@ -56,15 +56,8 @@ func (e *FaceElement) Pack() (r []*msg.Elem) {
 
 func (e *AtElement) Pack() (r []*msg.Elem) {
 	r = []*msg.Elem{}
-	if e.Guild {
-		pb, _ := proto.Marshal(&msg.TextResvAttr{AtType: proto.Uint32(2), AtMemberTinyid: proto.Uint64(uint64(e.Target))})
-		r = append(r, &msg.Elem{
-			Text: &msg.Text{
-				Str:       &e.Display,
-				PbReserve: pb,
-			},
-		})
-	} else {
+	switch e.SubType {
+	case AtTypeGroupMember:
 		r = append(r, &msg.Elem{
 			Text: &msg.Text{
 				Str: &e.Display,
@@ -80,6 +73,14 @@ func (e *AtElement) Pack() (r []*msg.Elem) {
 					w.WriteUInt32(uint32(e.Target))
 					w.WriteUInt16(0)
 				}),
+			},
+		})
+	case AtTypeGuildMember:
+		pb, _ := proto.Marshal(&msg.TextResvAttr{AtType: proto.Uint32(2), AtMemberTinyid: proto.Uint64(uint64(e.Target))})
+		r = append(r, &msg.Elem{
+			Text: &msg.Text{
+				Str:       &e.Display,
+				PbReserve: pb,
 			},
 		})
 	}

@@ -53,14 +53,15 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 		return nil, errors.Wrap(err, "connect error")
 	}
 	defer conn.Close()
-	offset := 0
+
 	reader := binary.NewNetworkReader(conn)
 	if err = s.sendEcho(conn); err != nil {
 		return nil, err
 	}
 
-	var rspExt []byte
 	const chunkSize = 256 * 1024
+	var rspExt []byte
+	offset := 0
 	chunk := make([]byte, chunkSize)
 	w := binary.SelectWriter()
 	defer binary.PutWriter(w)
@@ -77,10 +78,10 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 			MsgBasehead: &pb.DataHighwayHead{
 				Version:   1,
-				Uin:       s.uin,
+				Uin:       s.Uin,
 				Command:   "PicUp.DataUp",
 				Seq:       s.nextSeq(),
-				Appid:     s.appID,
+				Appid:     s.AppID,
 				Dataflag:  4096,
 				CommandId: input.CommandID,
 				LocaleId:  2052,
@@ -227,10 +228,10 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 				MsgBasehead: &pb.DataHighwayHead{
 					Version:   1,
-					Uin:       s.uin,
+					Uin:       s.Uin,
 					Command:   "PicUp.DataUp",
 					Seq:       s.nextSeq(),
-					Appid:     s.appID,
+					Appid:     s.AppID,
 					Dataflag:  4096,
 					CommandId: input.CommandID,
 					LocaleId:  2052,

@@ -71,6 +71,10 @@ func (r *Reader) ReadString() string {
 	return utils.B2S(data)
 }
 
+func (r *Reader) ReadInt32Bytes() []byte {
+	return r.ReadBytes(int(r.ReadInt32() - 4))
+}
+
 func (r *Reader) ReadStringShort() string {
 	data := r.ReadBytes(int(r.ReadUInt16()))
 	return utils.B2S(data)
@@ -97,11 +101,12 @@ func (r *Reader) ReadTlvMap(tagSize int) (m TlvMap) {
 			return m
 		}
 		var k uint16
-		if tagSize == 1 {
+		switch tagSize {
+		case 1:
 			k = uint16(r.ReadByte())
-		} else if tagSize == 2 {
+		case 2:
 			k = r.ReadUInt16()
-		} else if tagSize == 4 {
+		case 4:
 			k = uint16(r.ReadInt32())
 		}
 		if k == 255 {
@@ -113,6 +118,10 @@ func (r *Reader) ReadTlvMap(tagSize int) (m TlvMap) {
 
 func (r *Reader) Len() int {
 	return r.buf.Len()
+}
+
+func (r *Reader) Index() int64 {
+	return r.buf.Size()
 }
 
 func (tlv TlvMap) Exists(key uint16) bool {

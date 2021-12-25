@@ -3,6 +3,7 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 )
 
@@ -15,7 +16,7 @@ const (
 	troopSystemMsgDecoders
 )
 
-func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, *incomingPacketInfo), decoderType uint8) {
+func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, *network.IncomingPacketInfo), decoderType uint8) {
 	switch msgType {
 	case 9:
 		return privateMessageDecoder, privateMsgDecoders

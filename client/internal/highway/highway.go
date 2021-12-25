@@ -7,7 +7,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"strconv"
 	"sync/atomic"
 
 	"github.com/pkg/errors"
@@ -19,20 +18,13 @@ import (
 )
 
 type Session struct {
+	Uin        string
+	AppID      int32
 	SigSession []byte
 	SessionKey []byte
 	SsoAddr    []Addr
 
-	seq   int32
-	appID int32
-	uin   string
-}
-
-func NewSession(appID int32, uin int64) *Session {
-	return &Session{
-		appID: appID,
-		uin:   strconv.FormatInt(uin, 10),
-	}
+	seq int32
 }
 
 func (s *Session) AddrLength() int {
@@ -81,10 +73,10 @@ func (s *Session) Upload(addr Addr, input Input) error {
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 			MsgBasehead: &pb.DataHighwayHead{
 				Version:   1,
-				Uin:       s.uin,
+				Uin:       s.Uin,
 				Command:   "PicUp.DataUp",
 				Seq:       s.nextSeq(),
-				Appid:     s.appID,
+				Appid:     s.AppID,
 				Dataflag:  4096,
 				CommandId: input.CommandID,
 				LocaleId:  2052,
@@ -128,7 +120,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 	fileMd5, fileLength := utils.ComputeMd5AndLength(input.Body)
 	_, _ = input.Body.Seek(0, io.SeekStart)
 	addr := s.SsoAddr[0]
-	url := fmt.Sprintf("http://%v/cgi-bin/httpconn?htcmd=0x6FF0087&uin=%v", addr, s.uin)
+	url := fmt.Sprintf("http://%v/cgi-bin/httpconn?htcmd=0x6FF0087&Uin=%v", addr, s.Uin)
 	var (
 		rspExt    []byte
 		offset    int64 = 0
@@ -151,10 +143,10 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 			MsgBasehead: &pb.DataHighwayHead{
 				Version:   1,
-				Uin:       s.uin,
+				Uin:       s.Uin,
 				Command:   "PicUp.DataUp",
 				Seq:       s.nextSeq(),
-				Appid:     s.appID,
+				Appid:     s.AppID,
 				Dataflag:  0,
 				CommandId: input.CommandID,
 				LocaleId:  0,
@@ -211,10 +203,10 @@ func (s *Session) sendHeartbreak(conn net.Conn) error {
 	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 		MsgBasehead: &pb.DataHighwayHead{
 			Version:   1,
-			Uin:       s.uin,
+			Uin:       s.Uin,
 			Command:   "PicUp.Echo",
 			Seq:       s.nextSeq(),
-			Appid:     s.appID,
+			Appid:     s.AppID,
 			Dataflag:  4096,
 			CommandId: 0,
 			LocaleId:  2052,

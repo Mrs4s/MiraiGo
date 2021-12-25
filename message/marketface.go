@@ -66,3 +66,32 @@ func NewDice(value int32) IMessageElement {
 		MagicValue: fmt.Sprintf("rscType?1;value=%v", value-1),
 	}
 }
+
+type FingerGuessingElement struct {
+	*MarketFaceElement
+	Value int32
+	Name  string
+}
+
+var fingerGuessingName = map[int32]string{
+	0: "石头",
+	1: "剪刀",
+	2: "布",
+}
+
+func NewFingerGuessing(value int32) IMessageElement {
+	// value 0石头, 1剪子, 2布
+	if value < 0 || value > 2 {
+		return nil
+	}
+	return &MarketFaceElement{
+		Name:       "[猜拳]",
+		FaceId:     []byte{131, 200, 162, 147, 174, 101, 202, 20, 15, 52, 129, 32, 167, 116, 72, 238},
+		TabId:      11415,
+		ItemType:   6,
+		SubType:    3,
+		MediaType:  0,
+		EncryptKey: []byte{55, 100, 101, 51, 57, 102, 101, 98, 99, 102, 52, 53, 101, 54, 100, 98},
+		MagicValue: fmt.Sprintf("rscType?1;value=%v", value),
+	}
+}

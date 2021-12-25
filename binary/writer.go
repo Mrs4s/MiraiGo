@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
-
-	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 // Writer 写入
@@ -15,7 +13,7 @@ func NewWriterF(f func(writer *Writer)) []byte {
 	w := SelectWriter()
 	f(w)
 	b := append([]byte(nil), w.Bytes()...)
-	PutWriter(w)
+	w.put()
 	return b
 }
 
@@ -23,7 +21,29 @@ func NewWriterF(f func(writer *Writer)) []byte {
 func OpenWriterF(f func(*Writer)) (b []byte, cl func()) {
 	w := SelectWriter()
 	f(w)
-	return w.Bytes(), func() { PutWriter(w) }
+	return w.Bytes(), w.put
+}
+
+func (w *Writer) FillUInt16() (pos int) {
+	pos = w.Len()
+	(*bytes.Buffer)(w).Write([]byte{0, 0})
+	return
+}
+
+func (w *Writer) WriteUInt16At(pos int, v uint16) {
+	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
+	binary.BigEndian.PutUint16(newdata, v)
+}
+
+func (w *Writer) FillUInt32() (pos int) {
+	pos = w.Len()
+	(*bytes.Buffer)(w).Write([]byte{0, 0, 0, 0})
+	return
+}
+
+func (w *Writer) WriteUInt32At(pos int, v uint32) {
+	newdata := (*bytes.Buffer)(w).Bytes()[pos:]
+	binary.BigEndian.PutUint32(newdata, v)
 }
 
 func (w *Writer) Write(b []byte) {
@@ -58,13 +78,13 @@ func (w *Writer) WriteUInt64(v uint64) {
 }
 
 func (w *Writer) WriteString(v string) {
-	payload := utils.S2B(v)
-	w.WriteUInt32(uint32(len(payload) + 4))
-	w.Write(payload)
+	w.WriteUInt32(uint32(len(v) + 4))
+	(*bytes.Buffer)(w).WriteString(v)
 }
 
 func (w *Writer) WriteStringShort(v string) {
-	w.WriteBytesShort(utils.S2B(v))
+	w.WriteUInt16(uint16(len(v)))
+	(*bytes.Buffer)(w).WriteString(v)
 }
 
 func (w *Writer) WriteBool(b bool) {
@@ -80,31 +100,9 @@ func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(*Writer)) {
-	data, cl := OpenWriterF(f)
-	w.WriteUInt32(uint32(len(data) + offset))
-	w.Write(data)
-	cl()
-}
-
-func (w *Writer) WriteUniPacket(commandName string, sessionId, extraData, body []byte) {
-	w1 := SelectWriter()
-	{ // WriteIntLvPacket
-		w1.WriteString(commandName)
-		w1.WriteUInt32(8)
-		w1.Write(sessionId)
-		if len(extraData) == 0 {
-			w1.WriteUInt32(0x04)
-		} else {
-			w1.WriteUInt32(uint32(len(extraData) + 4))
-			w1.Write(extraData)
-		}
-	}
-	data := w1.Bytes()
-	w.WriteUInt32(uint32(len(data) + 4))
-	w.Write(data)
-	PutWriter(w1)
-	w.WriteUInt32(uint32(len(body) + 4)) // WriteIntLvPacket
-	w.Write(body)
+	pos := w.FillUInt32()
+	f(w)
+	w.WriteUInt32At(pos, uint32(w.Len()+offset-pos-4))
 }
 
 func (w *Writer) WriteBytesShort(data []byte) {
@@ -120,12 +118,12 @@ func (w *Writer) WriteTlvLimitedSize(data []byte, limit int) {
 	w.WriteBytesShort(data[:limit])
 }
 
-func (w *Writer) Bytes() []byte {
-	return (*bytes.Buffer)(w).Bytes()
+func (w *Writer) Len() int {
+	return (*bytes.Buffer)(w).Len()
 }
 
-func (w *Writer) Cap() int {
-	return (*bytes.Buffer)(w).Cap()
+func (w *Writer) Bytes() []byte {
+	return (*bytes.Buffer)(w).Bytes()
 }
 
 func (w *Writer) Reset() {
@@ -134,4 +132,8 @@ func (w *Writer) Reset() {
 
 func (w *Writer) Grow(n int) {
 	(*bytes.Buffer)(w).Grow(n)
+}
+
+func (w *Writer) put() {
+	PutWriter(w)
 }

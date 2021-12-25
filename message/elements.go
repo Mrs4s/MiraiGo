@@ -41,7 +41,7 @@ type FaceElement struct {
 type AtElement struct {
 	Target  int64
 	Display string
-	Guild   bool
+	SubType AtType
 }
 
 type GroupFileElement struct {
@@ -107,6 +107,7 @@ type AnimatedSticker struct {
 }
 
 type RedBagMessageType int
+type AtType int
 
 // /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
 const (
@@ -130,6 +131,10 @@ const (
 	RedBagWordChain          RedBagMessageType = 24
 	RedBagKeyword            RedBagMessageType = 25 // ?
 	RedBagDrawMultiModel     RedBagMessageType = 26 // ??
+
+	AtTypeGroupMember  = 0 // At群成员
+	AtTypeGuildMember  = 1 // At频道成员
+	AtTypeGuildChannel = 2 // At频道
 )
 
 func NewText(s string) *TextElement {
@@ -200,12 +205,12 @@ func NewUrlShare(url, title, content, image string) *ServiceElement {
 	}
 }
 
-func NewRichXml(template string, ResId int64) *ServiceElement {
-	if ResId == 0 {
-		ResId = 60 // 默认值60
+func NewRichXml(template string, resID int64) *ServiceElement {
+	if resID == 0 {
+		resID = 60 // 默认值60
 	}
 	return &ServiceElement{
-		Id:      int32(ResId),
+		Id:      int32(resID),
 		Content: template,
 		SubType: "xml",
 	}

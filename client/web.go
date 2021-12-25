@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/client/pb/web"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -91,8 +90,7 @@ func (c *QQClient) webSsoRequest(host, webCmd, data string) (string, error) {
 		Type: proto.Uint32(0),
 		Data: &data,
 	})
-	seq := c.nextSeq()
-	rspData, err := c.sendAndWaitDynamic(seq, packets.BuildUniPacket(c.Uin, seq, cmd, 1, c.OutGoingPacketSessionId, []byte{}, c.sigInfo.d2Key, req))
+	rspData, err := c.sendAndWaitDynamic(c.uniPacket(cmd, req))
 	if err != nil {
 		return "", errors.Wrap(err, "send web sso request error")
 	}
