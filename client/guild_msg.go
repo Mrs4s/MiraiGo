@@ -330,6 +330,10 @@ func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) 
 		return nil
 	}
 	// mem := guild.FindMember(msg.Head.RoutingHead.GetFromTinyid())
+	memberName := msg.ExtInfo.GetMemberName()
+	if memberName == nil {
+		memberName = msg.ExtInfo.GetFromNick()
+	}
 	return &message.GuildChannelMessage{
 		Id:         msg.Head.ContentHead.GetSeq(),
 		InternalId: msg.Head.ContentHead.GetRandom(),
@@ -338,7 +342,7 @@ func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) 
 		Time:       int64(msg.Head.ContentHead.GetTime()),
 		Sender: &message.GuildSender{
 			TinyId:   msg.Head.RoutingHead.GetFromTinyid(),
-			Nickname: string(msg.ExtInfo.GetFromNick()),
+			Nickname: string(memberName),
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
