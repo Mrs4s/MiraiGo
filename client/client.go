@@ -189,27 +189,27 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 			{IP: net.IP{125, 94, 60, 146}, Port: 80},
 		}
 	}
-	/*	pings := make([]int64, len(cli.servers))
-		wg := sync.WaitGroup{}
-		wg.Add(len(cli.servers))
-		for i := range cli.servers {
-			go func(index int) {
-				defer wg.Done()
-				p, err := qualityTest(cli.servers[index].String())
-				if err != nil {
-					pings[index] = 9999
-					return
-				}
-				pings[index] = p
-			}(i)
-		}
-		wg.Wait()
-		sort.Slice(cli.servers, func(i, j int) bool {
-			return pings[i] < pings[j]
-		})
-		if len(cli.servers) > 3 {
-			cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
-		}*/
+	/*pings := make([]int64, len(cli.servers))
+	wg := sync.WaitGroup{}
+	wg.Add(len(cli.servers))
+	for i := range cli.servers {
+		go func(index int) {
+			defer wg.Done()
+			p, err := qualityTest(cli.servers[index].String())
+			if err != nil {
+				pings[index] = 9999
+				return
+			}
+			pings[index] = p
+		}(i)
+	}
+	wg.Wait()
+	sort.Slice(cli.servers, func(i, j int) bool {
+		return pings[i] < pings[j]
+	})
+	if len(cli.servers) > 3 {
+		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
+	}*/
 	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
 	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
 	rand.Read(cli.RandomKey)
