@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/message"
 	"net"
 	"runtime/debug"
 	"sync"
@@ -99,21 +100,6 @@ func (c *QQClient) connectFastest() error {
 
 // connect 连接到 QQClient.servers 中的服务器
 func (c *QQClient) connect() error {
-	return c.connectFastest() // 暂时?
-	/*c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
-	err := c.TCP.Connect(c.servers[c.currServerIndex])
-	c.currServerIndex++
-	if c.currServerIndex == len(c.servers) {
-		c.currServerIndex = 0
-	}
-	if err != nil {
-		c.retryTimes++
-		if c.retryTimes > len(c.servers) {
-			return errors.New("All servers are unreachable")
-		}
-		c.Error("connect server error: %v", err)
-		return err
-	}
 	c.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
 			c.stat.MessageReceived.Add(1)
@@ -130,8 +116,23 @@ func (c *QQClient) connect() error {
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
 			c.stat.MessageSent.Add(1)
 		})
-		go c.netLoop()
+		//go c.netLoop()
 	})
+	return c.connectFastest() // 暂时?
+	/*c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
+	err := c.TCP.Connect(c.servers[c.currServerIndex])
+	c.currServerIndex++
+	if c.currServerIndex == len(c.servers) {
+		c.currServerIndex = 0
+	}
+	if err != nil {
+		c.retryTimes++
+		if c.retryTimes > len(c.servers) {
+			return errors.New("All servers are unreachable")
+		}
+		c.Error("connect server error: %v", err)
+		return err
+	}
 	c.retryTimes = 0
 	c.ConnectTime = time.Now()
 	return nil*/
