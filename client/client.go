@@ -799,7 +799,7 @@ func (c *QQClient) doHeartbeat() {
 			EncryptType: network.EncryptTypeNoEncrypt,
 			SequenceID:  int32(seq),
 			Uin:         c.Uin,
-			CommandName: "wtlogin.login",
+			CommandName: "Heartbeat.Alive",
 			Body:        EmptyBytes,
 		}
 		packet := c.transport.PackPacket(&req)
