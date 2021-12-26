@@ -1,73 +1,79 @@
 package utils
 
 import (
+	"errors"
 	"math/rand"
 	"net"
+	"strconv"
 	"time"
-
-	"github.com/pkg/errors"
-	"golang.org/x/net/icmp"
-	"golang.org/x/net/ipv4"
 )
 
 type ICMPPingResult struct {
 	PacketsSent int
-	PacketsRecv int
 	PacketsLoss int
-	Rtts        []int64
+	AvgTimeMill int64
 }
 
-func RunICMPPingLoop(addr *net.IPAddr, count int) *ICMPPingResult {
-	if count <= 0 {
-		return nil
-	}
-	r := &ICMPPingResult{
+// RunICMPPingLoop unix 下的 ping
+func RunICMPPingLoop(ip string, count int) (r ICMPPingResult) {
+	r = ICMPPingResult{
 		PacketsSent: count,
-		Rtts:        make([]int64, count),
+		PacketsLoss: count,
+		AvgTimeMill: 9999,
 	}
-	for i := 1; i <= count; i++ {
-		rtt, err := SendICMPRequest(addr, i)
-		if err != nil {
-			r.PacketsLoss++
-			r.Rtts[i-1] = 9999
-			continue
+	if count <= 0 {
+		return
+	}
+	durs := make([]int64, 0, count)
+	for i := 0; i < count; i++ {
+		d, err := pingudp(ip)
+		if err == nil {
+			r.PacketsLoss--
+			durs = append(durs, d)
 		}
-		r.PacketsRecv++
-		r.Rtts[i-1] = rtt
-		time.Sleep(time.Millisecond * 100)
 	}
-	return r
+
+	if len(durs) > 0 {
+		r.AvgTimeMill = 0
+		for _, d := range durs {
+			r.AvgTimeMill += d
+		}
+		if len(durs) > 1 {
+			r.AvgTimeMill /= int64(len(durs))
+		}
+	}
+
+	return
 }
 
-func SendICMPRequest(addr *net.IPAddr, seq int) (int64, error) {
-	data := make([]byte, 32)
-	rand.Read(data)
-	body := &icmp.Echo{
-		ID:   0,
-		Seq:  seq,
-		Data: data,
-	}
-	msg := &icmp.Message{
-		Type: ipv4.ICMPTypeEcho,
-		Code: 0,
-		Body: body,
-	}
-	msgBytes, _ := msg.Marshal(nil)
-	conn, err := net.DialIP("ip4:icmp", nil, addr)
+func pingudp(ip string) (int64, error) {
+	var buf [256]byte
+	ch := make(chan error, 1)
+
+	port := rand.Intn(10000) + 50000
+	conn, err := net.Dial("udp", ip+":"+strconv.Itoa(port))
 	if err != nil {
-		return 0, errors.Wrap(err, "dial icmp conn error")
+		return 9999, err
 	}
-	defer func() { _ = conn.Close() }()
-	if _, err = conn.Write(msgBytes); err != nil {
-		return 0, errors.Wrap(err, "write icmp packet error")
-	}
-	start := time.Now()
-	_ = conn.SetReadDeadline(time.Now().Add(time.Second * 2))
-	buff := make([]byte, 1024)
-	_, err = conn.Read(buff)
+
+	t := time.Now().UnixMilli()
+
+	_, err = conn.Write([]byte("fill"))
 	if err != nil {
-		return 0, errors.Wrap(err, "read icmp conn error")
+		return 0, err
 	}
-	duration := time.Since(start).Milliseconds()
-	return duration, nil
+	go func() {
+		_, err := conn.Read(buf[:])
+		ch <- err
+	}()
+	select {
+	case <-time.NewTimer(time.Second * 4).C:
+		err = errors.New("timeout")
+	case err = <-ch:
+	}
+
+	if err != nil && err.Error() == "timeout" {
+		return 9999, err
+	}
+	return time.Now().UnixMilli() - t, nil
 }
