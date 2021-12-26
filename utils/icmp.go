@@ -29,6 +29,7 @@ func RunICMPPingLoop(ipport string, count int) (r ICMPPingResult) {
 			r.PacketsLoss--
 			durs = append(durs, d)
 		}
+		time.Sleep(time.Millisecond * 100)
 	}
 
 	if len(durs) > 0 {
