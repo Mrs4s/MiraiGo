@@ -48,12 +48,12 @@ type QQClient struct {
 	SequenceId  atomic.Int32
 	SessionId   []byte
 	RandomKey   []byte
-	TCP         *network.TCPListener
 	ConnectTime time.Time
 
 	// todo: combine net conn, transport, pending into one struct
 	pendingMu sync.Mutex
 	pending   map[uint16]*network.Call
+	//TCP         *network.TCPListener
 	transport *network.Transport
 	oicq      *oicq.Codec
 
@@ -131,7 +131,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		Uin:         uin,
 		PasswordMd5: passwordMd5,
 		AllowSlider: true,
-		TCP:         &network.TCPListener{},
+		//TCP:         &network.TCPListener{},
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
@@ -210,8 +210,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	if len(cli.servers) > 3 {
 		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
 	}*/
-	cli.TCP.PlannedDisconnect = cli.plannedDisconnect
-	cli.TCP.UnexpectedDisconnect = cli.unexpectedDisconnect
+	cli.transport.PlannedDisconnect(cli.plannedDisconnect)
+	cli.transport.UnexpectedDisconnect(cli.unexpectedDisconnect)
 	rand.Read(cli.RandomKey)
 	return cli
 }

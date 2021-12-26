@@ -86,7 +86,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 
 func (c *QQClient) connectFastest() error {
 	c.Disconnect()
-	addr, err := c.TCP.ConnectFastest(c.servers)
+	addr, err := c.transport.ConnectFastest(c.servers)
 	if err != nil {
 		c.Disconnect()
 		return err
@@ -162,7 +162,7 @@ func (c *QQClient) quickReconnect() {
 // Disconnect 中断连接, 不释放资源
 func (c *QQClient) Disconnect() {
 	c.Online.Store(false)
-	c.TCP.Close()
+	c.transport.Close()
 }
 
 func (c *QQClient) send(call *network.Call) {
@@ -213,7 +213,7 @@ func (c *QQClient) callAndDecode(req *network.Request, decoder func(*QQClient, *
 
 // sendPacket 向服务器发送一个数据包
 func (c *QQClient) sendPacket(pkt []byte) error {
-	err := c.TCP.Write(pkt)
+	err := c.transport.Write(pkt)
 	if err != nil {
 		c.stat.PacketLost.Add(1)
 	} else {

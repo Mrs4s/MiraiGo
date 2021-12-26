@@ -20,7 +20,27 @@ type Transport struct {
 	Device  *auth.Device
 
 	// connection
-	conn *TCPListener
+	conn TCPListener
+}
+
+func (t *Transport) PlannedDisconnect(fun func(*TCPListener)) {
+	t.conn.PlannedDisconnect = fun
+}
+
+func (t *Transport) UnexpectedDisconnect(fun func(*TCPListener, error)) {
+	t.conn.UnexpectedDisconnect = fun
+}
+
+func (t *Transport) ConnectFastest(servers []*net.TCPAddr) (chosen *net.TCPAddr, err error) {
+	return t.conn.ConnectFastest(servers)
+}
+
+func (t *Transport) Close() {
+	t.conn.Close()
+}
+
+func (t *Transport) Write(data []byte) error {
+	return t.conn.Write(data)
 }
 
 func (t *Transport) packBody(req *Request, w *binary.Writer) {

@@ -66,7 +66,7 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 
 // ConnectFastest 连接到最快的服务器
 // TODO 禁用不可用服务器
-func (t *TCPListener) ConnectFastest(addr []*net.TCPAddr) (net.Addr, error) {
+func (t *TCPListener) ConnectFastest(addr []*net.TCPAddr) (*net.TCPAddr, error) {
 	ch := make(chan error)
 	wg := sync.WaitGroup{}
 	wg.Add(len(addr))
@@ -96,7 +96,7 @@ func (t *TCPListener) ConnectFastest(addr []*net.TCPAddr) (net.Addr, error) {
 		return nil, err
 	}
 	conn := t.getConn()
-	return conn.RemoteAddr(), nil
+	return conn.RemoteAddr().(*net.TCPAddr), nil
 }
 
 func (t *TCPListener) Write(buf []byte) error {
