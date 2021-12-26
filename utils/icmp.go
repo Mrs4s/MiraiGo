@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"errors"
-	"math/rand"
 	"net"
-	"strconv"
+	"strings"
 	"time"
 )
 
@@ -14,8 +12,8 @@ type ICMPPingResult struct {
 	AvgTimeMill int64
 }
 
-// RunICMPPingLoop unix 下的 ping
-func RunICMPPingLoop(ip string, count int) (r ICMPPingResult) {
+// RunICMPPingLoop tcp 伪装的 icmp
+func RunICMPPingLoop(ipport string, count int) (r ICMPPingResult) {
 	r = ICMPPingResult{
 		PacketsSent: count,
 		PacketsLoss: count,
@@ -26,7 +24,7 @@ func RunICMPPingLoop(ip string, count int) (r ICMPPingResult) {
 	}
 	durs := make([]int64, 0, count)
 	for i := 0; i < count; i++ {
-		d, err := pingudp(ip)
+		d, err := pingtcp(ipport)
 		if err == nil {
 			r.PacketsLoss--
 			durs = append(durs, d)
@@ -46,34 +44,15 @@ func RunICMPPingLoop(ip string, count int) (r ICMPPingResult) {
 	return
 }
 
-func pingudp(ip string) (int64, error) {
-	var buf [256]byte
-	ch := make(chan error, 1)
-
-	port := rand.Intn(10000) + 50000
-	conn, err := net.Dial("udp", ip+":"+strconv.Itoa(port))
-	if err != nil {
-		return 9999, err
-	}
-
+func pingtcp(ipport string) (int64, error) {
 	t := time.Now().UnixMilli()
-
-	_, err = conn.Write([]byte("fill"))
+	conn, err := net.DialTimeout("tcp", ipport, time.Second*2)
 	if err != nil {
-		return 0, err
-	}
-	go func() {
-		_, err := conn.Read(buf[:])
-		ch <- err
-	}()
-	select {
-	case <-time.NewTimer(time.Second * 4).C:
-		err = errors.New("timeout")
-	case err = <-ch:
-	}
-
-	if err != nil && err.Error() == "timeout" {
-		return 9999, err
+		if strings.Contains(err.Error(), "timeout") {
+			return 9999, err
+		}
+	} else {
+		_ = conn.Close()
 	}
 	return time.Now().UnixMilli() - t, nil
 }
