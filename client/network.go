@@ -179,9 +179,9 @@ func (c *QQClient) send(call *network.Call) {
 		c.pendingMu.Lock()
 		call = c.pending[seq]
 		delete(c.pending, seq)
+		c.pendingMu.Unlock()
 		call.Err = err
 		call.Done <- call
-		c.pendingMu.Unlock()
 	}
 }
 
