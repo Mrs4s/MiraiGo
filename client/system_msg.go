@@ -86,12 +86,12 @@ func (c *QQClient) exceptAndDispatchGroupSysMsg() {
 	}
 	for _, msg := range msgs.JoinRequests {
 		if !joinExists(msg.RequestId) {
-			c.dispatchJoinGroupRequest(msg)
+			c.EventHandler.JoinRequestHandler(c, msg)
 		}
 	}
 	for _, msg := range msgs.InvitedRequests {
 		if !invExists(msg.RequestId) {
-			c.dispatchGroupInvitedEvent(msg)
+			c.EventHandler.GroupInvitedHandler(c, msg)
 		}
 	}
 	c.groupSysMsgCache = msgs

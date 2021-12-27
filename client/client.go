@@ -28,7 +28,7 @@ type QQClient struct {
 	PasswordMd5 [16]byte
 
 	stat Statistics
-	once sync.Once
+	//once sync.Once
 
 	// option
 	AllowSlider bool
@@ -89,7 +89,12 @@ type QQClient struct {
 	groupSeq               atomic.Int32
 	friendSeq              atomic.Int32
 	highwayApplyUpSeq      atomic.Int32
-	eventHandlers          *eventHandlers
+
+	// handlers
+	groupMessageReceiptHandler sync.Map
+	serverUpdatedHandlers      []func(*QQClient, *ServerUpdatedEvent) bool
+	EventHandler
+	eventHandlers // 旧兼容
 
 	groupListLock sync.Mutex
 }
@@ -135,7 +140,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
-		eventHandlers:   &eventHandlers{},
+		EventHandler:    defaultHandlers,
 		msgSvcCache:     utils.NewCache(time.Second * 15),
 		transCache:      utils.NewCache(time.Second * 15),
 		onlinePushCache: utils.NewCache(time.Second * 15),
@@ -147,6 +152,10 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		version:    new(auth.AppVersion),
 		deviceInfo: new(auth.Device),
 	}
+
+	cli.groupMessageReceiptHandler.Store("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
+		cli.stat.MessageSent.Add(1)
+	})
 
 	cli.transport = &network.Transport{
 		Sig:     cli.sig,

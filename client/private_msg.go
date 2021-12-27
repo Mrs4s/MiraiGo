@@ -60,7 +60,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		},
 		Elements: m.Elements,
 	}
-	go c.dispatchPrivateMessageSelf(ret)
+	go c.EventHandler.PrivateMessageHandler(c, ret)
 	return ret
 }
 

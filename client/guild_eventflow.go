@@ -95,7 +95,7 @@ func decodeGuildEventFlowPacket(c *QQClient, resp *network.Response) (interface{
 				continue
 			}
 			if cm := c.GuildService.parseGuildChannelMessage(m); cm != nil {
-				c.dispatchGuildChannelMessage(cm)
+				c.EventHandler.GuildChannelMessageHandler(c, cm)
 			}
 		}
 	}
@@ -122,7 +122,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 				continue
 			}
 			guild.Channels = append(guild.Channels, channelInfo)
-			c.dispatchGuildChannelCreatedEvent(&GuildChannelOperationEvent{
+			c.EventHandler.GuildChannelCreatedHandler(c, &GuildChannelOperationEvent{
 				OperatorId:  m.Head.RoutingHead.GetFromTinyid(),
 				GuildId:     m.Head.RoutingHead.GetGuildId(),
 				ChannelInfo: channelInfo,
@@ -135,7 +135,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 				continue
 			}
 			guild.removeChannel(chanId.GetChanId())
-			c.dispatchGuildChannelDestroyedEvent(&GuildChannelOperationEvent{
+			c.EventHandler.GuildChannelDestroyedHandles(c, &GuildChannelOperationEvent{
 				OperatorId:  m.Head.RoutingHead.GetFromTinyid(),
 				GuildId:     guild.GuildId,
 				ChannelInfo: channelInfo,
@@ -168,7 +168,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 				break
 			}
 		}
-		c.dispatchGuildChannelUpdatedEvent(&GuildChannelUpdatedEvent{
+		c.EventHandler.GuildChannelUpdatedHandler(c, &GuildChannelUpdatedEvent{
 			OperatorId:     m.Head.RoutingHead.GetFromTinyid(),
 			GuildId:        m.Head.RoutingHead.GetGuildId(),
 			ChannelId:      eventBody.ChangeChanInfo.GetChanId(),
@@ -192,13 +192,13 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			Nickname: profile.Nickname,
 		}
 		// guild.Members = append(guild.Members, info)
-		c.dispatchMemberJoinedGuildEvent(&MemberJoinGuildEvent{
+		c.EventHandler.MemberJoinedGuildHandler(c, &MemberJoinGuildEvent{
 			Guild:  guild,
 			Member: info,
 		})
 	case eventBody.UpdateMsg != nil:
 		if eventBody.UpdateMsg.GetEventType() == 1 || eventBody.UpdateMsg.GetEventType() == 2 {
-			c.dispatchGuildMessageRecalledEvent(&GuildMessageRecalledEvent{
+			c.EventHandler.GuildMessageRecalledHandler(c, &GuildMessageRecalledEvent{
 				OperatorId: eventBody.UpdateMsg.GetOperatorTinyid(),
 				GuildId:    m.Head.RoutingHead.GetGuildId(),
 				ChannelId:  m.Head.RoutingHead.GetChannelId(),
@@ -234,7 +234,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 				updatedEvent.OperatorId = tipsInfo.(*tipsPushInfo).TinyId
 				// updatedEvent.MessageSenderUin = tipsInfo.(*tipsPushInfo).TargetMessageSenderUin
 			}
-			c.dispatchGuildMessageReactionsUpdatedEvent(updatedEvent)
+			c.EventHandler.GuildMessageReactionsUpdatedHandler(c, updatedEvent)
 		}
 	}
 }

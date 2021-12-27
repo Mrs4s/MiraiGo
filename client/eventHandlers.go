@@ -2,10 +2,9 @@ package client
 
 import (
 	"fmt"
-	"runtime/debug"
-	"sync"
-
 	"github.com/Mrs4s/MiraiGo/message"
+	"runtime/debug"
+	"time"
 )
 
 type eventHandlers struct {
@@ -37,14 +36,12 @@ type eventHandlers struct {
 	newFriendHandlers                    []func(*QQClient, *NewFriendEvent)
 	disconnectHandlers                   []func(*QQClient, *ClientDisconnectedEvent)
 	logHandlers                          []func(*QQClient, *LogEvent)
-	serverUpdatedHandlers                []func(*QQClient, *ServerUpdatedEvent) bool
 	groupNotifyHandlers                  []func(*QQClient, INotifyEvent)
 	friendNotifyHandlers                 []func(*QQClient, INotifyEvent)
 	memberTitleUpdatedHandlers           []func(*QQClient, *MemberSpecialTitleUpdatedEvent)
 	offlineFileHandlers                  []func(*QQClient, *OfflineFileEvent)
 	otherClientStatusChangedHandlers     []func(*QQClient, *OtherClientStatusChangedEvent)
 	groupDigestHandlers                  []func(*QQClient, *GroupDigestEvent)
-	groupMessageReceiptHandlers          sync.Map
 }
 
 func (c *QQClient) OnPrivateMessage(f func(*QQClient, *message.PrivateMessage)) {
@@ -163,10 +160,6 @@ func (c *QQClient) OnDisconnected(f func(*QQClient, *ClientDisconnectedEvent)) {
 	c.eventHandlers.disconnectHandlers = append(c.eventHandlers.disconnectHandlers, f)
 }
 
-func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent) bool) {
-	c.eventHandlers.serverUpdatedHandlers = append(c.eventHandlers.serverUpdatedHandlers, f)
-}
-
 func (c *QQClient) OnReceivedOfflineFile(f func(*QQClient, *OfflineFileEvent)) {
 	c.eventHandlers.offlineFileHandlers = append(c.eventHandlers.offlineFileHandlers, f)
 }
@@ -204,13 +197,15 @@ func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
 
 func (c *QQClient) onGroupMessageReceipt(id string, f ...func(*QQClient, *groupMessageReceiptEvent)) {
 	if len(f) == 0 {
-		c.eventHandlers.groupMessageReceiptHandlers.Delete(id)
+		c.groupMessageReceiptHandler.Delete(id)
 		return
 	}
-	c.eventHandlers.groupMessageReceiptHandlers.LoadOrStore(id, f[0])
+	c.groupMessageReceiptHandler.LoadOrStore(id, f[0])
 }
 
 func (c *QQClient) dispatchPrivateMessage(msg *message.PrivateMessage) {
+	c.stat.MessageReceived.Add(1)
+	c.stat.LastMessageTime.Store(time.Now().Unix())
 	if msg == nil {
 		return
 	}
@@ -222,6 +217,8 @@ func (c *QQClient) dispatchPrivateMessage(msg *message.PrivateMessage) {
 }
 
 func (c *QQClient) dispatchTempMessage(e *TempMessageEvent) {
+	c.stat.MessageReceived.Add(1)
+	c.stat.LastMessageTime.Store(time.Now().Unix())
 	if e == nil {
 		return
 	}
@@ -236,6 +233,8 @@ func (c *QQClient) dispatchGroupMessage(msg *message.GroupMessage) {
 	if msg == nil {
 		return
 	}
+	c.stat.MessageReceived.Add(1)
+	c.stat.LastMessageTime.Store(time.Now().Unix())
 	for _, f := range c.eventHandlers.groupMessageHandlers {
 		cover(func() {
 			f(c, msg)
@@ -452,13 +451,6 @@ func (c *QQClient) dispatchPermissionChanged(e *MemberPermissionChangedEvent) {
 	}
 }
 
-func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent) {
-	c.eventHandlers.groupMessageReceiptHandlers.Range(func(_, f interface{}) bool {
-		go f.(func(*QQClient, *groupMessageReceiptEvent))(c, e)
-		return true
-	})
-}
-
 func (c *QQClient) dispatchGroupInvitedEvent(e *GroupInvitedRequest) {
 	if e == nil {
 		return
@@ -589,6 +581,13 @@ func (c *QQClient) dispatchLogEvent(e *LogEvent) {
 			f(c, e)
 		})
 	}
+}
+
+func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent) {
+	c.groupMessageReceiptHandler.Range(func(_, f interface{}) bool {
+		go f.(func(*QQClient, *groupMessageReceiptEvent))(c, e)
+		return true
+	})
 }
 
 func cover(f func()) {

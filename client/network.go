@@ -101,24 +101,24 @@ func (c *QQClient) connectFastest() error {
 
 // connect 连接到 QQClient.servers 中的服务器
 func (c *QQClient) connect() error {
-	c.once.Do(func() {
-		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
-			c.stat.MessageReceived.Add(1)
-			c.stat.LastMessageTime.Store(time.Now().Unix())
-		})
-		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
-			c.stat.MessageReceived.Add(1)
-			c.stat.LastMessageTime.Store(time.Now().Unix())
-		})
-		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
-			c.stat.MessageReceived.Add(1)
-			c.stat.LastMessageTime.Store(time.Now().Unix())
-		})
-		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
-			c.stat.MessageSent.Add(1)
-		})
-		// go c.netLoop()
-	})
+	//c.once.Do(func() {
+	//	c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
+	//		c.stat.MessageReceived.Add(1)
+	//		c.stat.LastMessageTime.Store(time.Now().Unix())
+	//	})
+	//	c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
+	//		c.stat.MessageReceived.Add(1)
+	//		c.stat.LastMessageTime.Store(time.Now().Unix())
+	//	})
+	//	c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
+	//		c.stat.MessageReceived.Add(1)
+	//		c.stat.LastMessageTime.Store(time.Now().Unix())
+	//	})
+	//	c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
+	//		c.stat.MessageSent.Add(1)
+	//	})
+	//	go c.netLoop()
+	//})
 	return c.connectFastest() // 暂时?
 	/*c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
 	err := c.TCP.Connect(c.servers[c.currServerIndex])
@@ -149,13 +149,13 @@ func (c *QQClient) quickReconnect() {
 	time.Sleep(time.Millisecond * 200)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "快速重连失败"})
+		c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "快速重连失败"})
 		return
 	}
 	if err := c.registerClient(); err != nil {
 		c.Error("register client failed: %v", err)
 		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
+		c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "register error"})
 		return
 	}
 }
@@ -267,13 +267,13 @@ func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
 	c.Online.Store(false)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
+		c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "connection dropped by server."})
 		return
 	}
 	if err := c.registerClient(); err != nil {
 		c.Error("register client failed: %v", err)
 		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
+		c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "register error"})
 		return
 	}
 }
@@ -282,11 +282,11 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 	if netErr != nil {
 		switch true {
 		case errors.Is(netErr, network.ErrConnectionBroken):
-			go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: netErr.Error()})
+			go c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: netErr.Error()})
 			c.QuickReconnect()
 		case errors.Is(netErr, network.ErrSessionExpired) || errors.Is(netErr, network.ErrPacketDropped):
 			c.Disconnect()
-			go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
+			go c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "session expired"})
 		}
 		c.Error("parse incoming packet error: %v", netErr)
 		return
