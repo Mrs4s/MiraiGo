@@ -150,7 +150,7 @@ func (t *Transport) netLoop(pktHandler PktHandler, respHandler RequestHandler) {
 		if r := recover(); r != nil {
 			pktHandler(nil, fmt.Errorf("panic: %v", r))
 		}
-		_ = conn.Close()
+		t.Close()
 	}()
 	errCount := 0
 	for {
