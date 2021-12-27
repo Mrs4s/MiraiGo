@@ -129,6 +129,7 @@ func (t *Transport) NetLoop(pktHandler PktHandler, respHandler RequestHandler) {
 	go t.netLoop(pktHandler, respHandler)
 }
 
+// readPacket 帮助函数(Helper function)
 func readPacket(conn *net.TCPConn, minSize, maxSize uint32) ([]byte, error) {
 	lBuf := make([]byte, 4)
 	_, err := io.ReadFull(conn, lBuf)
@@ -144,19 +145,20 @@ func readPacket(conn *net.TCPConn, minSize, maxSize uint32) ([]byte, error) {
 	return data, err
 }
 
+// netLoop 整个函数周期使用同一个连接，确保不会发生串线这种奇怪的事情
 func (t *Transport) netLoop(pktHandler PktHandler, respHandler RequestHandler) {
 	conn := t.conn.getConn()
 	defer func() {
 		if r := recover(); r != nil {
 			pktHandler(nil, fmt.Errorf("panic: %v", r))
 		}
-		t.Close()
+		t.conn.Close()
 	}()
 	errCount := 0
 	for {
 		data, err := readPacket(conn, 4, 10<<20) // max 10MB
 		if err != nil {
-			// 连接未改变，没有建立新连接
+			// 在且仅在没有新连接建立时断线才被认为是意外的
 			if t.conn.getConn() == conn {
 				pktHandler(nil, errors.Wrap(ErrConnectionBroken, err.Error()))
 			}
