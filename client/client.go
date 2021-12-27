@@ -48,12 +48,12 @@ type QQClient struct {
 	SequenceId  atomic.Int32
 	SessionId   []byte
 	RandomKey   []byte
-	TCP         *network.TCPListener
 	ConnectTime time.Time
 
 	// todo: combine net conn, transport, pending into one struct
 	pendingMu sync.Mutex
 	pending   map[uint16]*network.Call
+	//TCP         *network.TCPListener
 	transport *network.Transport
 	oicq      *oicq.Codec
 
@@ -131,7 +131,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		Uin:         uin,
 		PasswordMd5: passwordMd5,
 		AllowSlider: true,
-		TCP:         &network.TCPListener{},
+		//TCP:         &network.TCPListener{},
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
@@ -181,15 +181,15 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	if len(cli.servers) == 0 {
 		cli.servers = []*net.TCPAddr{ // default servers
-			{IP: net.IP{42, 81, 172, 81}, Port: 80},
-			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
-			{IP: net.IP{42, 81, 172, 147}, Port: 443},
-			{IP: net.IP{125, 94, 60, 146}, Port: 80},
-			{IP: net.IP{114, 221, 144, 215}, Port: 80},
 			{IP: net.IP{42, 81, 172, 22}, Port: 80},
+			{IP: net.IP{42, 81, 172, 81}, Port: 80},
+			{IP: net.IP{42, 81, 172, 147}, Port: 443},
+			{IP: net.IP{114, 221, 144, 215}, Port: 80},
+			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
+			{IP: net.IP{125, 94, 60, 146}, Port: 80},
 		}
 	}
-	pings := make([]int64, len(cli.servers))
+	/*pings := make([]int64, len(cli.servers))
 	wg := sync.WaitGroup{}
 	wg.Add(len(cli.servers))
 	for i := range cli.servers {
@@ -209,9 +209,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	})
 	if len(cli.servers) > 3 {
 		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
-	}
-	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
-	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
+	}*/
+	cli.transport.PlannedDisconnect(cli.plannedDisconnect)
+	cli.transport.UnexpectedDisconnect(cli.unexpectedDisconnect)
 	rand.Read(cli.RandomKey)
 	return cli
 }
@@ -255,11 +255,50 @@ func (c *QQClient) TokenLogin(token []byte) error {
 	if c.Online.Load() {
 		return ErrAlreadyOnline
 	}
-	err := c.connect()
+	err := c.LoadToken(token)
 	if err != nil {
 		return err
 	}
-	{
+	return c.ReLogin()
+}
+
+func (c *QQClient) ReLogin() error {
+	if c.Online.Load() {
+		return ErrAlreadyOnline
+	}
+	err := c.connectFastest()
+	if err != nil {
+		return err
+	}
+	_, err = c.callAndDecode(c.buildRequestChangeSigRequest(c.version.MainSigMap), decodeExchangeEmpResponse)
+	if err != nil {
+		return err
+	}
+	err = c.init(true)
+	// 登录失败
+	if err != nil {
+		c.Disconnect()
+	}
+	return err
+}
+
+func (c *QQClient) DumpToken() []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteUInt64(uint64(c.Uin))
+		w.WriteBytesShort(c.sig.D2)
+		w.WriteBytesShort(c.sig.D2Key)
+		w.WriteBytesShort(c.sig.TGT)
+		w.WriteBytesShort(c.sig.SrmToken)
+		w.WriteBytesShort(c.sig.T133)
+		w.WriteBytesShort(c.sig.EncryptedA1)
+		w.WriteBytesShort(c.oicq.WtSessionTicketKey)
+		w.WriteBytesShort(c.sig.OutPacketSessionID)
+		w.WriteBytesShort(c.deviceInfo.TgtgtKey)
+	})
+}
+
+func (c *QQClient) LoadToken(token []byte) error {
+	return utils.CoverError(func() {
 		r := binary.NewReader(token)
 		c.Uin = r.ReadInt64()
 		c.sig.D2 = r.ReadBytesShort()
@@ -272,18 +311,83 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		c.sig.OutPacketSessionID = r.ReadBytesShort()
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
-	}
-	_, err = c.callAndDecode(c.buildRequestChangeSigRequest(c.version.MainSigMap), decodeExchangeEmpResponse)
-	if err != nil {
-		return err
-	}
-	return c.init(true)
+		copy(SystemDeviceInfo.TgtgtKey, c.deviceInfo.TgtgtKey)
+	})
 }
 
+func (c *QQClient) DumpDevice() []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteBytesShort(c.deviceInfo.Display)
+		w.WriteBytesShort(c.deviceInfo.Product)
+		w.WriteBytesShort(c.deviceInfo.Device)
+		w.WriteBytesShort(c.deviceInfo.Board)
+		w.WriteBytesShort(c.deviceInfo.Brand)
+		w.WriteBytesShort(c.deviceInfo.Model)
+		w.WriteBytesShort(c.deviceInfo.Bootloader)
+		w.WriteBytesShort(c.deviceInfo.FingerPrint)
+		w.WriteBytesShort(c.deviceInfo.BootId)
+		w.WriteBytesShort(c.deviceInfo.ProcVersion)
+		w.WriteBytesShort(c.deviceInfo.BaseBand)
+		w.WriteBytesShort(c.deviceInfo.SimInfo)
+		w.WriteBytesShort(c.deviceInfo.OSType)
+		w.WriteBytesShort(c.deviceInfo.MacAddress)
+		w.WriteBytesShort(c.deviceInfo.IpAddress)
+		w.WriteBytesShort(c.deviceInfo.WifiBSSID)
+		w.WriteBytesShort(c.deviceInfo.WifiSSID)
+		w.WriteBytesShort(c.deviceInfo.IMSIMd5)
+		w.WriteStringShort(c.deviceInfo.IMEI)
+		w.WriteBytesShort(c.deviceInfo.APN)
+		w.WriteBytesShort(c.deviceInfo.VendorName)
+		w.WriteBytesShort(c.deviceInfo.VendorOSName)
+		w.WriteBytesShort(c.deviceInfo.AndroidId)
+
+		w.Write(c.PasswordMd5[:])
+	})
+}
+
+func (c *QQClient) LoadDevice(device []byte) error {
+	return utils.CoverError(func() {
+		r := binary.NewReader(device)
+		c.deviceInfo.Display = r.ReadBytesShort()
+		c.deviceInfo.Product = r.ReadBytesShort()
+		c.deviceInfo.Device = r.ReadBytesShort()
+		c.deviceInfo.Board = r.ReadBytesShort()
+		c.deviceInfo.Brand = r.ReadBytesShort()
+		c.deviceInfo.Model = r.ReadBytesShort()
+		c.deviceInfo.Bootloader = r.ReadBytesShort()
+		c.deviceInfo.FingerPrint = r.ReadBytesShort()
+		c.deviceInfo.BootId = r.ReadBytesShort()
+		c.deviceInfo.ProcVersion = r.ReadBytesShort()
+		c.deviceInfo.BaseBand = r.ReadBytesShort()
+		c.deviceInfo.SimInfo = r.ReadBytesShort()
+		c.deviceInfo.OSType = r.ReadBytesShort()
+		c.deviceInfo.MacAddress = r.ReadBytesShort()
+		c.deviceInfo.IpAddress = r.ReadBytesShort()
+		c.deviceInfo.WifiBSSID = r.ReadBytesShort()
+		c.deviceInfo.WifiSSID = r.ReadBytesShort()
+		c.deviceInfo.IMSIMd5 = r.ReadBytesShort()
+		c.deviceInfo.IMEI = r.ReadStringShort()
+		c.deviceInfo.APN = r.ReadBytesShort()
+		c.deviceInfo.VendorName = r.ReadBytesShort()
+		c.deviceInfo.VendorOSName = r.ReadBytesShort()
+		c.deviceInfo.AndroidId = r.ReadBytesShort()
+
+		copy(c.PasswordMd5[:], r.ReadBytes(md5.Size))
+	})
+}
+
+// FetchQRCode 以默认值获取登录二维码
+// 函数已被弃用 请使用FetchQRCodeCustomSize获得更可控结果
+// 但该兼容函数不会被删除
+// Deprecated use FetchQRCodeCustomSize(3, 4, 2) instead
 func (c *QQClient) FetchQRCode() (*QRCodeLoginResponse, error) {
 	return c.FetchQRCodeCustomSize(3, 4, 2)
 }
 
+// FetchQRCodeCustomSize 以特定参数获取登录二维码
+// size: 块尺寸 默认值3 即单个黑/白块大小为3x3像素
+// margin: 与图片边界的距离 默认值4 即二维码主体至图片边界有4像素白色填充
+// ecLevel: 纠错等级 可用值：1,2,3 默认值2
 func (c *QQClient) FetchQRCodeCustomSize(size, margin, ecLevel uint32) (*QRCodeLoginResponse, error) {
 	if c.Online.Load() {
 		return nil, ErrAlreadyOnline
@@ -400,15 +504,13 @@ func (c *QQClient) init(tokenLogin bool) error {
 			d2()
 		}
 	}
-	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
-	if !c.heartbeatEnabled {
-		go c.doHeartbeat()
-	}
+	go c.doHeartbeat()
 	_ = c.RefreshStatus()
 	if c.version.Protocol == auth.QiDian {
 		_, _ = c.callAndDecode(c.buildLoginExtraPacket(), decodeLoginExtraResponse)  // 小登录
 		_, _ = c.callAndDecode(c.buildConnKeyRequestPacket(), decodeConnKeyResponse) // big data key 如果等待 config push 的话时间来不及
 	}
+	c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 	req := c.buildGetMessageRequest(msg.SyncFlag_START, time.Now().Unix())
 	req.Params = network.Params{"used_reg_proxy": true, "init": true}
 	_, _ = c.callAndDecode(req, decodeMessageSvcPacket)
@@ -765,10 +867,21 @@ func (c *QQClient) nextHighwayApplySeq() int32 {
 }
 
 func (c *QQClient) doHeartbeat() {
+	// 不需要atomic/锁
+	if c.heartbeatEnabled {
+		return
+	}
 	c.heartbeatEnabled = true
+	defer func() {
+		c.heartbeatEnabled = false
+	}()
 	times := 0
-	for c.Online.Load() {
-		time.Sleep(time.Second * 30)
+	ticker := time.NewTicker(time.Second * 30)
+	for range ticker.C {
+		if !c.Online.Load() {
+			ticker.Stop()
+			return // 下线停止goroutine，for gc
+		}
 		seq := c.nextSeq()
 		req := network.Request{
 			Type:        network.RequestTypeLogin,
@@ -779,8 +892,11 @@ func (c *QQClient) doHeartbeat() {
 			Body:        EmptyBytes,
 		}
 		_, err := c.call(&req)
-		if errors.Is(err, network.ErrConnectionClosed) {
-			continue
+		if err != nil {
+			if errors.Is(err, network.ErrConnectionBroken) {
+				break
+			}
+			continue // skip time++
 		}
 		times++
 		if times >= 7 {
@@ -788,5 +904,4 @@ func (c *QQClient) doHeartbeat() {
 			times = 0
 		}
 	}
-	c.heartbeatEnabled = false
 }

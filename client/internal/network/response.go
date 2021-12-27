@@ -22,6 +22,7 @@ var (
 	ErrSessionExpired    = errors.New("session expired")
 	ErrPacketDropped     = errors.New("packet dropped")
 	ErrInvalidPacketType = errors.New("invalid packet type")
+	ErrConnectionBroken  = errors.New("connection broken")
 )
 
 func (t *Transport) ReadRequest(head []byte) (*Request, error) {

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/Mrs4s/MiraiGo/message"
 	"net"
 	"runtime/debug"
 	"sync"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
-	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -84,22 +84,22 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	return r
 }
 
-// connect 连接到 QQClient.servers 中的服务器
-func (c *QQClient) connect() error {
-	c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
-	err := c.TCP.Connect(c.servers[c.currServerIndex])
-	c.currServerIndex++
-	if c.currServerIndex == len(c.servers) {
-		c.currServerIndex = 0
-	}
+func (c *QQClient) connectFastest() error {
+	c.Disconnect()
+	addr, err := c.transport.ConnectFastest(c.servers)
 	if err != nil {
-		c.retryTimes++
-		if c.retryTimes > len(c.servers) {
-			return errors.New("All servers are unreachable")
-		}
-		c.Error("connect server error: %v", err)
+		c.Disconnect()
 		return err
 	}
+	c.Debug("connected to server: %v [fastest]", addr.String())
+	c.transport.NetLoop(c.pktProc, c.transport.ReadRequest)
+	c.retryTimes = 0
+	c.ConnectTime = time.Now()
+	return nil
+}
+
+// connect 连接到 QQClient.servers 中的服务器
+func (c *QQClient) connect() error {
 	c.once.Do(func() {
 		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
 			c.stat.MessageReceived.Add(1)
@@ -116,11 +116,30 @@ func (c *QQClient) connect() error {
 		c.onGroupMessageReceipt("internal", func(_ *QQClient, _ *groupMessageReceiptEvent) {
 			c.stat.MessageSent.Add(1)
 		})
-		go c.netLoop()
+		//go c.netLoop()
 	})
+	return c.connectFastest() // 暂时?
+	/*c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
+	err := c.TCP.Connect(c.servers[c.currServerIndex])
+	c.currServerIndex++
+	if c.currServerIndex == len(c.servers) {
+		c.currServerIndex = 0
+	}
+	if err != nil {
+		c.retryTimes++
+		if c.retryTimes > len(c.servers) {
+			return errors.New("All servers are unreachable")
+		}
+		c.Error("connect server error: %v", err)
+		return err
+	}
 	c.retryTimes = 0
 	c.ConnectTime = time.Now()
-	return nil
+	return nil*/
+}
+
+func (c *QQClient) QuickReconnect() {
+	c.quickReconnect() // TODO "用户请求快速重连"
 }
 
 // quickReconnect 快速重连
@@ -129,7 +148,7 @@ func (c *QQClient) quickReconnect() {
 	time.Sleep(time.Millisecond * 200)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "quick reconnect failed"})
+		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "快速重连失败"})
 		return
 	}
 	if err := c.registerClient(); err != nil {
@@ -143,7 +162,7 @@ func (c *QQClient) quickReconnect() {
 // Disconnect 中断连接, 不释放资源
 func (c *QQClient) Disconnect() {
 	c.Online.Store(false)
-	c.TCP.Close()
+	c.transport.Close()
 }
 
 func (c *QQClient) send(call *network.Call) {
@@ -160,9 +179,9 @@ func (c *QQClient) send(call *network.Call) {
 		c.pendingMu.Lock()
 		call = c.pending[seq]
 		delete(c.pending, seq)
+		c.pendingMu.Unlock()
 		call.Err = err
 		call.Done <- call
-		c.pendingMu.Unlock()
 	}
 }
 
@@ -194,7 +213,7 @@ func (c *QQClient) callAndDecode(req *network.Request, decoder func(*QQClient, *
 
 // sendPacket 向服务器发送一个数据包
 func (c *QQClient) sendPacket(pkt []byte) error {
-	err := c.TCP.Write(pkt)
+	err := c.transport.Write(pkt)
 	if err != nil {
 		c.stat.PacketLost.Add(1)
 	} else {
@@ -257,100 +276,79 @@ func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
 	}
 }
 
-// netLoop 通过循环来不停接收数据包
-func (c *QQClient) netLoop() {
-	errCount := 0
-	for c.alive {
-		l, err := c.TCP.ReadInt32()
-		if err != nil {
-			time.Sleep(time.Millisecond * 500)
-			continue
+func (c *QQClient) pktProc(req *network.Request, netErr error) {
+	if netErr != nil {
+		switch true {
+		case errors.Is(netErr, network.ErrConnectionBroken):
+			go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: netErr.Error()})
+			c.QuickReconnect()
+		case errors.Is(netErr, network.ErrSessionExpired) || errors.Is(netErr, network.ErrPacketDropped):
+			c.Disconnect()
+			go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
 		}
-		if l < 4 || l > 1024*1024*10 { // max 10MB
-			c.Error("parse incoming packet error: invalid packet length %v", l)
-			errCount++
-			if errCount > 2 {
-				go c.quickReconnect()
-			}
-			continue
-		}
-		data, _ := c.TCP.ReadBytes(int(l) - 4)
-		req, err := c.transport.ReadRequest(data)
-		if err != nil {
-			c.Error("parse incoming packet error: %v", err)
-			if errors.Is(err, network.ErrSessionExpired) || errors.Is(err, network.ErrPacketDropped) {
-				c.Disconnect()
-				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
-				continue
-			}
-			errCount++
-			if errCount > 2 {
-				go c.quickReconnect()
-			}
-			continue
-		}
-		if req.EncryptType == network.EncryptTypeEmptyKey {
-			m, err := c.oicq.Unmarshal(req.Body)
-			if err != nil {
-				c.Error("decrypt payload error: %v", err)
-				if errors.Is(err, oicq.ErrUnknownFlag) {
-					go c.quickReconnect()
-				}
-				continue
-			}
-			req.Body = m.Body
-		}
-		errCount = 0
-		c.Debug("rev pkt: %v seq: %v", req.CommandName, req.SequenceID)
-		c.stat.PacketReceived.Add(1)
-		go func(req *network.Request) {
-			defer func() {
-				if pan := recover(); pan != nil {
-					c.Error("panic on decoder %v : %v\n%s", req.CommandName, pan, debug.Stack())
-					c.Dump("packet decode error: %v - %v", req.Body, req.CommandName, pan)
-				}
-			}()
+		c.Error("parse incoming packet error: %v", netErr)
+		return
+	}
 
-			// snapshot of read call
-			c.pendingMu.Lock()
-			call := c.pending[uint16(req.SequenceID)]
-			if call != nil {
-				call.Response = &network.Response{
-					SequenceID:  req.SequenceID,
-					CommandName: req.CommandName,
-					Body:        req.Body,
-					Params:      call.Request.Params,
-					// Request:     nil,
-				}
+	if req.EncryptType == network.EncryptTypeEmptyKey {
+		m, err := c.oicq.Unmarshal(req.Body)
+		if err != nil {
+			c.Error("decrypt payload error: %v", err)
+			if errors.Is(err, oicq.ErrUnknownFlag) {
+				go c.quickReconnect() // TODO "服务器发送未知响应"
 			}
-			c.pendingMu.Unlock()
-			if call != nil && call.Request.CommandName == req.CommandName {
-				select {
-				case call.Done <- call:
-				default:
-					// we don't want blocking
-				}
-				return
-			}
+		}
+		req.Body = m.Body
+	}
 
-			if decoder, ok := decoders[req.CommandName]; ok {
-				// found predefined decoder
-				resp := network.Response{
-					SequenceID:  req.SequenceID,
-					CommandName: req.CommandName,
-					Body:        req.Body,
-					// Request:     nil,
-				}
-				decoded, err := decoder(c, &resp)
-				if err != nil {
-					c.Debug("decode req %v error: %+v", req.CommandName, err)
-				}
-				if f, ok := c.waiters.Load(req.CommandName); ok { // 在不存在handler的情况下触发wait
-					f.(func(interface{}, error))(decoded, err)
-				}
-			} else {
-				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", req.CommandName, req.SequenceID)
-			}
-		}(req)
+	defer func() {
+		if pan := recover(); pan != nil {
+			c.Error("panic on decoder %v : %v\n%s", req.CommandName, pan, debug.Stack())
+			c.Dump("packet decode error: %v - %v", req.Body, req.CommandName, pan)
+		}
+	}()
+
+	c.Debug("rev resp: %v seq: %v", req.CommandName, req.SequenceID)
+	c.stat.PacketReceived.Add(1)
+
+	// snapshot of read call
+	c.pendingMu.Lock()
+	call := c.pending[uint16(req.SequenceID)]
+	if call != nil {
+		call.Response = &network.Response{
+			SequenceID:  req.SequenceID,
+			CommandName: req.CommandName,
+			Body:        req.Body,
+			Params:      call.Request.Params,
+			// Request:     nil,
+		}
+	}
+	c.pendingMu.Unlock()
+	if call != nil && call.Request.CommandName == req.CommandName {
+		select {
+		case call.Done <- call:
+		default:
+			// we don't want blocking
+		}
+		return
+	}
+
+	if decoder, ok := decoders[req.CommandName]; ok {
+		// found predefined decoder
+		resp := network.Response{
+			SequenceID:  req.SequenceID,
+			CommandName: req.CommandName,
+			Body:        req.Body,
+			// Request:     nil,
+		}
+		decoded, err := decoder(c, &resp)
+		if err != nil {
+			c.Debug("decode req %v error: %+v", req.CommandName, err)
+		}
+		if f, ok := c.waiters.Load(req.CommandName); ok { // 在不存在handler的情况下触发wait
+			f.(func(interface{}, error))(decoded, err)
+		}
+	} else {
+		c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", req.CommandName, req.SequenceID)
 	}
 }
