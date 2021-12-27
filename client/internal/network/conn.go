@@ -19,9 +19,11 @@ type TCPListener struct {
 
 	// PlannedDisconnect 预料中的断开连接
 	// 如调用 Close() Connect()
+	// 客户端主动断开连接，原因可能包含服务端请求断开连接
 	PlannedDisconnect func(*TCPListener)
 
 	// UnexpectedDisconnect 未预料的断开连接
+	// 指因为网络原因或服务器没有通知即关闭连接
 	UnexpectedDisconnect func(*TCPListener, error)
 	stat                 Statistics
 }

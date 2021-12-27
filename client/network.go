@@ -147,13 +147,13 @@ func (c *QQClient) quickReconnect() {
 	time.Sleep(time.Millisecond * 200)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
-		c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "快速重连失败"})
+		c.EventHandler.OfflineHandler(c, &ClientOfflineEvent{Message: "快速重连失败"})
 		return
 	}
 	if err := c.registerClient(); err != nil {
 		c.Error("register client failed: %v", err)
 		c.Disconnect()
-		c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "register error"})
+		c.EventHandler.OfflineHandler(c, &ClientOfflineEvent{Message: "register error"})
 		return
 	}
 }
@@ -281,7 +281,7 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 		switch true {
 		case errors.Is(netErr, network.ErrConnectionBroken):
 			go c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: netErr.Error()})
-			c.QuickReconnect()
+			c.quickReconnect()
 		case errors.Is(netErr, network.ErrSessionExpired) || errors.Is(netErr, network.ErrPacketDropped):
 			c.Disconnect()
 			go c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "session expired"})

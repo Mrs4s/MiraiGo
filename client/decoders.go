@@ -55,6 +55,7 @@ func decodeLoginResponse(c *QQClient, resp *network.Response) (interface{}, erro
 			c.sig.RandSeed = m[0x403]
 		}
 		c.decodeT119(m[0x119], c.deviceInfo.TgtgtKey)
+		c.EventHandler.TokenUpdatedHandler(c)
 		return LoginResponse{
 			Success: true,
 		}, nil
@@ -212,6 +213,7 @@ func decodeExchangeEmpResponse(c *QQClient, resp *network.Response) (interface{}
 	if cmd == 11 {
 		h := md5.Sum(c.sig.D2Key)
 		c.decodeT119(m[0x119], h[:])
+		c.EventHandler.TokenUpdatedHandler(c)
 	}
 	return nil, nil
 }
@@ -767,7 +769,7 @@ func decodeMSFOfflinePacket(c *QQClient, _ *network.Response) (interface{}, erro
 	// c.lastLostMsg = "服务器端强制下线."
 	c.Disconnect()
 	// 这个decoder不能消耗太多时间, event另起线程处理
-	go c.EventHandler.DisconnectHandler(c, &ClientDisconnectedEvent{Message: "服务端强制下线."})
+	go c.EventHandler.OfflineHandler(c, &ClientOfflineEvent{Message: "服务端强制下线."})
 	return nil, nil
 }
 

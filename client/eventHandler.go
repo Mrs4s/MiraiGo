@@ -33,16 +33,16 @@ type EventHandler struct {
 	FriendRequestHandler                func(*QQClient, *NewFriendRequest)
 	NewFriendHandler                    func(*QQClient, *NewFriendEvent)
 	DisconnectHandler                   func(*QQClient, *ClientDisconnectedEvent)
-	//OfflineHandler                      func(*QQClient, *ClientOfflineEvent)
-	LogHandler                      func(*QQClient, *LogEvent)
-	ServerUpdatedHandler            func(*QQClient, *ServerUpdatedEvent) bool
-	GroupNotifyHandler              func(*QQClient, INotifyEvent)
-	FriendNotifyHandler             func(*QQClient, INotifyEvent)
-	MemberTitleUpdatedHandler       func(*QQClient, *MemberSpecialTitleUpdatedEvent)
-	OfflineFileHandler              func(*QQClient, *OfflineFileEvent)
-	OtherClientStatusChangedHandler func(*QQClient, *OtherClientStatusChangedEvent)
-	GroupDigestHandler              func(*QQClient, *GroupDigestEvent)
-	//TokenUpdatedHandler                 func(*QQClient)
+	OfflineHandler                      func(*QQClient, *ClientOfflineEvent)
+	LogHandler                          func(*QQClient, *LogEvent)
+	ServerUpdatedHandler                func(*QQClient, *ServerUpdatedEvent) bool
+	GroupNotifyHandler                  func(*QQClient, INotifyEvent)
+	FriendNotifyHandler                 func(*QQClient, INotifyEvent)
+	MemberTitleUpdatedHandler           func(*QQClient, *MemberSpecialTitleUpdatedEvent)
+	OfflineFileHandler                  func(*QQClient, *OfflineFileEvent)
+	OtherClientStatusChangedHandler     func(*QQClient, *OtherClientStatusChangedEvent)
+	GroupDigestHandler                  func(*QQClient, *GroupDigestEvent)
+	TokenUpdatedHandler                 func(*QQClient)
 }
 
 var defaultHandlers = EventHandler{
@@ -127,6 +127,7 @@ var defaultHandlers = EventHandler{
 	DisconnectHandler: func(client *QQClient, disconnectEvent *ClientDisconnectedEvent) {
 		client.dispatchDisconnectEvent(disconnectEvent)
 	},
+	OfflineHandler: func(client *QQClient, event *ClientOfflineEvent) {},
 	ServerUpdatedHandler: func(client *QQClient, serverUpdatedEvent *ServerUpdatedEvent) bool {
 		return client.dispatchServerUpdatedEvent(serverUpdatedEvent)
 	},
@@ -148,6 +149,7 @@ var defaultHandlers = EventHandler{
 	GroupDigestHandler: func(client *QQClient, groupDigestEvent *GroupDigestEvent) {
 		client.dispatchGroupDigestEvent(groupDigestEvent)
 	},
+	TokenUpdatedHandler: func(client *QQClient) {},
 }
 
 func (c *QQClient) dispatchServerUpdatedEvent(e *ServerUpdatedEvent) (f bool) {

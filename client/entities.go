@@ -166,6 +166,10 @@ type (
 		Message string
 	}
 
+	ClientOfflineEvent struct {
+		Message string
+	}
+
 	NewFriendRequest struct {
 		RequestId     int64
 		Message       string
