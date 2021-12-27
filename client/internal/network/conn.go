@@ -15,24 +15,14 @@ type TCPListener struct {
 	//lock                 sync.RWMutex
 	conn *net.TCPConn
 	//connected            bool
-	PlannedDisconnect    func(*TCPListener)
+
+	// PlannedDisconnect 预料中的断开连接
+	// 如调用 Close() Connect()
+	PlannedDisconnect func(*TCPListener)
+
+	// UnexpectedDisconnect 未预料的断开连接
 	UnexpectedDisconnect func(*TCPListener, error)
 }
-
-// PlannedDisconnect 预料中的断开连接
-// 如调用 Close() Connect()
-//func (t *TCPListener) PlannedDisconnect(f func(*TCPListener)) {
-//	t.lock.Lock()
-//	defer t.lock.Unlock()
-//	t.plannedDisconnect = f
-//}
-
-// UnexpectedDisconnect 未预料的断开连接
-//func (t *TCPListener) UnexpectedDisconnect(f func(*TCPListener, error)) {
-//	t.lock.Lock()
-//	defer t.lock.Unlock()
-//	t.unexpectedDisconnect = f
-//}
 
 func (t *TCPListener) getConn() *net.TCPConn {
 	return (*net.TCPConn)(atomic.LoadPointer((*unsafe.Pointer)(unsafe.Pointer(&t.conn))))
