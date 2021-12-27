@@ -135,7 +135,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 				continue
 			}
 			guild.removeChannel(chanId.GetChanId())
-			c.EventHandler.GuildChannelDestroyedHandles(c, &GuildChannelOperationEvent{
+			c.EventHandler.GuildChannelDestroyedHandler(c, &GuildChannelOperationEvent{
 				OperatorId:  m.Head.RoutingHead.GetFromTinyid(),
 				GuildId:     guild.GuildId,
 				ChannelInfo: channelInfo,

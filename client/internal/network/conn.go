@@ -2,6 +2,7 @@ package network
 
 import (
 	"encoding/binary"
+	atomicT "go.uber.org/atomic"
 	"io"
 	"net"
 	"sync"
@@ -22,6 +23,19 @@ type TCPListener struct {
 
 	// UnexpectedDisconnect 未预料的断开连接
 	UnexpectedDisconnect func(*TCPListener, error)
+	stat                 Statistics
+}
+
+type Statistics struct {
+	PacketReceived  atomicT.Uint64
+	PacketSent      atomicT.Uint64
+	PacketLost      atomicT.Uint64
+	DisconnectTimes atomicT.Uint32
+	LostTimes       atomicT.Uint32 // TODO
+}
+
+func (t *TCPListener) getStatistics() *Statistics {
+	return &t.stat
 }
 
 func (t *TCPListener) getConn() *net.TCPConn {
@@ -94,11 +108,14 @@ func (t *TCPListener) Write(buf []byte) error {
 		_, err := conn.Write(buf)
 		if err != nil {
 			t.unexpectedClose(err)
+			t.stat.PacketLost.Add(1)
 			return ErrConnectionBroken
 		}
+		t.stat.PacketSent.Add(1)
 		return nil
 	}
 
+	t.stat.PacketLost.Add(1)
 	return ErrConnectionBroken
 }
 
@@ -138,6 +155,7 @@ func (t *TCPListener) unexpectedClose(err error) {
 func (t *TCPListener) close() {
 	if conn := t.closeConn(); conn != nil {
 		_ = conn.Close()
+		t.stat.DisconnectTimes.Add(1)
 	}
 }
 

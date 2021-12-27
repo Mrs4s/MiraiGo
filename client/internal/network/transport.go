@@ -23,6 +23,10 @@ type Transport struct {
 	conn TCPListener
 }
 
+func (t *Transport) GetStatistics() *Statistics {
+	return t.conn.getStatistics()
+}
+
 func (t *Transport) PlannedDisconnect(fun func(*TCPListener)) {
 	t.conn.PlannedDisconnect = fun
 }

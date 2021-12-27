@@ -16,7 +16,7 @@ type EventHandler struct {
 	GuildMessageRecalledHandler         func(*QQClient, *GuildMessageRecalledEvent)
 	GuildChannelUpdatedHandler          func(*QQClient, *GuildChannelUpdatedEvent)
 	GuildChannelCreatedHandler          func(*QQClient, *GuildChannelOperationEvent)
-	GuildChannelDestroyedHandles        func(*QQClient, *GuildChannelOperationEvent)
+	GuildChannelDestroyedHandler        func(*QQClient, *GuildChannelOperationEvent)
 	MemberJoinedGuildHandler            func(*QQClient, *MemberJoinGuildEvent)
 	GroupMuteEventHandler               func(*QQClient, *GroupMuteEvent)
 	GroupRecalledHandler                func(*QQClient, *GroupMessageRecalledEvent)
@@ -76,7 +76,7 @@ var defaultHandlers = EventHandler{
 	GuildChannelCreatedHandler: func(client *QQClient, guildChannelOperationEvent *GuildChannelOperationEvent) {
 		client.dispatchGuildChannelCreatedEvent(guildChannelOperationEvent)
 	},
-	GuildChannelDestroyedHandles: func(client *QQClient, guildChannelOperationEvent *GuildChannelOperationEvent) {
+	GuildChannelDestroyedHandler: func(client *QQClient, guildChannelOperationEvent *GuildChannelOperationEvent) {
 		client.dispatchGuildChannelDestroyedEvent(guildChannelOperationEvent)
 	},
 	MemberJoinedGuildHandler: func(client *QQClient, memberJoinedGuildEvent *MemberJoinGuildEvent) {
