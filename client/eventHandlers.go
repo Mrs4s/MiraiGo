@@ -169,10 +169,12 @@ func (c *QQClient) OnOtherClientStatusChanged(f func(*QQClient, *OtherClientStat
 }
 
 func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
+	//c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
 	if l, ok := c.Logger.(*eventLogger); ok {
 		c.Logger = append(*l, f)
+	} else {
+		panic("自定义Logger后请自实现日志分发")
 	}
-	//c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
 }
 
 func (c *QQClient) OnGroupNotify(f func(*QQClient, INotifyEvent)) {
