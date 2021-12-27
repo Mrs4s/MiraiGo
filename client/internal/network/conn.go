@@ -152,9 +152,9 @@ func (t *TCPListener) close() {
 }
 
 func (t *TCPListener) invokePlannedDisconnect() {
-	if t.Connected() {
-		t.PlannedDisconnect(t)
-	}
+	//if t.Connected() {
+	t.PlannedDisconnect(t)
+	//}
 	//t.lock.RLock()
 	//defer t.lock.RUnlock()
 	//if t.plannedDisconnect != nil && t.connected {
@@ -164,9 +164,9 @@ func (t *TCPListener) invokePlannedDisconnect() {
 }
 
 func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
-	if t.Connected() {
-		t.UnexpectedDisconnect(t, err)
-	}
+	//if t.Connected() {
+	t.UnexpectedDisconnect(t, err)
+	//}
 	//t.lock.RLock()
 	//defer t.lock.RUnlock()
 	//if t.unexpectedDisconnect != nil && t.connected {
