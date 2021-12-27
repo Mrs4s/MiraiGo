@@ -48,7 +48,7 @@ func (t *TCPListener) closeConn() *net.TCPConn {
 
 func (t *TCPListener) Connected() bool {
 	// 等同于 t.getConn() != nil (? copilot写的)
-	return atomic.LoadInt32((*int32)(unsafe.Pointer(&t.conn))) != 0
+	return t.getConn() != nil
 }
 
 func (t *TCPListener) Connect(addr *net.TCPAddr) error {

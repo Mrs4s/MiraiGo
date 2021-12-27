@@ -236,6 +236,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 	if len(elems) == 0 {
 		return nil
 	}
+	r = make([]*msg.Elem, 0, len(elems))
 	for _, elem := range elems {
 		if reply, ok := elem.(*ReplyElement); ok {
 			r = append(r, &msg.Elem{

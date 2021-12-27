@@ -896,6 +896,7 @@ func (c *QQClient) doHeartbeat() {
 			if errors.Is(err, network.ErrConnectionBroken) {
 				break
 			}
+			continue // skip time++
 		}
 		times++
 		if times >= 7 {
