@@ -19,6 +19,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 	"github.com/pkg/errors"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 )
