@@ -3,7 +3,6 @@ package client
 import (
 	"bytes"
 	"encoding/hex"
-	"image"
 	"io"
 	"math/rand"
 	"os"
@@ -81,8 +80,6 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	}
 	return nil, errors.Wrap(err, "upload failed")
 ok:
-	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
 	var imageType int32 = 1000
 	_, _ = img.Seek(0, io.SeekStart)
 	tmp := make([]byte, 4)
@@ -90,7 +87,7 @@ ok:
 	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), imageType), nil
 }
 
 func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*message.GroupImageElement, error) {
@@ -134,8 +131,6 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	}
 	return nil, errors.Wrap(err, "upload failed")
 ok:
-	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
 	var imageType int32 = 1000
 	_, _ = img.Seek(0, io.SeekStart)
 	tmp := make([]byte, 4)
@@ -143,7 +138,7 @@ ok:
 	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), imageType), nil
 }
 
 func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
@@ -191,7 +186,7 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 			}
 			_ = b.Close()
 		}
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
+		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, 480, 720))
 		if err != nil {
 			return nil, err
 		}
@@ -210,7 +205,7 @@ func (c *QQClient) QueryGroupImage(groupCode int64, hash []byte, size int32) (*m
 		return nil, errors.New(rsp.Message)
 	}
 	if rsp.IsExists {
-		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash, rsp.FileId, size, rsp.Width, rsp.Height, 1000), nil
+		return message.NewGroupImage(binary.CalculateImageResourceId(hash), hash, rsp.FileId, size, 1000), nil
 	}
 	return nil, errors.New("image does not exist")
 }
