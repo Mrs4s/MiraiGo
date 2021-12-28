@@ -203,12 +203,25 @@ func (c *QQClient) call(req *network.Request) (*network.Response, error) {
 	}
 }
 
-func (c *QQClient) callAndDecode(req *network.Request) (interface{}, error) {
-	resp, err := c.call(req)
-	if err != nil {
-		return nil, err
-	}
-	return req.Decode(resp)
+func (c *QQClient) callAndDecode(req *network.Request) (resp interface{}, err error) {
+	func() {
+		var rsp *network.Response
+		defer func() {
+			if r := recover(); r != nil {
+				if r, ok := r.(error); ok {
+					err = errors.WithStack(r)
+				} else {
+					err = errors.Errorf("%+v", r)
+				}
+			}
+		}()
+		rsp, err = c.call(req)
+		if err != nil {
+			return
+		}
+		resp, err = req.Decode(rsp)
+	}()
+	return
 }
 
 // sendPacket 向服务器发送一个数据包
