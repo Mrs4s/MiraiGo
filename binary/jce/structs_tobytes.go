@@ -750,3 +750,10 @@ func (pkt *DelFriendReq) ToBytes() []byte {
 	w.WriteInt32(pkt.Version, 3)
 	return w.Bytes()
 }
+
+func (pkt *Setting) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteString(pkt.Path, 0)
+	w.WriteString(pkt.Value, 1)
+	return w.Bytes()
+}

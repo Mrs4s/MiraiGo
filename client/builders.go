@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -1113,6 +1114,62 @@ func (c *QQClient) buildQuitGroupPacket(groupCode int64) *network.Request {
 		Status:       map[string]string{},
 	}
 	return c.uniRequest("ProfileService.GroupMngReq", pkt.ToBytes(), nil)
+}
+
+// ProfileService.ReqSetSettings
+// groupCode: ~int | string
+func (c *QQClient) buildChangeGroupNotifyPacket(groupCode interface{}, level byte) *network.Request {
+	payload := make([]byte, 0, 48) // 40 ?
+	// jce:List,tag=0;jce:int1,tag=0,value=1
+	payload = append(payload, []byte{0x09, 0x00, 0x01}...)
+	// jce:StructStart,tag=0
+	payload = append(payload, 0x0A)
+	// jce:String1,tag=0,Path
+	payload = append(payload, 0x06)
+	// padLen
+	padLen := len(payload)
+	payload = append(payload, 0x00)
+	payload = append(payload, "message.group.policy."...)
+	if code, ok := groupCode.(string); ok {
+		payload = append(payload, code...)
+	} else if code, ok := groupCode.(int64); ok {
+		payload = strconv.AppendInt(payload, code, 10)
+	} else {
+		panic("invaild parameter")
+	}
+	// padLen
+	payload[padLen] = byte(len(payload) - padLen - 1)
+	// jce:String1,tag=1,Value
+	payload = append(payload, 0x16)
+	// len=1,fixed
+	payload = append(payload, 0x01)
+	// levelChar
+	payload = append(payload, level)
+	// jce:StructEnd
+	payload = append(payload, 0x0B)
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
+		"ReqSetSettings": packUniRequestData(payload),
+		"ReqHeader":      packUniRequestData([]byte{0x0c}),
+	}}
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		IRequestId:   c.nextPacketSeq(),
+		SServantName: "KQQ.ProfileService.ProfileServantObj",
+		SFuncName:    "ReqSetSettings",
+		SBuffer:      buf.ToBytes(),
+		Context:      map[string]string{},
+		Status:       map[string]string{},
+	}
+
+	return c.uniRequest("ProfileService.ReqSetSettings", pkt.ToBytes(), nil)
+	// 我放弃了，我不会用，真的不会
+	//payload := jce.NewJceWriter()
+	//payload.WriteInt64Slice(make([]int64, 0), 0)
+	//payload
+	//setting := jce.Setting{
+	//	Path:  fmt.Sprintf("message.group.policy.%d", groupCode),
+	//	Value: string(level), // 单字节的字符串，没有转换错
+	//}
 }
 
 /* this function is unused

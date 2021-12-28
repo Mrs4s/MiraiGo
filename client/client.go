@@ -764,6 +764,31 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 	_, _ = c.call(c.buildSystemMsgFriendActionPacket(req.RequestId, req.RequesterUin, accept))
 }
 
+// SetGroupNotify 设置群消息提醒等级，从不屏蔽到完全屏蔽
+// 仅完全屏蔽会使腾讯不再推送该群消息
+const (
+	NotifyLevelNotify    = '1'
+	NotifyLevelNotNotify = '2'
+	NotifyLevelBlock     = '3'
+	NotifyLevelHelper    = '4'
+)
+
+func (c *QQClient) SetGroupNotify(groupCode interface{}, level byte) {
+	_, _ = c.call(c.buildChangeGroupNotifyPacket(groupCode, level))
+}
+
+// SetGroupIgnorance 设置群消息提醒，设置后服务器不再会推送相关群消息
+// 高级用法参见 SetGroupNotify
+func (c *QQClient) SetGroupIgnorance(groupCode interface{}, ignore bool) {
+	var req *network.Request
+	if ignore {
+		req = c.buildChangeGroupNotifyPacket(groupCode, NotifyLevelBlock)
+	} else {
+		req = c.buildChangeGroupNotifyPacket(groupCode, NotifyLevelNotify)
+	}
+	_, _ = c.call(req)
+}
+
 func (c *QQClient) getSKey() string {
 	if c.sig.SKeyExpiredTime < time.Now().Unix() && len(c.sig.G) > 0 {
 		c.Debug("skey expired. refresh...")

@@ -527,6 +527,13 @@ type (
 		DelType byte  `jceId:"2"`
 		Version int32 `jceId:"3"`
 	}
+
+	Setting struct {
+		Path  string `jceId:"0"`
+		Value string `jceId:"1"`
+	}
+
+	SetSettingsReq []Setting
 )
 
 func (pkt *RequestPacket) ReadFrom(r *JceReader) {
