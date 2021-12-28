@@ -16,8 +16,6 @@ type GroupImageElement struct {
 	ImageType    int32
 	ImageBizType ImageBizType
 	Size         int32
-	Width        int32
-	Height       int32
 	Md5          []byte
 	Url          string
 
@@ -64,15 +62,13 @@ const (
 
 /* ------ Implementations ------ */
 
-func NewGroupImage(id string, md5 []byte, fid int64, size, width, height, imageType int32) *GroupImageElement {
+func NewGroupImage(id string, md5 []byte, fid int64, size, imageType int32) *GroupImageElement {
 	return &GroupImageElement{
 		ImageId:   id,
 		FileId:    fid,
 		Md5:       md5,
 		Size:      size,
 		ImageType: imageType,
-		Width:     width,
-		Height:    height,
 		Url:       "https://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
 	}
 }
@@ -95,8 +91,8 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 		Useful:   proto.Int32(1),
 		// Origin:    1,
 		BizType:   proto.Int32(5),
-		Width:     &e.Width,
-		Height:    &e.Height,
+		Width:     proto.Int32(720),
+		Height:    proto.Int32(480),
 		FileId:    proto.Int32(int32(e.FileId)),
 		FilePath:  &e.ImageId,
 		ImageType: &e.ImageType,

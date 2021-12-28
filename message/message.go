@@ -462,8 +462,6 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				FileId:  int64(elem.CustomFace.GetFileId()),
 				ImageId: elem.CustomFace.GetFilePath(),
 				Size:    elem.CustomFace.GetSize(),
-				Width:   elem.CustomFace.GetWidth(),
-				Height:  elem.CustomFace.GetHeight(),
 				Url:     url,
 				ImageBizType: func() ImageBizType {
 					if len(elem.CustomFace.PbReserve) == 0 {
@@ -561,8 +559,6 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 						FileId:  int64(flash.FlashTroopPic.GetFileId()),
 						ImageId: flash.FlashTroopPic.GetFilePath(),
 						Size:    flash.FlashTroopPic.GetSize(),
-						Width:   flash.FlashTroopPic.GetWidth(),
-						Height:  flash.FlashTroopPic.GetHeight(),
 						Md5:     flash.FlashTroopPic.Md5,
 						Flash:   true,
 					})
