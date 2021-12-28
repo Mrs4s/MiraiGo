@@ -3,24 +3,21 @@ package utils
 import "fmt"
 
 // CoverError == catch{}
-func CoverError(fun func()) error {
+func CoverError(fun func()) (err error) {
 	if fun == nil {
 		return nil
 	}
-	errCh := make(chan error, 1)
 	func() {
 		defer func() {
 			if r := recover(); r != nil {
-				if err, ok := r.(error); ok {
-					errCh <- err
+				if e, ok := r.(error); ok {
+					err = e
 				} else {
-					errCh <- fmt.Errorf("%v", r)
+					e = fmt.Errorf("%v", r)
 				}
-			} else {
-				errCh <- nil
 			}
 		}()
 		fun()
 	}()
-	return <-errCh
+	return
 }
