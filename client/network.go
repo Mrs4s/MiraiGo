@@ -335,6 +335,7 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 			Params:      call.Request.Params,
 			// Request:     nil,
 		}
+		delete(c.pending, req.SequenceID)
 	}
 	c.pendingMu.Unlock()
 	if call != nil && call.Request.CommandName == req.CommandName {
