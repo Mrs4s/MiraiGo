@@ -13,7 +13,7 @@ func CoverError(fun func()) (err error) {
 				if e, ok := r.(error); ok {
 					err = e
 				} else {
-					e = fmt.Errorf("%v", r)
+					err = fmt.Errorf("%v", r)
 				}
 			}
 		}()
