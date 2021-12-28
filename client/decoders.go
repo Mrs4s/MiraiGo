@@ -213,8 +213,8 @@ func decodeExchangeEmpResponse(c *QQClient, resp *network.Response) (interface{}
 	if cmd == 11 {
 		h := md5.Sum(c.sig.D2Key)
 		c.decodeT119(m[0x119], h[:])
-		c.EventHandler.TokenUpdatedHandler(c)
 	}
+	c.EventHandler.TokenUpdatedHandler(c)
 	return nil, nil
 }
 
