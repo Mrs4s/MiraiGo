@@ -1,7 +1,12 @@
 package client
 
 import (
+	"bytes"
+	"fmt"
+	"log"
 	"net"
+	"os"
+	"runtime"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -272,8 +277,62 @@ func (c *QQClient) unexpectedDisconnect(_ *utils.TCPListener, e error) {
 	}
 }
 
+//打印错误堆栈
+func PrintStackTrace(err interface{}) {
+	buf := new(bytes.Buffer)
+	fmt.Fprintf(buf, "%v\n", err)
+	for i := 1; ; i++ {
+		pc, file, line, ok := runtime.Caller(i)
+		if !ok {
+			break
+		}
+		fmt.Fprintf(buf, "%s:%d (0x%x)\n", file, line, pc)
+	}
+	bhLog.Println(buf.String())
+}
+
+func CheckFileIsExits(fileName string) bool {
+	_, err := os.Stat(fileName)
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
+}
+
+func init() {
+	logFileNmae := `./log/` + time.Now().Format("20060102") + "-buhuang.log"
+	logFileAllPath := logFileNmae
+	_, err := os.Stat(logFileAllPath)
+	exits := CheckFileIsExits(`log`)
+	if !exits {
+		_ = os.Mkdir("./log", os.ModePerm)
+	}
+	var f *os.File
+	if err != nil {
+		f, _ = os.Create(logFileAllPath)
+	} else {
+		//如果存在文件则 追加log
+		f, _ = os.OpenFile(logFileAllPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	}
+	bhLog = log.New(f, "", log.LstdFlags)
+	bhLog.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
+var (
+	bhLog *log.Logger
+)
+
 // netLoop 通过循环来不停接收数据包
 func (c *QQClient) netLoop() {
+	defer func() {
+		e := recover()
+		if e != nil {
+			PrintStackTrace(e)
+		}
+	}()
 	errCount := 0
 	for c.alive {
 		l, err := c.TCP.ReadInt32()
