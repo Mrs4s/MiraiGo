@@ -21,6 +21,7 @@ import (
 	"github.com/pkg/errors"
 	_ "image/gif"
 	_ "image/jpeg"
+
 	_ "image/png"
 )
 
