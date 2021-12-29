@@ -327,15 +327,15 @@ var (
 
 // netLoop 通过循环来不停接收数据包
 func (c *QQClient) netLoop() {
+	defer func() {
+		e := recover()
+		if e != nil {
+			PrintStackTrace(e)
+			bhLog.Println(e)
+		}
+	}()
 	errCount := 0
 	for c.alive {
-		defer func() {
-			e := recover()
-			if e != nil {
-				PrintStackTrace(e)
-				bhLog.Println(e)
-			}
-		}()
 		l, err := c.TCP.ReadInt32()
 		if err != nil {
 			time.Sleep(time.Millisecond * 500)
