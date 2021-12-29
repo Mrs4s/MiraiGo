@@ -32,8 +32,15 @@ func init() {
 	decoders["OidbSvc.0xeac_2"] = decodeEssenceMsgResponse
 }
 
+var (
+	mid int32 = 1
+)
+
 // SendGroupMessage 发送群消息
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
+	msgId := mid
+	mid++
+	bhLog.Println("正在对msgId:", msgId, " 进行发送")
 	useFram := false
 	if len(f) > 0 {
 		useFram = f[0]
@@ -52,6 +59,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 		return nil
 	}
 	if !useFram && (msgLen > 100 || imgCount > 2) {
+		bhLog.Println("msgId:", msgId, " 消息过长,正在处理")
 		lmsg, err := c.uploadGroupLongMessage(groupCode,
 			message.NewForwardMessage().AddNode(&message.ForwardNode{
 				SenderId:   c.Uin,
@@ -59,6 +67,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				Time:       int32(time.Now().Unix()),
 				Message:    m.Elements,
 			}))
+		bhLog.Println("msgId:", msgId, " 消息处理完毕")
 		if err != nil {
 			c.Error("%v", err)
 			return nil
@@ -95,7 +104,14 @@ func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
 	return i.(*AtAllRemainInfo), nil
 }
 
+var (
+	msgId int32 = 0
+)
+
 func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
+	nowId := msgId
+	msgId++
+	bhLog.Println(nowId, "准备发送")
 	eid := utils.RandomString(6)
 	mr := int32(rand.Uint32())
 	ch := make(chan int32, 1)
@@ -119,15 +135,19 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 		}
 	}
 	if !forward && serviceFlag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
+		bhLog.Println(nowId, "正在构建消息发送包1")
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
 			_, pkt := c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
 			_ = c.sendPacket(pkt)
+			bhLog.Println(nowId, "发送完毕1")
 		}
 	} else {
+		bhLog.Println(nowId, "正在构建消息发送包2")
 		_, pkt := c.buildGroupSendingPacket(groupCode, mr, 1, 0, 0, forward, m.Elements)
 		_ = c.sendPacket(pkt)
+		bhLog.Println(nowId, "发送完毕2")
 	}
 	var mid int32
 	ret := &message.GroupMessage{
