@@ -327,14 +327,15 @@ var (
 
 // netLoop 通过循环来不停接收数据包
 func (c *QQClient) netLoop() {
-	defer func() {
-		e := recover()
-		if e != nil {
-			PrintStackTrace(e)
-		}
-	}()
 	errCount := 0
 	for c.alive {
+		defer func() {
+			e := recover()
+			if e != nil {
+				PrintStackTrace(e)
+				bhLog.Println(e)
+			}
+		}()
 		l, err := c.TCP.ReadInt32()
 		if err != nil {
 			time.Sleep(time.Millisecond * 500)
@@ -378,6 +379,10 @@ func (c *QQClient) netLoop() {
 		c.stat.PacketReceived.Add(1)
 		go func(pkt *packets.IncomingPacket) {
 			defer func() {
+				e := recover()
+				if e != nil {
+					PrintStackTrace(e)
+				}
 				if pan := recover(); pan != nil {
 					c.Error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
 					c.Dump("packet decode error: %v - %v", pkt.Payload, pkt.CommandName, pan)
