@@ -222,8 +222,8 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	if len(cli.servers) > 3 {
 		cli.servers = cli.servers[0 : len(cli.servers)/2] // 保留ping值中位数以上的server
 	}*/
-	cli.transport.PlannedDisconnect(cli.plannedDisconnect)
-	cli.transport.UnexpectedDisconnect(cli.unexpectedDisconnect)
+	//cli.transport.PlannedDisconnect(cli.plannedDisconnect)
+	cli.transport.OnUnexpectedDisconnect(cli.unexpectedDisconnect)
 	rand.Read(cli.RandomKey)
 	return cli
 }

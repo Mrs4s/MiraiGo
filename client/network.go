@@ -162,6 +162,7 @@ func (c *QQClient) quickReconnect() {
 func (c *QQClient) Disconnect() {
 	c.Online.Store(false)
 	c.transport.Close()
+	c.plannedDisconnect()
 }
 
 func (c *QQClient) send(call *network.Call) {
@@ -265,14 +266,16 @@ func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, fil
 }
 
 // plannedDisconnect 计划中断线事件
-func (c *QQClient) plannedDisconnect(_ *network.TCPListener) {
+// 如调用 Close() Connect()
+// 客户端主动断开连接，原因可能包含服务端请求断开连接
+func (c *QQClient) plannedDisconnect() {
 	c.Debug("planned disconnect.")
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
 }
 
 // unexpectedDisconnect 非预期断线事件
-func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
+func (c *QQClient) unexpectedDisconnect(e error) {
 	c.Error("unexpected disconnect: %v", e)
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)

@@ -17,14 +17,9 @@ type TCPListener struct {
 	conn *net.TCPConn
 	//connected            bool
 
-	// PlannedDisconnect 预料中的断开连接
-	// 如调用 Close() Connect()
-	// 客户端主动断开连接，原因可能包含服务端请求断开连接
-	PlannedDisconnect func(*TCPListener)
-
 	// UnexpectedDisconnect 未预料的断开连接
 	// 指因为网络原因或服务器没有通知即关闭连接
-	UnexpectedDisconnect func(*TCPListener, error)
+	UnexpectedDisconnect func(error)
 	stat                 Statistics
 }
 
@@ -146,7 +141,6 @@ func (t *TCPListener) ReadInt32() (int32, error) {
 
 func (t *TCPListener) Close() {
 	t.close()
-	t.invokePlannedDisconnect()
 }
 
 func (t *TCPListener) unexpectedClose(err error) {
@@ -161,21 +155,9 @@ func (t *TCPListener) close() {
 	}
 }
 
-func (t *TCPListener) invokePlannedDisconnect() {
-	//if t.Connected() {
-	t.PlannedDisconnect(t)
-	//}
-	//t.lock.RLock()
-	//defer t.lock.RUnlock()
-	//if t.plannedDisconnect != nil && t.connected {
-	//	go t.plannedDisconnect(t)
-	//	t.connected = false
-	//}
-}
-
 func (t *TCPListener) invokeUnexpectedDisconnect(err error) {
 	//if t.Connected() {
-	t.UnexpectedDisconnect(t, err)
+	t.UnexpectedDisconnect(err)
 	//}
 	//t.lock.RLock()
 	//defer t.lock.RUnlock()

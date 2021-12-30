@@ -27,11 +27,7 @@ func (t *Transport) GetStatistics() *Statistics {
 	return t.conn.getStatistics()
 }
 
-func (t *Transport) PlannedDisconnect(fun func(*TCPListener)) {
-	t.conn.PlannedDisconnect = fun
-}
-
-func (t *Transport) UnexpectedDisconnect(fun func(*TCPListener, error)) {
+func (t *Transport) OnUnexpectedDisconnect(fun func(error)) {
 	t.conn.UnexpectedDisconnect = fun
 }
 
