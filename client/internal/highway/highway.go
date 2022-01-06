@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"sync/atomic"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -48,7 +49,7 @@ type Input struct {
 func (s *Session) Upload(addr Addr, input Input) error {
 	fh, length := utils.ComputeMd5AndLength(input.Body)
 	_, _ = input.Body.Seek(0, io.SeekStart)
-	conn, err := net.DialTCP("tcp", nil, addr.asTcpAddr())
+	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*3)
 	if err != nil {
 		return errors.Wrap(err, "connect error")
 	}
