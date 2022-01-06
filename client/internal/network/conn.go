@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -49,6 +50,7 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 
 func (t *TCPListener) Write(buf []byte) error {
 	if conn := t.getConn(); conn != nil {
+		_ = conn.SetWriteDeadline(time.Now().Add(time.Second * 3))
 		_, err := conn.Write(buf)
 		if err != nil {
 			t.unexpectedClose(err)
@@ -56,13 +58,13 @@ func (t *TCPListener) Write(buf []byte) error {
 		}
 		return nil
 	}
-
 	return ErrConnectionClosed
 }
 
 func (t *TCPListener) ReadBytes(len int) ([]byte, error) {
 	buf := make([]byte, len)
 	if conn := t.getConn(); conn != nil {
+		_ = conn.SetReadDeadline(time.Now().Add(time.Second * 3))
 		_, err := io.ReadFull(conn, buf)
 		if err != nil {
 			// time.Sleep(time.Millisecond * 100) // 服务器会发送offline包后立即断开连接, 此时还没解析, 可能还是得加锁
