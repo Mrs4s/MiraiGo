@@ -95,7 +95,6 @@ func (s *Session) Upload(addr Addr, input Input) error {
 		offset += rl
 		w.Reset()
 		writeHeadBody(w, head, chunk)
-		_ = conn.SetWriteDeadline(time.Now().Add(time.Second * 3))
 		_, err = conn.Write(w.Bytes())
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
