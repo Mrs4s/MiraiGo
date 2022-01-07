@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"golang.org/x/image/webp"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
@@ -82,7 +83,11 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
+	i, _, err := image.DecodeConfig(img)
+	if err != nil {
+		_, _ = img.Seek(0, io.SeekStart)
+		i, _ = webp.DecodeConfig(img)
+	}
 	var imageType int32 = 1000
 	_, _ = img.Seek(0, io.SeekStart)
 	tmp := make([]byte, 4)
@@ -135,7 +140,11 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
+	i, _, err := image.DecodeConfig(img)
+	if err != nil {
+		_, _ = img.Seek(0, io.SeekStart)
+		i, _ = webp.DecodeConfig(img)
+	}
 	var imageType int32 = 1000
 	_, _ = img.Seek(0, io.SeekStart)
 	tmp := make([]byte, 4)
