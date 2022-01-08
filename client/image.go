@@ -3,15 +3,14 @@ package client
 import (
 	"bytes"
 	"encoding/hex"
-	"image"
 	"io"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/fumiama/imgsz"
 	"github.com/pkg/errors"
-	_ "golang.org/x/image/webp"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
@@ -83,7 +82,7 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
+	i, _, _ := imgsz.DecodeSize(img)
 	var imageType int32 = 1000
 	_, _ = img.Seek(0, io.SeekStart)
 	tmp := make([]byte, 4)
@@ -136,7 +135,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
+	i, _, _ := imgsz.DecodeSize(img)
 	var imageType int32 = 1000
 	_, _ = img.Seek(0, io.SeekStart)
 	tmp := make([]byte, 4)
