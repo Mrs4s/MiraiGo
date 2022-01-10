@@ -140,6 +140,8 @@ func (msg *GroupMessage) ToString() (res string) {
 			res += e.Content
 		case *FaceElement:
 			res += "[" + e.Name + "]"
+		case *MarketFaceElement:
+			res += "[" + e.Name + "]"
 		case *GroupImageElement:
 			res += "[Image: " + e.ImageId + "]"
 		case *AtElement:
