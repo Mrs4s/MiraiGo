@@ -478,7 +478,6 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		//}
 		mem := group.FindMember(m.Head.GetFromUin())
 
-		// TODO: 有效信息提取
 		groupCard := m.Head.GroupInfo.GetGroupCard()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb.D8FCCommCardNameBuf{}
@@ -518,7 +517,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		g.Sender = &message.Sender{
 			Uin: m.Head.GetFromUin(),
 			//Nickname: m.Head.GetAuthNick(), // is nil
-			CardName: mem.CardName, // is nil
+			CardName: mem.CardName,
 			//IsFriend: m.Head.,
 		}
 	}

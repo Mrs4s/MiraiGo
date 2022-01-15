@@ -314,8 +314,7 @@ func ToSrcProtoElems(elems []IMessageElement) []*msg.Elem {
 	return ToProtoElems(elems2, false)
 }
 
-func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
-	var res []IMessageElement
+func ParseMessageElems(elems []*msg.Elem) (res []IMessageElement) {
 	for _, elem := range elems {
 		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
 			r := &ReplyElement{
@@ -375,14 +374,14 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.Text != nil {
 			switch {
-			case len(elem.Text.Attr6Buf) > 0:
+			case len(elem.Text.Attr6Buf) > 0: // Group AtElem
 				att6 := binary.NewReader(elem.Text.Attr6Buf)
 				att6.ReadBytes(7)
 				target := int64(uint32(att6.ReadInt32()))
 				at := NewAt(target, elem.Text.GetStr())
 				at.SubType = AtTypeGroupMember
 				res = append(res, at)
-			case len(elem.Text.PbReserve) > 0:
+			case len(elem.Text.PbReserve) > 0: // Guild AtElem
 				resv := new(msg.TextResvAttr)
 				_ = proto.Unmarshal(elem.Text.PbReserve, resv)
 				if resv.GetAtType() == 2 {
