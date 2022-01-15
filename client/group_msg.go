@@ -454,12 +454,6 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 
 	// 非匿名消息
 	if g.Sender == nil {
-		g.Sender = &message.Sender{
-			Uin: m.Head.GetFromUin(),
-			//Nickname: m.Head.GetAuthNick(), // is nil
-			//CardName: m.Head.GetFromNick(), // is nil
-			//IsFriend: m.Head.,
-		}
 		//mem := group.FindMember(m.Head.GetFromUin())
 		//if mem == nil {
 		//	group.Update(func(_ *GroupInfo) {
@@ -520,6 +514,12 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 					})
 				}
 			}
+		}
+		g.Sender = &message.Sender{
+			Uin: m.Head.GetFromUin(),
+			//Nickname: m.Head.GetAuthNick(), // is nil
+			CardName: mem.CardName, // is nil
+			//IsFriend: m.Head.,
 		}
 	}
 	if m.Body.RichText.Ptt != nil {
