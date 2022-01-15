@@ -12,8 +12,8 @@ type ICMPPingResult struct {
 	AvgTimeMill int64
 }
 
-// RunICMPPingLoop tcp 伪装的 icmp
-func RunICMPPingLoop(ipport string, count int) (r ICMPPingResult) {
+// RunTCPPingLoop 使用 tcp 进行 ping
+func RunTCPPingLoop(ipport string, count int) (r ICMPPingResult) {
 	r = ICMPPingResult{
 		PacketsSent: count,
 		PacketsLoss: count,
@@ -24,7 +24,7 @@ func RunICMPPingLoop(ipport string, count int) (r ICMPPingResult) {
 	}
 	durs := make([]int64, 0, count)
 	for i := 0; i < count; i++ {
-		d, err := pingtcp(ipport)
+		d, err := tcping(ipport)
 		if err == nil {
 			r.PacketsLoss--
 			durs = append(durs, d)
@@ -45,7 +45,7 @@ func RunICMPPingLoop(ipport string, count int) (r ICMPPingResult) {
 	return
 }
 
-func pingtcp(ipport string) (int64, error) {
+func tcping(ipport string) (int64, error) {
 	t := time.Now().UnixMilli()
 	conn, err := net.DialTimeout("tcp", ipport, time.Second*2)
 	if err != nil {
