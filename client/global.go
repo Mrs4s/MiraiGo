@@ -251,8 +251,11 @@ func (b *groupMessageBuilder) build() *msg.Message {
 		return b.MessageSlices[i].Content.GetPkgIndex() < b.MessageSlices[j].Content.GetPkgIndex()
 	})
 	base := b.MessageSlices[0]
-	for _, m := range b.MessageSlices[1:] {
-		base.Body.RichText.Elems = append(base.Body.RichText.Elems, m.Body.RichText.Elems...)
+	if len(b.MessageSlices) > 0 {
+		base.Body.RichText.Elems = make([]*msg.Elem, 0, len(b.MessageSlices)-1)
+		for _, m := range b.MessageSlices[1:] {
+			base.Body.RichText.Elems = append(base.Body.RichText.Elems, m.Body.RichText.Elems...)
+		}
 	}
 	return base
 }

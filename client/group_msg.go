@@ -412,94 +412,79 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		group = info
 		c.GroupList = append(c.GroupList, info)
 	}
-	if len(group.Members) == 0 {
-		mem, err := c.GetGroupMembers(group)
-		if err != nil {
-			c.Error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
-			return nil
-		}
-		group.Members = mem
-	}
-	var anonInfo *msg.AnonymousGroupMessage
-	for _, e := range m.Body.RichText.Elems {
-		if e.AnonGroupMsg != nil {
-			anonInfo = e.AnonGroupMsg
-		}
-	}
-	var sender *message.Sender
-	if anonInfo != nil {
-		sender = &message.Sender{
-			Uin:      80000000,
-			Nickname: string(anonInfo.AnonNick),
-			AnonymousInfo: &message.AnonymousInfo{
-				AnonymousId:   base64.StdEncoding.EncodeToString(anonInfo.AnonId),
-				AnonymousNick: string(anonInfo.AnonNick),
-			},
-			IsFriend: false,
-		}
-	} else {
-		mem := group.FindMember(m.Head.GetFromUin())
-		if mem == nil {
-			group.Update(func(_ *GroupInfo) {
-				if mem = group.FindMemberWithoutLock(m.Head.GetFromUin()); mem != nil {
-					return
-				}
-				info, _ := c.GetMemberInfo(group.Code, m.Head.GetFromUin())
-				if info == nil {
-					return
-				}
-				mem = info
-				group.Members = append(group.Members, mem)
-				group.sort()
-				go c.EventHandler.MemberJoinedHandler(c, &MemberJoinGroupEvent{
-					Group:  group,
-					Member: info,
-				})
-			})
-			if mem == nil {
-				return nil
-			}
-		}
-		sender = &message.Sender{
-			Uin:      mem.Uin,
-			Nickname: mem.Nickname,
-			CardName: mem.CardName,
-			IsFriend: c.FindFriend(mem.Uin) != nil,
-		}
-	}
-	var g *message.GroupMessage
-	g = &message.GroupMessage{
+	//if len(group.Members) == 0 {
+	//	mem, err := c.GetGroupMembers(group)
+	//	if err != nil {
+	//		c.Error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
+	//		return nil
+	//	}
+	//	group.Members = mem
+	//}
+
+	g := &message.GroupMessage{
 		Id:             m.Head.GetMsgSeq(),
-		GroupCode:      group.Code,
+		GroupCode:      m.Head.GroupInfo.GetGroupCode(),
 		GroupName:      string(m.Head.GroupInfo.GroupName),
-		Sender:         sender,
 		Time:           m.Head.GetMsgTime(),
 		Elements:       message.ParseMessageElems(m.Body.RichText.Elems),
 		OriginalObject: m,
 	}
 	var extInfo *msg.ExtraInfo
-	// pre parse
-	for _, elem := range m.Body.RichText.Elems {
-		// is rich long msg
-		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" && len(g.Elements) == 1 {
-			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
-				g = &message.GroupMessage{
-					Id:             m.Head.GetMsgSeq(),
-					GroupCode:      group.Code,
-					GroupName:      string(m.Head.GroupInfo.GroupName),
-					Sender:         sender,
-					Time:           m.Head.GetMsgTime(),
-					Elements:       f.Nodes[0].Message,
-					OriginalObject: m,
-				}
+	for _, e := range m.Body.RichText.Elems {
+		switch {
+		case e.AnonGroupMsg != nil:
+			anonInfo := e.AnonGroupMsg
+			g.Sender = &message.Sender{
+				Uin:      80000000,
+				Nickname: string(anonInfo.AnonNick),
+				AnonymousInfo: &message.AnonymousInfo{
+					AnonymousId:   base64.StdEncoding.EncodeToString(anonInfo.AnonId),
+					AnonymousNick: string(anonInfo.AnonNick),
+				},
+				IsFriend: false,
 			}
-		}
-		if elem.ExtraInfo != nil {
-			extInfo = elem.ExtraInfo
+		case e.GeneralFlags != nil && e.GeneralFlags.GetLongTextResid() != "" && len(g.Elements) == 1:
+			if f := c.GetForwardMessage(e.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
+				g.Elements = f.Nodes[0].Message
+			}
+		case e.ExtraInfo != nil:
+			extInfo = e.ExtraInfo
 		}
 	}
-	if !sender.IsAnonymous() {
+
+	// 非匿名消息
+	if g.Sender == nil {
+		g.Sender = &message.Sender{
+			Uin: m.Head.GetFromUin(),
+			//Nickname: m.Head.GetAuthNick(), // is nil
+			//CardName: m.Head.GetFromNick(), // is nil
+			//IsFriend: m.Head.,
+		}
+		//mem := group.FindMember(m.Head.GetFromUin())
+		//if mem == nil {
+		//	group.Update(func(_ *GroupInfo) {
+		//		if mem = group.FindMemberWithoutLock(m.Head.GetFromUin()); mem != nil {
+		//			return
+		//		}
+		//		info, _ := c.GetMemberInfo(group.Code, m.Head.GetFromUin())
+		//		if info == nil {
+		//			return
+		//		}
+		//		mem = info
+		//		group.Members = append(group.Members, mem)
+		//		group.sort()
+		//		go c.EventHandler.MemberJoinedHandler(c, &MemberJoinGroupEvent{
+		//			Group:  group,
+		//			Member: info,
+		//		})
+		//	})
+		//	if mem == nil {
+		//		return nil
+		//	}
+		//}
 		mem := group.FindMember(m.Head.GetFromUin())
+
+		// TODO: 有效信息提取
 		groupCard := m.Head.GroupInfo.GetGroupCard()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb.D8FCCommCardNameBuf{}
@@ -511,19 +496,29 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				groupCard = gcard.String()
 			}
 		}
-		if m.Head.GroupInfo != nil && groupCard != "" && mem.CardName != groupCard {
-			old := mem.CardName
-			if mem.Nickname == groupCard {
-				mem.CardName = ""
+
+		if groupCard != "" && mem.CardName != groupCard { // 需要更新
+			if mem == EmptyGroupMemberInfo { // 新建条目
+				mem = &GroupMemberInfo{
+					Group:    group,
+					Uin:      m.Head.GetFromUin(),
+					CardName: groupCard,
+				}
+				group.updateMember(mem)
 			} else {
-				mem.CardName = groupCard
-			}
-			if old != mem.CardName {
-				go c.EventHandler.MemberCardUpdatedHandler(c, &MemberCardUpdatedEvent{
-					Group:   group,
-					OldCard: old,
-					Member:  mem,
-				})
+				old := mem.CardName
+				if mem.Nickname == groupCard {
+					mem.CardName = ""
+				} else {
+					mem.CardName = groupCard
+				}
+				if old != mem.CardName { // 有旧且更新
+					go c.EventHandler.MemberCardUpdatedHandler(c, &MemberCardUpdatedEvent{
+						Group:   group,
+						OldCard: old,
+						Member:  mem,
+					})
+				}
 			}
 		}
 	}

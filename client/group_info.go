@@ -334,20 +334,26 @@ func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
 	r := g.Read(func(info *GroupInfo) interface{} {
 		return info.FindMemberWithoutLock(uin)
 	})
-	if r == nil {
-		return nil
-	}
 	return r.(*GroupMemberInfo)
 }
+
+var EmptyGroupMemberInfo = new(GroupMemberInfo)
 
 func (g *GroupInfo) FindMemberWithoutLock(uin int64) *GroupMemberInfo {
 	i := sort.Search(len(g.Members), func(i int) bool {
 		return g.Members[i].Uin >= uin
 	})
 	if i >= len(g.Members) || g.Members[i].Uin != uin {
-		return nil
+		return EmptyGroupMemberInfo
 	}
 	return g.Members[i]
+}
+
+func (g *GroupInfo) updateMember(info *GroupMemberInfo) {
+	g.Update(func(g *GroupInfo) {
+		g.Members = append(g.Members, info)
+		g.sort()
+	})
 }
 
 // sort call this method must hold the lock
