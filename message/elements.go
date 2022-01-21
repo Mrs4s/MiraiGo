@@ -155,17 +155,16 @@ func NewFace(index int32) *FaceElement {
 }
 
 func NewAt(target int64, display ...string) *AtElement {
-	dis := "@" + strconv.FormatInt(target, 10)
+	elem := AtElement{Target: target}
 	if target == 0 {
-		dis = "@全体成员"
+		elem.Display = "@全体成员"
 	}
-	if len(display) != 0 {
-		dis = display[0]
+	if len(display) > 0 {
+		elem.Display = display[0]
+		return &elem
 	}
-	return &AtElement{
-		Target:  target,
-		Display: dis,
-	}
+	elem.Display = "@" + strconv.FormatInt(target, 10)
+	return &elem
 }
 
 func AtAll() *AtElement {
