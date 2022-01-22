@@ -30,7 +30,7 @@ func init() {
 
 // SendGroupMessage 发送群消息
 func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
-	useFram := false
+	useFram := true
 	if len(f) > 0 {
 		useFram = f[0]
 	}
@@ -118,8 +118,8 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 	if !forward && serviceFlag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
-		for i, elems := range fragmented {
-			req := c.buildGroupSendingReq(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
+		for i, fragment := range fragmented {
+			req := c.buildGroupSendingReq(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, fragment)
 			c.sendReq(req)
 		}
 	} else {
@@ -209,6 +209,7 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 	return nil
 }
 
+// Group Long Message
 func (c *QQClient) multiMsgApplyUp(groupCode int64, data []byte, hash []byte, buType int32) (*multimsg.MultiMsgApplyUpRsp, []byte, error) {
 	i, err := c.callAndDecode(c.buildMultiApplyUpPacket(data, hash, buType, utils.ToGroupUin(groupCode)))
 	if err != nil {
