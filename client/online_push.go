@@ -39,7 +39,7 @@ func decodeOnlinePushReqPacket(c *QQClient, resp *network.Response) (interface{}
 		}
 		c.onlinePushCache.Add(k, "", time.Second*30)
 		// 0x2dc
-		if m.MsgType == 732 {
+		if m.MsgType == 0x2dc {
 			r := binary.NewReader(m.VMsg)
 			groupCode := int64(uint32(r.ReadInt32()))
 			iType := r.ReadByte()
@@ -109,7 +109,7 @@ func decodeOnlinePushReqPacket(c *QQClient, resp *network.Response) (interface{}
 			}
 		}
 		// 0x210
-		if m.MsgType == 528 {
+		if m.MsgType == 0x210 {
 			vr := jce.NewJceReader(m.VMsg)
 			subType := vr.ReadInt64(0)
 			if decoder, ok := msg0x210Decoders[subType]; ok {
