@@ -119,7 +119,7 @@ func (c *QQClient) connect() error {
 	//})
 	return c.connectFastest() // 暂时?
 	/*c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
-	err := c.TCP.Connect(c.servers[c.currServerIndex])
+	err := c.TCP.ConnectUnix(c.servers[c.currServerIndex])
 	c.currServerIndex++
 	if c.currServerIndex == len(c.servers) {
 		c.currServerIndex = 0
@@ -266,7 +266,7 @@ func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, fil
 }
 
 // plannedDisconnect 计划中断线事件
-// 如调用 Close() Connect()
+// 如调用 Close() ConnectUnix()
 // 客户端主动断开连接，原因可能包含服务端请求断开连接
 func (c *QQClient) plannedDisconnect() {
 	c.Debug("planned disconnect.")
