@@ -28,6 +28,8 @@ type Session struct {
 	seq int32
 }
 
+const highwayMaxResponseSize int32 = 1024 * 100 // 100k
+
 func (s *Session) AddrLength() int {
 	return len(s.SsoAddr)
 }
@@ -248,6 +250,9 @@ func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, []byte, erro
 	}
 	hl, _ := r.ReadInt32()
 	a2, _ := r.ReadInt32()
+	if hl > highwayMaxResponseSize || a2 > highwayMaxResponseSize {
+		return nil, nil, errors.Errorf("highway response invild. head size: %v body size: %v", hl, a2)
+	}
 	head, _ := r.ReadBytes(int(hl))
 	payload, _ := r.ReadBytes(int(a2))
 	_, _ = r.ReadByte()

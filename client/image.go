@@ -3,13 +3,13 @@ package client
 import (
 	"bytes"
 	"encoding/hex"
-	"image"
 	"io"
 	"math/rand"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/fumiama/imgsz"
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -82,12 +82,9 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
+	i, t, _ := imgsz.DecodeSize(img)
 	var imageType int32 = 1000
-	_, _ = img.Seek(0, io.SeekStart)
-	tmp := make([]byte, 4)
-	_, _ = img.Read(tmp)
-	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
+	if t == "gif" {
 		imageType = 2000
 	}
 	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
@@ -135,12 +132,9 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 	return nil, errors.Wrap(err, "upload failed")
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
-	i, _, _ := image.DecodeConfig(img)
+	i, t, _ := imgsz.DecodeSize(img)
 	var imageType int32 = 1000
-	_, _ = img.Seek(0, io.SeekStart)
-	tmp := make([]byte, 4)
-	_, _ = img.Read(tmp)
-	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
+	if t == "gif" {
 		imageType = 2000
 	}
 	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil

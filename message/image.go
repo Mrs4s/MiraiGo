@@ -90,6 +90,14 @@ func (e *GuildImageElement) Type() ElementType {
 }
 
 func (e *GroupImageElement) Pack() (r []*msg.Elem) {
+	// width and height are required, set 720*480 if not set
+	if e.Width == 0 {
+		e.Width = 720
+	}
+	if e.Height == 0 {
+		e.Height = 480
+	}
+
 	cface := &msg.CustomFace{
 		FileType: proto.Int32(66),
 		Useful:   proto.Int32(1),
