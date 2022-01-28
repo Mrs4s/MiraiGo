@@ -267,19 +267,20 @@ func decodeTransEmpResponse(c *QQClient, resp *network.Response) (interface{}, e
 		body.ReadInt32() // app id?
 		code := body.ReadByte()
 		if code != 0 {
-			if code == 0x30 {
-				return &QRCodeLoginResponse{State: QRCodeWaitingForScan}, nil
+			var qrResp QRCodeLoginResponse
+			switch code {
+			case 0x30:
+				qrResp.State = QRCodeWaitingForScan
+			case 0x35:
+				qrResp.State = QRCodeWaitingForConfirm
+			case 0x36:
+				qrResp.State = QRCodeCanceled
+			case 0x11:
+				qrResp.State = QRCodeTimeout
+			default:
+				return nil, errors.Errorf("wtlogin.trans_emp sub cmd 0x12 error: %v", code)
 			}
-			if code == 0x35 {
-				return &QRCodeLoginResponse{State: QRCodeWaitingForConfirm}, nil
-			}
-			if code == 0x36 {
-				return &QRCodeLoginResponse{State: QRCodeCanceled}, nil
-			}
-			if code == 0x11 {
-				return &QRCodeLoginResponse{State: QRCodeTimeout}, nil
-			}
-			return nil, errors.Errorf("wtlogin.trans_emp sub cmd 0x12 error: %v", code)
+			return qrResp, nil
 		}
 		c.Uin = body.ReadInt64()
 		c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)

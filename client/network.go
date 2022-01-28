@@ -310,7 +310,7 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 		}
 	}()
 
-	c.Debug("rev resp: %v seq: %v", req.CommandName, req.SequenceID)
+	c.Debug("recv pkt: %v seq: %v", req.CommandName, req.SequenceID)
 	c.stat.PacketReceived.Add(1)
 
 	// snapshot of read call
@@ -321,9 +321,9 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 			SequenceID:  req.SequenceID,
 			CommandName: req.CommandName,
 			Body:        req.Body,
-			Params:      call.Request.Params,
-			// Request:     nil,
+			Request:     call.Request,
 		}
+		delete(c.pending, req.SequenceID)
 	}
 	c.pendingMu.Unlock()
 	if call != nil && call.Request.CommandName == req.CommandName {
