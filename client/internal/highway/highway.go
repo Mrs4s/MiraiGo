@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"sync/atomic"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -26,6 +27,8 @@ type Session struct {
 
 	seq int32
 }
+
+const highwayMaxResponseSize int32 = 1024 * 100 // 100k
 
 func (s *Session) AddrLength() int {
 	return len(s.SsoAddr)
@@ -48,7 +51,7 @@ type Input struct {
 func (s *Session) Upload(addr Addr, input Input) error {
 	fh, length := utils.ComputeMd5AndLength(input.Body)
 	_, _ = input.Body.Seek(0, io.SeekStart)
-	conn, err := net.DialTCP("tcp", nil, addr.asTcpAddr())
+	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*3)
 	if err != nil {
 		return errors.Wrap(err, "connect error")
 	}
@@ -246,6 +249,9 @@ func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, []byte, erro
 	}
 	hl, _ := r.ReadInt32()
 	a2, _ := r.ReadInt32()
+	if hl > highwayMaxResponseSize || a2 > highwayMaxResponseSize {
+		return nil, nil, errors.Errorf("highway response invild. head size: %v body size: %v", hl, a2)
+	}
 	head, _ := r.ReadBytes(int(hl))
 	payload, _ := r.ReadBytes(int(a2))
 	_, _ = r.ReadByte()

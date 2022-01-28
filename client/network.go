@@ -67,10 +67,10 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	}()
 	go func() {
 		defer wg.Done()
-		res := utils.RunICMPPingLoop(&net.IPAddr{IP: c.servers[c.currServerIndex].IP}, 10)
+		res := utils.RunTCPPingLoop(c.servers[c.currServerIndex].String(), 10)
 		r.ChatServerPacketLoss = res.PacketsLoss
 		if c.highwaySession.AddrLength() > 0 {
-			res = utils.RunICMPPingLoop(&net.IPAddr{IP: c.highwaySession.SsoAddr[0].AsNetIP()}, 10)
+			res = utils.RunTCPPingLoop(c.highwaySession.SsoAddr[0].String(), 10)
 			r.SrvServerPacketLoss = res.PacketsLoss
 		}
 	}()
