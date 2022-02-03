@@ -3,10 +3,12 @@ package network
 import (
 	goBinary "encoding/binary"
 	"fmt"
-	"github.com/pkg/errors"
 	"io"
 	"net"
 	"strconv"
+	"sync"
+
+	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
@@ -20,7 +22,28 @@ type Transport struct {
 	Device  *auth.Device
 
 	// connection
-	conn TCPListener
+	connMu        sync.Mutex
+	servers       []*net.TCPAddr
+	curServerAddr *net.TCPAddr
+	conn          TCPListener
+}
+
+func (t *Transport) AddServerAddr(addr *net.TCPAddr) {
+	t.connMu.Lock()
+	defer t.connMu.Unlock()
+	t.servers = append(t.servers, addr)
+}
+
+func (t *Transport) GetServerAddr() *net.TCPAddr {
+	t.connMu.Lock()
+	defer t.connMu.Unlock()
+	return t.curServerAddr
+}
+
+func (t *Transport) ServerCount() int {
+	t.connMu.Lock()
+	defer t.connMu.Unlock()
+	return len(t.servers)
 }
 
 func (t *Transport) PlannedDisconnect(fun func(*TCPListener)) {
@@ -31,8 +54,12 @@ func (t *Transport) UnexpectedDisconnect(fun func(*TCPListener, error)) {
 	t.conn.UnexpectedDisconnect = fun
 }
 
-func (t *Transport) ConnectFastest(servers []*net.TCPAddr) (chosen *net.TCPAddr, err error) {
-	return t.conn.ConnectFastest(servers)
+func (t *Transport) ConnectFastest() (chosen *net.TCPAddr, err error) {
+	t.connMu.Lock()
+	defer t.connMu.Unlock()
+	chosen, err = t.conn.ConnectFastest(t.servers)
+	t.curServerAddr = chosen
+	return
 }
 
 func (t *Transport) Close() {

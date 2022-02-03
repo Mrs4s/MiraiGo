@@ -58,13 +58,9 @@ type QQClient struct {
 	oicq      *oicq.Codec
 
 	// internal state
-	waiters         sync.Map
-	servers         []*net.TCPAddr
-	currServerIndex int
-	retryTimes      int
-	version         *auth.AppVersion
-	deviceInfo      *auth.Device
-	alive           bool
+	waiters    sync.Map
+	version    *auth.AppVersion
+	deviceInfo *auth.Device
 
 	// session info
 	qwebSeq        atomic.Int64
@@ -139,8 +135,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		msgSvcCache:     utils.NewCache(time.Second * 15),
 		transCache:      utils.NewCache(time.Second * 15),
 		onlinePushCache: utils.NewCache(time.Second * 15),
-		servers:         []*net.TCPAddr{},
-		alive:           true,
 		highwaySession:  new(highway.Session),
 
 		pending:    make(map[int32]*network.Call),
@@ -166,27 +160,29 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	cli.UseDevice(SystemDeviceInfo)
 	sso, err := getSSOAddress()
 	if err == nil && len(sso) > 0 {
-		cli.servers = append(sso, cli.servers...)
+		for _, addr := range sso {
+			cli.transport.AddServerAddr(addr)
+		}
 	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
-		var hostAddrs []*net.TCPAddr
 		for _, addr := range adds {
-			hostAddrs = append(hostAddrs, &net.TCPAddr{
+			cli.transport.AddServerAddr(&net.TCPAddr{
 				IP:   addr,
 				Port: 8080,
 			})
 		}
-		cli.servers = append(hostAddrs, cli.servers...)
 	}
-	if len(cli.servers) == 0 {
-		cli.servers = []*net.TCPAddr{ // default servers
+	if cli.transport.ServerCount() == 0 {
+		for _, addr := range []*net.TCPAddr{ // default servers
 			{IP: net.IP{42, 81, 172, 22}, Port: 80},
 			{IP: net.IP{42, 81, 172, 81}, Port: 80},
 			{IP: net.IP{42, 81, 172, 147}, Port: 443},
 			{IP: net.IP{114, 221, 144, 215}, Port: 80},
 			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
 			{IP: net.IP{125, 94, 60, 146}, Port: 80},
+		} {
+			cli.transport.AddServerAddr(addr)
 		}
 	}
 	/*pings := make([]int64, len(cli.servers))
@@ -227,7 +223,6 @@ func (c *QQClient) Release() {
 	if c.Online.Load() {
 		c.Disconnect()
 	}
-	c.alive = false
 }
 
 // Login send login request
@@ -831,7 +826,9 @@ func (g *GroupInfo) removeMember(uin int64) {
 }
 
 func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
-	c.servers = append(servers, c.servers...)
+	for _, server := range servers {
+		c.transport.AddServerAddr(server)
+	}
 }
 
 func (c *QQClient) registerClient() error {
