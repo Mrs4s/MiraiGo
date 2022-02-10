@@ -15,7 +15,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -176,13 +175,13 @@ func (g *GuildInfo) removeChannel(id uint64) {
 }
 
 func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {
-	flags := binary.DynamicProtoMessage{}
+	flags := proto.DynamicMessage{}
 	for i := 3; i <= 29; i++ {
 		flags[uint64(i)] = uint32(1)
 	}
 	flags[99] = uint32(1)
 	flags[100] = uint32(1)
-	payload := s.c.packOIDBPackageDynamically(3976, 1, binary.DynamicProtoMessage{
+	payload := s.c.packOIDBPackageDynamically(3976, 1, proto.DynamicMessage{
 		1: flags,
 		3: tinyId,
 		4: uint32(0),
@@ -210,11 +209,11 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, startIndex uint32, roleIdIndex uint64, param string) (*FetchGuildMemberListWithRoleResult, error) {
 	seq := s.c.nextSeq()
 	u1 := uint32(1)
-	m := binary.DynamicProtoMessage{
+	m := proto.DynamicMessage{
 		1: guildId, // guild id
 		2: uint32(3),
 		3: uint32(0),
-		4: binary.DynamicProtoMessage{ // unknown param, looks like flags
+		4: proto.DynamicMessage{ // unknown param, looks like flags
 			1: u1, 2: u1, 3: u1, 4: u1, 5: u1, 6: u1, 7: u1, 8: u1, 20: u1,
 		},
 		6:  startIndex,
@@ -269,13 +268,13 @@ func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, s
 // FetchGuildMemberProfileInfo 获取单个频道成员资料
 func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildUserProfile, error) {
 	seq := s.c.nextSeq()
-	flags := binary.DynamicProtoMessage{}
+	flags := proto.DynamicMessage{}
 	for i := 3; i <= 29; i++ {
 		flags[uint64(i)] = uint32(1)
 	}
 	flags[99] = uint32(1)
 	flags[100] = uint32(1)
-	payload := s.c.packOIDBPackageDynamically(3976, 1, binary.DynamicProtoMessage{
+	payload := s.c.packOIDBPackageDynamically(3976, 1, proto.DynamicMessage{
 		1: flags,
 		3: tinyId,
 		4: guildId,
@@ -305,7 +304,7 @@ func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 
 func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x1019_1",
-		s.c.packOIDBPackageDynamically(4121, 1, binary.DynamicProtoMessage{1: guildId}))
+		s.c.packOIDBPackageDynamically(4121, 1, proto.DynamicMessage{1: guildId}))
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -332,14 +331,14 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 
 func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32, independent bool, initialUsers []uint64) (uint64, error) {
 	u1 := uint32(1)
-	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x1016_1", s.c.packOIDBPackageDynamically(4118, 1, binary.DynamicProtoMessage{
+	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x1016_1", s.c.packOIDBPackageDynamically(4118, 1, proto.DynamicMessage{
 		1: guildId,
-		2: binary.DynamicProtoMessage{ // todo: 未知参数
+		2: proto.DynamicMessage{ // todo: 未知参数
 			1: u1,
 			2: u1,
 			3: u1,
 		},
-		3: binary.DynamicProtoMessage{
+		3: proto.DynamicMessage{
 			1: name,
 			2: color,
 			3: independent,
@@ -358,7 +357,7 @@ func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32
 }
 
 func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
-	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x100e_1", s.c.packOIDBPackageDynamically(4110, 1, binary.DynamicProtoMessage{
+	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x100e_1", s.c.packOIDBPackageDynamically(4110, 1, proto.DynamicMessage{
 		1: guildId,
 		2: roleId,
 	}))
@@ -370,7 +369,7 @@ func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
 }
 
 func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint64, user []uint64) error { // remove => p2 = false
-	setOrRemove := binary.DynamicProtoMessage{
+	setOrRemove := proto.DynamicMessage{
 		1: roleId,
 	}
 	if set {
@@ -378,7 +377,7 @@ func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint6
 	} else {
 		setOrRemove[3] = user
 	}
-	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x101a_1", s.c.packOIDBPackageDynamically(4122, 1, binary.DynamicProtoMessage{
+	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x101a_1", s.c.packOIDBPackageDynamically(4122, 1, proto.DynamicMessage{
 		1: guildId,
 		2: setOrRemove,
 	}))
@@ -391,15 +390,15 @@ func (s *GuildService) SetUserRoleInGuild(guildId uint64, set bool, roleId uint6
 
 func (s *GuildService) ModifyRoleInGuild(guildId uint64, roleId uint64, name string, color uint32, indepedent bool) error {
 	u1 := uint32(1)
-	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x100d_1", s.c.packOIDBPackageDynamically(4109, 1, binary.DynamicProtoMessage{
+	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x100d_1", s.c.packOIDBPackageDynamically(4109, 1, proto.DynamicMessage{
 		1: guildId,
 		2: roleId,
-		3: binary.DynamicProtoMessage{
+		3: proto.DynamicMessage{
 			1: u1,
 			2: u1,
 			3: u1,
 		},
-		4: binary.DynamicProtoMessage{
+		4: proto.DynamicMessage{
 			1: name,
 			2: color,
 			3: indepedent,
@@ -414,17 +413,17 @@ func (s *GuildService) ModifyRoleInGuild(guildId uint64, roleId uint64, name str
 
 func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 	u1 := uint32(1)
-	payload := s.c.packOIDBPackageDynamically(3927, 9, binary.DynamicProtoMessage{
-		1: binary.DynamicProtoMessage{
-			1: binary.DynamicProtoMessage{
+	payload := s.c.packOIDBPackageDynamically(3927, 9, proto.DynamicMessage{
+		1: proto.DynamicMessage{
+			1: proto.DynamicMessage{
 				2: u1, 4: u1, 5: u1, 6: u1, 7: u1, 8: u1, 11: u1, 12: u1, 13: u1, 14: u1, 45: u1,
 				18: u1, 19: u1, 20: u1, 22: u1, 23: u1, 5002: u1, 5003: u1, 5004: u1, 5005: u1, 10007: u1,
 			},
-			2: binary.DynamicProtoMessage{
+			2: proto.DynamicMessage{
 				3: u1, 4: u1, 6: u1, 11: u1, 14: u1, 15: u1, 16: u1, 17: u1,
 			},
 		},
-		2: binary.DynamicProtoMessage{
+		2: proto.DynamicMessage{
 			1: guildId,
 		},
 	})
@@ -452,9 +451,9 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 func (s *GuildService) FetchChannelList(guildId uint64) (r []*ChannelInfo, e error) {
 	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0xf5d_1",
 		s.c.packOIDBPackageDynamically(3933, 1,
-			binary.DynamicProtoMessage{
+			proto.DynamicMessage{
 				1: guildId,
-				3: binary.DynamicProtoMessage{
+				3: proto.DynamicMessage{
 					1: uint32(1),
 				},
 			}))
@@ -473,7 +472,7 @@ func (s *GuildService) FetchChannelList(guildId uint64) (r []*ChannelInfo, e err
 }
 
 func (s *GuildService) FetchChannelInfo(guildId, channelId uint64) (*ChannelInfo, error) {
-	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0xf55_1", s.c.packOIDBPackageDynamically(3925, 1, binary.DynamicProtoMessage{1: guildId, 2: channelId}))
+	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0xf55_1", s.c.packOIDBPackageDynamically(3925, 1, proto.DynamicMessage{1: guildId, 2: channelId}))
 	rsp, err := s.c.sendAndWaitDynamic(seq, packet)
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
@@ -618,10 +617,10 @@ func (s *GuildService) PostTopicChannelFeed(guildId, channelId uint64, feed *top
 
 func (s *GuildService) fetchMemberRoles(guildId uint64, tinyId uint64) ([]*GuildRole, error) {
 	u1 := uint32(1)
-	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x1017_1", s.c.packOIDBPackageDynamically(4119, 1, binary.DynamicProtoMessage{
+	seq, packet := s.c.uniPacket("OidbSvcTrpcTcp.0x1017_1", s.c.packOIDBPackageDynamically(4119, 1, proto.DynamicMessage{
 		1: guildId,
 		2: tinyId,
-		4: binary.DynamicProtoMessage{
+		4: proto.DynamicMessage{
 			1: u1,
 			2: u1,
 			3: u1,
@@ -657,8 +656,8 @@ func (s *GuildService) fetchChannelListState(guildId uint64, channels []*Channel
 	for _, info := range channels {
 		ids = append(ids, info.ChannelId)
 	}
-	payload := s.c.packOIDBPackageDynamically(4104, 1, binary.DynamicProtoMessage{
-		1: binary.DynamicProtoMessage{
+	payload := s.c.packOIDBPackageDynamically(4104, 1, binary.DynamicMessage{
+		1: binary.DynamicMessage{
 			1: guildId,
 			2: ids,
 		},

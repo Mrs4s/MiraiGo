@@ -10,7 +10,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
@@ -139,7 +138,7 @@ func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSe
 		CommandID: 83,
 		Body:      img,
 		Ticket:    body.UploadKey,
-		Ext:       binary.DynamicProtoMessage{11: guildId, 12: channelId}.Encode(),
+		Ext:       proto.DynamicMessage{11: guildId, 12: channelId}.Encode(),
 		Encrypt:   false,
 	}); err == nil {
 		goto ok

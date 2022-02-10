@@ -1,4 +1,4 @@
-package binary
+package proto
 
 import (
 	"bytes"
@@ -6,15 +6,14 @@ import (
 	"math"
 )
 
-type DynamicProtoMessage map[uint64]interface{}
+type DynamicMessage map[uint64]interface{}
 
 type encoder struct {
 	bytes.Buffer
 }
 
-func (msg DynamicProtoMessage) Encode() []byte {
+func (msg DynamicMessage) Encode() []byte {
 	en := &encoder{}
-
 	//nolint:staticcheck
 	for id, value := range msg {
 		key := id << 3
@@ -61,7 +60,7 @@ func (msg DynamicProtoMessage) Encode() []byte {
 			en.uvarint(key | 2)
 			en.uvarint(uint64(len(v)))
 			_, _ = en.Write(v)
-		case DynamicProtoMessage:
+		case DynamicMessage:
 			en.uvarint(key | 2)
 			b := v.Encode()
 			en.uvarint(uint64(len(b)))

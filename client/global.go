@@ -321,7 +321,7 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 	return r
 }
 
-func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg binary.DynamicProtoMessage) []byte {
+func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg proto.DynamicMessage) []byte {
 	return c.packOIDBPackage(cmd, serviceType, msg.Encode())
 }
 
