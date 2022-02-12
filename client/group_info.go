@@ -242,7 +242,7 @@ func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 	if info.GroupInfo == nil {
 		return nil, errors.New("group info not found")
 	}
-	return &GroupInfo{
+	groupInfo := &GroupInfo{
 		Uin:             int64(*info.GroupInfo.GroupUin),
 		Code:            int64(*info.GroupCode),
 		Name:            string(info.GroupInfo.GroupName),
@@ -255,7 +255,15 @@ func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 		Members:         []*GroupMemberInfo{},
 		LastMsgSeq:      int64(info.GroupInfo.GetGroupCurMsgSeq()),
 		client:          c,
-	}, nil
+	}
+	for i, g := range c.GroupList {
+		f := g
+		if f.Code == groupInfo.Code {
+			c.GroupList[i] = groupInfo
+			break
+		}
+	}
+	return groupInfo, nil
 }
 
 func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {

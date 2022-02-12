@@ -504,7 +504,7 @@ func decodeGroupListResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 	groups := r.ReadTroopNumbers(5)
 	l := make([]*GroupInfo, 0, len(groups))
 	for _, g := range groups {
-		l = append(l, &GroupInfo{
+		groupInfo := &GroupInfo{
 			Uin:            g.GroupUin,
 			Code:           g.GroupCode,
 			Name:           g.GroupName,
@@ -513,7 +513,13 @@ func decodeGroupListResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 			MemberCount:    uint16(g.MemberNum),
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
 			client:         c,
-		})
+		}
+		if group := c.FindGroup(g.GroupCode); group != nil {
+			groupInfo.GroupCreateTime = group.GroupCreateTime
+			groupInfo.GroupLevel = group.GroupLevel
+
+		}
+		l = append(l, groupInfo)
 	}
 	if len(vecCookie) > 0 {
 		rsp, err := c.sendAndWait(c.buildGroupListRequestPacket(vecCookie))
