@@ -320,7 +320,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 	for _, elem := range elems {
 		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
 			r := &ReplyElement{
-				ReplySeq: elem.SrcMsg.OrigSeqs[0],
+				ReplySeq: int32(uint16(elem.SrcMsg.OrigSeqs[0])),
 				Time:     elem.SrcMsg.GetTime(),
 				Sender:   elem.SrcMsg.GetSenderUin(),
 				GroupID:  elem.SrcMsg.GetToUin(),
