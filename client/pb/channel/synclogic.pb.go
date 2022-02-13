@@ -47,24 +47,10 @@ func (x *ChannelMsg) GetRspEndSeq() uint64 {
 	return 0
 }
 
-func (x *ChannelMsg) GetMsgs() []*ChannelMsgContent {
-	if x != nil {
-		return x.Msgs
-	}
-	return nil
-}
-
 type ChannelMsgReq struct {
 	ChannelParam      *ChannelParam `protobuf:"bytes,1,opt"`
 	WithVersionFlag   *uint32       `protobuf:"varint,2,opt"`
 	DirectMessageFlag *uint32       `protobuf:"varint,3,opt"`
-}
-
-func (x *ChannelMsgReq) GetChannelParam() *ChannelParam {
-	if x != nil {
-		return x.ChannelParam
-	}
-	return nil
 }
 
 func (x *ChannelMsgReq) GetWithVersionFlag() uint32 {
@@ -94,20 +80,6 @@ func (x *ChannelMsgRsp) GetResult() uint32 {
 		return *x.Result
 	}
 	return 0
-}
-
-func (x *ChannelMsgRsp) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *ChannelMsgRsp) GetChannelMsg() *ChannelMsg {
-	if x != nil {
-		return x.ChannelMsg
-	}
-	return nil
 }
 
 func (x *ChannelMsgRsp) GetWithVersionFlag() uint32 {
@@ -188,32 +160,11 @@ func (x *ChannelNode) GetNotifyType() uint32 {
 	return 0
 }
 
-func (x *ChannelNode) GetChannelName() []byte {
-	if x != nil {
-		return x.ChannelName
-	}
-	return nil
-}
-
 func (x *ChannelNode) GetChannelType() uint32 {
 	if x != nil && x.ChannelType != nil {
 		return *x.ChannelType
 	}
 	return 0
-}
-
-func (x *ChannelNode) GetMeta() []byte {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
-}
-
-func (x *ChannelNode) GetReadMsgMeta() []byte {
-	if x != nil {
-		return x.ReadMsgMeta
-	}
-	return nil
 }
 
 func (x *ChannelNode) GetEventTime() uint32 {
@@ -268,20 +219,6 @@ func (x *ChannelParam) GetTime() uint64 {
 	return 0
 }
 
-func (x *ChannelParam) GetVersion() []uint64 {
-	if x != nil {
-		return x.Version
-	}
-	return nil
-}
-
-func (x *ChannelParam) GetSeqs() []*MsgCond {
-	if x != nil {
-		return x.Seqs
-	}
-	return nil
-}
-
 type DirectMessageSource struct {
 	TinyId     *uint64 `protobuf:"varint,1,opt"`
 	GuildId    *uint64 `protobuf:"varint,2,opt"`
@@ -302,27 +239,6 @@ func (x *DirectMessageSource) GetGuildId() uint64 {
 		return *x.GuildId
 	}
 	return 0
-}
-
-func (x *DirectMessageSource) GetGuildName() []byte {
-	if x != nil {
-		return x.GuildName
-	}
-	return nil
-}
-
-func (x *DirectMessageSource) GetMemberName() []byte {
-	if x != nil {
-		return x.MemberName
-	}
-	return nil
-}
-
-func (x *DirectMessageSource) GetNickName() []byte {
-	if x != nil {
-		return x.NickName
-	}
-	return nil
 }
 
 type FirstViewMsg struct {
@@ -348,32 +264,11 @@ func (x *FirstViewMsg) GetSeq() uint32 {
 	return 0
 }
 
-func (x *FirstViewMsg) GetGuildNodes() []*GuildNode {
-	if x != nil {
-		return x.GuildNodes
-	}
-	return nil
-}
-
-func (x *FirstViewMsg) GetChannelMsgs() []*ChannelMsg {
-	if x != nil {
-		return x.ChannelMsgs
-	}
-	return nil
-}
-
 func (x *FirstViewMsg) GetGetMsgTime() uint64 {
 	if x != nil && x.GetMsgTime != nil {
 		return *x.GetMsgTime
 	}
 	return 0
-}
-
-func (x *FirstViewMsg) GetDirectMessageGuildNodes() []*GuildNode {
-	if x != nil {
-		return x.DirectMessageGuildNodes
-	}
-	return nil
 }
 
 type FirstViewReq struct {
@@ -427,13 +322,6 @@ func (x *FirstViewRsp) GetResult() uint32 {
 		return *x.Result
 	}
 	return 0
-}
-
-func (x *FirstViewRsp) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
 }
 
 func (x *FirstViewRsp) GetSeq() uint32 {
@@ -500,27 +388,6 @@ func (x *GuildNode) GetGuildCode() uint64 {
 	return 0
 }
 
-func (x *GuildNode) GetChannelNodes() []*ChannelNode {
-	if x != nil {
-		return x.ChannelNodes
-	}
-	return nil
-}
-
-func (x *GuildNode) GetGuildName() []byte {
-	if x != nil {
-		return x.GuildName
-	}
-	return nil
-}
-
-func (x *GuildNode) GetPeerSource() *DirectMessageSource {
-	if x != nil {
-		return x.PeerSource
-	}
-	return nil
-}
-
 type MsgCond struct {
 	Seq          *uint64 `protobuf:"varint,1,opt"`
 	EventVersion *uint64 `protobuf:"varint,2,opt"`
@@ -561,13 +428,6 @@ func (x *MultiChannelMsg) GetSeq() uint32 {
 	return 0
 }
 
-func (x *MultiChannelMsg) GetChannelMsgs() []*ChannelMsg {
-	if x != nil {
-		return x.ChannelMsgs
-	}
-	return nil
-}
-
 func (x *MultiChannelMsg) GetGetMsgTime() uint64 {
 	if x != nil && x.GetMsgTime != nil {
 		return *x.GetMsgTime
@@ -579,13 +439,6 @@ type MultiChannelMsgReq struct {
 	ChannelParams     []*ChannelParam `protobuf:"bytes,1,rep"`
 	Seq               *uint32         `protobuf:"varint,2,opt"`
 	DirectMessageFlag *uint32         `protobuf:"varint,3,opt"`
-}
-
-func (x *MultiChannelMsgReq) GetChannelParams() []*ChannelParam {
-	if x != nil {
-		return x.ChannelParams
-	}
-	return nil
 }
 
 func (x *MultiChannelMsgReq) GetSeq() uint32 {
@@ -615,13 +468,6 @@ func (x *MultiChannelMsgRsp) GetResult() uint32 {
 	return 0
 }
 
-func (x *MultiChannelMsgRsp) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
 func (x *MultiChannelMsgRsp) GetSeq() uint32 {
 	if x != nil && x.Seq != nil {
 		return *x.Seq
@@ -632,13 +478,6 @@ func (x *MultiChannelMsgRsp) GetSeq() uint32 {
 type ReqBody struct {
 	ChannelParam      *ChannelParam `protobuf:"bytes,1,opt"`
 	DirectMessageFlag *uint32       `protobuf:"varint,2,opt"`
-}
-
-func (x *ReqBody) GetChannelParam() *ChannelParam {
-	if x != nil {
-		return x.ChannelParam
-	}
-	return nil
 }
 
 func (x *ReqBody) GetDirectMessageFlag() uint32 {
@@ -659,18 +498,4 @@ func (x *RspBody) GetResult() uint32 {
 		return *x.Result
 	}
 	return 0
-}
-
-func (x *RspBody) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *RspBody) GetChannelMsg() *ChannelMsg {
-	if x != nil {
-		return x.ChannelMsg
-	}
-	return nil
 }

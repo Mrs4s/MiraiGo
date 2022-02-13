@@ -313,8 +313,8 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
-	roles := make([]*GuildRole, 0, len(body.GetRoles()))
-	for _, role := range body.GetRoles() {
+	roles := make([]*GuildRole, 0, len(body.Roles))
+	for _, role := range body.Roles {
 		roles = append(roles, &GuildRole{
 			RoleId:      role.GetRoleId(),
 			RoleName:    role.GetName(),
@@ -634,12 +634,12 @@ func (s *GuildService) fetchMemberRoles(guildId uint64, tinyId uint64) ([]*Guild
 	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
-	p1 := body.GetP1()
+	p1 := body.P1
 	if p1 == nil {
 		return nil, errors.New("packet OidbSvcTrpcTcp.0x1017_1: decode p1 error")
 	}
-	roles := make([]*GuildRole, 0, len(p1.GetRoles()))
-	for _, role := range p1.GetRoles() {
+	roles := make([]*GuildRole, 0, len(p1.Roles))
+	for _, role := range p1.Roles {
 		roles = append(roles, &GuildRole{
 			RoleId:    role.GetRoleId(),
 			RoleName:  role.GetName(),

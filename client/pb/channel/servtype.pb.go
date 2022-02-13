@@ -79,20 +79,6 @@ func (x *CategoryInfo) GetCategoryIndex() uint32 {
 	return 0
 }
 
-func (x *CategoryInfo) GetChannelInfo() []*CategoryChannelInfo {
-	if x != nil {
-		return x.ChannelInfo
-	}
-	return nil
-}
-
-func (x *CategoryInfo) GetCategoryName() []byte {
-	if x != nil {
-		return x.CategoryName
-	}
-	return nil
-}
-
 func (x *CategoryInfo) GetCategoryId() uint64 {
 	if x != nil && x.CategoryId != nil {
 		return *x.CategoryId
@@ -178,20 +164,6 @@ func (x *ChanInfoFilter) GetLastCntMsgSeq() uint32 {
 	return 0
 }
 
-func (x *ChanInfoFilter) GetVoiceChannelInfoFilter() *VoiceChannelInfoFilter {
-	if x != nil {
-		return x.VoiceChannelInfoFilter
-	}
-	return nil
-}
-
-func (x *ChanInfoFilter) GetLiveChannelInfoFilter() *LiveChannelInfoFilter {
-	if x != nil {
-		return x.LiveChannelInfoFilter
-	}
-	return nil
-}
-
 func (x *ChanInfoFilter) GetBannedSpeak() uint32 {
 	if x != nil && x.BannedSpeak != nil {
 		return *x.BannedSpeak
@@ -230,32 +202,11 @@ func (x *ChangeChanInfo) GetOperatorId() uint64 {
 	return 0
 }
 
-func (x *ChangeChanInfo) GetInfoSeq() *MsgSeq {
-	if x != nil {
-		return x.InfoSeq
-	}
-	return nil
-}
-
 func (x *ChangeChanInfo) GetUpdateType() uint32 {
 	if x != nil && x.UpdateType != nil {
 		return *x.UpdateType
 	}
 	return 0
-}
-
-func (x *ChangeChanInfo) GetChanInfoFilter() *ChanInfoFilter {
-	if x != nil {
-		return x.ChanInfoFilter
-	}
-	return nil
-}
-
-func (x *ChangeChanInfo) GetChanInfo() *ServChannelInfo {
-	if x != nil {
-		return x.ChanInfo
-	}
-	return nil
 }
 
 type ChangeGuildInfo struct {
@@ -282,39 +233,11 @@ func (x *ChangeGuildInfo) GetOperatorId() uint64 {
 	return 0
 }
 
-func (x *ChangeGuildInfo) GetInfoSeq() *MsgSeq {
-	if x != nil {
-		return x.InfoSeq
-	}
-	return nil
-}
-
-func (x *ChangeGuildInfo) GetFaceSeq() *MsgSeq {
-	if x != nil {
-		return x.FaceSeq
-	}
-	return nil
-}
-
 func (x *ChangeGuildInfo) GetUpdateType() uint32 {
 	if x != nil && x.UpdateType != nil {
 		return *x.UpdateType
 	}
 	return 0
-}
-
-func (x *ChangeGuildInfo) GetGuildInfoFilter() *GuildInfoFilter {
-	if x != nil {
-		return x.GuildInfoFilter
-	}
-	return nil
-}
-
-func (x *ChangeGuildInfo) GetGuildInfo() *GuildInfo {
-	if x != nil {
-		return x.GuildInfo
-	}
-	return nil
 }
 
 type ChannelID struct {
@@ -349,13 +272,6 @@ func (x *ServChannelInfo) GetChannelId() uint64 {
 		return *x.ChannelId
 	}
 	return 0
-}
-
-func (x *ServChannelInfo) GetChannelName() []byte {
-	if x != nil {
-		return x.ChannelName
-	}
-	return nil
 }
 
 func (x *ServChannelInfo) GetCreatorId() uint64 {
@@ -398,34 +314,6 @@ func (x *ServChannelInfo) GetSpeakPermission() uint32 {
 		return *x.SpeakPermission
 	}
 	return 0
-}
-
-func (x *ServChannelInfo) GetLastMsgSeq() *MsgSeq {
-	if x != nil {
-		return x.LastMsgSeq
-	}
-	return nil
-}
-
-func (x *ServChannelInfo) GetLastCntMsgSeq() *MsgSeq {
-	if x != nil {
-		return x.LastCntMsgSeq
-	}
-	return nil
-}
-
-func (x *ServChannelInfo) GetVoiceChannelInfo() *VoiceChannelInfo {
-	if x != nil {
-		return x.VoiceChannelInfo
-	}
-	return nil
-}
-
-func (x *ServChannelInfo) GetLiveChannelInfo() *LiveChannelInfo {
-	if x != nil {
-		return x.LiveChannelInfo
-	}
-	return nil
 }
 
 func (x *ServChannelInfo) GetBannedSpeak() uint32 {
@@ -474,32 +362,11 @@ func (x *CommGrayTips) GetTemplId() uint64 {
 	return 0
 }
 
-func (x *CommGrayTips) GetTemplParam() []*CommGrayTips_TemplParam {
-	if x != nil {
-		return x.TemplParam
-	}
-	return nil
-}
-
-func (x *CommGrayTips) GetContent() []byte {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
 func (x *CommGrayTips) GetTipsSeqId() uint64 {
 	if x != nil && x.TipsSeqId != nil {
 		return *x.TipsSeqId
 	}
 	return 0
-}
-
-func (x *CommGrayTips) GetPbReserv() []byte {
-	if x != nil {
-		return x.PbReserv
-	}
-	return nil
 }
 
 type CreateChan struct {
@@ -520,13 +387,6 @@ func (x *CreateChan) GetOperatorId() uint64 {
 		return *x.OperatorId
 	}
 	return 0
-}
-
-func (x *CreateChan) GetCreateId() []*ChannelID {
-	if x != nil {
-		return x.CreateId
-	}
-	return nil
 }
 
 type CreateGuild struct {
@@ -566,13 +426,6 @@ func (x *DestroyChan) GetOperatorId() uint64 {
 		return *x.OperatorId
 	}
 	return 0
-}
-
-func (x *DestroyChan) GetDeleteId() []*ChannelID {
-	if x != nil {
-		return x.DeleteId
-	}
-	return nil
 }
 
 type DestroyGuild struct {
@@ -622,195 +475,6 @@ type EventBody struct {
 	FeedEvent            *FeedEvent               `protobuf:"bytes,44,opt"`
 	WeakMsgAppChannel    *AppChannelMsg           `protobuf:"bytes,46,opt"`
 	ReadFeedNotify       *ReadFeedNotify          `protobuf:"bytes,48,opt"`
-}
-
-func (x *EventBody) GetReadNotify() *ReadNotify {
-	if x != nil {
-		return x.ReadNotify
-	}
-	return nil
-}
-
-func (x *EventBody) GetCommGrayTips() *CommGrayTips {
-	if x != nil {
-		return x.CommGrayTips
-	}
-	return nil
-}
-
-func (x *EventBody) GetCreateGuild() *CreateGuild {
-	if x != nil {
-		return x.CreateGuild
-	}
-	return nil
-}
-
-func (x *EventBody) GetDestroyGuild() *DestroyGuild {
-	if x != nil {
-		return x.DestroyGuild
-	}
-	return nil
-}
-
-func (x *EventBody) GetJoinGuild() *JoinGuild {
-	if x != nil {
-		return x.JoinGuild
-	}
-	return nil
-}
-
-func (x *EventBody) GetKickOffGuild() *KickOffGuild {
-	if x != nil {
-		return x.KickOffGuild
-	}
-	return nil
-}
-
-func (x *EventBody) GetQuitGuild() *QuitGuild {
-	if x != nil {
-		return x.QuitGuild
-	}
-	return nil
-}
-
-func (x *EventBody) GetChangeGuildInfo() *ChangeGuildInfo {
-	if x != nil {
-		return x.ChangeGuildInfo
-	}
-	return nil
-}
-
-func (x *EventBody) GetCreateChan() *CreateChan {
-	if x != nil {
-		return x.CreateChan
-	}
-	return nil
-}
-
-func (x *EventBody) GetDestroyChan() *DestroyChan {
-	if x != nil {
-		return x.DestroyChan
-	}
-	return nil
-}
-
-func (x *EventBody) GetChangeChanInfo() *ChangeChanInfo {
-	if x != nil {
-		return x.ChangeChanInfo
-	}
-	return nil
-}
-
-func (x *EventBody) GetSetAdmin() *SetAdmin {
-	if x != nil {
-		return x.SetAdmin
-	}
-	return nil
-}
-
-func (x *EventBody) GetSetMsgRecvType() *SetMsgRecvType {
-	if x != nil {
-		return x.SetMsgRecvType
-	}
-	return nil
-}
-
-func (x *EventBody) GetUpdateMsg() *UpdateMsg {
-	if x != nil {
-		return x.UpdateMsg
-	}
-	return nil
-}
-
-func (x *EventBody) GetSetTop() *SetTop {
-	if x != nil {
-		return x.SetTop
-	}
-	return nil
-}
-
-func (x *EventBody) GetSwitchChannel() *SwitchVoiceChannel {
-	if x != nil {
-		return x.SwitchChannel
-	}
-	return nil
-}
-
-func (x *EventBody) GetUpdateCategory() *UpdateCategory {
-	if x != nil {
-		return x.UpdateCategory
-	}
-	return nil
-}
-
-func (x *EventBody) GetUpdateVoiceBlockList() *UpdateVoiceBlockList {
-	if x != nil {
-		return x.UpdateVoiceBlockList
-	}
-	return nil
-}
-
-func (x *EventBody) GetSetMute() *SetMute {
-	if x != nil {
-		return x.SetMute
-	}
-	return nil
-}
-
-func (x *EventBody) GetLiveStatusChangeRoom() *LiveRoomStatusChangeMsg {
-	if x != nil {
-		return x.LiveStatusChangeRoom
-	}
-	return nil
-}
-
-func (x *EventBody) GetSwitchLiveRoom() *SwitchLiveRoom {
-	if x != nil {
-		return x.SwitchLiveRoom
-	}
-	return nil
-}
-
-func (x *EventBody) GetEvents() []*MsgEvent {
-	if x != nil {
-		return x.Events
-	}
-	return nil
-}
-
-func (x *EventBody) GetScheduler() *SchedulerMsg {
-	if x != nil {
-		return x.Scheduler
-	}
-	return nil
-}
-
-func (x *EventBody) GetAppChannel() *AppChannelMsg {
-	if x != nil {
-		return x.AppChannel
-	}
-	return nil
-}
-
-func (x *EventBody) GetFeedEvent() *FeedEvent {
-	if x != nil {
-		return x.FeedEvent
-	}
-	return nil
-}
-
-func (x *EventBody) GetWeakMsgAppChannel() *AppChannelMsg {
-	if x != nil {
-		return x.WeakMsgAppChannel
-	}
-	return nil
-}
-
-func (x *EventBody) GetReadFeedNotify() *ReadFeedNotify {
-	if x != nil {
-		return x.ReadFeedNotify
-	}
-	return nil
 }
 
 type FeedEvent struct {
@@ -957,27 +621,6 @@ func (x *GuildInfo) GetGuildType() uint32 {
 	return 0
 }
 
-func (x *GuildInfo) GetGuildName() []byte {
-	if x != nil {
-		return x.GuildName
-	}
-	return nil
-}
-
-func (x *GuildInfo) GetRobotList() []uint64 {
-	if x != nil {
-		return x.RobotList
-	}
-	return nil
-}
-
-func (x *GuildInfo) GetAdminList() []uint64 {
-	if x != nil {
-		return x.AdminList
-	}
-	return nil
-}
-
 func (x *GuildInfo) GetRobotMaxNum() uint32 {
 	if x != nil && x.RobotMaxNum != nil {
 		return *x.RobotMaxNum
@@ -992,13 +635,6 @@ func (x *GuildInfo) GetAdminMaxNum() uint32 {
 	return 0
 }
 
-func (x *GuildInfo) GetProfile() []byte {
-	if x != nil {
-		return x.Profile
-	}
-	return nil
-}
-
 func (x *GuildInfo) GetFaceSeq() uint64 {
 	if x != nil && x.FaceSeq != nil {
 		return *x.FaceSeq
@@ -1006,39 +642,11 @@ func (x *GuildInfo) GetFaceSeq() uint64 {
 	return 0
 }
 
-func (x *GuildInfo) GetGuildStatus() *GroupProStatus {
-	if x != nil {
-		return x.GuildStatus
-	}
-	return nil
-}
-
 func (x *GuildInfo) GetChannelNum() uint32 {
 	if x != nil && x.ChannelNum != nil {
 		return *x.ChannelNum
 	}
 	return 0
-}
-
-func (x *GuildInfo) GetMemberChangeSeq() *MsgSeq {
-	if x != nil {
-		return x.MemberChangeSeq
-	}
-	return nil
-}
-
-func (x *GuildInfo) GetGuildInfoChangeSeq() *MsgSeq {
-	if x != nil {
-		return x.GuildInfoChangeSeq
-	}
-	return nil
-}
-
-func (x *GuildInfo) GetChannelChangeSeq() *MsgSeq {
-	if x != nil {
-		return x.ChannelChangeSeq
-	}
-	return nil
 }
 
 type GuildInfoFilter struct {
@@ -1262,13 +870,6 @@ func (x *LiveChannelInfo) GetAnchorUin() uint64 {
 	return 0
 }
 
-func (x *LiveChannelInfo) GetName() []byte {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
 type LiveChannelInfoFilter struct {
 	IsNeedRoomId    *uint32 `protobuf:"varint,1,opt"`
 	IsNeedAnchorUin *uint32 `protobuf:"varint,2,opt"`
@@ -1410,38 +1011,10 @@ func (x *ReadNotify) GetGuildId() uint64 {
 	return 0
 }
 
-func (x *ReadNotify) GetReadMsgSeq() *MsgSeq {
-	if x != nil {
-		return x.ReadMsgSeq
-	}
-	return nil
-}
-
-func (x *ReadNotify) GetReadCntMsgSeq() *MsgSeq {
-	if x != nil {
-		return x.ReadCntMsgSeq
-	}
-	return nil
-}
-
-func (x *ReadNotify) GetReadMsgMeta() []byte {
-	if x != nil {
-		return x.ReadMsgMeta
-	}
-	return nil
-}
-
 type SchedulerMsg struct {
 	CreatorHeadUrl []byte  `protobuf:"bytes,1,opt"`
 	Wording        *string `protobuf:"bytes,2,opt"`
 	ExpireTimeMs   *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *SchedulerMsg) GetCreatorHeadUrl() []byte {
-	if x != nil {
-		return x.CreatorHeadUrl
-	}
-	return nil
 }
 
 func (x *SchedulerMsg) GetWording() string {
@@ -1624,13 +1197,6 @@ func (x *SwitchLiveRoom) GetChannelId() uint64 {
 	return 0
 }
 
-func (x *SwitchLiveRoom) GetUserInfo() *SwitchLiveRoomUserInfo {
-	if x != nil {
-		return x.UserInfo
-	}
-	return nil
-}
-
 func (x *SwitchLiveRoom) GetAction() uint32 {
 	if x != nil && x.Action != nil {
 		return *x.Action
@@ -1670,37 +1236,9 @@ func (x *SwitchVoiceChannel) GetMemberId() uint64 {
 	return 0
 }
 
-func (x *SwitchVoiceChannel) GetEnterDetail() *SwitchDetail {
-	if x != nil {
-		return x.EnterDetail
-	}
-	return nil
-}
-
-func (x *SwitchVoiceChannel) GetLeaveDetail() *SwitchDetail {
-	if x != nil {
-		return x.LeaveDetail
-	}
-	return nil
-}
-
 type UpdateCategory struct {
 	CategoryInfo           []*CategoryInfo `protobuf:"bytes,1,rep"`
 	NoClassifyCategoryInfo *CategoryInfo   `protobuf:"bytes,2,opt"`
-}
-
-func (x *UpdateCategory) GetCategoryInfo() []*CategoryInfo {
-	if x != nil {
-		return x.CategoryInfo
-	}
-	return nil
-}
-
-func (x *UpdateCategory) GetNoClassifyCategoryInfo() *CategoryInfo {
-	if x != nil {
-		return x.NoClassifyCategoryInfo
-	}
-	return nil
 }
 
 type UpdateMsg struct {
@@ -1814,18 +1352,4 @@ func (x *VoiceChannelInfoFilter) GetMemberMaxNum() uint32 {
 type CommGrayTips_TemplParam struct {
 	Name  []byte `protobuf:"bytes,1,opt"`
 	Value []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *CommGrayTips_TemplParam) GetName() []byte {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
-func (x *CommGrayTips_TemplParam) GetValue() []byte {
-	if x != nil {
-		return x.Value
-	}
-	return nil
 }

@@ -159,7 +159,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacke
 			info := &TempSessionInfo{
 				Source: 0,
 				Sender: pMsg.Head.GetFromUin(),
-				sig:    pMsg.Head.C2CTmpMsgHead.GetSig(),
+				sig:    pMsg.Head.C2CTmpMsgHead.Sig,
 				client: c,
 			}
 
@@ -235,10 +235,10 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.Inc
 	if !info.Params.Bool("used_reg_proxy") && pMsg.Head.GetMsgType() != 85 && pMsg.Head.GetMsgType() != 36 {
 		c.exceptAndDispatchGroupSysMsg()
 	}
-	if len(pMsg.Body.GetMsgContent()) == 0 {
+	if len(pMsg.Body.MsgContent) == 0 {
 		return
 	}
-	reader := binary.NewReader(pMsg.GetBody().GetMsgContent())
+	reader := binary.NewReader(pMsg.Body.MsgContent)
 	groupCode := uint32(reader.ReadInt32())
 	if info := c.FindGroup(int64(groupCode)); info != nil && pMsg.Head.GetGroupName() != "" && info.Name != pMsg.Head.GetGroupName() {
 		c.Debug("group %v name updated. %v -> %v", groupCode, info.Name, pMsg.Head.GetGroupName())

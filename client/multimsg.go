@@ -141,8 +141,8 @@ func (l *forwardMsgLinker) link(name string) *message.ForwardMessage {
 	if item == nil {
 		return nil
 	}
-	nodes := make([]*message.ForwardNode, 0, len(item.GetBuffer().GetMsg()))
-	for _, m := range item.GetBuffer().GetMsg() {
+	nodes := make([]*message.ForwardNode, 0, len(item.Buffer.Msg))
+	for _, m := range item.Buffer.Msg {
 		name := m.Head.GetFromNick()
 		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
 			name = m.Head.GroupInfo.GetGroupCard()
@@ -187,11 +187,11 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 		return nil
 	}
 	multiMsg := i.(*msg.PbMultiMsgTransmit)
-	if multiMsg.GetPbItemList() == nil {
+	if multiMsg.PbItemList == nil {
 		return nil
 	}
 	var pv string
-	for i := 0; i < int(math.Min(4, float64(len(multiMsg.GetMsg())))); i++ {
+	for i := 0; i < int(math.Min(4, float64(len(multiMsg.Msg)))); i++ {
 		m := multiMsg.Msg[i]
 		pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`,
 			func() string {
@@ -201,14 +201,14 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 				return m.Head.GetFromNick()
 			}(),
 			message.ToReadableString(
-				message.ParseMessageElems(multiMsg.Msg[i].GetBody().GetRichText().Elems),
+				message.ParseMessageElems(multiMsg.Msg[i].Body.RichText.Elems),
 			),
 		)
 	}
 	return genForwardTemplate(
 		resId, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录",
-		fmt.Sprintf("查看 %d 条转发消息", len(multiMsg.GetMsg())),
+		fmt.Sprintf("查看 %d 条转发消息", len(multiMsg.Msg)),
 		time.Now().UnixNano(),
-		multiMsg.GetPbItemList(),
+		multiMsg.PbItemList,
 	)
 }

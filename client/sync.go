@@ -401,7 +401,7 @@ func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload 
 	if err := proto.Unmarshal(payload, &m); err != nil {
 		return nil, err
 	}
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.PushToken, info.SequenceId, nil))
 	c.commMsgProcessor(m.Msg, info)
 	return nil, nil
 }

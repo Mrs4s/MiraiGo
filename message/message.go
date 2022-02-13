@@ -370,7 +370,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					Size:      elem.VideoFile.GetFileSize(),
 					ThumbSize: elem.VideoFile.GetThumbFileSize(),
 					Md5:       elem.VideoFile.FileMd5,
-					ThumbMd5:  elem.VideoFile.GetThumbFileMd5(),
+					ThumbMd5:  elem.VideoFile.ThumbFileMd5,
 				},
 			}
 		}
@@ -482,13 +482,13 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
-				Name:       utils.B2S(elem.MarketFace.GetFaceName()),
+				Name:       utils.B2S(elem.MarketFace.FaceName),
 				FaceId:     elem.MarketFace.FaceId,
 				TabId:      int32(elem.MarketFace.GetTabId()),
 				ItemType:   int32(elem.MarketFace.GetItemType()),
 				SubType:    int32(elem.MarketFace.GetSubType()),
 				MediaType:  int32(elem.MarketFace.GetMediaType()),
-				EncryptKey: elem.MarketFace.GetKey(),
+				EncryptKey: elem.MarketFace.Key,
 				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
 			}
 			if face.Name == "[骰子]" || face.Name == "[随机骰子]" {
@@ -588,7 +588,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, animatedStickerMsg)
 				sticker := &AnimatedSticker{
 					ID:   int32(animatedStickerMsg.GetQsid()),
-					Name: strings.TrimPrefix(string(animatedStickerMsg.GetText()), "/"),
+					Name: strings.TrimPrefix(string(animatedStickerMsg.Text), "/"),
 				}
 				return []IMessageElement{sticker} // sticker 永远为单独消息
 			}

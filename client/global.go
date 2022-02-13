@@ -335,8 +335,8 @@ func unpackOIDBPackage(buff []byte, payload proto.Message) error {
 	if err := proto.Unmarshal(buff, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if pkg.GetResult() != 0 {
-		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.GetResult(), pkg.GetErrorMsg())
+	if pkg.Result != 0 {
+		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.Result, pkg.ErrorMsg)
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, payload); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")

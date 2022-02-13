@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package channel;
 
-option go_package = "pb/channel;channel";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/channel";
 
 message AppChannelMsg {
   optional string summary = 1;

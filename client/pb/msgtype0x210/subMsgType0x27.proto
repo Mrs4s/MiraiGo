@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-option go_package = "./;msgtype0x210";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/msgtype0x210";
 
 message AddGroup {
   optional uint32 groupid = 1;

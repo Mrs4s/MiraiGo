@@ -308,7 +308,7 @@ func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 	if err = proto.Unmarshal(rsp, &rspExt); err != nil {
 		return "", errors.Wrap(err, "error unmarshal highway resp")
 	}
-	return string(rspExt.GetDownloadUrl()), nil
+	return string(rspExt.DownloadUrl), nil
 }
 
 // OidbSvc.0xe07_0
@@ -342,11 +342,11 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	if rsp.GetResult() != 0 {
 		return &imageUploadResponse{
 			ResultCode: int32(rsp.GetResult()),
-			Message:    utils.B2S(rsp.GetFailMsg()),
+			Message:    utils.B2S(rsp.FailMsg),
 		}, nil
 	}
 	if rsp.GetFileExit() {
-		if rsp.GetImgInfo() != nil {
+		if rsp.ImgInfo != nil {
 			return &imageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), Width: int32(rsp.ImgInfo.GetFileWidth()), Height: int32(rsp.ImgInfo.GetFileHeight())}, nil
 		}
 		return &imageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid())}, nil
@@ -354,8 +354,8 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	return &imageUploadResponse{
 		FileId:     int64(rsp.GetFileid()),
 		UploadKey:  rsp.UpUkey,
-		UploadIp:   rsp.GetUpIp(),
-		UploadPort: rsp.GetUpPort(),
+		UploadIp:   rsp.UpIp,
+		UploadPort: rsp.UpPort,
 	}, nil
 }
 

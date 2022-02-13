@@ -184,7 +184,7 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 				if info.GetField() == 1 {
 					if g := c.FindGroup(int64(m.ModGroupProfile.GetGroupCode())); g != nil {
 						old := g.Name
-						g.Name = string(info.GetValue())
+						g.Name = string(info.Value)
 						c.dispatchGroupNameUpdatedEvent(&GroupNameUpdatedEvent{
 							Group:       g,
 							OldName:     old,
@@ -238,11 +238,11 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 	}
 	groupJoinLock.Lock()
 	defer groupJoinLock.Unlock()
-	if s44.GroupSyncMsg.GetGrpCode() == 0 { // member sync
+	if s44.GroupSyncMsg.GrpCode == 0 { // member sync
 		return errors.New("invalid group code")
 	}
 	c.Debug("syncing members.")
-	if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
+	if group := c.FindGroup(s44.GroupSyncMsg.GrpCode); group != nil {
 		group.lock.Lock()
 		defer group.lock.Unlock()
 

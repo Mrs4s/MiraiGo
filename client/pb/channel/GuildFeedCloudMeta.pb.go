@@ -8,13 +8,6 @@ type ContentMetaData struct {
 	ContentID *int64                `protobuf:"varint,2,opt"`
 }
 
-func (x *ContentMetaData) GetCount() *RichTextContentCount {
-	if x != nil {
-		return x.Count
-	}
-	return nil
-}
-
 func (x *ContentMetaData) GetContentID() int64 {
 	if x != nil && x.ContentID != nil {
 		return *x.ContentID
@@ -25,13 +18,6 @@ func (x *ContentMetaData) GetContentID() int64 {
 type FeedMetaData struct {
 	Content          *ContentMetaData `protobuf:"bytes,1,opt"`
 	LastModifiedTime *uint64          `protobuf:"varint,2,opt"`
-}
-
-func (x *FeedMetaData) GetContent() *ContentMetaData {
-	if x != nil {
-		return x.Content
-	}
-	return nil
 }
 
 func (x *FeedMetaData) GetLastModifiedTime() uint64 {
@@ -198,23 +184,9 @@ func (x *StAnimation) GetAnimationUrl() string {
 	return ""
 }
 
-func (x *StAnimation) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
 type StBusiReportInfo struct {
 	RecomReport *StRecomReportInfo `protobuf:"bytes,1,opt"`
 	TraceID     *string            `protobuf:"bytes,2,opt"`
-}
-
-func (x *StBusiReportInfo) GetRecomReport() *StRecomReportInfo {
-	if x != nil {
-		return x.RecomReport
-	}
-	return nil
 }
 
 func (x *StBusiReportInfo) GetTraceID() string {
@@ -254,25 +226,11 @@ func (x *StChannelShareInfo) GetFeedPublishAt() uint64 {
 	return 0
 }
 
-func (x *StChannelShareInfo) GetChannelSign() *StChannelSign {
-	if x != nil {
-		return x.ChannelSign
-	}
-	return nil
-}
-
 func (x *StChannelShareInfo) GetUpdateDurationMs() uint64 {
 	if x != nil && x.UpdateDurationMs != nil {
 		return *x.UpdateDurationMs
 	}
 	return 0
-}
-
-func (x *StChannelShareInfo) GetSign() *StChannelShareSign {
-	if x != nil {
-		return x.Sign
-	}
-	return nil
 }
 
 type StChannelShareSign struct {
@@ -349,13 +307,6 @@ func (x *StClientInfo) GetFeedclientkey() string {
 	return ""
 }
 
-func (x *StClientInfo) GetClientMap() []*CommonEntry {
-	if x != nil {
-		return x.ClientMap
-	}
-	return nil
-}
-
 type StComment struct {
 	Id           *string        `protobuf:"bytes,1,opt"`
 	PostUser     *StUser        `protobuf:"bytes,2,opt"`
@@ -382,13 +333,6 @@ func (x *StComment) GetId() string {
 	return ""
 }
 
-func (x *StComment) GetPostUser() *StUser {
-	if x != nil {
-		return x.PostUser
-	}
-	return nil
-}
-
 func (x *StComment) GetCreateTime() uint64 {
 	if x != nil && x.CreateTime != nil {
 		return *x.CreateTime
@@ -410,39 +354,11 @@ func (x *StComment) GetReplyCount() uint32 {
 	return 0
 }
 
-func (x *StComment) GetVecReply() []*StReply {
-	if x != nil {
-		return x.VecReply
-	}
-	return nil
-}
-
-func (x *StComment) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
-func (x *StComment) GetLikeInfo() *StLike {
-	if x != nil {
-		return x.LikeInfo
-	}
-	return nil
-}
-
 func (x *StComment) GetTypeFlag() uint32 {
 	if x != nil && x.TypeFlag != nil {
 		return *x.TypeFlag
 	}
 	return 0
-}
-
-func (x *StComment) GetAtUinList() []string {
-	if x != nil {
-		return x.AtUinList
-	}
-	return nil
 }
 
 func (x *StComment) GetTypeFlag2() uint32 {
@@ -459,13 +375,6 @@ func (x *StComment) GetCreateTimeNs() uint64 {
 	return 0
 }
 
-func (x *StComment) GetStoreExtInfo() []*CommonEntry {
-	if x != nil {
-		return x.StoreExtInfo
-	}
-	return nil
-}
-
 func (x *StComment) GetThirdId() string {
 	if x != nil && x.ThirdId != nil {
 		return *x.ThirdId
@@ -480,22 +389,8 @@ func (x *StComment) GetSourceType() uint32 {
 	return 0
 }
 
-func (x *StComment) GetRichContents() *StRichText {
-	if x != nil {
-		return x.RichContents
-	}
-	return nil
-}
-
 type StDebugInfo struct {
 	DebugMap []*CommonEntry `protobuf:"bytes,1,rep"`
-}
-
-func (x *StDebugInfo) GetDebugMap() []*CommonEntry {
-	if x != nil {
-		return x.DebugMap
-	}
-	return nil
 }
 
 type StDittoFeed struct {
@@ -519,29 +414,8 @@ func (x *StDittoFeed) GetDittoPatternId() uint32 {
 	return 0
 }
 
-func (x *StDittoFeed) GetDittoData() []byte {
-	if x != nil {
-		return x.DittoData
-	}
-	return nil
-}
-
-func (x *StDittoFeed) GetDittoDataNew() []byte {
-	if x != nil {
-		return x.DittoDataNew
-	}
-	return nil
-}
-
 type StExifInfo struct {
 	Kvs []*CommonEntry `protobuf:"bytes,1,rep"`
-}
-
-func (x *StExifInfo) GetKvs() []*CommonEntry {
-	if x != nil {
-		return x.Kvs
-	}
-	return nil
 }
 
 type StExternalMedalWallInfo struct {
@@ -556,13 +430,6 @@ func (x *StExternalMedalWallInfo) GetNeedRedPoint() bool {
 		return *x.NeedRedPoint
 	}
 	return false
-}
-
-func (x *StExternalMedalWallInfo) GetMedalInfos() []*StMedalInfo {
-	if x != nil {
-		return x.MedalInfos
-	}
-	return nil
 }
 
 func (x *StExternalMedalWallInfo) GetMedalWallJumpUrl() string {
@@ -614,53 +481,11 @@ func (x *StFeed) GetId() string {
 	return ""
 }
 
-func (x *StFeed) GetTitle() *StRichText {
-	if x != nil {
-		return x.Title
-	}
-	return nil
-}
-
-func (x *StFeed) GetSubtitle() *StRichText {
-	if x != nil {
-		return x.Subtitle
-	}
-	return nil
-}
-
-func (x *StFeed) GetPoster() *StUser {
-	if x != nil {
-		return x.Poster
-	}
-	return nil
-}
-
-func (x *StFeed) GetVideos() []*StVideo {
-	if x != nil {
-		return x.Videos
-	}
-	return nil
-}
-
-func (x *StFeed) GetContents() *StRichText {
-	if x != nil {
-		return x.Contents
-	}
-	return nil
-}
-
 func (x *StFeed) GetCreateTime() uint64 {
 	if x != nil && x.CreateTime != nil {
 		return *x.CreateTime
 	}
 	return 0
-}
-
-func (x *StFeed) GetEmotionReaction() *StEmotionReactionInfo {
-	if x != nil {
-		return x.EmotionReaction
-	}
-	return nil
 }
 
 func (x *StFeed) GetCommentCount() uint32 {
@@ -670,76 +495,6 @@ func (x *StFeed) GetCommentCount() uint32 {
 	return 0
 }
 
-func (x *StFeed) GetVecComment() []*StComment {
-	if x != nil {
-		return x.VecComment
-	}
-	return nil
-}
-
-func (x *StFeed) GetShare() *StShare {
-	if x != nil {
-		return x.Share
-	}
-	return nil
-}
-
-func (x *StFeed) GetVisitorInfo() *StVisitor {
-	if x != nil {
-		return x.VisitorInfo
-	}
-	return nil
-}
-
-func (x *StFeed) GetImages() []*StImage {
-	if x != nil {
-		return x.Images
-	}
-	return nil
-}
-
-func (x *StFeed) GetPoiInfo() *StPoiInfoV2 {
-	if x != nil {
-		return x.PoiInfo
-	}
-	return nil
-}
-
-func (x *StFeed) GetTagInfos() []*StTagInfo {
-	if x != nil {
-		return x.TagInfos
-	}
-	return nil
-}
-
-func (x *StFeed) GetBusiReport() []byte {
-	if x != nil {
-		return x.BusiReport
-	}
-	return nil
-}
-
-func (x *StFeed) GetOpMask() []uint32 {
-	if x != nil {
-		return x.OpMask
-	}
-	return nil
-}
-
-func (x *StFeed) GetOpinfo() *StOpinfo {
-	if x != nil {
-		return x.Opinfo
-	}
-	return nil
-}
-
-func (x *StFeed) GetExtInfo() []*CommonEntry {
-	if x != nil {
-		return x.ExtInfo
-	}
-	return nil
-}
-
 func (x *StFeed) GetPatternInfo() string {
 	if x != nil && x.PatternInfo != nil {
 		return *x.PatternInfo
@@ -747,39 +502,11 @@ func (x *StFeed) GetPatternInfo() string {
 	return ""
 }
 
-func (x *StFeed) GetChannelInfo() *StChannelInfo {
-	if x != nil {
-		return x.ChannelInfo
-	}
-	return nil
-}
-
 func (x *StFeed) GetCreateTimeNs() uint64 {
 	if x != nil && x.CreateTimeNs != nil {
 		return *x.CreateTimeNs
 	}
 	return 0
-}
-
-func (x *StFeed) GetSummary() *StFeedSummary {
-	if x != nil {
-		return x.Summary
-	}
-	return nil
-}
-
-func (x *StFeed) GetRecomInfo() *StRecomInfo {
-	if x != nil {
-		return x.RecomInfo
-	}
-	return nil
-}
-
-func (x *StFeed) GetMeta() *FeedMetaData {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
 }
 
 type StFeedAbstract struct {
@@ -810,20 +537,6 @@ func (x *StFeedAbstract) GetTitle() string {
 	return ""
 }
 
-func (x *StFeedAbstract) GetPoster() *StUser {
-	if x != nil {
-		return x.Poster
-	}
-	return nil
-}
-
-func (x *StFeedAbstract) GetPic() *StImage {
-	if x != nil {
-		return x.Pic
-	}
-	return nil
-}
-
 func (x *StFeedAbstract) GetType() uint32 {
 	if x != nil && x.Type != nil {
 		return *x.Type
@@ -838,13 +551,6 @@ func (x *StFeedAbstract) GetCreateTime() uint64 {
 	return 0
 }
 
-func (x *StFeedAbstract) GetVideo() *StVideo {
-	if x != nil {
-		return x.Video
-	}
-	return nil
-}
-
 func (x *StFeedAbstract) GetFuelNum() uint32 {
 	if x != nil && x.FuelNum != nil {
 		return *x.FuelNum
@@ -857,20 +563,6 @@ func (x *StFeedAbstract) GetContent() string {
 		return *x.Content
 	}
 	return ""
-}
-
-func (x *StFeedAbstract) GetImages() []*StImage {
-	if x != nil {
-		return x.Images
-	}
-	return nil
-}
-
-func (x *StFeedAbstract) GetCountInfo() *StFeedCount {
-	if x != nil {
-		return x.CountInfo
-	}
-	return nil
 }
 
 type StFeedCount struct {
@@ -931,13 +623,6 @@ func (x *StFollowRecomInfo) GetFollowText() string {
 		return *x.FollowText
 	}
 	return ""
-}
-
-func (x *StFollowRecomInfo) GetFollowUsers() []*StFollowUser {
-	if x != nil {
-		return x.FollowUsers
-	}
-	return nil
 }
 
 func (x *StFollowRecomInfo) GetCommFriendText() string {
@@ -1019,13 +704,6 @@ func (x *StGuidePublishBubble) GetId() string {
 		return *x.Id
 	}
 	return ""
-}
-
-func (x *StGuidePublishBubble) GetBackgroundImage() *StImage {
-	if x != nil {
-		return x.BackgroundImage
-	}
-	return nil
 }
 
 func (x *StGuidePublishBubble) GetJumpUrl() string {
@@ -1112,25 +790,11 @@ func (x *StImage) GetPicUrl() string {
 	return ""
 }
 
-func (x *StImage) GetVecImageUrl() []*StImageUrl {
-	if x != nil {
-		return x.VecImageUrl
-	}
-	return nil
-}
-
 func (x *StImage) GetPicId() string {
 	if x != nil && x.PicId != nil {
 		return *x.PicId
 	}
 	return ""
-}
-
-func (x *StImage) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
 }
 
 func (x *StImage) GetImageMD5() string {
@@ -1197,13 +861,6 @@ func (x *StImageUrl) GetHeight() uint32 {
 	return 0
 }
 
-func (x *StImageUrl) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
 type StLightInteractInfo struct {
 	User     *StUser         `protobuf:"bytes,1,opt"`
 	Relation *StRelationInfo `protobuf:"bytes,2,opt"`
@@ -1211,32 +868,11 @@ type StLightInteractInfo struct {
 	BusiData []byte          `protobuf:"bytes,4,opt"`
 }
 
-func (x *StLightInteractInfo) GetUser() *StUser {
-	if x != nil {
-		return x.User
-	}
-	return nil
-}
-
-func (x *StLightInteractInfo) GetRelation() *StRelationInfo {
-	if x != nil {
-		return x.Relation
-	}
-	return nil
-}
-
 func (x *StLightInteractInfo) GetCount() uint32 {
 	if x != nil && x.Count != nil {
 		return *x.Count
 	}
 	return 0
-}
-
-func (x *StLightInteractInfo) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
 }
 
 type StLike struct {
@@ -1272,27 +908,6 @@ func (x *StLike) GetStatus() uint32 {
 	return 0
 }
 
-func (x *StLike) GetVecUser() []*StUser {
-	if x != nil {
-		return x.VecUser
-	}
-	return nil
-}
-
-func (x *StLike) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
-func (x *StLike) GetPostUser() *StUser {
-	if x != nil {
-		return x.PostUser
-	}
-	return nil
-}
-
 func (x *StLike) GetHasLikedCount() uint32 {
 	if x != nil && x.HasLikedCount != nil {
 		return *x.HasLikedCount
@@ -1323,13 +938,6 @@ type StLiteBanner struct {
 	ExtInfo    []*CommonEntry `protobuf:"bytes,6,rep"`
 }
 
-func (x *StLiteBanner) GetIcon() *StImage {
-	if x != nil {
-		return x.Icon
-	}
-	return nil
-}
-
 func (x *StLiteBanner) GetTitle() string {
 	if x != nil && x.Title != nil {
 		return *x.Title
@@ -1358,13 +966,6 @@ func (x *StLiteBanner) GetJsonStyle() string {
 	return ""
 }
 
-func (x *StLiteBanner) GetExtInfo() []*CommonEntry {
-	if x != nil {
-		return x.ExtInfo
-	}
-	return nil
-}
-
 type StMaterialDataNew struct {
 	MaterialType *string             `protobuf:"bytes,1,opt"`
 	MaterialList []*StSingleMaterial `protobuf:"bytes,2,rep"`
@@ -1375,13 +976,6 @@ func (x *StMaterialDataNew) GetMaterialType() string {
 		return *x.MaterialType
 	}
 	return ""
-}
-
-func (x *StMaterialDataNew) GetMaterialList() []*StSingleMaterial {
-	if x != nil {
-		return x.MaterialList
-	}
-	return nil
 }
 
 type StMedalInfo struct {
@@ -1481,27 +1075,6 @@ type StNotice struct {
 	PattonInfo  *StNoticePattonInfo `protobuf:"bytes,3,opt"`
 }
 
-func (x *StNotice) GetPsvFeed() *StFeed {
-	if x != nil {
-		return x.PsvFeed
-	}
-	return nil
-}
-
-func (x *StNotice) GetOrigineFeed() *StFeed {
-	if x != nil {
-		return x.OrigineFeed
-	}
-	return nil
-}
-
-func (x *StNotice) GetPattonInfo() *StNoticePattonInfo {
-	if x != nil {
-		return x.PattonInfo
-	}
-	return nil
-}
-
 type StNoticePattonInfo struct {
 	PattonType *uint32         `protobuf:"varint,1,opt"`
 	PlainTxt   *StPlainTxtInfo `protobuf:"bytes,2,opt"`
@@ -1514,60 +1087,18 @@ func (x *StNoticePattonInfo) GetPattonType() uint32 {
 	return 0
 }
 
-func (x *StNoticePattonInfo) GetPlainTxt() *StPlainTxtInfo {
-	if x != nil {
-		return x.PlainTxt
-	}
-	return nil
-}
-
 type StNoticeTxtInfo struct {
 	Content            *StRichText `protobuf:"bytes,1,opt"`
 	ContentOfReference *StRichText `protobuf:"bytes,2,opt"`
-}
-
-func (x *StNoticeTxtInfo) GetContent() *StRichText {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-func (x *StNoticeTxtInfo) GetContentOfReference() *StRichText {
-	if x != nil {
-		return x.ContentOfReference
-	}
-	return nil
 }
 
 type StOpinfo struct {
 	CreateTime []uint64 `protobuf:"varint,1,rep"`
 }
 
-func (x *StOpinfo) GetCreateTime() []uint64 {
-	if x != nil {
-		return x.CreateTime
-	}
-	return nil
-}
-
 type StPlainTxtInfo struct {
 	TxtInfo   *StNoticeTxtInfo `protobuf:"bytes,1,opt"`
 	Operation *NoticeOperation `protobuf:"bytes,2,opt"`
-}
-
-func (x *StPlainTxtInfo) GetTxtInfo() *StNoticeTxtInfo {
-	if x != nil {
-		return x.TxtInfo
-	}
-	return nil
-}
-
-func (x *StPlainTxtInfo) GetOperation() *NoticeOperation {
-	if x != nil {
-		return x.Operation
-	}
-	return nil
 }
 
 type StPoiInfoV2 struct {
@@ -1633,13 +1164,6 @@ func (x *StPoiInfoV2) GetDistrictCode() int32 {
 		return *x.DistrictCode
 	}
 	return 0
-}
-
-func (x *StPoiInfoV2) GetGps() *StGPSV2 {
-	if x != nil {
-		return x.Gps
-	}
-	return nil
 }
 
 func (x *StPoiInfoV2) GetDistance() int32 {
@@ -1747,25 +1271,11 @@ func (x *StPrePullCacheFeed) GetId() string {
 	return ""
 }
 
-func (x *StPrePullCacheFeed) GetPoster() *StUser {
-	if x != nil {
-		return x.Poster
-	}
-	return nil
-}
-
 func (x *StPrePullCacheFeed) GetCreateTime() uint64 {
 	if x != nil && x.CreateTime != nil {
 		return *x.CreateTime
 	}
 	return 0
-}
-
-func (x *StPrePullCacheFeed) GetBusiTranparent() []*BytesEntry {
-	if x != nil {
-		return x.BusiTranparent
-	}
-	return nil
 }
 
 type StProxyInfo struct {
@@ -1796,13 +1306,6 @@ func (x *StProxyInfo) GetAppProtocol() string {
 	return ""
 }
 
-func (x *StProxyInfo) GetReqBody() []byte {
-	if x != nil {
-		return x.ReqBody
-	}
-	return nil
-}
-
 type StRankingItem struct {
 	User        *StUser         `protobuf:"bytes,1,opt"`
 	Relation    *StRelationInfo `protobuf:"bytes,2,opt"`
@@ -1811,20 +1314,6 @@ type StRankingItem struct {
 	BusiData    []byte          `protobuf:"bytes,5,opt"`
 	RankNo      *int32          `protobuf:"varint,6,opt"`
 	InTopicList *int32          `protobuf:"varint,7,opt"`
-}
-
-func (x *StRankingItem) GetUser() *StUser {
-	if x != nil {
-		return x.User
-	}
-	return nil
-}
-
-func (x *StRankingItem) GetRelation() *StRelationInfo {
-	if x != nil {
-		return x.Relation
-	}
-	return nil
 }
 
 func (x *StRankingItem) GetScore() int64 {
@@ -1839,13 +1328,6 @@ func (x *StRankingItem) GetGrade() int32 {
 		return *x.Grade
 	}
 	return 0
-}
-
-func (x *StRankingItem) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
 }
 
 func (x *StRankingItem) GetRankNo() int32 {
@@ -1893,13 +1375,6 @@ func (x *StRecomForward) GetSubtitle() string {
 	return ""
 }
 
-func (x *StRecomForward) GetPoster() *StUser {
-	if x != nil {
-		return x.Poster
-	}
-	return nil
-}
-
 func (x *StRecomForward) GetCreateTime() uint64 {
 	if x != nil && x.CreateTime != nil {
 		return *x.CreateTime
@@ -1912,13 +1387,6 @@ func (x *StRecomForward) GetType() uint32 {
 		return *x.Type
 	}
 	return 0
-}
-
-func (x *StRecomForward) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
 }
 
 type StRecomInfo struct {
@@ -1937,25 +1405,11 @@ func (x *StRecomInfo) GetRecomReason() string {
 	return ""
 }
 
-func (x *StRecomInfo) GetRecomAttachInfo() []byte {
-	if x != nil {
-		return x.RecomAttachInfo
-	}
-	return nil
-}
-
 func (x *StRecomInfo) GetRecomTrace() string {
 	if x != nil && x.RecomTrace != nil {
 		return *x.RecomTrace
 	}
 	return ""
-}
-
-func (x *StRecomInfo) GetClientSealData() []byte {
-	if x != nil {
-		return x.ClientSealData
-	}
-	return nil
 }
 
 func (x *StRecomInfo) GetIconUrl() string {
@@ -1974,13 +1428,6 @@ func (x *StRecomInfo) GetRecomReasonType() int32 {
 
 type StRecomReportInfo struct {
 	RecomInfos []*StSingleRecomReportInfo `protobuf:"bytes,1,rep"`
-}
-
-func (x *StRecomReportInfo) GetRecomInfos() []*StSingleRecomReportInfo {
-	if x != nil {
-		return x.RecomInfos
-	}
-	return nil
 }
 
 type StRelationInfo struct {
@@ -2008,13 +1455,6 @@ func (x *StRelationInfo) GetRelation() uint32 {
 		return *x.Relation
 	}
 	return 0
-}
-
-func (x *StRelationInfo) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
 }
 
 func (x *StRelationInfo) GetRelationState() uint32 {
@@ -2093,13 +1533,6 @@ func (x *StReply) GetId() string {
 	return ""
 }
 
-func (x *StReply) GetPostUser() *StUser {
-	if x != nil {
-		return x.PostUser
-	}
-	return nil
-}
-
 func (x *StReply) GetCreateTime() uint64 {
 	if x != nil && x.CreateTime != nil {
 		return *x.CreateTime
@@ -2112,27 +1545,6 @@ func (x *StReply) GetContent() string {
 		return *x.Content
 	}
 	return ""
-}
-
-func (x *StReply) GetTargetUser() *StUser {
-	if x != nil {
-		return x.TargetUser
-	}
-	return nil
-}
-
-func (x *StReply) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
-func (x *StReply) GetLikeInfo() *StLike {
-	if x != nil {
-		return x.LikeInfo
-	}
-	return nil
 }
 
 func (x *StReply) GetTypeFlag() uint32 {
@@ -2149,13 +1561,6 @@ func (x *StReply) GetModifyflag() uint32 {
 	return 0
 }
 
-func (x *StReply) GetAtUinList() []string {
-	if x != nil {
-		return x.AtUinList
-	}
-	return nil
-}
-
 func (x *StReply) GetTypeFlag2() uint32 {
 	if x != nil && x.TypeFlag2 != nil {
 		return *x.TypeFlag2
@@ -2168,13 +1573,6 @@ func (x *StReply) GetCreateTimeNs() uint64 {
 		return *x.CreateTimeNs
 	}
 	return 0
-}
-
-func (x *StReply) GetStoreExtInfo() []*CommonEntry {
-	if x != nil {
-		return x.StoreExtInfo
-	}
-	return nil
 }
 
 func (x *StReply) GetThirdId() string {
@@ -2198,13 +1596,6 @@ func (x *StReply) GetSourceType() uint32 {
 	return 0
 }
 
-func (x *StReply) GetRichContents() *StRichText {
-	if x != nil {
-		return x.RichContents
-	}
-	return nil
-}
-
 type StReportInfo struct {
 	Id         *string `protobuf:"bytes,1,opt"`
 	BusiReport []byte  `protobuf:"bytes,2,opt"`
@@ -2217,22 +1608,8 @@ func (x *StReportInfo) GetId() string {
 	return ""
 }
 
-func (x *StReportInfo) GetBusiReport() []byte {
-	if x != nil {
-		return x.BusiReport
-	}
-	return nil
-}
-
 type StRichText struct {
 	Contents []*StRichTextContent `protobuf:"bytes,1,rep"`
-}
-
-func (x *StRichText) GetContents() []*StRichTextContent {
-	if x != nil {
-		return x.Contents
-	}
-	return nil
 }
 
 type StRichTextAtContent struct {
@@ -2247,27 +1624,6 @@ func (x *StRichTextAtContent) GetType() uint32 {
 		return *x.Type
 	}
 	return 0
-}
-
-func (x *StRichTextAtContent) GetGuildInfo() *GuildChannelBaseGuildInfo {
-	if x != nil {
-		return x.GuildInfo
-	}
-	return nil
-}
-
-func (x *StRichTextAtContent) GetRoleGroupId() *GuildChannelBaseRoleGroupInfo {
-	if x != nil {
-		return x.RoleGroupId
-	}
-	return nil
-}
-
-func (x *StRichTextAtContent) GetUser() *StUser {
-	if x != nil {
-		return x.User
-	}
-	return nil
 }
 
 type GuildChannelBaseGuildInfo struct {
@@ -2328,13 +1684,6 @@ type StRichTextChannelContent struct {
 	ChannelInfo *StChannelInfo `protobuf:"bytes,1,opt"`
 }
 
-func (x *StRichTextChannelContent) GetChannelInfo() *StChannelInfo {
-	if x != nil {
-		return x.ChannelInfo
-	}
-	return nil
-}
-
 type StRichTextContent struct {
 	Type           *uint32                   `protobuf:"varint,1,opt"`
 	PatternId      *string                   `protobuf:"bytes,2,opt"`
@@ -2357,41 +1706,6 @@ func (x *StRichTextContent) GetPatternId() string {
 		return *x.PatternId
 	}
 	return ""
-}
-
-func (x *StRichTextContent) GetTextContent() *StRichTextTextContent {
-	if x != nil {
-		return x.TextContent
-	}
-	return nil
-}
-
-func (x *StRichTextContent) GetAtContent() *StRichTextAtContent {
-	if x != nil {
-		return x.AtContent
-	}
-	return nil
-}
-
-func (x *StRichTextContent) GetUrlContent() *StRichTextURLContent {
-	if x != nil {
-		return x.UrlContent
-	}
-	return nil
-}
-
-func (x *StRichTextContent) GetEmojiContent() *StRichTextEmojiContent {
-	if x != nil {
-		return x.EmojiContent
-	}
-	return nil
-}
-
-func (x *StRichTextContent) GetChannelContent() *StRichTextChannelContent {
-	if x != nil {
-		return x.ChannelContent
-	}
-	return nil
 }
 
 type StRichTextEmojiContent struct {
@@ -2555,27 +1869,6 @@ func (x *StShare) GetUrl() string {
 	return ""
 }
 
-func (x *StShare) GetAuthor() *StUser {
-	if x != nil {
-		return x.Author
-	}
-	return nil
-}
-
-func (x *StShare) GetPoster() *StUser {
-	if x != nil {
-		return x.Poster
-	}
-	return nil
-}
-
-func (x *StShare) GetVideos() []*StVideo {
-	if x != nil {
-		return x.Videos
-	}
-	return nil
-}
-
 func (x *StShare) GetShorturl() string {
 	if x != nil && x.Shorturl != nil {
 		return *x.Shorturl
@@ -2588,20 +1881,6 @@ func (x *StShare) GetShareCardInfo() string {
 		return *x.ShareCardInfo
 	}
 	return ""
-}
-
-func (x *StShare) GetShareQzoneInfo() *StShareQzoneInfo {
-	if x != nil {
-		return x.ShareQzoneInfo
-	}
-	return nil
-}
-
-func (x *StShare) GetImages() []*StImage {
-	if x != nil {
-		return x.Images
-	}
-	return nil
 }
 
 func (x *StShare) GetPublishTotalUser() uint32 {
@@ -2618,22 +1897,8 @@ func (x *StShare) GetSharedCount() uint32 {
 	return 0
 }
 
-func (x *StShare) GetChannelShareInfo() *StChannelShareInfo {
-	if x != nil {
-		return x.ChannelShareInfo
-	}
-	return nil
-}
-
 type StShareQzoneInfo struct {
 	Entrys []*CommonEntry `protobuf:"bytes,1,rep"`
-}
-
-func (x *StShareQzoneInfo) GetEntrys() []*CommonEntry {
-	if x != nil {
-		return x.Entrys
-	}
-	return nil
 }
 
 type StSingleMaterial struct {
@@ -2657,13 +1922,6 @@ func (x *StSingleRecomReportInfo) GetReportID() string {
 		return *x.ReportID
 	}
 	return ""
-}
-
-func (x *StSingleRecomReportInfo) GetReportData() []byte {
-	if x != nil {
-		return x.ReportData
-	}
-	return nil
 }
 
 type StTagInfo struct {
@@ -2713,20 +1971,6 @@ func (x *StTagInfo) GetTagDec() string {
 	return ""
 }
 
-func (x *StTagInfo) GetUserList() []*StUser {
-	if x != nil {
-		return x.UserList
-	}
-	return nil
-}
-
-func (x *StTagInfo) GetFeedList() []*StFeedAbstract {
-	if x != nil {
-		return x.FeedList
-	}
-	return nil
-}
-
 func (x *StTagInfo) GetTagTotalUser() uint32 {
 	if x != nil && x.TagTotalUser != nil {
 		return *x.TagTotalUser
@@ -2762,13 +2006,6 @@ func (x *StTagInfo) GetFollowState() uint32 {
 	return 0
 }
 
-func (x *StTagInfo) GetShareInfo() *StShare {
-	if x != nil {
-		return x.ShareInfo
-	}
-	return nil
-}
-
 func (x *StTagInfo) GetIsTop() uint32 {
 	if x != nil && x.IsTop != nil {
 		return *x.IsTop
@@ -2790,25 +2027,11 @@ func (x *StTagInfo) GetUserViewHistory() int64 {
 	return 0
 }
 
-func (x *StTagInfo) GetMedal() *StTagMedalInfo {
-	if x != nil {
-		return x.Medal
-	}
-	return nil
-}
-
 func (x *StTagInfo) GetStatus() uint32 {
 	if x != nil && x.Status != nil {
 		return *x.Status
 	}
 	return 0
-}
-
-func (x *StTagInfo) GetOptInfo() *StTagOperateInfo {
-	if x != nil {
-		return x.OptInfo
-	}
-	return nil
 }
 
 func (x *StTagInfo) GetTagBaseStatus() uint32 {
@@ -3047,13 +2270,6 @@ func (x *StUser) GetNick() string {
 	return ""
 }
 
-func (x *StUser) GetIcon() *StIconInfo {
-	if x != nil {
-		return x.Icon
-	}
-	return nil
-}
-
 func (x *StUser) GetDesc() string {
 	if x != nil && x.Desc != nil {
 		return *x.Desc
@@ -3103,13 +2319,6 @@ func (x *StUser) GetLocation() string {
 	return ""
 }
 
-func (x *StUser) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
 func (x *StUser) GetFrdState() uint32 {
 	if x != nil && x.FrdState != nil {
 		return *x.FrdState
@@ -3129,13 +2338,6 @@ func (x *StUser) GetBlackState() uint32 {
 		return *x.BlackState
 	}
 	return 0
-}
-
-func (x *StUser) GetMedal() *StTagMedalInfo {
-	if x != nil {
-		return x.Medal
-	}
-	return nil
 }
 
 func (x *StUser) GetConstellation() int32 {
@@ -3187,13 +2389,6 @@ func (x *StUser) GetDescType() uint32 {
 	return 0
 }
 
-func (x *StUser) GetChannelUserInfo() *GuildChannelBaseChannelUserInfo {
-	if x != nil {
-		return x.ChannelUserInfo
-	}
-	return nil
-}
-
 func (x *StUser) GetLoginId() string {
 	if x != nil && x.LoginId != nil {
 		return *x.LoginId
@@ -3208,25 +2403,11 @@ type GuildChannelBaseChannelUserInfo struct {
 	RoleGroups []*GuildChannelBaseRoleGroupInfo `protobuf:"bytes,4,rep"`
 }
 
-func (x *GuildChannelBaseChannelUserInfo) GetClientIdentity() *ClientIdentity {
-	if x != nil {
-		return x.ClientIdentity
-	}
-	return nil
-}
-
 func (x *GuildChannelBaseChannelUserInfo) GetMemberType() uint32 {
 	if x != nil && x.MemberType != nil {
 		return *x.MemberType
 	}
 	return 0
-}
-
-func (x *GuildChannelBaseChannelUserInfo) GetRoleGroups() []*GuildChannelBaseRoleGroupInfo {
-	if x != nil {
-		return x.RoleGroups
-	}
-	return nil
 }
 
 type StUserGroupInfo struct {
@@ -3249,38 +2430,10 @@ func (x *StUserGroupInfo) GetName() string {
 	return ""
 }
 
-func (x *StUserGroupInfo) GetUserList() []*StUser {
-	if x != nil {
-		return x.UserList
-	}
-	return nil
-}
-
 type StUserRecomInfo struct {
 	User     *StUser           `protobuf:"bytes,1,opt"`
 	FeedList []*StFeedAbstract `protobuf:"bytes,2,rep"`
 	BusiData []byte            `protobuf:"bytes,3,opt"`
-}
-
-func (x *StUserRecomInfo) GetUser() *StUser {
-	if x != nil {
-		return x.User
-	}
-	return nil
-}
-
-func (x *StUserRecomInfo) GetFeedList() []*StFeedAbstract {
-	if x != nil {
-		return x.FeedList
-	}
-	return nil
-}
-
-func (x *StUserRecomInfo) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
 }
 
 type StVideo struct {
@@ -3370,20 +2523,6 @@ func (x *StVideo) GetVideoRate() uint32 {
 	return 0
 }
 
-func (x *StVideo) GetVecVideoUrl() []*StVideoUrl {
-	if x != nil {
-		return x.VecVideoUrl
-	}
-	return nil
-}
-
-func (x *StVideo) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
 func (x *StVideo) GetApprovalStatus() uint32 {
 	if x != nil && x.ApprovalStatus != nil {
 		return *x.ApprovalStatus
@@ -3431,13 +2570,6 @@ func (x *StVideo) GetOrientation() uint32 {
 		return *x.Orientation
 	}
 	return 0
-}
-
-func (x *StVideo) GetCover() *StImage {
-	if x != nil {
-		return x.Cover
-	}
-	return nil
 }
 
 func (x *StVideo) GetPatternId() string {
@@ -3499,13 +2631,6 @@ func (x *StVideoUrl) GetTransStatus() uint32 {
 	return 0
 }
 
-func (x *StVideoUrl) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
 func (x *StVideoUrl) GetHasWatermark() bool {
 	if x != nil && x.HasWatermark != nil {
 		return *x.HasWatermark
@@ -3527,13 +2652,6 @@ func (x *StVisitor) GetViewCount() uint32 {
 	return 0
 }
 
-func (x *StVisitor) GetBusiData() []byte {
-	if x != nil {
-		return x.BusiData
-	}
-	return nil
-}
-
 func (x *StVisitor) GetRecomCount() uint32 {
 	if x != nil && x.RecomCount != nil {
 		return *x.RecomCount
@@ -3550,13 +2668,6 @@ func (x *StVisitor) GetViewDesc() string {
 
 type StWearingMedal struct {
 	MedalInfos []*StWearingMedalInfo `protobuf:"bytes,1,rep"`
-}
-
-func (x *StWearingMedal) GetMedalInfos() []*StWearingMedalInfo {
-	if x != nil {
-		return x.MedalInfos
-	}
-	return nil
 }
 
 type StWearingMedalInfo struct {
