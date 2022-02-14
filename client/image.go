@@ -126,7 +126,7 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 		Ticket:    rsp.UploadKey,
 		Ext:       EmptyBytes,
 		Encrypt:   false,
-	}, 1); err == nil {
+	}, 4); err == nil {
 		goto ok
 	}
 	return nil, errors.Wrap(err, "upload failed")

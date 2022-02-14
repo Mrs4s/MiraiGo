@@ -117,6 +117,20 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPa
 		if pMsg.Body.RichText == nil || pMsg.Body.RichText.Elems == nil {
 			return
 		}
+
+		// handle fragmented message
+		if pMsg.Content != nil && pMsg.Content.GetPkgNum() > 1 {
+			seq := pMsg.Content.GetDivSeq()
+			builder := c.messageBuilder(seq)
+			builder.append(pMsg)
+			if builder.len() < pMsg.Content.GetPkgNum() {
+				// continue to receive other fragments
+				return
+			}
+			c.msgBuilders.Delete(seq)
+			pMsg = builder.build()
+		}
+
 		if pMsg.Head.GetFromUin() == c.Uin {
 			c.dispatchPrivateMessageSelf(c.parsePrivateMessage(pMsg))
 			return
