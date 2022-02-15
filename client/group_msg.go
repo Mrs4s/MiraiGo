@@ -311,17 +311,11 @@ func decodeGroupMessagePacket(c *QQClient, _ *network.IncomingPacketInfo, payloa
 		})
 	}
 	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
-		var builder *groupMessageBuilder
-		i, ok := c.groupMsgBuilders.Load(pkt.Message.Content.GetDivSeq())
-		if !ok {
-			builder = &groupMessageBuilder{}
-			c.groupMsgBuilders.Store(pkt.Message.Content.GetDivSeq(), builder)
-		} else {
-			builder = i.(*groupMessageBuilder)
-		}
-		builder.MessageSlices = append(builder.MessageSlices, pkt.Message)
-		if int32(len(builder.MessageSlices)) >= pkt.Message.Content.GetPkgNum() {
-			c.groupMsgBuilders.Delete(pkt.Message.Content.GetDivSeq())
+		seq := pkt.Message.Content.GetDivSeq()
+		builder := c.messageBuilder(pkt.Message.Content.GetDivSeq())
+		builder.append(pkt.Message)
+		if builder.len() >= pkt.Message.Content.GetPkgNum() {
+			c.msgBuilders.Delete(seq)
 			if pkt.Message.Head.GetFromUin() == c.Uin {
 				c.dispatchGroupMessageSelf(c.parseGroupMessage(builder.build()))
 			} else {
@@ -371,7 +365,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 			if m.Content.GetPkgIndex() == 0 {
 				c.Debug("build fragmented message from history")
 				i := m.Head.GetMsgSeq() - m.Content.GetPkgNum()
-				builder := &groupMessageBuilder{}
+				builder := &messageBuilder{}
 				for {
 					end := int32(math.Min(float64(i+19), float64(m.Head.GetMsgSeq()+m.Content.GetPkgNum())))
 					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GetGroupCode(), int64(i), int64(end))
@@ -381,7 +375,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 					}
 					for _, fm := range data.([]*message.GroupMessage) {
 						if fm.OriginalObject.Content != nil && fm.OriginalObject.Content.GetDivSeq() == m.Content.GetDivSeq() {
-							builder.MessageSlices = append(builder.MessageSlices, fm.OriginalObject)
+							builder.append(fm.OriginalObject)
 						}
 					}
 					if end >= m.Head.GetMsgSeq()+m.Content.GetPkgNum() {

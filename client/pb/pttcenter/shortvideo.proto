@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "./;pttcenter";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/pttcenter";
 
 message ShortVideoReqBody {
   int32 cmd = 1;

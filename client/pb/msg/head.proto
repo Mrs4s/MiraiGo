@@ -1,5 +1,5 @@
 syntax = "proto2";
-option go_package = "./;msg";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/msg";
 
 message C2CHead {
   optional uint64 toUin = 1;

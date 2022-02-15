@@ -10,32 +10,11 @@ type ChannelUserInfo struct {
 	RoleGroups     []*BaseRoleGroupInfo   `protobuf:"bytes,4,rep"`
 }
 
-func (x *ChannelUserInfo) GetClientIdentity() *ClientIdentity {
-	if x != nil {
-		return x.ClientIdentity
-	}
-	return nil
-}
-
 func (x *ChannelUserInfo) GetMemberType() uint32 {
 	if x != nil && x.MemberType != nil {
 		return *x.MemberType
 	}
 	return 0
-}
-
-func (x *ChannelUserInfo) GetPermission() *ChannelUserPermission {
-	if x != nil {
-		return x.Permission
-	}
-	return nil
-}
-
-func (x *ChannelUserInfo) GetRoleGroups() []*BaseRoleGroupInfo {
-	if x != nil {
-		return x.RoleGroups
-	}
-	return nil
 }
 
 type ChannelUserPermission struct {
@@ -136,13 +115,6 @@ type StChannelInfo struct {
 	IconUrl *string        `protobuf:"bytes,3,opt"`
 }
 
-func (x *StChannelInfo) GetSign() *StChannelSign {
-	if x != nil {
-		return x.Sign
-	}
-	return nil
-}
-
 func (x *StChannelInfo) GetName() string {
 	if x != nil && x.Name != nil {
 		return *x.Name
@@ -188,24 +160,10 @@ func (x *StEmotionReactionInfo) GetId() string {
 	return ""
 }
 
-func (x *StEmotionReactionInfo) GetEmojiReactionList() []*EmojiReaction {
-	if x != nil {
-		return x.EmojiReactionList
-	}
-	return nil
-}
-
 type StCommonExt struct {
 	MapInfo      []*CommonEntry `protobuf:"bytes,1,rep"`
 	AttachInfo   *string        `protobuf:"bytes,2,opt"`
 	MapBytesInfo []*BytesEntry  `protobuf:"bytes,3,rep"`
-}
-
-func (x *StCommonExt) GetMapInfo() []*CommonEntry {
-	if x != nil {
-		return x.MapInfo
-	}
-	return nil
 }
 
 func (x *StCommonExt) GetAttachInfo() string {
@@ -213,13 +171,6 @@ func (x *StCommonExt) GetAttachInfo() string {
 		return *x.AttachInfo
 	}
 	return ""
-}
-
-func (x *StCommonExt) GetMapBytesInfo() []*BytesEntry {
-	if x != nil {
-		return x.MapBytesInfo
-	}
-	return nil
 }
 
 type BytesEntry struct {
@@ -232,13 +183,6 @@ func (x *BytesEntry) GetKey() string {
 		return *x.Key
 	}
 	return ""
-}
-
-func (x *BytesEntry) GetValue() []byte {
-	if x != nil {
-		return x.Value
-	}
-	return nil
 }
 
 type CommonEntry struct {

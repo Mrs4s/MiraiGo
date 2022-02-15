@@ -2,10 +2,9 @@ package binary
 
 import (
 	"bytes"
+	"compress/gzip"
+	"compress/zlib"
 	"sync"
-
-	"github.com/klauspost/compress/gzip"
-	"github.com/klauspost/compress/zlib"
 )
 
 var bufferPool = sync.Pool{

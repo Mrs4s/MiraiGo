@@ -11,13 +11,6 @@ type DF62ReqBody struct {
 	Msg *ChannelMsgContent `protobuf:"bytes,1,opt"`
 }
 
-func (x *DF62ReqBody) GetMsg() *ChannelMsgContent {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
-}
-
 type DF62RspBody struct {
 	Result        *uint32               `protobuf:"varint,1,opt"`
 	Errmsg        []byte                `protobuf:"bytes,2,opt"`
@@ -36,13 +29,6 @@ func (x *DF62RspBody) GetResult() uint32 {
 	return 0
 }
 
-func (x *DF62RspBody) GetErrmsg() []byte {
-	if x != nil {
-		return x.Errmsg
-	}
-	return nil
-}
-
 func (x *DF62RspBody) GetSendTime() uint32 {
 	if x != nil && x.SendTime != nil {
 		return *x.SendTime
@@ -50,39 +36,11 @@ func (x *DF62RspBody) GetSendTime() uint32 {
 	return 0
 }
 
-func (x *DF62RspBody) GetHead() *ChannelMsgHead {
-	if x != nil {
-		return x.Head
-	}
-	return nil
-}
-
 func (x *DF62RspBody) GetErrType() uint32 {
 	if x != nil && x.ErrType != nil {
 		return *x.ErrType
 	}
 	return 0
-}
-
-func (x *DF62RspBody) GetTransSvrInfo() *TransSvrInfo {
-	if x != nil {
-		return x.TransSvrInfo
-	}
-	return nil
-}
-
-func (x *DF62RspBody) GetFreqLimitInfo() *ChannelFreqLimitInfo {
-	if x != nil {
-		return x.FreqLimitInfo
-	}
-	return nil
-}
-
-func (x *DF62RspBody) GetBody() *msg.MessageBody {
-	if x != nil {
-		return x.Body
-	}
-	return nil
 }
 
 type TransSvrInfo struct {
@@ -104,18 +62,4 @@ func (x *TransSvrInfo) GetRetCode() int32 {
 		return *x.RetCode
 	}
 	return 0
-}
-
-func (x *TransSvrInfo) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *TransSvrInfo) GetTransInfo() []byte {
-	if x != nil {
-		return x.TransInfo
-	}
-	return nil
 }

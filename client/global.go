@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -26,10 +27,6 @@ import (
 type (
 	DeviceInfo = auth.Device
 	Version    = auth.OSVersion
-
-	groupMessageBuilder struct {
-		MessageSlices []*msg.Message
-	}
 )
 
 var SystemDeviceInfo = &DeviceInfo{
@@ -246,12 +243,43 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 	}
 }
 
-func (b *groupMessageBuilder) build() *msg.Message {
-	sort.Slice(b.MessageSlices, func(i, j int) bool {
-		return b.MessageSlices[i].Content.GetPkgIndex() < b.MessageSlices[j].Content.GetPkgIndex()
+func (c *QQClient) messageBuilder(seq int32) *messageBuilder {
+	builder := &messageBuilder{}
+	actual, ok := c.msgBuilders.LoadOrStore(seq, builder)
+	if !ok {
+		time.AfterFunc(time.Minute, func() {
+			c.msgBuilders.Delete(seq) // delete avoid memory leak
+		})
+	}
+	return actual.(*messageBuilder)
+}
+
+type messageBuilder struct {
+	lock   sync.Mutex
+	slices []*msg.Message
+}
+
+func (b *messageBuilder) append(msg *msg.Message) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	b.slices = append(b.slices, msg)
+}
+
+func (b *messageBuilder) len() int32 {
+	b.lock.Lock()
+	x := len(b.slices)
+	b.lock.Unlock()
+	return int32(x)
+}
+
+func (b *messageBuilder) build() *msg.Message {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	sort.Slice(b.slices, func(i, j int) bool {
+		return b.slices[i].Content.GetPkgIndex() < b.slices[j].Content.GetPkgIndex()
 	})
-	base := b.MessageSlices[0]
-	for _, m := range b.MessageSlices[1:] {
+	base := b.slices[0]
+	for _, m := range b.slices[1:] {
 		base.Body.RichText.Elems = append(base.Body.RichText.Elems, m.Body.RichText.Elems...)
 	}
 	return base
@@ -321,7 +349,7 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 	return r
 }
 
-func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg binary.DynamicProtoMessage) []byte {
+func (c *QQClient) packOIDBPackageDynamically(cmd, serviceType int32, msg proto.DynamicMessage) []byte {
 	return c.packOIDBPackage(cmd, serviceType, msg.Encode())
 }
 
@@ -335,8 +363,8 @@ func unpackOIDBPackage(buff []byte, payload proto.Message) error {
 	if err := proto.Unmarshal(buff, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if pkg.GetResult() != 0 {
-		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.GetResult(), pkg.GetErrorMsg())
+	if pkg.Result != 0 {
+		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.Result, pkg.ErrorMsg)
 	}
 	if err := proto.Unmarshal(pkg.Bodybuffer, payload); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")

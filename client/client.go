@@ -82,14 +82,14 @@ type QQClient struct {
 	lastC2CMsgTime         int64
 	transCache             *utils.Cache
 	groupSysMsgCache       *GroupSystemMessages
-	groupMsgBuilders       sync.Map
+	msgBuilders            sync.Map
 	onlinePushCache        *utils.Cache
 	heartbeatEnabled       bool
 	requestPacketRequestID atomic.Int32
 	groupSeq               atomic.Int32
 	friendSeq              atomic.Int32
 	highwayApplyUpSeq      atomic.Int32
-	eventHandlers          *eventHandlers
+	eventHandlers          eventHandlers
 
 	groupListLock sync.Mutex
 }
@@ -165,7 +165,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
-		eventHandlers:   &eventHandlers{},
 		msgSvcCache:     utils.NewCache(time.Second * 15),
 		transCache:      utils.NewCache(time.Second * 15),
 		onlinePushCache: utils.NewCache(time.Second * 15),

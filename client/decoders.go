@@ -600,35 +600,35 @@ func decodeOffPicUpResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.GetFailMsg() != nil {
+	if rsp.FailMsg != nil {
 		return &imageUploadResponse{
 			ResultCode: -1,
 			Message:    string(rsp.FailMsg),
 		}, nil
 	}
-	if rsp.GetSubcmd() != 1 || len(rsp.GetTryupImgRsp()) == 0 {
+	if rsp.GetSubcmd() != 1 || len(rsp.TryupImgRsp) == 0 {
 		return &imageUploadResponse{
 			ResultCode: -2,
 		}, nil
 	}
-	imgRsp := rsp.GetTryupImgRsp()[0]
+	imgRsp := rsp.TryupImgRsp[0]
 	if imgRsp.GetResult() != 0 {
 		return &imageUploadResponse{
 			ResultCode: int32(*imgRsp.Result),
-			Message:    string(imgRsp.GetFailMsg()),
+			Message:    string(imgRsp.FailMsg),
 		}, nil
 	}
 	if imgRsp.GetFileExit() {
 		return &imageUploadResponse{
 			IsExists:   true,
-			ResourceId: string(imgRsp.GetUpResid()),
+			ResourceId: string(imgRsp.UpResid),
 		}, nil
 	}
 	return &imageUploadResponse{
-		ResourceId: string(imgRsp.GetUpResid()),
-		UploadKey:  imgRsp.GetUpUkey(),
-		UploadIp:   imgRsp.GetUpIp(),
-		UploadPort: imgRsp.GetUpPort(),
+		ResourceId: string(imgRsp.UpResid),
+		UploadKey:  imgRsp.UpUkey,
+		UploadIp:   imgRsp.UpIp,
+		UploadPort: imgRsp.UpPort,
 	}, nil
 }
 

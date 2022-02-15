@@ -10,7 +10,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
@@ -139,7 +138,7 @@ func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSe
 		CommandID: 83,
 		Body:      img,
 		Ticket:    body.UploadKey,
-		Ext:       binary.DynamicProtoMessage{11: guildId, 12: channelId}.Encode(),
+		Ext:       proto.DynamicMessage{11: guildId, 12: channelId}.Encode(),
 		Encrypt:   false,
 	}); err == nil {
 		goto ok
@@ -303,21 +302,21 @@ func decodeGuildImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	if rsp.GetResult() != 0 {
 		return &guildImageUploadResponse{
 			ResultCode: int32(rsp.GetResult()),
-			Message:    utils.B2S(rsp.GetFailMsg()),
+			Message:    utils.B2S(rsp.FailMsg),
 		}, nil
 	}
 	if rsp.GetFileExit() {
 		if rsp.ImgInfo != nil {
-			return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.GetDownloadIndex()), Width: int32(rsp.ImgInfo.GetFileWidth()), Height: int32(rsp.ImgInfo.GetFileHeight())}, nil
+			return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.DownloadIndex), Width: int32(rsp.ImgInfo.GetFileWidth()), Height: int32(rsp.ImgInfo.GetFileHeight())}, nil
 		}
-		return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.GetDownloadIndex())}, nil
+		return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.DownloadIndex)}, nil
 	}
 	return &guildImageUploadResponse{
 		FileId:        int64(rsp.GetFileid()),
 		UploadKey:     rsp.UpUkey,
-		UploadIp:      rsp.GetUpIp(),
-		UploadPort:    rsp.GetUpPort(),
-		DownloadIndex: string(rsp.GetDownloadIndex()),
+		UploadIp:      rsp.UpIp,
+		UploadPort:    rsp.UpPort,
+		DownloadIndex: string(rsp.DownloadIndex),
 	}, nil
 }
 
@@ -330,9 +329,9 @@ func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) 
 		return nil
 	}
 	// mem := guild.FindMember(msg.Head.RoutingHead.GetFromTinyid())
-	memberName := msg.ExtInfo.GetMemberName()
+	memberName := msg.ExtInfo.MemberName
 	if memberName == nil {
-		memberName = msg.ExtInfo.GetFromNick()
+		memberName = msg.ExtInfo.FromNick
 	}
 	return &message.GuildChannelMessage{
 		Id:         msg.Head.ContentHead.GetSeq(),

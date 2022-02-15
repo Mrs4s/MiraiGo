@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-option go_package = "./;highway";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/highway";
 
 message CommFileExtReq {
   optional uint32 actionType = 1;
