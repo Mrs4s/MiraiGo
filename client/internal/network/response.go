@@ -13,9 +13,15 @@ type Response struct {
 	CommandName string
 	Body        []byte
 
-	Params Params
 	// Request is the original request that obtained this response.
-	// Request *Request
+	Request *Request
+}
+
+func (r *Response) Params() Params {
+	if r.Request == nil {
+		return nil
+	}
+	return r.Request.Params
 }
 
 var (

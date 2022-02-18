@@ -42,7 +42,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 		defer wg.Done()
 		var err error
 
-		if r.ChatServerLatency, err = qualityTest(c.servers[c.currServerIndex].String()); err != nil {
+		if r.ChatServerLatency, err = qualityTest(c.transport.GetServerAddr().String()); err != nil {
 			c.Error("test chat server latency error: %v", err)
 			r.ChatServerLatency = 9999
 		}
@@ -65,7 +65,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	}()
 	go func() {
 		defer wg.Done()
-		res := utils.RunTCPPingLoop(c.servers[c.currServerIndex].String(), 10)
+		res := utils.RunTCPPingLoop(c.transport.GetServerAddr().String(), 10)
 		r.ChatServerPacketLoss = res.PacketsLoss
 		if c.highwaySession.AddrLength() > 0 {
 			res = utils.RunTCPPingLoop(c.highwaySession.SsoAddr[0].String(), 10)
@@ -85,14 +85,13 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 
 func (c *QQClient) connectFastest() error {
 	c.Disconnect()
-	addr, err := c.transport.ConnectFastest(c.servers)
+	addr, err := c.transport.ConnectFastest()
 	if err != nil {
 		c.Disconnect()
 		return err
 	}
 	c.Debug("connected to server: %v [fastest]", addr.String())
 	c.transport.NetLoop(c.pktProc, c.transport.ReadRequest)
-	c.retryTimes = 0
 	c.ConnectTime = time.Now()
 	return nil
 }
@@ -324,7 +323,7 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 		}
 	}()
 
-	c.Debug("rev resp: %v seq: %v", req.CommandName, req.SequenceID)
+	c.Debug("recv pkt: %v seq: %v", req.CommandName, req.SequenceID)
 	c.stat.PacketReceived.Add(1)
 
 	// snapshot of read call
@@ -335,8 +334,7 @@ func (c *QQClient) pktProc(req *network.Request, netErr error) {
 			SequenceID:  req.SequenceID,
 			CommandName: req.CommandName,
 			Body:        req.Body,
-			Params:      call.Request.Params,
-			// Request:     nil,
+			Request:     call.Request,
 		}
 		delete(c.pending, req.SequenceID)
 	}

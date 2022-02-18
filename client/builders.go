@@ -18,7 +18,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
 	"github.com/Mrs4s/MiraiGo/client/pb/profilecard"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
 )
@@ -27,6 +26,23 @@ var (
 	syncConst1 = rand.Int63()
 	syncConst2 = rand.Int63()
 )
+
+func buildCode2DRequestPacket(seq uint32, j uint64, cmd uint16, bodyFunc func(writer *binary.Writer)) []byte {
+	return binary.NewWriterF(func(w *binary.Writer) {
+		w.WriteByte(2)
+		pos := w.FillUInt16()
+		w.WriteUInt16(cmd)
+		w.Write(make([]byte, 21))
+		w.WriteByte(3)
+		w.WriteUInt16(0)
+		w.WriteUInt16(50) // version
+		w.WriteUInt32(seq)
+		w.WriteUInt64(j)
+		bodyFunc(w)
+		w.WriteByte(3)
+		w.WriteUInt16At(pos, uint16(w.Len()))
+	})
+}
 
 func (c *QQClient) buildLoginRequest() *network.Request {
 	seq := c.nextSeq()
@@ -131,7 +147,7 @@ func (c *QQClient) buildQRCodeFetchRequest(size, margin, ecLevel uint32) *networ
 	req := c.buildOicqRequestPacket(0, 0x0812, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteHex(`0001110000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
-		w.Write(packets.BuildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
+		w.Write(buildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
 			w.WriteUInt16(0)  // const
 			w.WriteUInt32(16) // app id
 			w.WriteUInt64(0)  // const
@@ -164,7 +180,7 @@ func (c *QQClient) buildQRCodeResultQueryRequest(sig []byte) *network.Request {
 	req := c.buildOicqRequestPacket(0, 0x0812, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteHex(`0000620000001000000072000000`) // trans header
 		w.WriteUInt32(uint32(time.Now().Unix()))
-		w.Write(packets.BuildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
+		w.Write(buildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
 			w.WriteUInt16(5)  // const
 			w.WriteByte(1)    // const
 			w.WriteUInt32(8)  // product type

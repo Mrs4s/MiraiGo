@@ -349,7 +349,7 @@ func decodeGetGroupMsgResponse(c *QQClient, resp *network.Response) (interface{}
 		if m.Head.FromUin == nil {
 			continue
 		}
-		if m.Content != nil && m.Content.GetPkgNum() > 1 && !resp.Params.Bool("raw") {
+		if m.Content != nil && m.Content.GetPkgNum() > 1 && !resp.Params().Bool("raw") {
 			if m.Content.GetPkgIndex() == 0 {
 				c.Debug("build fragmented message from history")
 				i := m.Head.GetMsgSeq() - m.Content.GetPkgNum()

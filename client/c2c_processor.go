@@ -73,7 +73,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, resp *ne
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
 		c.Debug("continue sync with flag: %v", rsp.SyncFlag)
 		req := c.buildGetMessageRequest(rsp.GetSyncFlag(), time.Now().Unix())
-		req.Params = resp.Params
+		req.Params = resp.Params()
 		_, _ = c.callAndDecode(req)
 	}
 }
@@ -90,7 +90,7 @@ func (c *QQClient) commMsgProcessor(pMsg *msg.Message, resp *network.Response) {
 		return
 	}
 	c.lastC2CMsgTime = int64(pMsg.Head.GetMsgTime())
-	if resp.Params.Bool("init") {
+	if resp.Params().Bool("init") {
 		return
 	}
 	if decoder, _ := peekC2CDecoder(pMsg.Head.GetMsgType()); decoder != nil {
@@ -232,7 +232,7 @@ func systemMessageDecoder(c *QQClient, _ *msg.Message, _ *network.Response) {
 }
 
 func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.Response) {
-	if !info.Params.Bool("used_reg_proxy") && pMsg.Head.GetMsgType() != 85 && pMsg.Head.GetMsgType() != 36 {
+	if !info.Params().Bool("used_reg_proxy") && pMsg.Head.GetMsgType() != 85 && pMsg.Head.GetMsgType() != 36 {
 		c.exceptAndDispatchGroupSysMsg()
 	}
 	if len(pMsg.Body.GetMsgContent()) == 0 {
