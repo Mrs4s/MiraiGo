@@ -389,13 +389,13 @@ func decodeMsgSyncResponse(c *QQClient, resp *network.Response) (interface{}, er
 }
 
 // OnlinePush.PbC2CMsgSync
-func decodeC2CSyncPacket(c *QQClient, resp *network.Response) (interface{}, error) {
+func decodeC2CSyncPacket(c *QQClient, info *network.Response) (interface{}, error) {
 	m := msg.PbPushMsg{}
-	if err := proto.Unmarshal(resp.Body, &m); err != nil {
+	if err := proto.Unmarshal(info.Body, &m); err != nil {
 		return nil, err
 	}
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), uint16(resp.SequenceID), nil))
-	c.commMsgProcessor(m.Msg, resp)
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.PushToken, uint16(info.SequenceID), nil))
+	c.commMsgProcessor(m.Msg, info)
 	return nil, nil
 }
 
@@ -405,7 +405,7 @@ func decodeMsgReadedResponse(_ *QQClient, resp *network.Response) (interface{}, 
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.GrpReadReport) > 0 {
-		return rsp.GrpReadReport[0].GetResult() == 0, nil
+		return *rsp.GrpReadReport[0].Result == 0, nil
 	}
 	return nil, nil
 }

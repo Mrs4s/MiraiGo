@@ -3,7 +3,6 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -338,7 +337,7 @@ func decodePushReqPacket(c *QQClient, resp *network.Response) (interface{}, erro
 			list := &jce.FileStoragePushFSSvcList{}
 			list.ReadFrom(fmtPkt)
 			c.Debug("got file storage svc push.")
-			c.fileStorageInfo = list
+			// c.fileStorageInfo = list
 			rsp := cmd0x6ff.C501RspBody{}
 			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {
 				c.highwaySession.SigSession = rsp.RspBody.SigSession
@@ -349,11 +348,14 @@ func decodePushReqPacket(c *QQClient, resp *network.Response) (interface{}, erro
 							c.highwaySession.AppendAddr(addr.GetIp(), addr.GetPort())
 						}
 					}
-					if srv.GetServiceType() == 21 {
-						for _, addr := range srv.Addrs {
-							c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+					/*
+						if srv.GetServiceType() == 21 {
+							for _, addr := range srv.Addrs {
+								c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+							}
 						}
-					}
+
+					*/
 				}
 			}
 		}
@@ -595,35 +597,35 @@ func decodeOffPicUpResponse(_ *QQClient, resp *network.Response) (interface{}, e
 	if err := proto.Unmarshal(resp.Body, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.GetFailMsg() != nil {
+	if rsp.FailMsg != nil {
 		return &imageUploadResponse{
 			ResultCode: -1,
 			Message:    string(rsp.FailMsg),
 		}, nil
 	}
-	if rsp.GetSubcmd() != 1 || len(rsp.GetTryupImgRsp()) == 0 {
+	if rsp.GetSubcmd() != 1 || len(rsp.TryupImgRsp) == 0 {
 		return &imageUploadResponse{
 			ResultCode: -2,
 		}, nil
 	}
-	imgRsp := rsp.GetTryupImgRsp()[0]
+	imgRsp := rsp.TryupImgRsp[0]
 	if imgRsp.GetResult() != 0 {
 		return &imageUploadResponse{
 			ResultCode: int32(*imgRsp.Result),
-			Message:    string(imgRsp.GetFailMsg()),
+			Message:    string(imgRsp.FailMsg),
 		}, nil
 	}
 	if imgRsp.GetFileExit() {
 		return &imageUploadResponse{
 			IsExists:   true,
-			ResourceId: string(imgRsp.GetUpResid()),
+			ResourceId: string(imgRsp.UpResid),
 		}, nil
 	}
 	return &imageUploadResponse{
-		ResourceId: string(imgRsp.GetUpResid()),
-		UploadKey:  imgRsp.GetUpUkey(),
-		UploadIp:   imgRsp.GetUpIp(),
-		UploadPort: imgRsp.GetUpPort(),
+		ResourceId: string(imgRsp.UpResid),
+		UploadKey:  imgRsp.UpUkey,
+		UploadIp:   imgRsp.UpIp,
+		UploadPort: imgRsp.UpPort,
 	}, nil
 }
 

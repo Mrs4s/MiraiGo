@@ -7,22 +7,8 @@ type BatchGetMsgRspCountReq struct {
 	GuildMsgList []*GuildMsg `protobuf:"bytes,1,rep"`
 }
 
-func (x *BatchGetMsgRspCountReq) GetGuildMsgList() []*GuildMsg {
-	if x != nil {
-		return x.GuildMsgList
-	}
-	return nil
-}
-
 type BatchGetMsgRspCountRsp struct {
 	GuildMsgInfoList []*GuildMsgInfo `protobuf:"bytes,1,rep"`
-}
-
-func (x *BatchGetMsgRspCountRsp) GetGuildMsgInfoList() []*GuildMsgInfo {
-	if x != nil {
-		return x.GuildMsgInfoList
-	}
-	return nil
 }
 
 type SvrChannelMsg struct {
@@ -37,13 +23,6 @@ func (x *SvrChannelMsg) GetChannelId() uint64 {
 	return 0
 }
 
-func (x *SvrChannelMsg) GetId() []*MsgId {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
 type ChannelMsgInfo struct {
 	ChannelId *uint64        `protobuf:"varint,1,opt"`
 	RespData  []*MsgRespData `protobuf:"bytes,2,rep"`
@@ -54,13 +33,6 @@ func (x *ChannelMsgInfo) GetChannelId() uint64 {
 		return *x.ChannelId
 	}
 	return 0
-}
-
-func (x *ChannelMsgInfo) GetRespData() []*MsgRespData {
-	if x != nil {
-		return x.RespData
-	}
-	return nil
 }
 
 type EmojiReaction struct {
@@ -118,13 +90,6 @@ func (x *GuildMsg) GetGuildId() uint64 {
 	return 0
 }
 
-func (x *GuildMsg) GetChannelMsgList() []*SvrChannelMsg {
-	if x != nil {
-		return x.ChannelMsgList
-	}
-	return nil
-}
-
 type GuildMsgInfo struct {
 	GuildId            *uint64           `protobuf:"varint,1,opt"`
 	ChannelMsgInfoList []*ChannelMsgInfo `protobuf:"bytes,2,rep"`
@@ -137,30 +102,9 @@ func (x *GuildMsgInfo) GetGuildId() uint64 {
 	return 0
 }
 
-func (x *GuildMsgInfo) GetChannelMsgInfoList() []*ChannelMsgInfo {
-	if x != nil {
-		return x.ChannelMsgInfoList
-	}
-	return nil
-}
-
 type MsgCnt struct {
 	Id            *MsgId           `protobuf:"bytes,1,opt"`
 	EmojiReaction []*EmojiReaction `protobuf:"bytes,2,rep"`
-}
-
-func (x *MsgCnt) GetId() *MsgId {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
-func (x *MsgCnt) GetEmojiReaction() []*EmojiReaction {
-	if x != nil {
-		return x.EmojiReaction
-	}
-	return nil
 }
 
 type MsgId struct {
@@ -185,18 +129,4 @@ func (x *MsgId) GetSeq() uint64 {
 type MsgRespData struct {
 	Id  *MsgId `protobuf:"bytes,1,opt"`
 	Cnt []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *MsgRespData) GetId() *MsgId {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
-func (x *MsgRespData) GetCnt() []byte {
-	if x != nil {
-		return x.Cnt
-	}
-	return nil
 }

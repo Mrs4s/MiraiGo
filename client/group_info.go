@@ -208,7 +208,7 @@ func decodeGroupSearchResponse(_ *QQClient, resp *network.Response) (interface{}
 			return nil, errors.Wrap(err, "get search result failed")
 		}
 		var ret []GroupSearchInfo
-		for _, g := range searchRsp.GetList() {
+		for _, g := range searchRsp.List {
 			ret = append(ret, GroupSearchInfo{
 				Code: int64(g.GetCode()),
 				Name: g.GetName(),

@@ -59,13 +59,6 @@ func (x *ChannelContentHead) GetTime() uint64 {
 	return 0
 }
 
-func (x *ChannelContentHead) GetMeta() []byte {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
-}
-
 type DirectMessageMember struct {
 	Uin             *uint64 `protobuf:"varint,1,opt"`
 	Tinyid          *uint64 `protobuf:"varint,2,opt"`
@@ -97,27 +90,6 @@ func (x *DirectMessageMember) GetSourceGuildId() uint64 {
 	return 0
 }
 
-func (x *DirectMessageMember) GetSourceGuildName() []byte {
-	if x != nil {
-		return x.SourceGuildName
-	}
-	return nil
-}
-
-func (x *DirectMessageMember) GetNickName() []byte {
-	if x != nil {
-		return x.NickName
-	}
-	return nil
-}
-
-func (x *DirectMessageMember) GetMemberName() []byte {
-	if x != nil {
-		return x.MemberName
-	}
-	return nil
-}
-
 func (x *DirectMessageMember) GetNotifyType() uint32 {
 	if x != nil && x.NotifyType != nil {
 		return *x.NotifyType
@@ -145,13 +117,6 @@ func (x *ChannelEvent) GetVersion() uint64 {
 	return 0
 }
 
-func (x *ChannelEvent) GetOpInfo() *ChannelMsgOpInfo {
-	if x != nil {
-		return x.OpInfo
-	}
-	return nil
-}
-
 type ChannelExtInfo struct {
 	FromNick            []byte                 `protobuf:"bytes,1,opt"`
 	GuildName           []byte                 `protobuf:"bytes,2,opt"`
@@ -167,27 +132,6 @@ type ChannelExtInfo struct {
 	FromRoleInfo        *ChannelRole           `protobuf:"bytes,12,opt"`
 	FreqLimitInfo       *ChannelFreqLimitInfo  `protobuf:"bytes,13,opt"`
 	DirectMessageMember []*DirectMessageMember `protobuf:"bytes,14,rep"`
-}
-
-func (x *ChannelExtInfo) GetFromNick() []byte {
-	if x != nil {
-		return x.FromNick
-	}
-	return nil
-}
-
-func (x *ChannelExtInfo) GetGuildName() []byte {
-	if x != nil {
-		return x.GuildName
-	}
-	return nil
-}
-
-func (x *ChannelExtInfo) GetChannelName() []byte {
-	if x != nil {
-		return x.ChannelName
-	}
-	return nil
 }
 
 func (x *ChannelExtInfo) GetVisibility() uint32 {
@@ -218,13 +162,6 @@ func (x *ChannelExtInfo) GetNameType() uint32 {
 	return 0
 }
 
-func (x *ChannelExtInfo) GetMemberName() []byte {
-	if x != nil {
-		return x.MemberName
-	}
-	return nil
-}
-
 func (x *ChannelExtInfo) GetTimestamp() uint32 {
 	if x != nil && x.Timestamp != nil {
 		return *x.Timestamp
@@ -237,34 +174,6 @@ func (x *ChannelExtInfo) GetEventVersion() uint64 {
 		return *x.EventVersion
 	}
 	return 0
-}
-
-func (x *ChannelExtInfo) GetEvents() []*ChannelEvent {
-	if x != nil {
-		return x.Events
-	}
-	return nil
-}
-
-func (x *ChannelExtInfo) GetFromRoleInfo() *ChannelRole {
-	if x != nil {
-		return x.FromRoleInfo
-	}
-	return nil
-}
-
-func (x *ChannelExtInfo) GetFreqLimitInfo() *ChannelFreqLimitInfo {
-	if x != nil {
-		return x.FreqLimitInfo
-	}
-	return nil
-}
-
-func (x *ChannelExtInfo) GetDirectMessageMember() []*DirectMessageMember {
-	if x != nil {
-		return x.DirectMessageMember
-	}
-	return nil
 }
 
 type ChannelFreqLimitInfo struct {
@@ -308,13 +217,6 @@ func (x *ChannelInfo) GetId() uint64 {
 	return 0
 }
 
-func (x *ChannelInfo) GetName() []byte {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
 func (x *ChannelInfo) GetColor() uint32 {
 	if x != nil && x.Color != nil {
 		return *x.Color
@@ -342,13 +244,6 @@ func (x *ChannelLoginSig) GetType() uint32 {
 	return 0
 }
 
-func (x *ChannelLoginSig) GetSig() []byte {
-	if x != nil {
-		return x.Sig
-	}
-	return nil
-}
-
 func (x *ChannelLoginSig) GetAppid() uint32 {
 	if x != nil && x.Appid != nil {
 		return *x.Appid
@@ -368,46 +263,11 @@ func (x *ChannelMeta) GetFromUin() uint64 {
 	return 0
 }
 
-func (x *ChannelMeta) GetLoginSig() *ChannelLoginSig {
-	if x != nil {
-		return x.LoginSig
-	}
-	return nil
-}
-
 type ChannelMsgContent struct {
 	Head     *ChannelMsgHead     `protobuf:"bytes,1,opt"`
 	CtrlHead *ChannelMsgCtrlHead `protobuf:"bytes,2,opt"`
 	Body     *msg.MessageBody    `protobuf:"bytes,3,opt"`
 	ExtInfo  *ChannelExtInfo     `protobuf:"bytes,4,opt"`
-}
-
-func (x *ChannelMsgContent) GetHead() *ChannelMsgHead {
-	if x != nil {
-		return x.Head
-	}
-	return nil
-}
-
-func (x *ChannelMsgContent) GetCtrlHead() *ChannelMsgCtrlHead {
-	if x != nil {
-		return x.CtrlHead
-	}
-	return nil
-}
-
-func (x *ChannelMsgContent) GetBody() *msg.MessageBody {
-	if x != nil {
-		return x.Body
-	}
-	return nil
-}
-
-func (x *ChannelMsgContent) GetExtInfo() *ChannelExtInfo {
-	if x != nil {
-		return x.ExtInfo
-	}
-	return nil
 }
 
 type ChannelMsgCtrlHead struct {
@@ -424,13 +284,6 @@ type ChannelMsgCtrlHead struct {
 	MemberNum      *uint32          `protobuf:"varint,11,opt"`
 	ChannelType    *uint32          `protobuf:"varint,12,opt"`
 	PrivateType    *uint32          `protobuf:"varint,13,opt"`
-}
-
-func (x *ChannelMsgCtrlHead) GetIncludeUin() [][]byte {
-	if x != nil {
-		return x.IncludeUin
-	}
-	return nil
 }
 
 func (x *ChannelMsgCtrlHead) GetOfflineFlag() uint32 {
@@ -454,25 +307,11 @@ func (x *ChannelMsgCtrlHead) GetCtrlFlag() uint64 {
 	return 0
 }
 
-func (x *ChannelMsgCtrlHead) GetEvents() []*ChannelEvent {
-	if x != nil {
-		return x.Events
-	}
-	return nil
-}
-
 func (x *ChannelMsgCtrlHead) GetLevel() uint64 {
 	if x != nil && x.Level != nil {
 		return *x.Level
 	}
 	return 0
-}
-
-func (x *ChannelMsgCtrlHead) GetPersonalLevels() []*PersonalLevel {
-	if x != nil {
-		return x.PersonalLevels
-	}
-	return nil
 }
 
 func (x *ChannelMsgCtrlHead) GetGuildSyncSeq() uint64 {
@@ -506,20 +345,6 @@ func (x *ChannelMsgCtrlHead) GetPrivateType() uint32 {
 type ChannelMsgHead struct {
 	RoutingHead *ChannelRoutingHead `protobuf:"bytes,1,opt"`
 	ContentHead *ChannelContentHead `protobuf:"bytes,2,opt"`
-}
-
-func (x *ChannelMsgHead) GetRoutingHead() *ChannelRoutingHead {
-	if x != nil {
-		return x.RoutingHead
-	}
-	return nil
-}
-
-func (x *ChannelMsgHead) GetContentHead() *ChannelContentHead {
-	if x != nil {
-		return x.ContentHead
-	}
-	return nil
 }
 
 type ChannelMsgMeta struct {
@@ -606,13 +431,6 @@ func (x *ChannelRole) GetId() uint64 {
 		return *x.Id
 	}
 	return 0
-}
-
-func (x *ChannelRole) GetInfo() []byte {
-	if x != nil {
-		return x.Info
-	}
-	return nil
 }
 
 func (x *ChannelRole) GetFlag() uint32 {

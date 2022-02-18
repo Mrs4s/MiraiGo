@@ -39,13 +39,6 @@ func (x *GetMessageRequest) GetSyncFlag() SyncFlag {
 	return SyncFlag_START
 }
 
-func (x *GetMessageRequest) GetSyncCookie() []byte {
-	if x != nil {
-		return x.SyncCookie
-	}
-	return nil
-}
-
 func (x *GetMessageRequest) GetRambleFlag() int32 {
 	if x != nil && x.RambleFlag != nil {
 		return *x.RambleFlag
@@ -95,27 +88,6 @@ func (x *GetMessageRequest) GetMsgReqType() int32 {
 	return 0
 }
 
-func (x *GetMessageRequest) GetPubaccountCookie() []byte {
-	if x != nil {
-		return x.PubaccountCookie
-	}
-	return nil
-}
-
-func (x *GetMessageRequest) GetMsgCtrlBuf() []byte {
-	if x != nil {
-		return x.MsgCtrlBuf
-	}
-	return nil
-}
-
-func (x *GetMessageRequest) GetServerBuf() []byte {
-	if x != nil {
-		return x.ServerBuf
-	}
-	return nil
-}
-
 type SendMessageRequest struct {
 	RoutingHead *RoutingHead `protobuf:"bytes,1,opt"`
 	ContentHead *ContentHead `protobuf:"bytes,2,opt"`
@@ -133,27 +105,6 @@ type SendMessageRequest struct {
 	MultiSendSeq *int32 `protobuf:"varint,14,opt"`
 }
 
-func (x *SendMessageRequest) GetRoutingHead() *RoutingHead {
-	if x != nil {
-		return x.RoutingHead
-	}
-	return nil
-}
-
-func (x *SendMessageRequest) GetContentHead() *ContentHead {
-	if x != nil {
-		return x.ContentHead
-	}
-	return nil
-}
-
-func (x *SendMessageRequest) GetMsgBody() *MessageBody {
-	if x != nil {
-		return x.MsgBody
-	}
-	return nil
-}
-
 func (x *SendMessageRequest) GetMsgSeq() int32 {
 	if x != nil && x.MsgSeq != nil {
 		return *x.MsgSeq
@@ -168,13 +119,6 @@ func (x *SendMessageRequest) GetMsgRand() int32 {
 	return 0
 }
 
-func (x *SendMessageRequest) GetSyncCookie() []byte {
-	if x != nil {
-		return x.SyncCookie
-	}
-	return nil
-}
-
 func (x *SendMessageRequest) GetMsgVia() int32 {
 	if x != nil && x.MsgVia != nil {
 		return *x.MsgVia
@@ -187,13 +131,6 @@ func (x *SendMessageRequest) GetDataStatist() int32 {
 		return *x.DataStatist
 	}
 	return 0
-}
-
-func (x *SendMessageRequest) GetMsgCtrl() *MsgCtrl {
-	if x != nil {
-		return x.MsgCtrl
-	}
-	return nil
 }
 
 func (x *SendMessageRequest) GetMultiSendSeq() int32 {
@@ -227,20 +164,6 @@ type MsgWithDrawReq struct {
 	GroupWithDraw []*GroupMsgWithDrawReq `protobuf:"bytes,2,rep"`
 }
 
-func (x *MsgWithDrawReq) GetC2CWithDraw() []*C2CMsgWithDrawReq {
-	if x != nil {
-		return x.C2CWithDraw
-	}
-	return nil
-}
-
-func (x *MsgWithDrawReq) GetGroupWithDraw() []*GroupMsgWithDrawReq {
-	if x != nil {
-		return x.GroupWithDraw
-	}
-	return nil
-}
-
 type C2CMsgWithDrawReq struct {
 	MsgInfo         []*C2CMsgInfo `protobuf:"bytes,1,rep"`
 	LongMessageFlag *int32        `protobuf:"varint,2,opt"`
@@ -248,25 +171,11 @@ type C2CMsgWithDrawReq struct {
 	SubCmd          *int32        `protobuf:"varint,4,opt"`
 }
 
-func (x *C2CMsgWithDrawReq) GetMsgInfo() []*C2CMsgInfo {
-	if x != nil {
-		return x.MsgInfo
-	}
-	return nil
-}
-
 func (x *C2CMsgWithDrawReq) GetLongMessageFlag() int32 {
 	if x != nil && x.LongMessageFlag != nil {
 		return *x.LongMessageFlag
 	}
 	return 0
-}
-
-func (x *C2CMsgWithDrawReq) GetReserved() []byte {
-	if x != nil {
-		return x.Reserved
-	}
-	return nil
 }
 
 func (x *C2CMsgWithDrawReq) GetSubCmd() int32 {
@@ -305,37 +214,9 @@ func (x *GroupMsgWithDrawReq) GetGroupCode() int64 {
 	return 0
 }
 
-func (x *GroupMsgWithDrawReq) GetMsgList() []*GroupMsgInfo {
-	if x != nil {
-		return x.MsgList
-	}
-	return nil
-}
-
-func (x *GroupMsgWithDrawReq) GetUserDef() []byte {
-	if x != nil {
-		return x.UserDef
-	}
-	return nil
-}
-
 type MsgWithDrawResp struct {
 	C2CWithDraw   []*C2CMsgWithDrawResp   `protobuf:"bytes,1,rep"`
 	GroupWithDraw []*GroupMsgWithDrawResp `protobuf:"bytes,2,rep"`
-}
-
-func (x *MsgWithDrawResp) GetC2CWithDraw() []*C2CMsgWithDrawResp {
-	if x != nil {
-		return x.C2CWithDraw
-	}
-	return nil
-}
-
-func (x *MsgWithDrawResp) GetGroupWithDraw() []*GroupMsgWithDrawResp {
-	if x != nil {
-		return x.GroupWithDraw
-	}
-	return nil
 }
 
 type C2CMsgWithDrawResp struct {
@@ -487,46 +368,11 @@ func (x *C2CMsgInfo) GetMsgType() int32 {
 	return 0
 }
 
-func (x *C2CMsgInfo) GetRoutingHead() *RoutingHead {
-	if x != nil {
-		return x.RoutingHead
-	}
-	return nil
-}
-
 type RoutingHead struct {
 	C2C    *C2C    `protobuf:"bytes,1,opt"`
 	Grp    *Grp    `protobuf:"bytes,2,opt"`
 	GrpTmp *GrpTmp `protobuf:"bytes,3,opt"`
 	WpaTmp *WPATmp `protobuf:"bytes,6,opt"`
-}
-
-func (x *RoutingHead) GetC2C() *C2C {
-	if x != nil {
-		return x.C2C
-	}
-	return nil
-}
-
-func (x *RoutingHead) GetGrp() *Grp {
-	if x != nil {
-		return x.Grp
-	}
-	return nil
-}
-
-func (x *RoutingHead) GetGrpTmp() *GrpTmp {
-	if x != nil {
-		return x.GrpTmp
-	}
-	return nil
-}
-
-func (x *RoutingHead) GetWpaTmp() *WPATmp {
-	if x != nil {
-		return x.WpaTmp
-	}
-	return nil
 }
 
 type WPATmp struct {
@@ -539,13 +385,6 @@ func (x *WPATmp) GetToUin() uint64 {
 		return *x.ToUin
 	}
 	return 0
-}
-
-func (x *WPATmp) GetSig() []byte {
-	if x != nil {
-		return x.Sig
-	}
-	return nil
 }
 
 type C2C struct {
@@ -627,25 +466,11 @@ func (x *GetMessageResponse) GetErrorMessage() string {
 	return ""
 }
 
-func (x *GetMessageResponse) GetSyncCookie() []byte {
-	if x != nil {
-		return x.SyncCookie
-	}
-	return nil
-}
-
 func (x *GetMessageResponse) GetSyncFlag() SyncFlag {
 	if x != nil && x.SyncFlag != nil {
 		return *x.SyncFlag
 	}
 	return SyncFlag_START
-}
-
-func (x *GetMessageResponse) GetUinPairMsgs() []*UinPairMessage {
-	if x != nil {
-		return x.UinPairMsgs
-	}
-	return nil
 }
 
 func (x *GetMessageResponse) GetBindUin() int64 {
@@ -662,25 +487,11 @@ func (x *GetMessageResponse) GetMsgRspType() int32 {
 	return 0
 }
 
-func (x *GetMessageResponse) GetPubAccountCookie() []byte {
-	if x != nil {
-		return x.PubAccountCookie
-	}
-	return nil
-}
-
 func (x *GetMessageResponse) GetIsPartialSync() bool {
 	if x != nil && x.IsPartialSync != nil {
 		return *x.IsPartialSync
 	}
 	return false
-}
-
-func (x *GetMessageResponse) GetMsgCtrlBuf() []byte {
-	if x != nil {
-		return x.MsgCtrlBuf
-	}
-	return nil
 }
 
 type PushMessagePacket struct {
@@ -691,25 +502,11 @@ type PushMessagePacket struct {
 	GeneralFlag *int32   `protobuf:"varint,9,opt"`
 }
 
-func (x *PushMessagePacket) GetMessage() *Message {
-	if x != nil {
-		return x.Message
-	}
-	return nil
-}
-
 func (x *PushMessagePacket) GetSvrip() int32 {
 	if x != nil && x.Svrip != nil {
 		return *x.Svrip
 	}
 	return 0
-}
-
-func (x *PushMessagePacket) GetPushToken() []byte {
-	if x != nil {
-		return x.PushToken
-	}
-	return nil
 }
 
 func (x *PushMessagePacket) GetPingFLag() int32 {
@@ -754,38 +551,10 @@ func (x *UinPairMessage) GetMsgCompleted() int32 {
 	return 0
 }
 
-func (x *UinPairMessage) GetMessages() []*Message {
-	if x != nil {
-		return x.Messages
-	}
-	return nil
-}
-
 type Message struct {
 	Head    *MessageHead `protobuf:"bytes,1,opt"`
 	Content *ContentHead `protobuf:"bytes,2,opt"`
 	Body    *MessageBody `protobuf:"bytes,3,opt"`
-}
-
-func (x *Message) GetHead() *MessageHead {
-	if x != nil {
-		return x.Head
-	}
-	return nil
-}
-
-func (x *Message) GetContent() *ContentHead {
-	if x != nil {
-		return x.Content
-	}
-	return nil
-}
-
-func (x *Message) GetBody() *MessageBody {
-	if x != nil {
-		return x.Body
-	}
-	return nil
 }
 
 type MessageBody struct {
@@ -794,60 +563,11 @@ type MessageBody struct {
 	MsgEncryptContent []byte    `protobuf:"bytes,3,opt"`
 }
 
-func (x *MessageBody) GetRichText() *RichText {
-	if x != nil {
-		return x.RichText
-	}
-	return nil
-}
-
-func (x *MessageBody) GetMsgContent() []byte {
-	if x != nil {
-		return x.MsgContent
-	}
-	return nil
-}
-
-func (x *MessageBody) GetMsgEncryptContent() []byte {
-	if x != nil {
-		return x.MsgEncryptContent
-	}
-	return nil
-}
-
 type RichText struct {
 	Attr          *Attr          `protobuf:"bytes,1,opt"`
 	Elems         []*Elem        `protobuf:"bytes,2,rep"`
 	NotOnlineFile *NotOnlineFile `protobuf:"bytes,3,opt"`
 	Ptt           *Ptt           `protobuf:"bytes,4,opt"`
-}
-
-func (x *RichText) GetAttr() *Attr {
-	if x != nil {
-		return x.Attr
-	}
-	return nil
-}
-
-func (x *RichText) GetElems() []*Elem {
-	if x != nil {
-		return x.Elems
-	}
-	return nil
-}
-
-func (x *RichText) GetNotOnlineFile() *NotOnlineFile {
-	if x != nil {
-		return x.NotOnlineFile
-	}
-	return nil
-}
-
-func (x *RichText) GetPtt() *Ptt {
-	if x != nil {
-		return x.Ptt
-	}
-	return nil
 }
 
 type Elem struct {
@@ -906,139 +626,6 @@ type Elem struct {
 	CommonElem *CommonElem `protobuf:"bytes,53,opt"`
 }
 
-func (x *Elem) GetText() *Text {
-	if x != nil {
-		return x.Text
-	}
-	return nil
-}
-
-func (x *Elem) GetFace() *Face {
-	if x != nil {
-		return x.Face
-	}
-	return nil
-}
-
-func (x *Elem) GetOnlineImage() *OnlineImage {
-	if x != nil {
-		return x.OnlineImage
-	}
-	return nil
-}
-
-func (x *Elem) GetNotOnlineImage() *NotOnlineImage {
-	if x != nil {
-		return x.NotOnlineImage
-	}
-	return nil
-}
-
-func (x *Elem) GetTransElemInfo() *TransElem {
-	if x != nil {
-		return x.TransElemInfo
-	}
-	return nil
-}
-
-func (x *Elem) GetMarketFace() *MarketFace {
-	if x != nil {
-		return x.MarketFace
-	}
-	return nil
-}
-
-func (x *Elem) GetCustomFace() *CustomFace {
-	if x != nil {
-		return x.CustomFace
-	}
-	return nil
-}
-
-func (x *Elem) GetElemFlags2() *ElemFlags2 {
-	if x != nil {
-		return x.ElemFlags2
-	}
-	return nil
-}
-
-func (x *Elem) GetRichMsg() *RichMsg {
-	if x != nil {
-		return x.RichMsg
-	}
-	return nil
-}
-
-func (x *Elem) GetGroupFile() *GroupFile {
-	if x != nil {
-		return x.GroupFile
-	}
-	return nil
-}
-
-func (x *Elem) GetExtraInfo() *ExtraInfo {
-	if x != nil {
-		return x.ExtraInfo
-	}
-	return nil
-}
-
-func (x *Elem) GetVideoFile() *VideoFile {
-	if x != nil {
-		return x.VideoFile
-	}
-	return nil
-}
-
-func (x *Elem) GetAnonGroupMsg() *AnonymousGroupMessage {
-	if x != nil {
-		return x.AnonGroupMsg
-	}
-	return nil
-}
-
-func (x *Elem) GetQQWalletMsg() *QQWalletMsg {
-	if x != nil {
-		return x.QQWalletMsg
-	}
-	return nil
-}
-
-func (x *Elem) GetCustomElem() *CustomElem {
-	if x != nil {
-		return x.CustomElem
-	}
-	return nil
-}
-
-func (x *Elem) GetGeneralFlags() *GeneralFlags {
-	if x != nil {
-		return x.GeneralFlags
-	}
-	return nil
-}
-
-func (x *Elem) GetSrcMsg() *SourceMsg {
-	if x != nil {
-		return x.SrcMsg
-	}
-	return nil
-}
-
-func (x *Elem) GetLightApp() *LightAppElem {
-	if x != nil {
-		return x.LightApp
-	}
-	return nil
-}
-
-func (x *Elem) GetCommonElem() *CommonElem {
-	if x != nil {
-		return x.CommonElem
-	}
-	return nil
-}
-
 type MarketFace struct {
 	FaceName    []byte  `protobuf:"bytes,1,opt"`
 	ItemType    *uint32 `protobuf:"varint,2,opt"`
@@ -1055,13 +642,6 @@ type MarketFace struct {
 	PbReserve   []byte  `protobuf:"bytes,13,opt"`
 }
 
-func (x *MarketFace) GetFaceName() []byte {
-	if x != nil {
-		return x.FaceName
-	}
-	return nil
-}
-
 func (x *MarketFace) GetItemType() uint32 {
 	if x != nil && x.ItemType != nil {
 		return *x.ItemType
@@ -1076,13 +656,6 @@ func (x *MarketFace) GetFaceInfo() uint32 {
 	return 0
 }
 
-func (x *MarketFace) GetFaceId() []byte {
-	if x != nil {
-		return x.FaceId
-	}
-	return nil
-}
-
 func (x *MarketFace) GetTabId() uint32 {
 	if x != nil && x.TabId != nil {
 		return *x.TabId
@@ -1095,20 +668,6 @@ func (x *MarketFace) GetSubType() uint32 {
 		return *x.SubType
 	}
 	return 0
-}
-
-func (x *MarketFace) GetKey() []byte {
-	if x != nil {
-		return x.Key
-	}
-	return nil
-}
-
-func (x *MarketFace) GetParam() []byte {
-	if x != nil {
-		return x.Param
-	}
-	return nil
 }
 
 func (x *MarketFace) GetMediaType() uint32 {
@@ -1130,20 +689,6 @@ func (x *MarketFace) GetImageHeight() uint32 {
 		return *x.ImageHeight
 	}
 	return 0
-}
-
-func (x *MarketFace) GetMobileparam() []byte {
-	if x != nil {
-		return x.Mobileparam
-	}
-	return nil
-}
-
-func (x *MarketFace) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
 }
 
 type ElemFlags2 struct {
@@ -1205,25 +750,11 @@ func (x *ElemFlags2) GetCompatibleId() uint32 {
 	return 0
 }
 
-func (x *ElemFlags2) GetInsts() []*ElemFlags2_Inst {
-	if x != nil {
-		return x.Insts
-	}
-	return nil
-}
-
 func (x *ElemFlags2) GetMsgRptCnt() uint32 {
 	if x != nil && x.MsgRptCnt != nil {
 		return *x.MsgRptCnt
 	}
 	return 0
-}
-
-func (x *ElemFlags2) GetSrcInst() *ElemFlags2_Inst {
-	if x != nil {
-		return x.SrcInst
-	}
-	return nil
 }
 
 func (x *ElemFlags2) GetLongtitude() uint32 {
@@ -1245,13 +776,6 @@ func (x *ElemFlags2) GetCustomFont() uint32 {
 		return *x.CustomFont
 	}
 	return 0
-}
-
-func (x *ElemFlags2) GetPcSupportDef() *PcSupportDef {
-	if x != nil {
-		return x.PcSupportDef
-	}
-	return nil
 }
 
 func (x *ElemFlags2) GetCrmFlags() uint32 {
@@ -1298,20 +822,6 @@ func (x *PcSupportDef) GetMacPtlEnd() uint32 {
 	return 0
 }
 
-func (x *PcSupportDef) GetPtlsSupport() []uint32 {
-	if x != nil {
-		return x.PtlsSupport
-	}
-	return nil
-}
-
-func (x *PcSupportDef) GetPtlsNotSupport() []uint32 {
-	if x != nil {
-		return x.PtlsNotSupport
-	}
-	return nil
-}
-
 type CommonElem struct {
 	ServiceType  *int32 `protobuf:"varint,1,opt"`
 	PbElem       []byte `protobuf:"bytes,2,opt"`
@@ -1325,13 +835,6 @@ func (x *CommonElem) GetServiceType() int32 {
 	return 0
 }
 
-func (x *CommonElem) GetPbElem() []byte {
-	if x != nil {
-		return x.PbElem
-	}
-	return nil
-}
-
 func (x *CommonElem) GetBusinessType() int32 {
 	if x != nil && x.BusinessType != nil {
 		return *x.BusinessType
@@ -1341,13 +844,6 @@ func (x *CommonElem) GetBusinessType() int32 {
 
 type QQWalletMsg struct {
 	AioBody *QQWalletAioBody `protobuf:"bytes,1,opt"`
-}
-
-func (x *QQWalletMsg) GetAioBody() *QQWalletAioBody {
-	if x != nil {
-		return x.AioBody
-	}
-	return nil
 }
 
 type QQWalletAioBody struct {
@@ -1379,20 +875,6 @@ func (x *QQWalletAioBody) GetSendUin() uint64 {
 		return *x.SendUin
 	}
 	return 0
-}
-
-func (x *QQWalletAioBody) GetSender() *QQWalletAioElem {
-	if x != nil {
-		return x.Sender
-	}
-	return nil
-}
-
-func (x *QQWalletAioBody) GetReceiver() *QQWalletAioElem {
-	if x != nil {
-		return x.Receiver
-	}
-	return nil
 }
 
 func (x *QQWalletAioBody) GetChannelId() int32 {
@@ -1430,20 +912,6 @@ func (x *QQWalletAioBody) GetRedType() int32 {
 	return 0
 }
 
-func (x *QQWalletAioBody) GetBillNo() []byte {
-	if x != nil {
-		return x.BillNo
-	}
-	return nil
-}
-
-func (x *QQWalletAioBody) GetAuthKey() []byte {
-	if x != nil {
-		return x.AuthKey
-	}
-	return nil
-}
-
 func (x *QQWalletAioBody) GetSessionType() int32 {
 	if x != nil && x.SessionType != nil {
 		return *x.SessionType
@@ -1465,13 +933,6 @@ func (x *QQWalletAioBody) GetEnvelOpeId() int32 {
 	return 0
 }
 
-func (x *QQWalletAioBody) GetName() []byte {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
 func (x *QQWalletAioBody) GetConfType() int32 {
 	if x != nil && x.ConfType != nil {
 		return *x.ConfType
@@ -1486,39 +947,11 @@ func (x *QQWalletAioBody) GetMsgFrom() int32 {
 	return 0
 }
 
-func (x *QQWalletAioBody) GetPcBody() []byte {
-	if x != nil {
-		return x.PcBody
-	}
-	return nil
-}
-
-func (x *QQWalletAioBody) GetIndex() []byte {
-	if x != nil {
-		return x.Index
-	}
-	return nil
-}
-
 func (x *QQWalletAioBody) GetRedChannel() uint32 {
 	if x != nil && x.RedChannel != nil {
 		return *x.RedChannel
 	}
 	return 0
-}
-
-func (x *QQWalletAioBody) GetGrapUin() []uint64 {
-	if x != nil {
-		return x.GrapUin
-	}
-	return nil
-}
-
-func (x *QQWalletAioBody) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
 }
 
 type QQWalletAioElem struct {
@@ -1580,27 +1013,6 @@ func (x *QQWalletAioElem) GetContent() string {
 	return ""
 }
 
-func (x *QQWalletAioElem) GetLinkUrl() []byte {
-	if x != nil {
-		return x.LinkUrl
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetBlackStripe() []byte {
-	if x != nil {
-		return x.BlackStripe
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetNotice() []byte {
-	if x != nil {
-		return x.Notice
-	}
-	return nil
-}
-
 func (x *QQWalletAioElem) GetTitleColor() uint32 {
 	if x != nil && x.TitleColor != nil {
 		return *x.TitleColor
@@ -1613,41 +1025,6 @@ func (x *QQWalletAioElem) GetSubtitleColor() uint32 {
 		return *x.SubtitleColor
 	}
 	return 0
-}
-
-func (x *QQWalletAioElem) GetActionsPriority() []byte {
-	if x != nil {
-		return x.ActionsPriority
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetJumpUrl() []byte {
-	if x != nil {
-		return x.JumpUrl
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetNativeIos() []byte {
-	if x != nil {
-		return x.NativeIos
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetNativeAndroid() []byte {
-	if x != nil {
-		return x.NativeAndroid
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetIconUrl() []byte {
-	if x != nil {
-		return x.IconUrl
-	}
-	return nil
 }
 
 func (x *QQWalletAioElem) GetContentColor() uint32 {
@@ -1664,34 +1041,6 @@ func (x *QQWalletAioElem) GetContentBgColor() uint32 {
 	return 0
 }
 
-func (x *QQWalletAioElem) GetAioImageLeft() []byte {
-	if x != nil {
-		return x.AioImageLeft
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetAioImageRight() []byte {
-	if x != nil {
-		return x.AioImageRight
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetCftImage() []byte {
-	if x != nil {
-		return x.CftImage
-	}
-	return nil
-}
-
-func (x *QQWalletAioElem) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
 type RichMsg struct {
 	Template1 []byte `protobuf:"bytes,1,opt"`
 	ServiceId *int32 `protobuf:"varint,2,opt"`
@@ -1700,25 +1049,11 @@ type RichMsg struct {
 	Seq       *int32 `protobuf:"varint,5,opt"`
 }
 
-func (x *RichMsg) GetTemplate1() []byte {
-	if x != nil {
-		return x.Template1
-	}
-	return nil
-}
-
 func (x *RichMsg) GetServiceId() int32 {
 	if x != nil && x.ServiceId != nil {
 		return *x.ServiceId
 	}
 	return 0
-}
-
-func (x *RichMsg) GetMsgResId() []byte {
-	if x != nil {
-		return x.MsgResId
-	}
-	return nil
 }
 
 func (x *RichMsg) GetRand() int32 {
@@ -1743,39 +1078,11 @@ type CustomElem struct {
 	Sound    []byte `protobuf:"bytes,5,opt"`
 }
 
-func (x *CustomElem) GetDesc() []byte {
-	if x != nil {
-		return x.Desc
-	}
-	return nil
-}
-
-func (x *CustomElem) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
 func (x *CustomElem) GetEnumType() int32 {
 	if x != nil && x.EnumType != nil {
 		return *x.EnumType
 	}
 	return 0
-}
-
-func (x *CustomElem) GetExt() []byte {
-	if x != nil {
-		return x.Ext
-	}
-	return nil
-}
-
-func (x *CustomElem) GetSound() []byte {
-	if x != nil {
-		return x.Sound
-	}
-	return nil
 }
 
 type Text struct {
@@ -1799,34 +1106,6 @@ func (x *Text) GetLink() string {
 		return *x.Link
 	}
 	return ""
-}
-
-func (x *Text) GetAttr6Buf() []byte {
-	if x != nil {
-		return x.Attr6Buf
-	}
-	return nil
-}
-
-func (x *Text) GetAttr7Buf() []byte {
-	if x != nil {
-		return x.Attr7Buf
-	}
-	return nil
-}
-
-func (x *Text) GetBuf() []byte {
-	if x != nil {
-		return x.Buf
-	}
-	return nil
-}
-
-func (x *Text) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
 }
 
 type Attr struct {
@@ -1905,13 +1184,6 @@ func (x *Attr) GetFontName() string {
 	return ""
 }
 
-func (x *Attr) GetReserveData() []byte {
-	if x != nil {
-		return x.ReserveData
-	}
-	return nil
-}
-
 type Ptt struct {
 	FileType      *int32   `protobuf:"varint,1,opt"`
 	SrcUin        *int64   `protobuf:"varint,2,opt"`
@@ -1953,20 +1225,6 @@ func (x *Ptt) GetSrcUin() int64 {
 	return 0
 }
 
-func (x *Ptt) GetFileUuid() []byte {
-	if x != nil {
-		return x.FileUuid
-	}
-	return nil
-}
-
-func (x *Ptt) GetFileMd5() []byte {
-	if x != nil {
-		return x.FileMd5
-	}
-	return nil
-}
-
 func (x *Ptt) GetFileName() string {
 	if x != nil && x.FileName != nil {
 		return *x.FileName
@@ -1979,13 +1237,6 @@ func (x *Ptt) GetFileSize() int32 {
 		return *x.FileSize
 	}
 	return 0
-}
-
-func (x *Ptt) GetReserve() []byte {
-	if x != nil {
-		return x.Reserve
-	}
-	return nil
 }
 
 func (x *Ptt) GetFileId() int32 {
@@ -2016,27 +1267,6 @@ func (x *Ptt) GetBoolValid() bool {
 	return false
 }
 
-func (x *Ptt) GetSignature() []byte {
-	if x != nil {
-		return x.Signature
-	}
-	return nil
-}
-
-func (x *Ptt) GetShortcut() []byte {
-	if x != nil {
-		return x.Shortcut
-	}
-	return nil
-}
-
-func (x *Ptt) GetFileKey() []byte {
-	if x != nil {
-		return x.FileKey
-	}
-	return nil
-}
-
 func (x *Ptt) GetMagicPttIndex() int32 {
 	if x != nil && x.MagicPttIndex != nil {
 		return *x.MagicPttIndex
@@ -2051,20 +1281,6 @@ func (x *Ptt) GetVoiceSwitch() int32 {
 	return 0
 }
 
-func (x *Ptt) GetPttUrl() []byte {
-	if x != nil {
-		return x.PttUrl
-	}
-	return nil
-}
-
-func (x *Ptt) GetGroupFileKey() []byte {
-	if x != nil {
-		return x.GroupFileKey
-	}
-	return nil
-}
-
 func (x *Ptt) GetTime() int32 {
 	if x != nil && x.Time != nil {
 		return *x.Time
@@ -2072,32 +1288,11 @@ func (x *Ptt) GetTime() int32 {
 	return 0
 }
 
-func (x *Ptt) GetDownPara() []byte {
-	if x != nil {
-		return x.DownPara
-	}
-	return nil
-}
-
 func (x *Ptt) GetFormat() int32 {
 	if x != nil && x.Format != nil {
 		return *x.Format
 	}
 	return 0
-}
-
-func (x *Ptt) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
-func (x *Ptt) GetBytesPttUrls() [][]byte {
-	if x != nil {
-		return x.BytesPttUrls
-	}
-	return nil
 }
 
 func (x *Ptt) GetDownloadFlag() int32 {
@@ -2111,27 +1306,6 @@ type OnlineImage struct {
 	Guid           []byte `protobuf:"bytes,1,opt"`
 	FilePath       []byte `protobuf:"bytes,2,opt"`
 	OldVerSendFile []byte `protobuf:"bytes,3,opt"`
-}
-
-func (x *OnlineImage) GetGuid() []byte {
-	if x != nil {
-		return x.Guid
-	}
-	return nil
-}
-
-func (x *OnlineImage) GetFilePath() []byte {
-	if x != nil {
-		return x.FilePath
-	}
-	return nil
-}
-
-func (x *OnlineImage) GetOldVerSendFile() []byte {
-	if x != nil {
-		return x.OldVerSendFile
-	}
-	return nil
 }
 
 type NotOnlineImage struct {
@@ -2184,32 +1358,11 @@ func (x *NotOnlineImage) GetDownloadPath() string {
 	return ""
 }
 
-func (x *NotOnlineImage) GetOldVerSendFile() []byte {
-	if x != nil {
-		return x.OldVerSendFile
-	}
-	return nil
-}
-
 func (x *NotOnlineImage) GetImgType() int32 {
 	if x != nil && x.ImgType != nil {
 		return *x.ImgType
 	}
 	return 0
-}
-
-func (x *NotOnlineImage) GetPreviewsImage() []byte {
-	if x != nil {
-		return x.PreviewsImage
-	}
-	return nil
-}
-
-func (x *NotOnlineImage) GetPicMd5() []byte {
-	if x != nil {
-		return x.PicMd5
-	}
-	return nil
 }
 
 func (x *NotOnlineImage) GetPicHeight() int32 {
@@ -2231,13 +1384,6 @@ func (x *NotOnlineImage) GetResId() string {
 		return *x.ResId
 	}
 	return ""
-}
-
-func (x *NotOnlineImage) GetFlag() []byte {
-	if x != nil {
-		return x.Flag
-	}
-	return nil
 }
 
 func (x *NotOnlineImage) GetThumbUrl() string {
@@ -2289,13 +1435,6 @@ func (x *NotOnlineImage) GetIndex() int32 {
 	return 0
 }
 
-func (x *NotOnlineImage) GetOpFaceBuf() []byte {
-	if x != nil {
-		return x.OpFaceBuf
-	}
-	return nil
-}
-
 func (x *NotOnlineImage) GetOldPicMd5() bool {
 	if x != nil && x.OldPicMd5 != nil {
 		return *x.OldPicMd5
@@ -2338,13 +1477,6 @@ func (x *NotOnlineImage) GetDownloadLen() int32 {
 	return 0
 }
 
-func (x *NotOnlineImage) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
 type NotOnlineFile struct {
 	FileType      *int32   `protobuf:"varint,1,opt"`
 	Sig           []byte   `protobuf:"bytes,2,opt"`
@@ -2374,46 +1506,11 @@ func (x *NotOnlineFile) GetFileType() int32 {
 	return 0
 }
 
-func (x *NotOnlineFile) GetSig() []byte {
-	if x != nil {
-		return x.Sig
-	}
-	return nil
-}
-
-func (x *NotOnlineFile) GetFileUuid() []byte {
-	if x != nil {
-		return x.FileUuid
-	}
-	return nil
-}
-
-func (x *NotOnlineFile) GetFileMd5() []byte {
-	if x != nil {
-		return x.FileMd5
-	}
-	return nil
-}
-
-func (x *NotOnlineFile) GetFileName() []byte {
-	if x != nil {
-		return x.FileName
-	}
-	return nil
-}
-
 func (x *NotOnlineFile) GetFileSize() int64 {
 	if x != nil && x.FileSize != nil {
 		return *x.FileSize
 	}
 	return 0
-}
-
-func (x *NotOnlineFile) GetNote() []byte {
-	if x != nil {
-		return x.Note
-	}
-	return nil
 }
 
 func (x *NotOnlineFile) GetReserved() int32 {
@@ -2435,13 +1532,6 @@ func (x *NotOnlineFile) GetMicroCloud() int32 {
 		return *x.MicroCloud
 	}
 	return 0
-}
-
-func (x *NotOnlineFile) GetBytesFileUrls() [][]byte {
-	if x != nil {
-		return x.BytesFileUrls
-	}
-	return nil
 }
 
 func (x *NotOnlineFile) GetDownloadFlag() int32 {
@@ -2493,13 +1583,6 @@ func (x *NotOnlineFile) GetExpireTime() int32 {
 	return 0
 }
 
-func (x *NotOnlineFile) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
 type TransElem struct {
 	ElemType  *int32 `protobuf:"varint,1,opt"`
 	ElemValue []byte `protobuf:"bytes,2,opt"`
@@ -2510,13 +1593,6 @@ func (x *TransElem) GetElemType() int32 {
 		return *x.ElemType
 	}
 	return 0
-}
-
-func (x *TransElem) GetElemValue() []byte {
-	if x != nil {
-		return x.ElemValue
-	}
-	return nil
 }
 
 type ExtraInfo struct {
@@ -2532,20 +1608,6 @@ type ExtraInfo struct {
 	MsgStateFlag  *int32 `protobuf:"varint,10,opt"`
 	ApnsSoundType *int32 `protobuf:"varint,11,opt"`
 	NewGroupFlag  *int32 `protobuf:"varint,12,opt"`
-}
-
-func (x *ExtraInfo) GetNick() []byte {
-	if x != nil {
-		return x.Nick
-	}
-	return nil
-}
-
-func (x *ExtraInfo) GetGroupCard() []byte {
-	if x != nil {
-		return x.GroupCard
-	}
-	return nil
 }
 
 func (x *ExtraInfo) GetLevel() int32 {
@@ -2574,20 +1636,6 @@ func (x *ExtraInfo) GetMsgTailId() int32 {
 		return *x.MsgTailId
 	}
 	return 0
-}
-
-func (x *ExtraInfo) GetSenderTitle() []byte {
-	if x != nil {
-		return x.SenderTitle
-	}
-	return nil
-}
-
-func (x *ExtraInfo) GetApnsTips() []byte {
-	if x != nil {
-		return x.ApnsTips
-	}
-	return nil
 }
 
 func (x *ExtraInfo) GetUin() int64 {
@@ -2631,46 +1679,11 @@ type GroupFile struct {
 	PbReserve   []byte `protobuf:"bytes,10,opt"`
 }
 
-func (x *GroupFile) GetFilename() []byte {
-	if x != nil {
-		return x.Filename
-	}
-	return nil
-}
-
 func (x *GroupFile) GetFileSize() int64 {
 	if x != nil && x.FileSize != nil {
 		return *x.FileSize
 	}
 	return 0
-}
-
-func (x *GroupFile) GetFileId() []byte {
-	if x != nil {
-		return x.FileId
-	}
-	return nil
-}
-
-func (x *GroupFile) GetBatchId() []byte {
-	if x != nil {
-		return x.BatchId
-	}
-	return nil
-}
-
-func (x *GroupFile) GetFileKey() []byte {
-	if x != nil {
-		return x.FileKey
-	}
-	return nil
-}
-
-func (x *GroupFile) GetMark() []byte {
-	if x != nil {
-		return x.Mark
-	}
-	return nil
 }
 
 func (x *GroupFile) GetSequence() int64 {
@@ -2680,25 +1693,11 @@ func (x *GroupFile) GetSequence() int64 {
 	return 0
 }
 
-func (x *GroupFile) GetBatchItemId() []byte {
-	if x != nil {
-		return x.BatchItemId
-	}
-	return nil
-}
-
 func (x *GroupFile) GetFeedMsgTime() int32 {
 	if x != nil && x.FeedMsgTime != nil {
 		return *x.FeedMsgTime
 	}
 	return 0
-}
-
-func (x *GroupFile) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
 }
 
 type AnonymousGroupMessage struct {
@@ -2716,20 +1715,6 @@ func (x *AnonymousGroupMessage) GetFlags() int32 {
 		return *x.Flags
 	}
 	return 0
-}
-
-func (x *AnonymousGroupMessage) GetAnonId() []byte {
-	if x != nil {
-		return x.AnonId
-	}
-	return nil
-}
-
-func (x *AnonymousGroupMessage) GetAnonNick() []byte {
-	if x != nil {
-		return x.AnonNick
-	}
-	return nil
 }
 
 func (x *AnonymousGroupMessage) GetHeadPortrait() int32 {
@@ -2751,13 +1736,6 @@ func (x *AnonymousGroupMessage) GetBubbleId() int32 {
 		return *x.BubbleId
 	}
 	return 0
-}
-
-func (x *AnonymousGroupMessage) GetRankColor() []byte {
-	if x != nil {
-		return x.RankColor
-	}
-	return nil
 }
 
 type VideoFile struct {
@@ -2785,27 +1763,6 @@ type VideoFile struct {
 	ThumbDownloadFlag      *int32   `protobuf:"varint,22,opt"`
 	VideoDownloadFlag      *int32   `protobuf:"varint,23,opt"`
 	PbReserve              []byte   `protobuf:"bytes,24,opt"`
-}
-
-func (x *VideoFile) GetFileUuid() []byte {
-	if x != nil {
-		return x.FileUuid
-	}
-	return nil
-}
-
-func (x *VideoFile) GetFileMd5() []byte {
-	if x != nil {
-		return x.FileMd5
-	}
-	return nil
-}
-
-func (x *VideoFile) GetFileName() []byte {
-	if x != nil {
-		return x.FileName
-	}
-	return nil
 }
 
 func (x *VideoFile) GetFileFormat() int32 {
@@ -2841,20 +1798,6 @@ func (x *VideoFile) GetThumbHeight() int32 {
 		return *x.ThumbHeight
 	}
 	return 0
-}
-
-func (x *VideoFile) GetThumbFileMd5() []byte {
-	if x != nil {
-		return x.ThumbFileMd5
-	}
-	return nil
-}
-
-func (x *VideoFile) GetSource() []byte {
-	if x != nil {
-		return x.Source
-	}
-	return nil
 }
 
 func (x *VideoFile) GetThumbFileSize() int32 {
@@ -2920,20 +1863,6 @@ func (x *VideoFile) GetVideoAttr() int32 {
 	return 0
 }
 
-func (x *VideoFile) GetBytesThumbFileUrls() [][]byte {
-	if x != nil {
-		return x.BytesThumbFileUrls
-	}
-	return nil
-}
-
-func (x *VideoFile) GetBytesVideoFileUrls() [][]byte {
-	if x != nil {
-		return x.BytesVideoFileUrls
-	}
-	return nil
-}
-
 func (x *VideoFile) GetThumbDownloadFlag() int32 {
 	if x != nil && x.ThumbDownloadFlag != nil {
 		return *x.ThumbDownloadFlag
@@ -2948,13 +1877,6 @@ func (x *VideoFile) GetVideoDownloadFlag() int32 {
 	return 0
 }
 
-func (x *VideoFile) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
 type SourceMsg struct {
 	OrigSeqs  []int32 `protobuf:"varint,1,rep"`
 	SenderUin *int64  `protobuf:"varint,2,opt"`
@@ -2967,13 +1889,6 @@ type SourceMsg struct {
 	SrcMsg    []byte  `protobuf:"bytes,9,opt"`
 	ToUin     *int64  `protobuf:"varint,10,opt"`
 	TroopName []byte  `protobuf:"bytes,11,opt"`
-}
-
-func (x *SourceMsg) GetOrigSeqs() []int32 {
-	if x != nil {
-		return x.OrigSeqs
-	}
-	return nil
 }
 
 func (x *SourceMsg) GetSenderUin() int64 {
@@ -2997,13 +1912,6 @@ func (x *SourceMsg) GetFlag() int32 {
 	return 0
 }
 
-func (x *SourceMsg) GetElems() []*Elem {
-	if x != nil {
-		return x.Elems
-	}
-	return nil
-}
-
 func (x *SourceMsg) GetType() int32 {
 	if x != nil && x.Type != nil {
 		return *x.Type
@@ -3011,39 +1919,11 @@ func (x *SourceMsg) GetType() int32 {
 	return 0
 }
 
-func (x *SourceMsg) GetRichMsg() []byte {
-	if x != nil {
-		return x.RichMsg
-	}
-	return nil
-}
-
-func (x *SourceMsg) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
-func (x *SourceMsg) GetSrcMsg() []byte {
-	if x != nil {
-		return x.SrcMsg
-	}
-	return nil
-}
-
 func (x *SourceMsg) GetToUin() int64 {
 	if x != nil && x.ToUin != nil {
 		return *x.ToUin
 	}
 	return 0
-}
-
-func (x *SourceMsg) GetTroopName() []byte {
-	if x != nil {
-		return x.TroopName
-	}
-	return nil
 }
 
 type Face struct {
@@ -3059,37 +1939,9 @@ func (x *Face) GetIndex() int32 {
 	return 0
 }
 
-func (x *Face) GetOld() []byte {
-	if x != nil {
-		return x.Old
-	}
-	return nil
-}
-
-func (x *Face) GetBuf() []byte {
-	if x != nil {
-		return x.Buf
-	}
-	return nil
-}
-
 type LightAppElem struct {
 	Data     []byte `protobuf:"bytes,1,opt"`
 	MsgResid []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *LightAppElem) GetData() []byte {
-	if x != nil {
-		return x.Data
-	}
-	return nil
-}
-
-func (x *LightAppElem) GetMsgResid() []byte {
-	if x != nil {
-		return x.MsgResid
-	}
-	return nil
 }
 
 type CustomFace struct {
@@ -3129,13 +1981,6 @@ type CustomFace struct {
 	PbReserve   []byte  `protobuf:"bytes,34,opt"`
 }
 
-func (x *CustomFace) GetGuid() []byte {
-	if x != nil {
-		return x.Guid
-	}
-	return nil
-}
-
 func (x *CustomFace) GetFilePath() string {
 	if x != nil && x.FilePath != nil {
 		return *x.FilePath
@@ -3148,27 +1993,6 @@ func (x *CustomFace) GetShortcut() string {
 		return *x.Shortcut
 	}
 	return ""
-}
-
-func (x *CustomFace) GetBuffer() []byte {
-	if x != nil {
-		return x.Buffer
-	}
-	return nil
-}
-
-func (x *CustomFace) GetFlag() []byte {
-	if x != nil {
-		return x.Flag
-	}
-	return nil
-}
-
-func (x *CustomFace) GetOldData() []byte {
-	if x != nil {
-		return x.OldData
-	}
-	return nil
 }
 
 func (x *CustomFace) GetFileId() int32 {
@@ -3199,25 +2023,11 @@ func (x *CustomFace) GetFileType() int32 {
 	return 0
 }
 
-func (x *CustomFace) GetSignature() []byte {
-	if x != nil {
-		return x.Signature
-	}
-	return nil
-}
-
 func (x *CustomFace) GetUseful() int32 {
 	if x != nil && x.Useful != nil {
 		return *x.Useful
 	}
 	return 0
-}
-
-func (x *CustomFace) GetMd5() []byte {
-	if x != nil {
-		return x.Md5
-	}
-	return nil
 }
 
 func (x *CustomFace) GetThumbUrl() string {
@@ -3360,13 +2170,6 @@ func (x *CustomFace) GetX400Height() int32 {
 	return 0
 }
 
-func (x *CustomFace) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
 type ContentHead struct {
 	PkgNum    *int32 `protobuf:"varint,1,opt"`
 	PkgIndex  *int32 `protobuf:"varint,2,opt"`
@@ -3482,20 +2285,6 @@ func (x *MessageHead) GetMsgUid() int64 {
 	return 0
 }
 
-func (x *MessageHead) GetC2CTmpMsgHead() *C2CTempMessageHead {
-	if x != nil {
-		return x.C2CTmpMsgHead
-	}
-	return nil
-}
-
-func (x *MessageHead) GetGroupInfo() *GroupInfo {
-	if x != nil {
-		return x.GroupInfo
-	}
-	return nil
-}
-
 func (x *MessageHead) GetFromAppid() int32 {
 	if x != nil && x.FromAppid != nil {
 		return *x.FromAppid
@@ -3515,13 +2304,6 @@ func (x *MessageHead) GetUserActive() int32 {
 		return *x.UserActive
 	}
 	return 0
-}
-
-func (x *MessageHead) GetDiscussInfo() *DiscussInfo {
-	if x != nil {
-		return x.DiscussInfo
-	}
-	return nil
 }
 
 func (x *MessageHead) GetFromNick() string {
@@ -3566,20 +2348,6 @@ func (x *MessageHead) GetGroupName() string {
 	return ""
 }
 
-func (x *MessageHead) GetMutiltransHead() *MutilTransHead {
-	if x != nil {
-		return x.MutiltransHead
-	}
-	return nil
-}
-
-func (x *MessageHead) GetMsgInstCtrl() *InstCtrl {
-	if x != nil {
-		return x.MsgInstCtrl
-	}
-	return nil
-}
-
 func (x *MessageHead) GetPublicAccountGroupSendFlag() int32 {
 	if x != nil && x.PublicAccountGroupSendFlag != nil {
 		return *x.PublicAccountGroupSendFlag
@@ -3599,13 +2367,6 @@ func (x *MessageHead) GetCpid() int64 {
 		return *x.Cpid
 	}
 	return 0
-}
-
-func (x *MessageHead) GetExtGroupKeyInfo() *ExtGroupKeyInfo {
-	if x != nil {
-		return x.ExtGroupKeyInfo
-	}
-	return nil
 }
 
 func (x *MessageHead) GetMultiCompatibleText() string {
@@ -3668,13 +2429,6 @@ func (x *GroupInfo) GetGroupCard() string {
 	return ""
 }
 
-func (x *GroupInfo) GetGroupRank() []byte {
-	if x != nil {
-		return x.GroupRank
-	}
-	return nil
-}
-
 func (x *GroupInfo) GetGroupLevel() int32 {
 	if x != nil && x.GroupLevel != nil {
 		return *x.GroupLevel
@@ -3687,13 +2441,6 @@ func (x *GroupInfo) GetGroupCardType() int32 {
 		return *x.GroupCardType
 	}
 	return 0
-}
-
-func (x *GroupInfo) GetGroupName() []byte {
-	if x != nil {
-		return x.GroupName
-	}
-	return nil
 }
 
 type DiscussInfo struct {
@@ -3723,20 +2470,6 @@ func (x *DiscussInfo) GetDiscussInfoSeq() int64 {
 		return *x.DiscussInfoSeq
 	}
 	return 0
-}
-
-func (x *DiscussInfo) GetDiscussRemark() []byte {
-	if x != nil {
-		return x.DiscussRemark
-	}
-	return nil
-}
-
-func (x *DiscussInfo) GetDiscussName() []byte {
-	if x != nil {
-		return x.DiscussName
-	}
-	return nil
 }
 
 type MutilTransHead struct {
@@ -3800,13 +2533,6 @@ func (x *C2CTempMessageHead) GetGroupCode() int64 {
 	return 0
 }
 
-func (x *C2CTempMessageHead) GetSig() []byte {
-	if x != nil {
-		return x.Sig
-	}
-	return nil
-}
-
 func (x *C2CTempMessageHead) GetSigType() int32 {
 	if x != nil && x.SigType != nil {
 		return *x.SigType
@@ -3842,38 +2568,10 @@ func (x *C2CTempMessageHead) GetDirectionFlag() int32 {
 	return 0
 }
 
-func (x *C2CTempMessageHead) GetReserved() []byte {
-	if x != nil {
-		return x.Reserved
-	}
-	return nil
-}
-
 type InstCtrl struct {
 	MsgSendToInst  []*InstInfo `protobuf:"bytes,1,rep"`
 	MsgExcludeInst []*InstInfo `protobuf:"bytes,2,rep"`
 	MsgFromInst    *InstInfo   `protobuf:"bytes,3,opt"`
-}
-
-func (x *InstCtrl) GetMsgSendToInst() []*InstInfo {
-	if x != nil {
-		return x.MsgSendToInst
-	}
-	return nil
-}
-
-func (x *InstCtrl) GetMsgExcludeInst() []*InstInfo {
-	if x != nil {
-		return x.MsgExcludeInst
-	}
-	return nil
-}
-
-func (x *InstCtrl) GetMsgFromInst() *InstInfo {
-	if x != nil {
-		return x.MsgFromInst
-	}
-	return nil
 }
 
 type InstInfo struct {
@@ -4084,25 +2782,11 @@ func (x *TransMsgInfo) GetNickName() string {
 	return ""
 }
 
-func (x *TransMsgInfo) GetMsgData() []byte {
-	if x != nil {
-		return x.MsgData
-	}
-	return nil
-}
-
 func (x *TransMsgInfo) GetSvrIp() int32 {
 	if x != nil && x.SvrIp != nil {
 		return *x.SvrIp
 	}
 	return 0
-}
-
-func (x *TransMsgInfo) GetExtGroupKeyInfo() *ExtGroupKeyInfo {
-	if x != nil {
-		return x.ExtGroupKeyInfo
-	}
-	return nil
 }
 
 func (x *TransMsgInfo) GetGeneralFlag() int32 {
@@ -4153,13 +2837,6 @@ func (x *GeneralFlags) GetUin() int64 {
 		return *x.Uin
 	}
 	return 0
-}
-
-func (x *GeneralFlags) GetRpId() []byte {
-	if x != nil {
-		return x.RpId
-	}
-	return nil
 }
 
 func (x *GeneralFlags) GetPrpFold() int32 {
@@ -4225,13 +2902,6 @@ func (x *GeneralFlags) GetOlympicTorch() int32 {
 	return 0
 }
 
-func (x *GeneralFlags) GetBabyqGuideMsgCookie() []byte {
-	if x != nil {
-		return x.BabyqGuideMsgCookie
-	}
-	return nil
-}
-
 func (x *GeneralFlags) GetUin32ExpertFlag() int32 {
 	if x != nil && x.Uin32ExpertFlag != nil {
 		return *x.Uin32ExpertFlag
@@ -4253,20 +2923,6 @@ func (x *GeneralFlags) GetPendantId() int64 {
 	return 0
 }
 
-func (x *GeneralFlags) GetRpIndex() []byte {
-	if x != nil {
-		return x.RpIndex
-	}
-	return nil
-}
-
-func (x *GeneralFlags) GetPbReserve() []byte {
-	if x != nil {
-		return x.PbReserve
-	}
-	return nil
-}
-
 type PbMultiMsgItem struct {
 	FileName *string        `protobuf:"bytes,1,opt"`
 	Buffer   *PbMultiMsgNew `protobuf:"bytes,2,opt"`
@@ -4279,22 +2935,8 @@ func (x *PbMultiMsgItem) GetFileName() string {
 	return ""
 }
 
-func (x *PbMultiMsgItem) GetBuffer() *PbMultiMsgNew {
-	if x != nil {
-		return x.Buffer
-	}
-	return nil
-}
-
 type PbMultiMsgNew struct {
 	Msg []*Message `protobuf:"bytes,1,rep"`
-}
-
-func (x *PbMultiMsgNew) GetMsg() []*Message {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
 }
 
 type PbMultiMsgTransmit struct {
@@ -4302,37 +2944,9 @@ type PbMultiMsgTransmit struct {
 	PbItemList []*PbMultiMsgItem `protobuf:"bytes,2,rep"`
 }
 
-func (x *PbMultiMsgTransmit) GetMsg() []*Message {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
-}
-
-func (x *PbMultiMsgTransmit) GetPbItemList() []*PbMultiMsgItem {
-	if x != nil {
-		return x.PbItemList
-	}
-	return nil
-}
-
 type MsgElemInfoServtype3 struct {
 	FlashTroopPic *CustomFace     `protobuf:"bytes,1,opt"`
 	FlashC2CPic   *NotOnlineImage `protobuf:"bytes,2,opt"`
-}
-
-func (x *MsgElemInfoServtype3) GetFlashTroopPic() *CustomFace {
-	if x != nil {
-		return x.FlashTroopPic
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype3) GetFlashC2CPic() *NotOnlineImage {
-	if x != nil {
-		return x.FlashC2CPic
-	}
-	return nil
 }
 
 type MsgElemInfoServtype33 struct {
@@ -4349,57 +2963,15 @@ func (x *MsgElemInfoServtype33) GetIndex() uint32 {
 	return 0
 }
 
-func (x *MsgElemInfoServtype33) GetText() []byte {
-	if x != nil {
-		return x.Text
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype33) GetCompat() []byte {
-	if x != nil {
-		return x.Compat
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype33) GetBuf() []byte {
-	if x != nil {
-		return x.Buf
-	}
-	return nil
-}
-
 type MsgElemInfoServtype38 struct {
 	ReactData []byte `protobuf:"bytes,1,opt"`
 	ReplyData []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *MsgElemInfoServtype38) GetReactData() []byte {
-	if x != nil {
-		return x.ReactData
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype38) GetReplyData() []byte {
-	if x != nil {
-		return x.ReplyData
-	}
-	return nil
 }
 
 type SubMsgType0X4Body struct {
 	NotOnlineFile              *NotOnlineFile `protobuf:"bytes,1,opt"`
 	MsgTime                    *uint32        `protobuf:"varint,2,opt"`
 	OnlineFileForPolyToOffline *uint32        `protobuf:"varint,3,opt"` // fileImageInfo
-}
-
-func (x *SubMsgType0X4Body) GetNotOnlineFile() *NotOnlineFile {
-	if x != nil {
-		return x.NotOnlineFile
-	}
-	return nil
 }
 
 func (x *SubMsgType0X4Body) GetMsgTime() uint32 {
@@ -4428,13 +3000,6 @@ func (x *ResvAttr) GetImageBizType() uint32 {
 	return 0
 }
 
-func (x *ResvAttr) GetImageShow() *AnimationImageShow {
-	if x != nil {
-		return x.ImageShow
-	}
-	return nil
-}
-
 type AnimationImageShow struct {
 	EffectId       *int32 `protobuf:"varint,1,opt"`
 	AnimationParam []byte `protobuf:"bytes,2,opt"`
@@ -4445,13 +3010,6 @@ func (x *AnimationImageShow) GetEffectId() int32 {
 		return *x.EffectId
 	}
 	return 0
-}
-
-func (x *AnimationImageShow) GetAnimationParam() []byte {
-	if x != nil {
-		return x.AnimationParam
-	}
-	return nil
 }
 
 type UinTypeUserDef struct {
@@ -4592,13 +3150,6 @@ func (x *GetGroupMsgResp) GetReturnEndSeq() uint64 {
 	return 0
 }
 
-func (x *GetGroupMsgResp) GetMsg() []*Message {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
-}
-
 type PbGetOneDayRoamMsgReq struct {
 	PeerUin     *uint64 `protobuf:"varint,1,opt"`
 	LastMsgTime *uint64 `protobuf:"varint,2,opt"`
@@ -4679,13 +3230,6 @@ func (x *PbGetOneDayRoamMsgResp) GetRandom() uint64 {
 	return 0
 }
 
-func (x *PbGetOneDayRoamMsgResp) GetMsg() []*Message {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
-}
-
 func (x *PbGetOneDayRoamMsgResp) GetIsComplete() uint32 {
 	if x != nil && x.IsComplete != nil {
 		return *x.IsComplete
@@ -4702,25 +3246,11 @@ type PbPushMsg struct {
 	BindUin     *uint64  `protobuf:"varint,10,opt"`
 }
 
-func (x *PbPushMsg) GetMsg() *Message {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
-}
-
 func (x *PbPushMsg) GetSvrip() int32 {
 	if x != nil && x.Svrip != nil {
 		return *x.Svrip
 	}
 	return 0
-}
-
-func (x *PbPushMsg) GetPushToken() []byte {
-	if x != nil {
-		return x.PushToken
-	}
-	return nil
 }
 
 func (x *PbPushMsg) GetPingFlag() uint32 {
@@ -4756,20 +3286,6 @@ type MsgElemInfoServtype37 struct {
 	Randomtype  *uint32 `protobuf:"varint,9,opt"`
 }
 
-func (x *MsgElemInfoServtype37) GetPackid() []byte {
-	if x != nil {
-		return x.Packid
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype37) GetStickerid() []byte {
-	if x != nil {
-		return x.Stickerid
-	}
-	return nil
-}
-
 func (x *MsgElemInfoServtype37) GetQsid() uint32 {
 	if x != nil && x.Qsid != nil {
 		return *x.Qsid
@@ -4789,27 +3305,6 @@ func (x *MsgElemInfoServtype37) GetStickertype() uint32 {
 		return *x.Stickertype
 	}
 	return 0
-}
-
-func (x *MsgElemInfoServtype37) GetResultid() []byte {
-	if x != nil {
-		return x.Resultid
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype37) GetText() []byte {
-	if x != nil {
-		return x.Text
-	}
-	return nil
-}
-
-func (x *MsgElemInfoServtype37) GetSurpriseid() []byte {
-	if x != nil {
-		return x.Surpriseid
-	}
-	return nil
 }
 
 func (x *MsgElemInfoServtype37) GetRandomtype() uint32 {

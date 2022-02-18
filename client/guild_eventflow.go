@@ -52,7 +52,7 @@ func decodeGuildEventFlowPacket(c *QQClient, resp *network.Response) (interface{
 		if m.Head.ContentHead.GetType() == 3841 {
 			// todo: 回头 event flow 的处理移出去重构下逻辑, 先暂时这样方便改
 			var common *msg.CommonElem
-			if m.Body != nil {
+			if m.Body != nil && m.Body.RichText != nil {
 				for _, e := range m.Body.RichText.Elems {
 					if e.CommonElem != nil {
 						common = e.CommonElem

@@ -22,20 +22,6 @@ func (x *ChannelOidb0Xf5BRsp) GetGuildId() uint64 {
 	return 0
 }
 
-func (x *ChannelOidb0Xf5BRsp) GetBots() []*GuildMemberInfo {
-	if x != nil {
-		return x.Bots
-	}
-	return nil
-}
-
-func (x *ChannelOidb0Xf5BRsp) GetMembers() []*GuildMemberInfo {
-	if x != nil {
-		return x.Members
-	}
-	return nil
-}
-
 func (x *ChannelOidb0Xf5BRsp) GetNextIndex() uint32 {
 	if x != nil && x.NextIndex != nil {
 		return *x.NextIndex
@@ -57,13 +43,6 @@ func (x *ChannelOidb0Xf5BRsp) GetNextQueryParam() string {
 	return ""
 }
 
-func (x *ChannelOidb0Xf5BRsp) GetMemberWithRoles() []*GuildGroupMembersInfo {
-	if x != nil {
-		return x.MemberWithRoles
-	}
-	return nil
-}
-
 func (x *ChannelOidb0Xf5BRsp) GetNextRoleIdIndex() uint64 {
 	if x != nil && x.NextRoleIdIndex != nil {
 		return *x.NextRoleIdIndex
@@ -75,66 +54,24 @@ type ChannelOidb0Xf88Rsp struct {
 	Profile *GuildUserProfile `protobuf:"bytes,1,opt"`
 }
 
-func (x *ChannelOidb0Xf88Rsp) GetProfile() *GuildUserProfile {
-	if x != nil {
-		return x.Profile
-	}
-	return nil
-}
-
 type ChannelOidb0Xfc9Rsp struct {
 	Profile *GuildUserProfile `protobuf:"bytes,1,opt"`
-}
-
-func (x *ChannelOidb0Xfc9Rsp) GetProfile() *GuildUserProfile {
-	if x != nil {
-		return x.Profile
-	}
-	return nil
 }
 
 type ChannelOidb0Xf57Rsp struct {
 	Rsp *GuildMetaRsp `protobuf:"bytes,1,opt"`
 }
 
-func (x *ChannelOidb0Xf57Rsp) GetRsp() *GuildMetaRsp {
-	if x != nil {
-		return x.Rsp
-	}
-	return nil
-}
-
 type ChannelOidb0Xf55Rsp struct {
 	Info *GuildChannelInfo `protobuf:"bytes,1,opt"`
-}
-
-func (x *ChannelOidb0Xf55Rsp) GetInfo() *GuildChannelInfo {
-	if x != nil {
-		return x.Info
-	}
-	return nil
 }
 
 type ChannelOidb0Xf5DRsp struct {
 	Rsp *ChannelListRsp `protobuf:"bytes,1,opt"`
 }
 
-func (x *ChannelOidb0Xf5DRsp) GetRsp() *ChannelListRsp {
-	if x != nil {
-		return x.Rsp
-	}
-	return nil
-}
-
 type ChannelOidb0X1017Rsp struct {
 	P1 *P10X1017 `protobuf:"bytes,1,opt"`
-}
-
-func (x *ChannelOidb0X1017Rsp) GetP1() *P10X1017 {
-	if x != nil {
-		return x.P1
-	}
-	return nil
 }
 
 type P10X1017 struct {
@@ -149,13 +86,6 @@ func (x *P10X1017) GetTinyId() uint64 {
 	return 0
 }
 
-func (x *P10X1017) GetRoles() []*GuildUserRole {
-	if x != nil {
-		return x.Roles
-	}
-	return nil
-}
-
 type ChannelOidb0X1019Rsp struct {
 	GuildId *uint64      `protobuf:"varint,1,opt"`
 	Roles   []*GuildRole `protobuf:"bytes,2,rep"`
@@ -166,13 +96,6 @@ func (x *ChannelOidb0X1019Rsp) GetGuildId() uint64 {
 		return *x.GuildId
 	}
 	return 0
-}
-
-func (x *ChannelOidb0X1019Rsp) GetRoles() []*GuildRole {
-	if x != nil {
-		return x.Roles
-	}
-	return nil
 }
 
 type ChannelOidb0X1016Rsp struct {
@@ -198,13 +121,6 @@ func (x *GuildMetaRsp) GetGuildId() uint64 {
 	return 0
 }
 
-func (x *GuildMetaRsp) GetMeta() *GuildMeta {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
-}
-
 type ChannelListRsp struct {
 	GuildId  *uint64             `protobuf:"varint,1,opt"`
 	Channels []*GuildChannelInfo `protobuf:"bytes,2,rep"` // 5: Category infos
@@ -215,13 +131,6 @@ func (x *ChannelListRsp) GetGuildId() uint64 {
 		return *x.GuildId
 	}
 	return 0
-}
-
-func (x *ChannelListRsp) GetChannels() []*GuildChannelInfo {
-	if x != nil {
-		return x.Channels
-	}
-	return nil
 }
 
 type GuildGroupMembersInfo struct {
@@ -236,13 +145,6 @@ func (x *GuildGroupMembersInfo) GetRoleId() uint64 {
 		return *x.RoleId
 	}
 	return 0
-}
-
-func (x *GuildGroupMembersInfo) GetMembers() []*GuildMemberInfo {
-	if x != nil {
-		return x.Members
-	}
-	return nil
 }
 
 func (x *GuildGroupMembersInfo) GetRoleName() string {
@@ -629,25 +531,11 @@ func (x *GuildChannelInfo) GetVisibleType() int32 {
 	return 0
 }
 
-func (x *GuildChannelInfo) GetTopMsg() *GuildChannelTopMsgInfo {
-	if x != nil {
-		return x.TopMsg
-	}
-	return nil
-}
-
 func (x *GuildChannelInfo) GetCurrentSlowModeKey() int32 {
 	if x != nil && x.CurrentSlowModeKey != nil {
 		return *x.CurrentSlowModeKey
 	}
 	return 0
-}
-
-func (x *GuildChannelInfo) GetSlowModeInfos() []*GuildChannelSlowModeInfo {
-	if x != nil {
-		return x.SlowModeInfos
-	}
-	return nil
 }
 
 type GuildChannelSlowModeInfo struct {
