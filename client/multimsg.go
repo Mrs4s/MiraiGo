@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"time"
@@ -190,23 +191,18 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 	if multiMsg.PbItemList == nil {
 		return nil
 	}
-	var pv string
+	var pv bytes.Buffer
 	for i := 0; i < int(math.Min(4, float64(len(multiMsg.Msg)))); i++ {
 		m := multiMsg.Msg[i]
-		pv += fmt.Sprintf(`<title size="26" color="#777777">%s: %s</title>`,
-			func() string {
-				if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-					return m.Head.GroupInfo.GetGroupCard()
-				}
-				return m.Head.GetFromNick()
-			}(),
-			message.ToReadableString(
-				message.ParseMessageElems(multiMsg.Msg[i].Body.RichText.Elems),
-			),
-		)
+		sender := m.Head.GetFromNick()
+		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
+			sender = m.Head.GroupInfo.GetGroupCard()
+		}
+		brief := message.ToReadableString(message.ParseMessageElems(multiMsg.Msg[i].Body.RichText.Elems))
+		fmt.Fprintf(&pv, `<title size="26" color="#777777">%s: %s</title>`, sender, brief)
 	}
 	return genForwardTemplate(
-		resId, pv, "群聊的聊天记录", "[聊天记录]", "聊天记录",
+		resId, pv.String(), "群聊的聊天记录", "[聊天记录]", "聊天记录",
 		fmt.Sprintf("查看 %d 条转发消息", len(multiMsg.Msg)),
 		time.Now().UnixNano(),
 		multiMsg.PbItemList,

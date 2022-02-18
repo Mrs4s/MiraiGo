@@ -14,7 +14,6 @@ import (
 	"go.uber.org/atomic"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/binary/jce"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
@@ -74,8 +73,8 @@ type QQClient struct {
 	// timeDiff       int64
 
 	// address
-	otherSrvAddrs   []string
-	fileStorageInfo *jce.FileStoragePushFSSvcList
+	// otherSrvAddrs   []string
+	// fileStorageInfo *jce.FileStoragePushFSSvcList
 
 	// message state
 	msgSvcCache            *utils.Cache

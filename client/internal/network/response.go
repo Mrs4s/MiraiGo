@@ -55,7 +55,7 @@ func (t *Transport) ReadResponse(head []byte) (*Response, error) {
 func (t *Transport) readSSOFrame(resp *Response, payload []byte) error {
 	reader := binary.NewReader(payload)
 	headLen := reader.ReadInt32()
-	if headLen-4 > int32(reader.Len()) {
+	if headLen < 4 || headLen-4 > int32(reader.Len()) {
 		return errors.WithStack(ErrPacketDropped)
 	}
 
