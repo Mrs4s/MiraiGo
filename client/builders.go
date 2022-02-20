@@ -1150,15 +1150,50 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xd79", payload)
 }
 
-// OidbSvc.0x4ff_9
-func (c *QQClient) buildUpdateQQNicknamePacket(name string) (uint16, []byte) {
+type ProfileDetailUpdate map[uint16][]byte
+
+func NewProfileDetailUpdate() ProfileDetailUpdate {
+	return map[uint16][]byte{}
+}
+
+func (p ProfileDetailUpdate) Nick(value string) ProfileDetailUpdate {
+	p[20002] = []byte(value)
+	return p
+}
+
+func (p ProfileDetailUpdate) Email(value string) ProfileDetailUpdate {
+	p[20011] = []byte(value)
+	return p
+}
+
+func (p ProfileDetailUpdate) PersonalNote(value string) ProfileDetailUpdate {
+	p[20019] = []byte(value)
+	return p
+}
+
+func (p ProfileDetailUpdate) Company(value string) ProfileDetailUpdate {
+	p[24008] = []byte(value)
+	return p
+}
+
+func (p ProfileDetailUpdate) College(value string) ProfileDetailUpdate {
+	p[20021] = []byte(value)
+	return p
+}
+
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateProfileDetailPacket(profileRecord map[uint16][]byte) (uint16, []byte) {
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(c.Uin))
 		w.WriteByte(0)
-		w.WriteUInt32(uint32(85538))
-		w.WriteStringShort(name)
+		w.WriteUInt16(uint16(len(profileRecord)))
+		for tag, value := range profileRecord {
+			w.WriteUInt16(tag)
+			w.WriteUInt16(uint16(len(value)))
+			w.Write(value)
+		}
 	})
 	payload := c.packOIDBPackage(1279, 9, b)
 	cl()
-	return c.uniPacket("OidbSvc.0x4ff_9", payload)
+	return c.uniPacket("OidbSvc.0x4ff_9_IMCore", payload)
 }

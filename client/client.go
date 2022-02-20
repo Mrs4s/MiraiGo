@@ -750,9 +750,9 @@ func (g *GroupInfo) removeMember(uin int64) {
 	})
 }
 
-// SetNickname 设置 QQ 昵称
-func (c *QQClient) SetNickname(name string) {
-	_, _ = c.sendAndWait(c.buildUpdateQQNicknamePacket(name))
+// UpdateProfile 修改个人资料
+func (c *QQClient) UpdateProfile(profile ProfileDetailUpdate) {
+	_, _ = c.sendAndWait(c.buildUpdateProfileDetailPacket(profile))
 }
 
 func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
