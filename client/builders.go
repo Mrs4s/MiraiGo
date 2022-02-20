@@ -1152,11 +1152,10 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 
 // OidbSvc.0x4ff_9
 func (c *QQClient) buildUpdateQQNicknamePacket(name string) (uint16, []byte) {
-	var cmd int32 = 85538
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(c.Uin))
 		w.WriteByte(0)
-		w.WriteUInt32(uint32(cmd))
+		w.WriteUInt32(uint32(85538))
 		w.WriteStringShort(name)
 	})
 	payload := c.packOIDBPackage(1279, 9, b)
