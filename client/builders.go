@@ -1150,15 +1150,54 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xd79", payload)
 }
 
-// OidbSvc.0x4ff_9
-func (c *QQClient) buildUpdateQQNicknamePacket(name string) (uint16, []byte) {
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateQQNicknamePacket(nick string) (uint16, []byte) {
+	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
+		20002: []byte(nick),
+	})
+}
+
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateQQEmailPacket(email string) (uint16, []byte) {
+	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
+		20011: []byte(email),
+	})
+}
+
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateQQPersonalNotePacket(personalNote string) (uint16, []byte) {
+	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
+		20019: []byte(personalNote),
+	})
+}
+
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateQQCompanyPacket(company string) (uint16, []byte) {
+	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
+		24008: []byte(company),
+	})
+}
+
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateQQCollegePacket(college string) (uint16, []byte) {
+	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
+		20021: []byte(college),
+	})
+}
+
+// OidbSvc.0x4ff_9_IMCore
+func (c *QQClient) buildUpdateProfileDetailPacket(profileRecord map[uint16][]byte) (uint16, []byte) {
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
 		w.WriteUInt32(uint32(c.Uin))
 		w.WriteByte(0)
-		w.WriteUInt32(uint32(85538))
-		w.WriteStringShort(name)
+		w.WriteUInt16(uint16(len(profileRecord)))
+		for tag, value := range profileRecord {
+			w.WriteUInt16(tag)
+			w.WriteUInt16(uint16(len(value)))
+			w.Write(value)
+		}
 	})
 	payload := c.packOIDBPackage(1279, 9, b)
 	cl()
-	return c.uniPacket("OidbSvc.0x4ff_9", payload)
+	return c.uniPacket("OidbSvc.0x4ff_9_IMCore", payload)
 }

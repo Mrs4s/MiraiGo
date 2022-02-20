@@ -755,6 +755,26 @@ func (c *QQClient) SetNickname(name string) {
 	_, _ = c.sendAndWait(c.buildUpdateQQNicknamePacket(name))
 }
 
+// SetEmail 设置邮箱
+func (c *QQClient) SetEmail(name string) {
+	_, _ = c.sendAndWait(c.buildUpdateQQEmailPacket(name))
+}
+
+// SetPersonalNote 设置个人说明
+func (c *QQClient) SetPersonalNote(personalNote string) {
+	_, _ = c.sendAndWait(c.buildUpdateQQPersonalNotePacket(personalNote))
+}
+
+// SetCompany 设置公司
+func (c *QQClient) SetCompany(company string) {
+	_, _ = c.sendAndWait(c.buildUpdateQQCompanyPacket(company))
+}
+
+// SetCollege 设置学校
+func (c *QQClient) SetCollege(college string) {
+	_, _ = c.sendAndWait(c.buildUpdateQQCollegePacket(college))
+}
+
 func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 	c.servers = append(servers, c.servers...)
 }
