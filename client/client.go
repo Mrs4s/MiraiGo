@@ -750,6 +750,11 @@ func (g *GroupInfo) removeMember(uin int64) {
 	})
 }
 
+// SetNickname 设置 QQ 昵称
+func (c *QQClient) SetNickname(name string) {
+	_, _ = c.sendAndWait(c.buildUpdateQQNicknamePacket(name))
+}
+
 func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
 	c.servers = append(servers, c.servers...)
 }
