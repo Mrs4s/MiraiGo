@@ -1150,44 +1150,35 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xd79", payload)
 }
 
-type ProfileDetailUpdate = map[uint16][]byte
+type ProfileDetailUpdate map[uint16][]byte
 
-func NewProfileDetailUpdate(options ...func(p map[uint16][]byte)) ProfileDetailUpdate {
-	update := map[uint16][]byte{}
-	for _, option := range options {
-		option(update)
-	}
-	return update
+func NewProfileDetailUpdate() ProfileDetailUpdate {
+	return map[uint16][]byte{}
 }
 
-func WithNick(value string) func(p map[uint16][]byte) {
-	return func(p map[uint16][]byte) {
-		p[20002] = []byte(value)
-	}
+func (p ProfileDetailUpdate) Nick(value string) ProfileDetailUpdate {
+	p[20002] = []byte(value)
+	return p
 }
 
-func WithEmail(value string) func(p map[uint16][]byte) {
-	return func(p map[uint16][]byte) {
-		p[20011] = []byte(value)
-	}
+func (p ProfileDetailUpdate) Email(value string) ProfileDetailUpdate {
+	p[20011] = []byte(value)
+	return p
 }
 
-func WithPersonalNote(value string) func(p map[uint16][]byte) {
-	return func(p map[uint16][]byte) {
-		p[20019] = []byte(value)
-	}
+func (p ProfileDetailUpdate) PersonalNote(value string) ProfileDetailUpdate {
+	p[20019] = []byte(value)
+	return p
 }
 
-func WithCompany(value string) func(p map[uint16][]byte) {
-	return func(p map[uint16][]byte) {
-		p[24008] = []byte(value)
-	}
+func (p ProfileDetailUpdate) Company(value string) ProfileDetailUpdate {
+	p[24008] = []byte(value)
+	return p
 }
 
-func WithCollege(value string) func(p map[uint16][]byte) {
-	return func(p map[uint16][]byte) {
-		p[20021] = []byte(value)
-	}
+func (p ProfileDetailUpdate) College(value string) ProfileDetailUpdate {
+	p[20021] = []byte(value)
+	return p
 }
 
 // OidbSvc.0x4ff_9_IMCore
