@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"io"
-	"os"
 
 	"github.com/pkg/errors"
 
@@ -134,14 +133,10 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 }
 
 // UploadGroupShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送
-// combinedCache 本地文件缓存, 设置后可多线程上传
-func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSeeker, combinedCache ...string) (*message.ShortVideoElement, error) {
+// thread 上传线程数
+func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSeeker, thread int) (*message.ShortVideoElement, error) {
 	videoHash, videoLen := utils.ComputeMd5AndLength(video)
 	thumbHash, thumbLen := utils.ComputeMd5AndLength(thumb)
-	cache := ""
-	if len(combinedCache) > 0 {
-		cache = combinedCache[0]
-	}
 
 	key := string(videoHash) + string(thumbHash)
 	pttWaiter.Wait(key)
@@ -164,30 +159,27 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen, 1).PttShortVideoUploadReq)
 
 	var hwRsp []byte
-	multi := utils.MultiReadSeeker(thumb, video)
-	input := highway.BdhInput{
-		CommandID: 25,
-		File:      cache,
-		Body:      multi,
-		Ticket:    c.highwaySession.SigSession,
-		Ext:       ext,
-		Encrypt:   true,
-	}
-	if cache != "" {
-		var file *os.File
-		file, err = os.OpenFile(cache, os.O_WRONLY|os.O_CREATE, 0o666)
-		cp := func() error {
-			_, err := io.Copy(file, utils.MultiReadSeeker(thumb, video))
-			return err
+	if thread > 1 {
+		sum, _ := utils.ComputeMd5AndLength(utils.MultiReadSeeker(thumb, video))
+		input := highway.BdhMultiThreadInput{
+			CommandID: 25,
+			Body:      utils.ReaderAtFrom2ReadSeeker(thumb, video),
+			Size:      videoLen + thumbLen,
+			Sum:       sum,
+			Ticket:    c.highwaySession.SigSession,
+			Ext:       ext,
+			Encrypt:   true,
 		}
-		if err != nil || cp() != nil {
-			hwRsp, err = c.highwaySession.UploadBDH(input)
-		} else {
-			_ = file.Close()
-			hwRsp, err = c.highwaySession.UploadBDHMultiThread(input, 8)
-			_ = os.Remove(cache)
-		}
+		hwRsp, err = c.highwaySession.UploadBDHMultiThread(input, thread)
 	} else {
+		multi := utils.MultiReadSeeker(thumb, video)
+		input := highway.BdhInput{
+			CommandID: 25,
+			Body:      multi,
+			Ticket:    c.highwaySession.SigSession,
+			Ext:       ext,
+			Encrypt:   true,
+		}
 		hwRsp, err = c.highwaySession.UploadBDH(input)
 	}
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"io"
 	"net"
-	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -20,14 +19,33 @@ import (
 
 type BdhInput struct {
 	CommandID int32
-	File      string // upload multi-thread required
 	Body      io.ReadSeeker
 	Ticket    []byte
 	Ext       []byte
 	Encrypt   bool
 }
 
+type BdhMultiThreadInput struct {
+	CommandID int32
+	Body      io.ReaderAt
+	Sum       []byte
+	Size      int64
+	Ticket    []byte
+	Ext       []byte
+	Encrypt   bool
+}
+
 func (bdh *BdhInput) encrypt(key []byte) error {
+	if bdh.Encrypt {
+		if len(key) == 0 {
+			return errors.New("session key not found. maybe miss some packet?")
+		}
+		bdh.Ext = binary.NewTeaCipher(key).Encrypt(bdh.Ext)
+	}
+	return nil
+}
+
+func (bdh *BdhMultiThreadInput) encrypt(key []byte) error {
 	if bdh.Encrypt {
 		if len(key) == 0 {
 			return errors.New("session key not found. maybe miss some packet?")
@@ -120,42 +138,35 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	return rspExt, nil
 }
 
-func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte, error) {
+func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount int) ([]byte, error) {
+	// for small file and small thread count,
+	// use UploadBDH instead of UploadBDHMultiThread
+	if input.Size < 1024*1024*3 || threadCount < 2 {
+		return s.UploadBDH(BdhInput{
+			CommandID: input.CommandID,
+			Body:      io.NewSectionReader(input.Body, 0, input.Size),
+			Ticket:    input.Ticket,
+			Ext:       input.Ext,
+			Encrypt:   input.Encrypt,
+		})
+	}
+
 	if len(s.SsoAddr) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
 	addr := s.SsoAddr[0].String()
 
-	stat, err := os.Stat(input.File)
-	if err != nil {
-		return nil, errors.Wrap(err, "get stat error")
-	}
-	file, err := os.OpenFile(input.File, os.O_RDONLY, 0o666)
-	if err != nil {
-		return nil, errors.Wrap(err, "open file error")
-	}
-	sum, length := utils.ComputeMd5AndLength(file)
-	_, _ = file.Seek(0, io.SeekStart)
-
 	if err := input.encrypt(s.SessionKey); err != nil {
 		return nil, errors.Wrap(err, "encrypt error")
 	}
 
-	// for small file and small thread count,
-	// use UploadBDH instead of UploadBDHMultiThread
-	if length < 1024*1024*3 || threadCount < 2 {
-		input.Body = file
-		return s.UploadBDH(input)
-	}
-
 	type BlockMetaData struct {
-		Id          int
-		BeginOffset int64
-		EndOffset   int64
+		Id     int
+		Offset int64
 	}
 	const blockSize int64 = 1024 * 512
 	var (
-		blocks        []*BlockMetaData
+		blocks        []BlockMetaData
 		rspExt        []byte
 		BlockId       = ^uint32(0) // -1
 		uploadedCount uint32
@@ -164,18 +175,16 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 	// Init Blocks
 	{
 		var temp int64 = 0
-		for temp+blockSize < stat.Size() {
-			blocks = append(blocks, &BlockMetaData{
-				Id:          len(blocks),
-				BeginOffset: temp,
-				EndOffset:   temp + blockSize,
+		for temp+blockSize < input.Size {
+			blocks = append(blocks, BlockMetaData{
+				Id:     len(blocks),
+				Offset: temp,
 			})
 			temp += blockSize
 		}
-		blocks = append(blocks, &BlockMetaData{
-			Id:          len(blocks),
-			BeginOffset: temp,
-			EndOffset:   stat.Size(),
+		blocks = append(blocks, BlockMetaData{
+			Id:     len(blocks),
+			Offset: temp,
 		})
 	}
 	doUpload := func() error {
@@ -187,8 +196,6 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 			return errors.Wrap(err, "connect error")
 		}
 		defer conn.Close()
-		chunk, _ := os.OpenFile(input.File, os.O_RDONLY, 0o666)
-		defer chunk.Close()
 		reader := binary.NewNetworkReader(conn)
 		if err = s.sendEcho(conn); err != nil {
 			return err
@@ -212,14 +219,17 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 				cond.L.Unlock()
 			}
 			buffer = buffer[:blockSize]
-			_, _ = chunk.Seek(block.BeginOffset, io.SeekStart)
-			ri, err := io.ReadFull(chunk, buffer)
+
+			cond.L.Lock() // lock protect reading
+			n, err := input.Body.ReadAt(buffer, block.Offset)
+			cond.L.Unlock()
+
 			if err != nil {
 				if err == io.EOF {
 					break
 				}
 				if err == io.ErrUnexpectedEOF {
-					buffer = buffer[:ri]
+					buffer = buffer[:n]
 				} else {
 					return err
 				}
@@ -237,12 +247,12 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 					LocaleId:  2052,
 				},
 				MsgSeghead: &pb.SegHead{
-					Filesize:      stat.Size(),
-					Dataoffset:    block.BeginOffset,
-					Datalength:    int32(ri),
+					Filesize:      input.Size,
+					Dataoffset:    block.Offset,
+					Datalength:    int32(n),
 					Serviceticket: input.Ticket,
 					Md5:           ch[:],
-					FileMd5:       sum,
+					FileMd5:       input.Sum,
 				},
 				ReqExtendinfo: input.Ext,
 			})
@@ -271,6 +281,5 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 	for i := 0; i < threadCount; i++ {
 		group.Go(doUpload)
 	}
-	err = group.Wait()
-	return rspExt, err
+	return rspExt, group.Wait()
 }

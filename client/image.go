@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"io"
 	"math/rand"
-	"os"
 	"strings"
 	"time"
 
@@ -44,7 +43,7 @@ type imageUploadResponse struct {
 	IsExists   bool
 }
 
-func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*message.GroupImageElement, error) {
+func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker, thread ...int) (*message.GroupImageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
@@ -53,54 +52,10 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker) (*messag
 	imgWaiter.Wait(key)
 	defer imgWaiter.Done(key)
 
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
-	r, err := c.sendAndWait(seq, pkt)
-	if err != nil {
-		return nil, err
+	tc := 1
+	if len(thread) > 0 {
+		tc = thread[0]
 	}
-	rsp := r.(*imageUploadResponse)
-	if rsp.ResultCode != 0 {
-		return nil, errors.New(rsp.Message)
-	}
-	if rsp.IsExists {
-		goto ok
-	}
-	if c.highwaySession.AddrLength() == 0 {
-		for i, addr := range rsp.UploadIp {
-			c.highwaySession.AppendAddr(addr, rsp.UploadPort[i])
-		}
-	}
-	if _, err = c.highwaySession.UploadBDH(highway.BdhInput{
-		CommandID: 2,
-		Body:      img,
-		Ticket:    rsp.UploadKey,
-		Ext:       EmptyBytes,
-		Encrypt:   false,
-	}); err == nil {
-		goto ok
-	}
-	return nil, errors.Wrap(err, "upload failed")
-ok:
-	_, _ = img.Seek(0, io.SeekStart)
-	i, t, _ := imgsz.DecodeSize(img)
-	var imageType int32 = 1000
-	if t == "gif" {
-		imageType = 2000
-	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
-}
-
-func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*message.GroupImageElement, error) {
-	img, err := os.OpenFile(path, os.O_RDONLY, 0o666)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = img.Close() }()
-	fh, length := utils.ComputeMd5AndLength(img)
-
-	key := hex.EncodeToString(fh)
-	imgWaiter.Wait(key)
-	defer imgWaiter.Done(key)
 
 	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
 	r, err := c.sendAndWait(seq, pkt)
@@ -120,16 +75,28 @@ func (c *QQClient) UploadGroupImageByFile(groupCode int64, path string) (*messag
 		}
 	}
 
-	if _, err = c.highwaySession.UploadBDHMultiThread(highway.BdhInput{
-		CommandID: 2,
-		File:      path,
-		Ticket:    rsp.UploadKey,
-		Ext:       EmptyBytes,
-		Encrypt:   false,
-	}, 4); err == nil {
-		goto ok
+	if tc > 1 && length > 3*1024*1024 {
+		_, err = c.highwaySession.UploadBDHMultiThread(highway.BdhMultiThreadInput{
+			CommandID: 2,
+			Body:      utils.ReaderAtFrom2ReadSeeker(img, nil),
+			Size:      length,
+			Sum:       fh,
+			Ticket:    rsp.UploadKey,
+			Ext:       EmptyBytes,
+			Encrypt:   false,
+		}, 4)
+	} else {
+		_, err = c.highwaySession.UploadBDH(highway.BdhInput{
+			CommandID: 2,
+			Body:      img,
+			Ticket:    rsp.UploadKey,
+			Ext:       EmptyBytes,
+			Encrypt:   false,
+		})
 	}
-	return nil, errors.Wrap(err, "upload failed")
+	if err != nil {
+		return nil, errors.Wrap(err, "upload failed")
+	}
 ok:
 	_, _ = img.Seek(0, io.SeekStart)
 	i, t, _ := imgsz.DecodeSize(img)
