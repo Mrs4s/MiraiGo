@@ -1150,39 +1150,37 @@ func (c *QQClient) buildWordSegmentationPacket(data []byte) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xd79", payload)
 }
 
-// OidbSvc.0x4ff_9_IMCore
-func (c *QQClient) buildUpdateQQNicknamePacket(nick string) (uint16, []byte) {
-	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
-		20002: []byte(nick),
-	})
+type ProfileDetailUpdate struct {
+	Fields map[uint16][]byte
 }
 
-// OidbSvc.0x4ff_9_IMCore
-func (c *QQClient) buildUpdateQQEmailPacket(email string) (uint16, []byte) {
-	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
-		20011: []byte(email),
-	})
+func NewProfileDetailUpdate() *ProfileDetailUpdate {
+	return &ProfileDetailUpdate{Fields: map[uint16][]byte{}}
 }
 
-// OidbSvc.0x4ff_9_IMCore
-func (c *QQClient) buildUpdateQQPersonalNotePacket(personalNote string) (uint16, []byte) {
-	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
-		20019: []byte(personalNote),
-	})
+func (p *ProfileDetailUpdate) Nick(value string) *ProfileDetailUpdate {
+	p.Fields[20002] = []byte(value)
+	return p
 }
 
-// OidbSvc.0x4ff_9_IMCore
-func (c *QQClient) buildUpdateQQCompanyPacket(company string) (uint16, []byte) {
-	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
-		24008: []byte(company),
-	})
+func (p *ProfileDetailUpdate) Email(value string) *ProfileDetailUpdate {
+	p.Fields[20011] = []byte(value)
+	return p
 }
 
-// OidbSvc.0x4ff_9_IMCore
-func (c *QQClient) buildUpdateQQCollegePacket(college string) (uint16, []byte) {
-	return c.buildUpdateProfileDetailPacket(map[uint16][]byte{
-		20021: []byte(college),
-	})
+func (p *ProfileDetailUpdate) PersonalNote(value string) *ProfileDetailUpdate {
+	p.Fields[20019] = []byte(value)
+	return p
+}
+
+func (p *ProfileDetailUpdate) Company(value string) *ProfileDetailUpdate {
+	p.Fields[24008] = []byte(value)
+	return p
+}
+
+func (p *ProfileDetailUpdate) College(value string) *ProfileDetailUpdate {
+	p.Fields[20021] = []byte(value)
+	return p
 }
 
 // OidbSvc.0x4ff_9_IMCore
