@@ -1,7 +1,6 @@
 package client
 
 import (
-	"crypto/md5"
 	"encoding/hex"
 	"io"
 
@@ -26,24 +25,35 @@ func init() {
 
 var pttWaiter = utils.NewUploadWaiter()
 
-var c2cPttExtraInfo = binary.NewWriterF(func(w *binary.Writer) {
+func c2cPttExtraInfo() []byte {
+	w := binary.SelectWriter()
+	defer binary.PutWriter(w)
 	w.WriteByte(2) // tlv count
-
-	w.WriteByte(8)
-	w.WriteUInt16(4)
-	w.WriteUInt32(1) // codec
-
-	w.WriteByte(9)
-	w.WriteUInt16(4)
-	w.WriteUInt32(0) // 时长
-
+	{
+		w.WriteByte(8)
+		w.WriteUInt16(4)
+		w.WriteUInt32(1) // codec
+	}
+	{
+		w.WriteByte(9)
+		w.WriteUInt16(4)
+		w.WriteUInt32(0) // 时长
+	}
 	w.WriteByte(10)
 	reserveInfo := []byte{0x08, 0x00, 0x28, 0x00, 0x38, 0x00} // todo
 	w.WriteBytesShort(reserveInfo)
-})
+	return append([]byte(nil), w.Bytes()...)
+}
 
-// UploadGroupPtt 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
-func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*message.GroupVoiceElement, error) {
+// UploadVoice 将语音数据使用群语音通道上传到服务器, 返回 message.GroupVoiceElement 可直接发送
+func (c *QQClient) UploadVoice(target message.Source, voice io.ReadSeeker) (*message.GroupVoiceElement, error) {
+	switch target.SourceType {
+	case message.SourceGroup, message.SourcePrivate:
+		// ok
+	default:
+		return nil, errors.New("unsupported source type")
+	}
+
 	fh, length := utils.ComputeMd5AndLength(voice)
 	_, _ = voice.Seek(0, io.SeekStart)
 
@@ -51,9 +61,18 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	ext := c.buildGroupPttStoreBDHExt(groupCode, fh, int32(length), 0, int32(length))
+	var cmd int32
+	var ext []byte
+	if target.SourceType == message.SourcePrivate {
+		cmd = int32(26)
+		ext = c.buildC2CPttStoreBDHExt(target.PrimaryID, fh, int32(length), int32(length))
+	} else {
+		cmd = int32(29)
+		ext = c.buildGroupPttStoreBDHExt(target.PrimaryID, fh, int32(length), 0, int32(length))
+	}
+	// multi-thread upload is no need
 	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
-		CommandID: 29,
+		CommandID: cmd,
 		Body:      voice,
 		Ticket:    c.highwaySession.SigSession,
 		Ext:       ext,
@@ -65,71 +84,37 @@ func (c *QQClient) UploadGroupPtt(groupCode int64, voice io.ReadSeeker) (*messag
 	if len(rsp) == 0 {
 		return nil, errors.New("miss rsp")
 	}
-	pkt := cmd0x388.D388RspBody{}
-	if err = proto.Unmarshal(rsp, &pkt); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	ptt := &msg.Ptt{
+		FileType:  proto.Int32(4),
+		SrcUin:    &c.Uin,
+		FileMd5:   fh,
+		FileName:  proto.String(hex.EncodeToString(fh) + ".amr"),
+		FileSize:  proto.Int32(int32(length)),
+		BoolValid: proto.Bool(true),
 	}
-	if len(pkt.TryupPttRsp) == 0 {
-		return nil, errors.New("miss try up rsp")
+	if target.SourceType == message.SourceGroup {
+		pkt := cmd0x388.D388RspBody{}
+		if err = proto.Unmarshal(rsp, &pkt); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+		}
+		if len(pkt.TryupPttRsp) == 0 {
+			return nil, errors.New("miss try up rsp")
+		}
+		ptt.PbReserve = []byte{8, 0, 40, 0, 56, 0}
+		ptt.GroupFileKey = pkt.TryupPttRsp[0].FileKey
+		return &message.GroupVoiceElement{Ptt: ptt}, nil
+	} else {
+		pkt := cmd0x346.C346RspBody{}
+		if err = proto.Unmarshal(rsp, &pkt); err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+		}
+		if pkt.ApplyUploadRsp == nil {
+			return nil, errors.New("miss apply upload rsp")
+		}
+		ptt.FileUuid = pkt.ApplyUploadRsp.Uuid
+		ptt.Reserve = c2cPttExtraInfo()
+		return &message.PrivateVoiceElement{Ptt: ptt}, nil
 	}
-	return &message.GroupVoiceElement{
-		Ptt: &msg.Ptt{
-			FileType:     proto.Int32(4),
-			SrcUin:       &c.Uin,
-			FileMd5:      fh,
-			FileName:     proto.String(hex.EncodeToString(fh) + ".amr"),
-			FileSize:     proto.Int32(int32(length)),
-			GroupFileKey: pkt.TryupPttRsp[0].FileKey,
-			BoolValid:    proto.Bool(true),
-			PbReserve:    []byte{8, 0, 40, 0, 56, 0},
-		},
-	}, nil
-}
-
-// UploadPrivatePtt 将语音数据使用好友语音通道上传到服务器, 返回 message.PrivateVoiceElement 可直接发送
-func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message.PrivateVoiceElement, error) {
-	h := md5.New()
-	length, _ := io.Copy(h, voice)
-	fh := h.Sum(nil)
-	_, _ = voice.Seek(0, io.SeekStart)
-
-	key := hex.EncodeToString(fh)
-	pttWaiter.Wait(key)
-	defer pttWaiter.Done(key)
-
-	ext := c.buildC2CPttStoreBDHExt(target, fh, int32(length), int32(length))
-	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
-		CommandID: 26,
-		Body:      voice,
-		Ticket:    c.highwaySession.SigSession,
-		Ext:       ext,
-		Encrypt:   false,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(rsp) == 0 {
-		return nil, errors.New("miss rsp")
-	}
-	pkt := cmd0x346.C346RspBody{}
-	if err = proto.Unmarshal(rsp, &pkt); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if pkt.ApplyUploadRsp == nil {
-		return nil, errors.New("miss apply upload rsp")
-	}
-	return &message.PrivateVoiceElement{
-		Ptt: &msg.Ptt{
-			FileType:  proto.Int32(4),
-			SrcUin:    &c.Uin,
-			FileUuid:  pkt.ApplyUploadRsp.Uuid,
-			FileMd5:   fh,
-			FileName:  proto.String(hex.EncodeToString(fh) + ".amr"),
-			FileSize:  proto.Int32(int32(length)),
-			Reserve:   c2cPttExtraInfo,
-			BoolValid: proto.Bool(true),
-		},
-	}, nil
 }
 
 // UploadShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送

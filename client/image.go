@@ -31,19 +31,44 @@ func init() {
 var imgWaiter = utils.NewUploadWaiter()
 
 type imageUploadResponse struct {
-	UploadKey  []byte
-	UploadIp   []uint32
-	UploadPort []uint32
-	ResourceId string
-	Message    string
-	FileId     int64
-	Width      int32
-	Height     int32
-	ResultCode int32
-	IsExists   bool
+	UploadKey     []byte
+	UploadIp      []uint32
+	UploadPort    []uint32
+	Width         int32
+	Height        int32
+	Message       string
+	DownloadIndex string
+	ResourceId    string
+	FileId        int64
+	ResultCode    int32
+	IsExists      bool
 }
 
+func (c *QQClient) UploadImage(target message.Source, img io.ReadSeeker, thread ...int) (message.IMessageElement, error) {
+	switch target.SourceType {
+	case message.SourceGroup, message.SourceGuildChannel, message.SourceGuildDirect:
+		return c.uploadGroupOrGuildImage(target, img, thread...)
+	case message.SourcePrivate:
+		return c.uploadPrivateImage(target.PrimaryID, img, 0)
+	default:
+		return nil, errors.New("unsupported target type")
+	}
+}
+
+// Deprecated: use UploadImage instead
 func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker, thread ...int) (*message.GroupImageElement, error) {
+	source := message.Source{
+		SourceType: message.SourceGroup,
+		PrimaryID:  groupCode,
+	}
+	x, err := c.UploadImage(source, img, thread...)
+	if err != nil {
+		return nil, err
+	}
+	return x.(*message.GroupImageElement), nil
+}
+
+func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSeeker, thread ...int) (message.IMessageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
@@ -56,9 +81,24 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker, thread .
 	if len(thread) > 0 {
 		tc = thread[0]
 	}
+	cmd := int32(2)
+	ext := EmptyBytes
+	if target.SourceType != message.SourceGroup { // guild
+		cmd = 83
+		ext = proto.DynamicMessage{
+			11: uint64(target.PrimaryID),
+			12: uint64(target.SecondaryID),
+		}.Encode()
+	}
 
-	seq, pkt := c.buildGroupImageStorePacket(groupCode, fh, int32(length))
-	r, err := c.sendAndWait(seq, pkt)
+	var r interface{}
+	var err error
+	switch target.SourceType {
+	case message.SourceGroup:
+		r, err = c.sendAndWait(c.buildGroupImageStorePacket(target.PrimaryID, fh, int32(length)))
+	case message.SourceGuildChannel, message.SourceGuildDirect:
+		r, err = c.sendAndWait(c.buildGuildImageStorePacket(uint64(target.PrimaryID), uint64(target.SecondaryID), fh, uint64(length)))
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -77,21 +117,19 @@ func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker, thread .
 
 	if tc > 1 && length > 3*1024*1024 {
 		_, err = c.highwaySession.UploadBDHMultiThread(highway.BdhMultiThreadInput{
-			CommandID: 2,
+			CommandID: cmd,
 			Body:      utils.ReaderAtFrom2ReadSeeker(img, nil),
 			Size:      length,
 			Sum:       fh,
 			Ticket:    rsp.UploadKey,
-			Ext:       EmptyBytes,
-			Encrypt:   false,
+			Ext:       ext,
 		}, 4)
 	} else {
 		_, err = c.highwaySession.UploadBDH(highway.BdhInput{
-			CommandID: 2,
+			CommandID: cmd,
 			Body:      img,
 			Ticket:    rsp.UploadKey,
-			Ext:       EmptyBytes,
-			Encrypt:   false,
+			Ext:       ext,
 		})
 	}
 	if err != nil {
@@ -104,9 +142,33 @@ ok:
 	if t == "gif" {
 		imageType = 2000
 	}
-	return message.NewGroupImage(binary.CalculateImageResourceId(fh), fh, rsp.FileId, int32(length), int32(i.Width), int32(i.Height), imageType), nil
+	width := int32(i.Width)
+	height := int32(i.Height)
+	if err != nil && target.SourceType != message.SourceGroup {
+		c.Warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
+		width = 200
+		height = 200
+	}
+	if target.SourceType == message.SourceGroup {
+		return message.NewGroupImage(
+			binary.CalculateImageResourceId(fh),
+			fh, rsp.FileId, int32(length),
+			int32(i.Width), int32(i.Height), imageType,
+		), nil
+	}
+	return &message.GuildImageElement{
+		FileId:        rsp.FileId,
+		FilePath:      hex.EncodeToString(fh) + ".jpg",
+		Size:          int32(length),
+		DownloadIndex: rsp.DownloadIndex,
+		Width:         width,
+		Height:        height,
+		ImageType:     imageType,
+		Md5:           fh,
+	}, nil
 }
 
+// Deprecated: use UploadImage instead
 func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
 	return c.uploadPrivateImage(target, img, 0)
 }
@@ -126,8 +188,12 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	_, _ = img.Seek(0, io.SeekStart)
 	e, err := c.QueryFriendImage(target, fh, int32(length))
 	if errors.Is(err, ErrNotExists) {
+		groupSource := message.Source{
+			SourceType: message.SourceGroup,
+			PrimaryID:  target,
+		}
 		// use group highway upload and query again for image id.
-		if _, err = c.UploadGroupImage(target, img); err != nil {
+		if _, err = c.uploadGroupOrGuildImage(groupSource, img); err != nil {
 			return nil, err
 		}
 		if count >= 5 {

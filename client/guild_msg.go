@@ -1,37 +1,20 @@
 package client
 
 import (
-	"bytes"
 	"encoding/hex"
-	"image"
 	"io"
 	"math/rand"
 	"strconv"
 
 	"github.com/pkg/errors"
 
-	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
-	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-type guildImageUploadResponse struct {
-	UploadKey     []byte
-	UploadIp      []uint32
-	UploadPort    []uint32
-	Width         int32
-	Height        int32
-	Message       string
-	DownloadIndex string
-	FileId        int64
-	ResultCode    int32
-	IsExists      bool
-}
 
 func init() {
 	decoders["ImgStore.QQMeetPicUp"] = decodeGuildImageStoreResponse
@@ -101,7 +84,7 @@ func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size u
 	if err != nil {
 		return nil, errors.Wrap(err, "send packet error")
 	}
-	body := rsp.(*guildImageUploadResponse)
+	body := rsp.(*imageUploadResponse)
 	if body.IsExists {
 		return &message.GuildImageElement{
 			FileId:        body.FileId,
@@ -116,60 +99,18 @@ func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size u
 	return nil, errors.New("image is not exists")
 }
 
+// Deprecated: use QQClient.UploadImage instead
 func (s *GuildService) UploadGuildImage(guildId, channelId uint64, img io.ReadSeeker) (*message.GuildImageElement, error) {
-	_, _ = img.Seek(0, io.SeekStart) // safe
-	fh, length := utils.ComputeMd5AndLength(img)
-	_, _ = img.Seek(0, io.SeekStart)
-	rsp, err := s.c.sendAndWait(s.c.buildGuildImageStorePacket(guildId, channelId, fh, uint64(length)))
+	source := message.Source{
+		SourceType:  message.SourceGuildChannel,
+		PrimaryID:   int64(guildId),
+		SecondaryID: int64(channelId),
+	}
+	image, err := s.c.uploadGroupOrGuildImage(source, img)
 	if err != nil {
 		return nil, err
 	}
-	body := rsp.(*guildImageUploadResponse)
-	if body.IsExists {
-		goto ok
-	}
-	if s.c.highwaySession.AddrLength() == 0 {
-		for i, addr := range body.UploadIp {
-			s.c.highwaySession.AppendAddr(addr, body.UploadPort[i])
-		}
-	}
-	if _, err = s.c.highwaySession.UploadBDH(highway.BdhInput{
-		CommandID: 83,
-		Body:      img,
-		Ticket:    body.UploadKey,
-		Ext:       proto.DynamicMessage{11: guildId, 12: channelId}.Encode(),
-		Encrypt:   false,
-	}); err == nil {
-		goto ok
-	}
-	return nil, errors.Wrap(err, "highway upload error")
-ok:
-	_, _ = img.Seek(0, io.SeekStart)
-	i, _, err := image.DecodeConfig(img)
-	var imageType int32 = 1000
-	_, _ = img.Seek(0, io.SeekStart)
-	tmp := make([]byte, 4)
-	_, _ = img.Read(tmp)
-	if bytes.Equal(tmp, []byte{0x47, 0x49, 0x46, 0x38}) {
-		imageType = 2000
-	}
-	width := int32(i.Width)
-	height := int32(i.Height)
-	if err != nil {
-		s.c.Warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
-		width = 200
-		height = 200
-	}
-	return &message.GuildImageElement{
-		FileId:        body.FileId,
-		FilePath:      hex.EncodeToString(fh) + ".jpg",
-		Size:          int32(length),
-		DownloadIndex: body.DownloadIndex,
-		Width:         width,
-		Height:        height,
-		ImageType:     imageType,
-		Md5:           fh,
-	}, nil
+	return image.(*message.GuildImageElement), nil
 }
 
 func (s *GuildService) PullGuildChannelMessage(guildId, channelId, beginSeq, endSeq uint64) (r []*message.GuildChannelMessage, e error) {
@@ -299,18 +240,24 @@ func decodeGuildImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	}
 	rsp := body.TryupImgRsp[0]
 	if rsp.GetResult() != 0 {
-		return &guildImageUploadResponse{
+		return &imageUploadResponse{
 			ResultCode: int32(rsp.GetResult()),
-			Message:    utils.B2S(rsp.FailMsg),
+			Message:    string(rsp.FailMsg),
 		}, nil
 	}
 	if rsp.GetFileExit() {
-		if rsp.ImgInfo != nil {
-			return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.DownloadIndex), Width: int32(rsp.ImgInfo.GetFileWidth()), Height: int32(rsp.ImgInfo.GetFileHeight())}, nil
+		resp := &imageUploadResponse{
+			IsExists:      true,
+			FileId:        int64(rsp.GetFileid()),
+			DownloadIndex: string(rsp.DownloadIndex),
 		}
-		return &guildImageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), DownloadIndex: string(rsp.DownloadIndex)}, nil
+		if rsp.ImgInfo != nil {
+			resp.Width = int32(rsp.ImgInfo.GetFileWidth())
+			resp.Height = int32(rsp.ImgInfo.GetFileHeight())
+		}
+		return rsp, nil
 	}
-	return &guildImageUploadResponse{
+	return &imageUploadResponse{
 		FileId:        int64(rsp.GetFileid()),
 		UploadKey:     rsp.UpUkey,
 		UploadIp:      rsp.UpIp,
