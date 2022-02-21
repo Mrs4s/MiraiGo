@@ -15,7 +15,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/channel"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x388"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
-	"github.com/Mrs4s/MiraiGo/client/pb/pttcenter"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -345,72 +344,4 @@ func (s *GuildService) parseGuildChannelMessage(msg *channel.ChannelMsgContent) 
 		},
 		Elements: message.ParseMessageElems(msg.Body.RichText.Elems),
 	}
-}
-
-// PttCenterSvr.GroupShortVideoUpReq
-func (c *QQClient) buildPttGuildVideoUpReq(videoHash, thumbHash []byte, guildId, channelId int64, videoSize, thumbSize int64) (uint16, []byte) {
-	pb := c.buildPttGroupShortVideoProto(videoHash, thumbHash, guildId, videoSize, thumbSize, 4)
-	pb.PttShortVideoUploadReq.BusinessType = 4601
-	pb.PttShortVideoUploadReq.ToUin = channelId
-	pb.ExtensionReq[0].SubBusiType = 4601
-	payload, _ := proto.Marshal(pb)
-	return c.uniPacket("PttCenterSvr.GroupShortVideoUpReq", payload)
-}
-
-func (c *QQClient) UploadGuildShortVideo(guildId, channelId uint64, video, thumb io.ReadSeeker) (*message.ShortVideoElement, error) {
-	// todo: combine with group short video upload
-	videoHash, videoLen := utils.ComputeMd5AndLength(video)
-	thumbHash, thumbLen := utils.ComputeMd5AndLength(thumb)
-
-	key := string(videoHash) + string(thumbHash)
-	pttWaiter.Wait(key)
-	defer pttWaiter.Done(key)
-
-	i, err := c.sendAndWait(c.buildPttGuildVideoUpReq(videoHash, thumbHash, int64(guildId), int64(channelId), videoLen, thumbLen))
-	if err != nil {
-		return nil, errors.Wrap(err, "upload req error")
-	}
-	rsp := i.(*pttcenter.ShortVideoUploadRsp)
-	if rsp.FileExists == 1 {
-		return &message.ShortVideoElement{
-			Uuid:      []byte(rsp.FileId),
-			Size:      int32(videoLen),
-			ThumbSize: int32(thumbLen),
-			Md5:       videoHash,
-			ThumbMd5:  thumbHash,
-			Guild:     true,
-		}, nil
-	}
-	req := c.buildPttGroupShortVideoProto(videoHash, thumbHash, int64(guildId), videoLen, thumbLen, 4).PttShortVideoUploadReq
-	req.BusinessType = 4601
-	req.ToUin = int64(channelId)
-	ext, _ := proto.Marshal(req)
-	multi := utils.MultiReadSeeker(thumb, video)
-
-	hwRsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
-		CommandID: 89,
-		Body:      multi,
-		Ticket:    c.highwaySession.SigSession,
-		Ext:       ext,
-		Encrypt:   true,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "upload video file error")
-	}
-
-	if len(hwRsp) == 0 {
-		return nil, errors.New("resp is empty")
-	}
-	rsp = &pttcenter.ShortVideoUploadRsp{}
-	if err = proto.Unmarshal(hwRsp, rsp); err != nil {
-		return nil, errors.Wrap(err, "decode error")
-	}
-	return &message.ShortVideoElement{
-		Uuid:      []byte(rsp.FileId),
-		Size:      int32(videoLen),
-		ThumbSize: int32(thumbLen),
-		Md5:       videoHash,
-		ThumbMd5:  thumbHash,
-		Guild:     true,
-	}, nil
 }

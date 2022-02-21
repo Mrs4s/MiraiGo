@@ -4,27 +4,11 @@ import (
 	"crypto/md5"
 	"errors"
 	"io"
-	"reflect"
-	"unsafe"
 )
 
 type multiReadSeeker struct {
 	readers     []io.ReadSeeker
 	multiReader io.Reader
-}
-
-func add(p unsafe.Pointer, x uintptr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(p) + x)
-}
-
-func IsChanClosed(ch interface{}) bool {
-	if reflect.TypeOf(ch).Kind() != reflect.Chan {
-		panic("object is not a channel.")
-	}
-	return *(*uint32)(
-		add(*(*unsafe.Pointer)(add(unsafe.Pointer(&ch), unsafe.Sizeof(uintptr(0)))),
-			unsafe.Sizeof(uint(0))*2+unsafe.Sizeof(uintptr(0))+unsafe.Sizeof(uint16(0))),
-	) > 0
 }
 
 func ComputeMd5AndLength(r io.Reader) ([]byte, int64) {

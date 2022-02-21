@@ -132,9 +132,9 @@ func (c *QQClient) UploadPrivatePtt(target int64, voice io.ReadSeeker) (*message
 	}, nil
 }
 
-// UploadGroupShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送
+// UploadShortVideo 将视频和封面上传到服务器, 返回 message.ShortVideoElement 可直接发送
 // thread 上传线程数
-func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSeeker, thread int) (*message.ShortVideoElement, error) {
+func (c *QQClient) UploadShortVideo(target message.Source, video, thumb io.ReadSeeker, thread int) (*message.ShortVideoElement, error) {
 	videoHash, videoLen := utils.ComputeMd5AndLength(video)
 	thumbHash, thumbLen := utils.ComputeMd5AndLength(thumb)
 
@@ -142,27 +142,33 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	pttWaiter.Wait(key)
 	defer pttWaiter.Done(key)
 
-	i, err := c.sendAndWait(c.buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash, groupCode, videoLen, thumbLen))
+	i, err := c.sendAndWait(c.buildPttGroupShortVideoUploadReqPacket(target, videoHash, thumbHash, videoLen, thumbLen))
 	if err != nil {
 		return nil, errors.Wrap(err, "upload req error")
 	}
 	rsp := i.(*pttcenter.ShortVideoUploadRsp)
-	if rsp.FileExists == 1 {
-		return &message.ShortVideoElement{
-			Uuid:      []byte(rsp.FileId),
-			Size:      int32(videoLen),
-			ThumbSize: int32(thumbLen),
-			Md5:       videoHash,
-			ThumbMd5:  thumbHash,
-		}, nil
+	videoElement := &message.ShortVideoElement{
+		Size:      int32(videoLen),
+		ThumbSize: int32(thumbLen),
+		Md5:       videoHash,
+		ThumbMd5:  thumbHash,
+		Guild:     target.SourceType == message.SourceGuildChannel,
 	}
-	ext, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, groupCode, videoLen, thumbLen, 1).PttShortVideoUploadReq)
+	if rsp.FileExists == 1 {
+		videoElement.Uuid = []byte(rsp.FileId)
+		return videoElement, nil
+	}
 
 	var hwRsp []byte
+	cmd := int32(25)
+	if target.SourceType == message.SourceGuildChannel {
+		cmd = 89
+	}
+	ext, _ := proto.Marshal(c.buildPttShortVideoProto(target, videoHash, thumbHash, videoLen, thumbLen).PttShortVideoUploadReq)
 	if thread > 1 {
 		sum, _ := utils.ComputeMd5AndLength(utils.MultiReadSeeker(thumb, video))
 		input := highway.BdhMultiThreadInput{
-			CommandID: 25,
+			CommandID: cmd,
 			Body:      utils.ReaderAtFrom2ReadSeeker(thumb, video),
 			Size:      videoLen + thumbLen,
 			Sum:       sum,
@@ -174,7 +180,7 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	} else {
 		multi := utils.MultiReadSeeker(thumb, video)
 		input := highway.BdhInput{
-			CommandID: 25,
+			CommandID: cmd,
 			Body:      multi,
 			Ticket:    c.highwaySession.SigSession,
 			Ext:       ext,
@@ -192,13 +198,8 @@ func (c *QQClient) UploadGroupShortVideo(groupCode int64, video, thumb io.ReadSe
 	if err = proto.Unmarshal(hwRsp, rsp); err != nil {
 		return nil, errors.Wrap(err, "decode error")
 	}
-	return &message.ShortVideoElement{
-		Uuid:      []byte(rsp.FileId),
-		Size:      int32(videoLen),
-		ThumbSize: int32(thumbLen),
-		Md5:       videoHash,
-		ThumbMd5:  thumbHash,
-	}, nil
+	videoElement.Uuid = []byte(rsp.FileId)
+	return videoElement, nil
 }
 
 func (c *QQClient) GetShortVideoUrl(uuid, md5 []byte) string {
@@ -261,15 +262,19 @@ func (c *QQClient) buildPttShortVideoDownReqPacket(uuid, md5 []byte) (uint16, []
 	return seq, packet
 }
 
-func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64, chattype int32) *pttcenter.ShortVideoReqBody {
+func (c *QQClient) buildPttShortVideoProto(target message.Source, videoHash, thumbHash []byte, videoSize, thumbSize int64) *pttcenter.ShortVideoReqBody {
 	seq := c.nextSeq()
-	return &pttcenter.ShortVideoReqBody{
+	chatType := int32(1)
+	if target.SourceType == message.SourceGuildChannel {
+		chatType = 4
+	}
+	body := &pttcenter.ShortVideoReqBody{
 		Cmd: 300,
 		Seq: int32(seq),
 		PttShortVideoUploadReq: &pttcenter.ShortVideoUploadReq{
 			FromUin:    c.Uin,
-			ToUin:      toUin,
-			ChatType:   chattype,
+			ToUin:      target.PrimaryID,
+			ChatType:   chatType,
 			ClientType: 2,
 			Info: &pttcenter.ShortVideoFileInfo{
 				FileName:      hex.EncodeToString(videoHash) + ".mp4",
@@ -282,7 +287,7 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 				FileTime:      120,
 				ThumbFileSize: thumbSize,
 			},
-			GroupCode:        toUin,
+			GroupCode:        target.PrimaryID,
 			SupportLargeSize: 1,
 		},
 		ExtensionReq: []*pttcenter.ShortVideoExtensionReq{
@@ -292,11 +297,18 @@ func (c *QQClient) buildPttGroupShortVideoProto(videoHash, thumbHash []byte, toU
 			},
 		},
 	}
+	if target.SourceType == message.SourceGuildChannel {
+		body.PttShortVideoUploadReq.BusinessType = 4601
+		body.PttShortVideoUploadReq.ToUin = target.SecondaryID
+		body.ExtensionReq[0].SubBusiType = 4601
+	}
+	return body
 }
 
 // PttCenterSvr.GroupShortVideoUpReq
-func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(videoHash, thumbHash []byte, toUin, videoSize, thumbSize int64) (uint16, []byte) {
-	payload, _ := proto.Marshal(c.buildPttGroupShortVideoProto(videoHash, thumbHash, toUin, videoSize, thumbSize, 1))
+func (c *QQClient) buildPttGroupShortVideoUploadReqPacket(target message.Source, videoHash, thumbHash []byte, videoSize, thumbSize int64) (uint16, []byte) {
+	pb := c.buildPttShortVideoProto(target, videoHash, thumbHash, videoSize, thumbSize)
+	payload, _ := proto.Marshal(pb)
 	return c.uniPacket("PttCenterSvr.GroupShortVideoUpReq", payload)
 }
 
