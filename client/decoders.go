@@ -3,7 +3,6 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"net"
 	"strconv"
 	"strings"
@@ -343,7 +342,7 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 			list := &jce.FileStoragePushFSSvcList{}
 			list.ReadFrom(fmtPkt)
 			c.Debug("got file storage svc push.")
-			c.fileStorageInfo = list
+			// c.fileStorageInfo = list
 			rsp := cmd0x6ff.C501RspBody{}
 			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {
 				c.highwaySession.SigSession = rsp.RspBody.SigSession
@@ -354,11 +353,14 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 							c.highwaySession.AppendAddr(addr.GetIp(), addr.GetPort())
 						}
 					}
-					if srv.GetServiceType() == 21 {
-						for _, addr := range srv.Addrs {
-							c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+					/*
+						if srv.GetServiceType() == 21 {
+							for _, addr := range srv.Addrs {
+								c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+							}
 						}
-					}
+
+					*/
 				}
 			}
 		}

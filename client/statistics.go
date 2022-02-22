@@ -5,14 +5,14 @@ import (
 )
 
 type Statistics struct {
-	PacketReceived  atomic.Uint64
-	PacketSent      atomic.Uint64
-	PacketLost      atomic.Uint64
-	MessageReceived atomic.Uint64
-	MessageSent     atomic.Uint64
-	LastMessageTime atomic.Int64
-	DisconnectTimes atomic.Uint32
-	LostTimes       atomic.Uint32
+	PacketReceived  atomic.Uint64 `json:"packet_received"`
+	PacketSent      atomic.Uint64 `json:"packet_sent"`
+	PacketLost      atomic.Uint64 `json:"packet_lost"`
+	MessageReceived atomic.Uint64 `json:"message_received"`
+	MessageSent     atomic.Uint64 `json:"message_sent"`
+	LastMessageTime atomic.Int64  `json:"last_message_time"`
+	DisconnectTimes atomic.Uint32 `json:"disconnect_times"`
+	LostTimes       atomic.Uint32 `json:"lost_times"`
 }
 
 func (c *QQClient) GetStatistics() *Statistics {
