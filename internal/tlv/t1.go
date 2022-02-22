@@ -17,7 +17,7 @@ func T1(uin uint32, ip []byte) []byte {
 		w.WriteUInt16(1)
 		w.WriteUInt32(rand.Uint32())
 		w.WriteUInt32(uin)
-		w.WriteUInt32(uint32(time.Now().UnixNano() / 1e6))
+		w.WriteUInt32(uint32(time.Now().Unix()))
 		w.Write(ip)
 		w.WriteUInt16(0)
 		w.WriteUInt16At(pos, uint16(w.Len()-4))
