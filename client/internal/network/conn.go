@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -49,6 +50,10 @@ func (t *TCPListener) Connect(addr *net.TCPAddr) error {
 
 func (t *TCPListener) Write(buf []byte) error {
 	if conn := t.getConn(); conn != nil {
+		_ = conn.SetWriteDeadline(time.Now().Add(time.Second * 3))
+		defer func() {
+			_ = conn.SetWriteDeadline(time.Time{})
+		}()
 		_, err := conn.Write(buf)
 		if err != nil {
 			t.unexpectedClose(err)

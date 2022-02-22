@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	"time"
 
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -137,7 +138,12 @@ func NewNetworkReader(conn net.Conn) *NetworkReader {
 
 func (r *NetworkReader) ReadByte() (byte, error) {
 	buf := make([]byte, 1)
-	n, err := r.conn.Read(buf)
+	conn := r.conn
+	_ = conn.SetReadDeadline(time.Now().Add(time.Second * 3))
+	defer func() {
+		_ = conn.SetReadDeadline(time.Time{})
+	}()
+	n, err := conn.Read(buf)
 	if err != nil {
 		return 0, err
 	}
