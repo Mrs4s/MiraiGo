@@ -1,7 +1,6 @@
 package highway
 
 import (
-	"bytes"
 	"crypto/md5"
 	"fmt"
 	"io"
@@ -13,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -86,9 +86,7 @@ func (s *Session) Upload(addr Addr, input Input) error {
 			ReqExtendinfo: []byte{},
 		})
 		offset += rl
-		w.Reset()
-		writeHeadBody(w, head, chunk)
-		_, err = conn.Write(w.Bytes())
+		_, err = io.Copy(conn, network.HeadBodyFrame(head, chunk))
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
 		}
@@ -147,9 +145,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += int64(rl)
-		w.Reset()
-		writeHeadBody(w, head, chunk)
-		req, _ := http.NewRequest("POST", url, bytes.NewReader(w.Bytes()))
+		req, _ := http.NewRequest("POST", url, network.HeadBodyFrame(head, chunk))
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Connection", "Keep-Alive")
 		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
@@ -210,10 +206,7 @@ func (s *Session) sendHeartbreak(conn net.Conn) error {
 			LocaleId:  2052,
 		},
 	})
-	w := binary.SelectWriter()
-	writeHeadBody(w, head, nil)
-	_, err := conn.Write(w.Bytes())
-	binary.PutWriter(w)
+	_, err := io.Copy(conn, network.HeadBodyFrame(head, nil))
 	return err
 }
 
@@ -226,15 +219,6 @@ func (s *Session) sendEcho(conn net.Conn) error {
 		return errors.Wrap(err, "echo error")
 	}
 	return nil
-}
-
-func writeHeadBody(w *binary.Writer, head []byte, body []byte) {
-	w.WriteByte(40)
-	w.WriteUInt32(uint32(len(head)))
-	w.WriteUInt32(uint32(len(body)))
-	w.Write(head)
-	w.Write(body)
-	w.WriteByte(41)
 }
 
 func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, []byte, error) {

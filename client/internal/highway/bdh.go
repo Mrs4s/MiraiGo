@@ -12,6 +12,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -81,8 +82,6 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	var rspExt []byte
 	offset := 0
 	chunk := make([]byte, chunkSize)
-	w := binary.SelectWriter()
-	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(input.Body, chunk)
@@ -106,9 +105,7 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += rl
-		w.Reset()
-		writeHeadBody(w, head, chunk)
-		_, err = conn.Write(w.Bytes())
+		_, err = io.Copy(conn, network.HeadBodyFrame(head, chunk))
 		if err != nil {
 			return nil, errors.Wrap(err, "write conn error")
 		}
@@ -193,9 +190,6 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 		}
 
 		buffer := make([]byte, blockSize)
-		w := binary.SelectWriter()
-		w.Reset()
-		w.Grow(600 * 1024) // 复用,600k 不要放回池中
 		for {
 			nextId := atomic.AddUint32(&BlockId, 1)
 			if nextId >= uint32(len(blocks)) {
@@ -238,9 +232,7 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 				},
 				ReqExtendinfo: input.Ext,
 			})
-			w.Reset()
-			writeHeadBody(w, head, buffer)
-			_, err = conn.Write(w.Bytes())
+			_, err = io.Copy(conn, network.HeadBodyFrame(head, buffer))
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}
