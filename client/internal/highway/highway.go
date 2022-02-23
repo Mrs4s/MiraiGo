@@ -74,16 +74,7 @@ func (s *Session) Upload(addr Addr, input Input) error {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: &pb.DataHighwayHead{
-				Version:   1,
-				Uin:       s.Uin,
-				Command:   "PicUp.DataUp",
-				Seq:       s.nextSeq(),
-				Appid:     s.AppID,
-				Dataflag:  4096,
-				CommandId: input.CommandID,
-				LocaleId:  2052,
-			},
+			MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      length,
 				Dataoffset:    int64(offset),
@@ -144,16 +135,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: &pb.DataHighwayHead{
-				Version:   1,
-				Uin:       s.Uin,
-				Command:   "PicUp.DataUp",
-				Seq:       s.nextSeq(),
-				Appid:     s.AppID,
-				Dataflag:  0,
-				CommandId: input.CommandID,
-				LocaleId:  0,
-			},
+			MsgBasehead: s.dataHighwayHead(0, input.CommandID, 0),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      fileLength,
 				Dataoffset:    offset,
@@ -200,6 +182,19 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 
 func (s *Session) nextSeq() int32 {
 	return atomic.AddInt32(&s.seq, 2)
+}
+
+func (s *Session) dataHighwayHead(flag, cmd, locale int32) *pb.DataHighwayHead {
+	return &pb.DataHighwayHead{
+		Version:   1,
+		Uin:       s.Uin,
+		Command:   "PicUp.DataUp",
+		Seq:       s.nextSeq(),
+		Appid:     s.AppID,
+		Dataflag:  flag,
+		CommandId: cmd,
+		LocaleId:  locale,
+	}
 }
 
 func (s *Session) sendHeartbreak(conn net.Conn) error {

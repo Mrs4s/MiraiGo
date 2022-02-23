@@ -64,7 +64,7 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	sum, length := utils.ComputeMd5AndLength(input.Body)
 	_, _ = input.Body.Seek(0, io.SeekStart)
 	if err := input.encrypt(s.SessionKey); err != nil {
-		return nil, errors.Wrap(err, "encrypt error")
+		return nil, err
 	}
 	conn, err := net.DialTimeout("tcp", addr, time.Second*20)
 	if err != nil {
@@ -94,16 +94,7 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: &pb.DataHighwayHead{
-				Version:   1,
-				Uin:       s.Uin,
-				Command:   "PicUp.DataUp",
-				Seq:       s.nextSeq(),
-				Appid:     s.AppID,
-				Dataflag:  4096,
-				CommandId: input.CommandID,
-				LocaleId:  2052,
-			},
+			MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      length,
 				Dataoffset:    int64(offset),
@@ -157,7 +148,7 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 	addr := s.SsoAddr[0].String()
 
 	if err := input.encrypt(s.SessionKey); err != nil {
-		return nil, errors.Wrap(err, "encrypt error")
+		return nil, err
 	}
 
 	type BlockMetaData struct {
@@ -236,16 +227,7 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 			}
 			ch := md5.Sum(buffer)
 			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-				MsgBasehead: &pb.DataHighwayHead{
-					Version:   1,
-					Uin:       s.Uin,
-					Command:   "PicUp.DataUp",
-					Seq:       s.nextSeq(),
-					Appid:     s.AppID,
-					Dataflag:  4096,
-					CommandId: input.CommandID,
-					LocaleId:  2052,
-				},
+				MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
 				MsgSeghead: &pb.SegHead{
 					Filesize:      input.Size,
 					Dataoffset:    block.Offset,

@@ -162,20 +162,9 @@ func (c *QQClient) buildFriendSendingPacket(target int64, msgSeq, r, pkgNum, pkg
 				Ptt:   ptt,
 			},
 		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
-		SyncCookie: func() []byte {
-			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
-			}
-			b, _ := proto.Marshal(cookie)
-			return b
-		}(),
+		MsgSeq:     &msgSeq,
+		MsgRand:    &r,
+		SyncCookie: syncCookie(time),
 	}
 	payload, _ := proto.Marshal(req)
 	return c.uniPacket("MessageSvc.PbSendMsg", payload)
@@ -194,26 +183,16 @@ func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r
 				Elems: message.ToProtoElems(m.Elements, false),
 			},
 		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
-		SyncCookie: func() []byte {
-			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
-			}
-			b, _ := proto.Marshal(cookie)
-			return b
-		}(),
+		MsgSeq:     &msgSeq,
+		MsgRand:    &r,
+		SyncCookie: syncCookie(time),
 	}
 	payload, _ := proto.Marshal(req)
 	return c.uniPacket("MessageSvc.PbSendMsg", payload)
 }
 
 func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
+
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{WpaTmp: &msg.WPATmp{
 			ToUin: proto.Uint64(uint64(uin)),
@@ -225,21 +204,22 @@ func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r in
 				Elems: message.ToProtoElems(m.Elements, false),
 			},
 		},
-		MsgSeq:  &msgSeq,
-		MsgRand: &r,
-		SyncCookie: func() []byte {
-			cookie := &msg.SyncCookie{
-				Time:   &time,
-				Ran1:   proto.Int64(rand.Int63()),
-				Ran2:   proto.Int64(rand.Int63()),
-				Const1: &syncConst1,
-				Const2: &syncConst2,
-				Const3: proto.Int64(0x1d),
-			}
-			b, _ := proto.Marshal(cookie)
-			return b
-		}(),
+		MsgSeq:     &msgSeq,
+		MsgRand:    &r,
+		SyncCookie: syncCookie(time),
 	}
 	payload, _ := proto.Marshal(req)
 	return c.uniPacket("MessageSvc.PbSendMsg", payload)
+}
+
+func syncCookie(time int64) []byte {
+	cookie, _ := proto.Marshal(&msg.SyncCookie{
+		Time:   &time,
+		Ran1:   proto.Int64(rand.Int63()),
+		Ran2:   proto.Int64(rand.Int63()),
+		Const1: &syncConst1,
+		Const2: &syncConst2,
+		Const3: proto.Int64(0x1d),
+	})
+	return cookie
 }
