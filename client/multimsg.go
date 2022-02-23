@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -202,9 +203,28 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 		fmt.Fprintf(&pv, `<title size="26" color="#777777">%s: %s</title>`, sender, brief)
 	}
 	return genForwardTemplate(
-		resId, pv.String(), "群聊的聊天记录", "[聊天记录]", "聊天记录",
+		resId, pv.String(),
 		fmt.Sprintf("查看 %d 条转发消息", len(multiMsg.Msg)),
 		time.Now().UnixNano(),
 		multiMsg.PbItemList,
 	)
+}
+
+func forwardDisplay(resID, fileName, preview, summary string) string {
+	sb := strings.Builder{}
+	sb.WriteString(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="[聊天记录]" `)
+	if resID != "" {
+		sb.WriteString(`m_resid="`)
+		sb.WriteString(resID)
+		sb.WriteString("\" ")
+	}
+	sb.WriteString(`m_fileName="`)
+	sb.WriteString(fileName)
+	sb.WriteString(`" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">群聊的聊天记录</title> `)
+	sb.WriteString(preview)
+	sb.WriteString(`<hr></hr><summary size="26" color="#808080">`)
+	sb.WriteString(summary)
+	// todo: 私聊的聊天记录？
+	sb.WriteString(`</summary></item><source name="群聊的聊天记录"></source></msg>`)
+	return sb.String()
 }

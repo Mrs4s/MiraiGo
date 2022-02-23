@@ -293,10 +293,8 @@ func packUniRequestData(data []byte) []byte {
 	return r
 }
 
-func genForwardTemplate(resID, preview, title, brief, source, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
-	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8'?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" tSum="3" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="0"><item layout="1"><title color="#000000" size="34">%s</title> %s<hr></hr><summary size="26" color="#808080">%s</summary></item><source name="%s"></source></msg>`,
-		brief, resID, ts, title, preview, summary, source,
-	)
+func genForwardTemplate(resID, preview, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
+	template := forwardDisplay(resID, strconv.FormatInt(ts, 10), preview, summary)
 	for _, item := range items {
 		if item.GetFileName() == "MultiMsg" {
 			*item.FileName = strconv.FormatInt(ts, 10)

@@ -208,7 +208,7 @@ func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.Forward
 		if err != nil {
 			continue
 		}
-		return genForwardTemplate(rsp.MsgResid, m.Preview(), "群聊的聊天记录", "[聊天记录]", "聊天记录", fmt.Sprintf("查看 %d 条转发消息", m.Length()), ts, items)
+		return genForwardTemplate(rsp.MsgResid, m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()), ts, items)
 	}
 	return nil
 }
