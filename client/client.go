@@ -609,6 +609,12 @@ func (c *QQClient) GetMemberInfo(groupCode, memberUin int64) (*GroupMemberInfo, 
 }
 
 func (c *QQClient) FindFriend(uin int64) *FriendInfo {
+	if uin == c.Uin {
+		return &FriendInfo{
+			Uin:      uin,
+			Nickname: c.Nickname,
+		}
+	}
 	for _, t := range c.FriendList {
 		f := t
 		if f.Uin == uin {
