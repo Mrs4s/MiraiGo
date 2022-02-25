@@ -86,7 +86,8 @@ func (s *Session) Upload(addr Addr, input Input) error {
 			ReqExtendinfo: []byte{},
 		})
 		offset += rl
-		_, err = io.Copy(conn, network.HeadBodyFrame(head, chunk))
+		frame := network.HeadBodyFrame(head, chunk)
+		_, err = frame.WriteTo(conn)
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
 		}
@@ -145,7 +146,8 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += int64(rl)
-		req, _ := http.NewRequest("POST", url, network.HeadBodyFrame(head, chunk))
+		frame := network.HeadBodyFrame(head, chunk)
+		req, _ := http.NewRequest("POST", url, &frame)
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Connection", "Keep-Alive")
 		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
@@ -206,7 +208,8 @@ func (s *Session) sendHeartbreak(conn net.Conn) error {
 			LocaleId:  2052,
 		},
 	})
-	_, err := io.Copy(conn, network.HeadBodyFrame(head, nil))
+	frame := network.HeadBodyFrame(head, nil)
+	_, err := frame.WriteTo(conn)
 	return err
 }
 

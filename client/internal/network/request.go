@@ -7,8 +7,6 @@ const (
 	RequestTypeSimple = 0x0B
 )
 
-var emptyKey = make([]byte, 16)
-
 type EncryptType uint32
 
 const (

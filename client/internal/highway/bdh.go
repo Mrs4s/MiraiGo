@@ -105,7 +105,8 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += rl
-		_, err = io.Copy(conn, network.HeadBodyFrame(head, chunk))
+		frame := network.HeadBodyFrame(head, chunk)
+		_, err = frame.WriteTo(conn)
 		if err != nil {
 			return nil, errors.Wrap(err, "write conn error")
 		}
@@ -189,7 +190,7 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 			return err
 		}
 
-		buffer := make([]byte, blockSize)
+		chunk := make([]byte, blockSize)
 		for {
 			nextId := atomic.AddUint32(&BlockId, 1)
 			if nextId >= uint32(len(blocks)) {
@@ -203,10 +204,10 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 				}
 				cond.L.Unlock()
 			}
-			buffer = buffer[:blockSize]
+			chunk = chunk[:blockSize]
 
 			cond.L.Lock() // lock protect reading
-			n, err := input.Body.ReadAt(buffer, block.Offset)
+			n, err := input.Body.ReadAt(chunk, block.Offset)
 			cond.L.Unlock()
 
 			if err != nil {
@@ -214,12 +215,12 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 					break
 				}
 				if err == io.ErrUnexpectedEOF {
-					buffer = buffer[:n]
+					chunk = chunk[:n]
 				} else {
 					return err
 				}
 			}
-			ch := md5.Sum(buffer)
+			ch := md5.Sum(chunk)
 			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 				MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
 				MsgSeghead: &pb.SegHead{
@@ -232,7 +233,8 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 				},
 				ReqExtendinfo: input.Ext,
 			})
-			_, err = io.Copy(conn, network.HeadBodyFrame(head, buffer))
+			frame := network.HeadBodyFrame(head, chunk)
+			_, err = frame.WriteTo(conn)
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}

@@ -89,6 +89,7 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	case EncryptTypeD2Key:
 		body = binary.NewTeaCipher(t.Sig.D2Key).Encrypt(body)
 	case EncryptTypeEmptyKey:
+		emptyKey := make([]byte, 16)
 		body = binary.NewTeaCipher(emptyKey).Encrypt(body)
 	}
 	w.Write(body)
