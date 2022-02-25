@@ -28,7 +28,7 @@ type BdhInput struct {
 
 type BdhMultiThreadInput struct {
 	CommandID int32
-	Body      io.ReaderAt
+	Body      io.ReadSeeker
 	Sum       []byte
 	Size      int64
 	Ticket    []byte
@@ -130,10 +130,11 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount int) ([]byte, error) {
 	// for small file and small thread count,
 	// use UploadBDH instead of UploadBDHMultiThread
-	if input.Size < 1024*1024*3 || threadCount < 2 {
+	// FIXME: enable multi-thread, now receive error code 81
+	if true || input.Size < 1024*1024*3 || threadCount < 2 {
 		return s.UploadBDH(BdhInput{
 			CommandID: input.CommandID,
-			Body:      io.NewSectionReader(input.Body, 0, input.Size),
+			Body:      input.Body,
 			Ticket:    input.Ticket,
 			Ext:       input.Ext,
 			Encrypt:   input.Encrypt,
@@ -207,7 +208,8 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 			chunk = chunk[:blockSize]
 
 			cond.L.Lock() // lock protect reading
-			n, err := input.Body.ReadAt(chunk, block.Offset)
+			_, _ = input.Body.Seek(block.Offset, io.SeekStart)
+			n, err := input.Body.Read(chunk)
 			cond.L.Unlock()
 
 			if err != nil {
