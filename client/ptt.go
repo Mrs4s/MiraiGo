@@ -150,13 +150,11 @@ func (c *QQClient) UploadShortVideo(target message.Source, video, thumb io.ReadS
 		cmd = 89
 	}
 	ext, _ := proto.Marshal(c.buildPttShortVideoProto(target, videoHash, thumbHash, videoLen, thumbLen).PttShortVideoUploadReq)
-	combined := utils.DoubleReadSeeker(video, thumb)
 	if thread > 1 {
-		sum, _ := utils.ComputeMd5AndLength(combined)
-		_, _ = combined.Seek(0, io.SeekStart)
+		sum, _ := utils.ComputeMd5AndLength(utils.MultiReadSeeker(thumb, video))
 		input := highway.BdhMultiThreadInput{
 			CommandID: cmd,
-			Body:      combined,
+			Body:      utils.ReaderAtFrom2ReadSeeker(thumb, video),
 			Size:      videoLen + thumbLen,
 			Sum:       sum,
 			Ticket:    c.highwaySession.SigSession,
@@ -165,9 +163,10 @@ func (c *QQClient) UploadShortVideo(target message.Source, video, thumb io.ReadS
 		}
 		hwRsp, err = c.highwaySession.UploadBDHMultiThread(input, thread)
 	} else {
+		multi := utils.MultiReadSeeker(thumb, video)
 		input := highway.BdhInput{
 			CommandID: cmd,
-			Body:      combined,
+			Body:      multi,
 			Ticket:    c.highwaySession.SigSession,
 			Ext:       ext,
 			Encrypt:   true,
