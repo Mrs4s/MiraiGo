@@ -1,8 +1,6 @@
 package client
 
 import (
-	"bytes"
-	"crypto/md5"
 	"encoding/hex"
 	"io"
 	"math/rand"
@@ -211,7 +209,7 @@ func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
 	case *message.GroupImageElement:
 		url = e.Url
 		if b, err := utils.HTTPGetReadCloser(e.Url, ""); err == nil {
-			if url, err = c.uploadOcrImage(b); err != nil {
+			if url, err = c.uploadOcrImage(b, e.Size, e.Md5); err != nil {
 				url = e.Url
 			}
 			_ = b.Close()
@@ -316,7 +314,7 @@ func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd
 	return c.uniPacket("ImgStore.GroupPicDown", payload)
 }
 
-func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
+func (c *QQClient) uploadOcrImage(img io.Reader, size int32, sum []byte) (string, error) {
 	r := make([]byte, 16)
 	rand.Read(r)
 	ext, _ := proto.Marshal(&highway2.CommFileExtReq{
@@ -324,13 +322,11 @@ func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 		Uuid:       binary.GenUUID(r),
 	})
 
-	h := md5.New()
-	buf, _ := io.ReadAll(io.TeeReader(img, h))
 	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
 		CommandID: 76,
-		Body:      bytes.NewReader(buf),
-		Size:      int64(len(buf)),
-		Sum:       h.Sum(nil),
+		Body:      img,
+		Size:      int64(size),
+		Sum:       sum,
 		Ticket:    c.highwaySession.SigSession,
 		Ext:       ext,
 		Encrypt:   false,
