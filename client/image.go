@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/hex"
 	"io"
 	"math/rand"
@@ -93,6 +94,7 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 
 	var r interface{}
 	var err error
+	var input highway.BdhInput
 	switch target.SourceType {
 	case message.SourceGroup:
 		r, err = c.sendAndWait(c.buildGroupImageStorePacket(target.PrimaryID, fh, int32(length)))
@@ -115,22 +117,18 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		}
 	}
 
+	input = highway.BdhInput{
+		CommandID: cmd,
+		Body:      img,
+		Size:      length,
+		Sum:       fh,
+		Ticket:    rsp.UploadKey,
+		Ext:       ext,
+	}
 	if tc > 1 && length > 3*1024*1024 {
-		_, err = c.highwaySession.UploadBDHMultiThread(highway.BdhMultiThreadInput{
-			CommandID: cmd,
-			Body:      utils.ReaderAtFrom2ReadSeeker(img, nil),
-			Size:      length,
-			Sum:       fh,
-			Ticket:    rsp.UploadKey,
-			Ext:       ext,
-		}, 4)
+		_, err = c.highwaySession.UploadBDHMultiThread(input, tc)
 	} else {
-		_, err = c.highwaySession.UploadBDH(highway.BdhInput{
-			CommandID: cmd,
-			Body:      img,
-			Ticket:    rsp.UploadKey,
-			Ext:       ext,
-		})
+		_, err = c.highwaySession.UploadBDH(input)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "upload failed")
@@ -326,10 +324,13 @@ func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 		Uuid:       binary.GenUUID(r),
 	})
 
-	buf, _ := io.ReadAll(img)
+	h := md5.New()
+	buf, _ := io.ReadAll(io.TeeReader(img, h))
 	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
 		CommandID: 76,
 		Body:      bytes.NewReader(buf),
+		Size:      int64(len(buf)),
+		Sum:       h.Sum(nil),
 		Ticket:    c.highwaySession.SigSession,
 		Ext:       ext,
 		Encrypt:   false,

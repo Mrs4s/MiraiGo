@@ -15,22 +15,13 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
-	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 type BdhInput struct {
 	CommandID int32
-	Body      io.ReadSeeker
-	Ticket    []byte
-	Ext       []byte
-	Encrypt   bool
-}
-
-type BdhMultiThreadInput struct {
-	CommandID int32
-	Body      io.ReaderAt
-	Sum       []byte
-	Size      int64
+	Body      io.Reader
+	Sum       []byte // md5 sum of body
+	Size      int64  // body size
 	Ticket    []byte
 	Ext       []byte
 	Encrypt   bool
@@ -46,24 +37,12 @@ func (bdh *BdhInput) encrypt(key []byte) error {
 	return nil
 }
 
-func (bdh *BdhMultiThreadInput) encrypt(key []byte) error {
-	if bdh.Encrypt {
-		if len(key) == 0 {
-			return errors.New("session key not found. maybe miss some packet?")
-		}
-		bdh.Ext = binary.NewTeaCipher(key).Encrypt(bdh.Ext)
-	}
-	return nil
-}
-
 func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	if len(s.SsoAddr) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
 	addr := s.SsoAddr[0].String()
 
-	sum, length := utils.ComputeMd5AndLength(input.Body)
-	_, _ = input.Body.Seek(0, io.SeekStart)
 	if err := input.encrypt(s.SessionKey); err != nil {
 		return nil, err
 	}
@@ -95,12 +74,12 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 			MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
-				Filesize:      length,
+				Filesize:      input.Size,
 				Dataoffset:    int64(offset),
 				Datalength:    int32(rl),
 				Serviceticket: input.Ticket,
 				Md5:           ch[:],
-				FileMd5:       sum,
+				FileMd5:       input.Sum,
 			},
 			ReqExtendinfo: input.Ext,
 		})
@@ -127,17 +106,11 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	return rspExt, nil
 }
 
-func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount int) ([]byte, error) {
+func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte, error) {
 	// for small file and small thread count,
 	// use UploadBDH instead of UploadBDHMultiThread
 	if input.Size < 1024*1024*3 || threadCount < 2 {
-		return s.UploadBDH(BdhInput{
-			CommandID: input.CommandID,
-			Body:      io.NewSectionReader(input.Body, 0, input.Size),
-			Ticket:    input.Ticket,
-			Ext:       input.Ext,
-			Encrypt:   input.Encrypt,
-		})
+		return s.UploadBDH(input)
 	}
 
 	if len(s.SsoAddr) == 0 {
@@ -149,36 +122,21 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 		return nil, err
 	}
 
-	type BlockMetaData struct {
-		Id     int
-		Offset int64
-	}
 	const blockSize int64 = 1024 * 512
 	var (
-		blocks        []BlockMetaData
-		rspExt        []byte
-		BlockId       = ^uint32(0) // -1
-		uploadedCount uint32
-		cond          = sync.NewCond(&sync.Mutex{})
+		rspExt          []byte
+		completedThread uint32
+		cond            = sync.NewCond(&sync.Mutex{})
+		offset          = int64(0)
+		count           = (input.Size + blockSize - 1) / blockSize
+		id              = 0
 	)
-	// Init Blocks
-	{
-		var temp int64 = 0
-		for temp+blockSize < input.Size {
-			blocks = append(blocks, BlockMetaData{
-				Id:     len(blocks),
-				Offset: temp,
-			})
-			temp += blockSize
-		}
-		blocks = append(blocks, BlockMetaData{
-			Id:     len(blocks),
-			Offset: temp,
-		})
-	}
 	doUpload := func() error {
 		// send signal complete uploading
-		defer cond.Signal()
+		defer func() {
+			atomic.AddUint32(&completedThread, 1)
+			cond.Signal()
+		}()
 
 		conn, err := net.DialTimeout("tcp", addr, time.Second*20)
 		if err != nil {
@@ -192,22 +150,20 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 
 		chunk := make([]byte, blockSize)
 		for {
-			nextId := atomic.AddUint32(&BlockId, 1)
-			if nextId >= uint32(len(blocks)) {
-				break
-			}
-			block := blocks[nextId]
-			if block.Id == len(blocks)-1 {
-				cond.L.Lock()
-				for atomic.LoadUint32(&uploadedCount) != uint32(len(blocks))-1 {
+			cond.L.Lock() // lock protect reading
+			off := offset
+			offset += blockSize
+			id++
+			if int64(id) == count { // last
+				for atomic.LoadUint32(&completedThread) != uint32(threadCount-1) {
 					cond.Wait()
 				}
+			} else if int64(id) > count {
 				cond.L.Unlock()
+				break
 			}
 			chunk = chunk[:blockSize]
-
-			cond.L.Lock() // lock protect reading
-			n, err := input.Body.ReadAt(chunk, block.Offset)
+			n, err := io.ReadFull(input.Body, chunk)
 			cond.L.Unlock()
 
 			if err != nil {
@@ -225,7 +181,7 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 				MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
 				MsgSeghead: &pb.SegHead{
 					Filesize:      input.Size,
-					Dataoffset:    block.Offset,
+					Dataoffset:    off,
 					Datalength:    int32(n),
 					Serviceticket: input.Ticket,
 					Md5:           ch[:],
@@ -248,7 +204,6 @@ func (s *Session) UploadBDHMultiThread(input BdhMultiThreadInput, threadCount in
 			if rspHead.RspExtendinfo != nil {
 				rspExt = rspHead.RspExtendinfo
 			}
-			atomic.AddUint32(&uploadedCount, 1)
 		}
 		return nil
 	}
