@@ -116,12 +116,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 		},
 		PcClientVersion: proto.Uint32(0),
 	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2189,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(2189, 0, body)
 	return c.uniPacket("OidbSvc.0x88d_0", payload)
 }
 
