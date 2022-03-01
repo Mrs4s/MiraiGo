@@ -37,7 +37,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 		if _, ok := c.onlinePushCache.Get(k); ok {
 			continue
 		}
-		c.onlinePushCache.Add(k, "", time.Second*30)
+		c.onlinePushCache.Add(k, unit{}, time.Second*30)
 		// 0x2dc
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)

@@ -83,7 +83,7 @@ func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *network.IncomingPac
 		c.Debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
 		return
 	}
-	c.msgSvcCache.Add(strKey, "", time.Hour)
+	c.msgSvcCache.Add(strKey, unit{}, time.Hour)
 	if c.lastC2CMsgTime > int64(pMsg.Head.GetMsgTime()) && (c.lastC2CMsgTime-int64(pMsg.Head.GetMsgTime())) > 60*10 {
 		c.Debug("c2c msg filtered by time. lastMsgTime: %v  msgTime: %v", c.lastC2CMsgTime, pMsg.Head.GetMsgTime())
 		return

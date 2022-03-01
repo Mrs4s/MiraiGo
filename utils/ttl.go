@@ -7,26 +7,26 @@ import (
 
 // https://github.com/Konstantin8105/SimpleTTL
 // entry - typical element of cache
-type entry struct {
+type entry[T any] struct {
 	expiry time.Time
-	value  interface{}
+	value  T
 }
 
 // Cache - simple implementation of cache
 // More information: https://en.wikipedia.org/wiki/Time_to_live
-type Cache struct {
+type Cache[T any] struct {
 	lock  sync.RWMutex
-	cache map[string]*entry
+	cache map[string]*entry[T]
 }
 
 // NewCache - initialization of new cache.
 // For avoid mistake - minimal time to live is 1 minute.
 // For simplification, - key is string and cache haven`t stop method
-func NewCache(interval time.Duration) *Cache {
+func NewCache[T any](interval time.Duration) *Cache[T] {
 	if interval < time.Second {
 		interval = time.Second
 	}
-	cache := &Cache{cache: make(map[string]*entry)}
+	cache := &Cache[T]{cache: make(map[string]*entry[T])}
 	go func() {
 		ticker := time.NewTicker(interval)
 		for {
@@ -47,7 +47,7 @@ func NewCache(interval time.Duration) *Cache {
 }
 
 // Count - return amount element of TTL map.
-func (cache *Cache) Count() int {
+func (cache *Cache[_]) Count() int {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
@@ -55,7 +55,7 @@ func (cache *Cache) Count() int {
 }
 
 // Get - return value from cache
-func (cache *Cache) Get(key string) (interface{}, bool) {
+func (cache *Cache[_]) Get(key string) (interface{}, bool) {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
@@ -67,7 +67,7 @@ func (cache *Cache) Get(key string) (interface{}, bool) {
 	return nil, false
 }
 
-func (cache *Cache) GetAndUpdate(key string, ttl time.Duration) (interface{}, bool) {
+func (cache *Cache[_]) GetAndUpdate(key string, ttl time.Duration) (interface{}, bool) {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
@@ -79,18 +79,18 @@ func (cache *Cache) GetAndUpdate(key string, ttl time.Duration) (interface{}, bo
 }
 
 // Add - add key/value in cache
-func (cache *Cache) Add(key string, value interface{}, ttl time.Duration) {
+func (cache *Cache[T]) Add(key string, value T, ttl time.Duration) {
 	cache.lock.Lock()
 	defer cache.lock.Unlock()
 
-	cache.cache[key] = &entry{
+	cache.cache[key] = &entry[T]{
 		value:  value,
 		expiry: time.Now().Add(ttl),
 	}
 }
 
 // GetKeys - return all keys of cache map
-func (cache *Cache) GetKeys() []string {
+func (cache *Cache[T]) GetKeys() []string {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 

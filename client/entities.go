@@ -296,6 +296,9 @@ type (
 		SigSession []byte
 		SessionKey []byte
 	}
+
+	// unit is an alias for struct{}, like `()` in rust
+	unit = struct{}
 )
 
 const (

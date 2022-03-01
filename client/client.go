@@ -77,12 +77,12 @@ type QQClient struct {
 	// fileStorageInfo *jce.FileStoragePushFSSvcList
 
 	// message state
-	msgSvcCache            *utils.Cache
+	msgSvcCache            *utils.Cache[unit]
 	lastC2CMsgTime         int64
-	transCache             *utils.Cache
+	transCache             *utils.Cache[unit]
 	groupSysMsgCache       *GroupSystemMessages
 	msgBuilders            sync.Map
-	onlinePushCache        *utils.Cache
+	onlinePushCache        *utils.Cache[unit]
 	heartbeatEnabled       bool
 	requestPacketRequestID atomic.Int32
 	groupSeq               atomic.Int32
@@ -164,9 +164,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
-		msgSvcCache:     utils.NewCache(time.Second * 15),
-		transCache:      utils.NewCache(time.Second * 15),
-		onlinePushCache: utils.NewCache(time.Second * 15),
+		msgSvcCache:     utils.NewCache[unit](time.Second * 15),
+		transCache:      utils.NewCache[unit](time.Second * 15),
+		onlinePushCache: utils.NewCache[unit](time.Second * 15),
 		servers:         []*net.TCPAddr{},
 		alive:           true,
 		highwaySession:  new(highway.Session),

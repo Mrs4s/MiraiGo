@@ -646,7 +646,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 	if _, ok := c.transCache.Get(idStr); ok {
 		return nil, nil
 	}
-	c.transCache.Add(idStr, "", time.Second*15)
+	c.transCache.Add(idStr, unit{}, time.Second*15)
 	if info.GetMsgType() == 34 {
 		data.ReadInt32()
 		data.ReadByte()
