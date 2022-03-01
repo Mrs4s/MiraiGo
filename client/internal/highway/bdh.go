@@ -12,7 +12,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
@@ -72,7 +71,7 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
+			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, input.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      input.Size,
 				Dataoffset:    int64(offset),
@@ -84,7 +83,7 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += rl
-		frame := network.HeadBodyFrame(head, chunk)
+		frame := newFrame(head, chunk)
 		_, err = frame.WriteTo(conn)
 		if err != nil {
 			return nil, errors.Wrap(err, "write conn error")
@@ -178,7 +177,7 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 			}
 			ch := md5.Sum(chunk)
 			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-				MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
+				MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, input.CommandID, 2052),
 				MsgSeghead: &pb.SegHead{
 					Filesize:      input.Size,
 					Dataoffset:    off,
@@ -189,7 +188,7 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 				},
 				ReqExtendinfo: input.Ext,
 			})
-			frame := network.HeadBodyFrame(head, chunk)
+			frame := newFrame(head, chunk)
 			_, err = frame.WriteTo(conn)
 			if err != nil {
 				return errors.Wrap(err, "write conn error")

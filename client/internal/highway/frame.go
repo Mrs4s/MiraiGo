@@ -1,4 +1,4 @@
-package network
+package highway
 
 import (
 	"encoding/binary"
@@ -7,15 +7,15 @@ import (
 
 var etx = []byte{0x29}
 
-// HeadBodyFrame 包格式
-// 	* STX
+// newFrame 包格式
+// 	* STX: 0x28(40)
 // 	* head length
 // 	* body length
 // 	* head data
 // 	* body data
-// 	* ETX
+// 	* ETX: 0x29(41)
 // 节省内存, 可被go runtime优化为writev操作
-func HeadBodyFrame(head []byte, body []byte) net.Buffers {
+func newFrame(head []byte, body []byte) net.Buffers {
 	buffers := make(net.Buffers, 4)
 	// buffer0 format:
 	// 	* STX

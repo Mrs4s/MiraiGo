@@ -12,10 +12,15 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
+)
+
+// see com/tencent/mobileqq/highway/utils/BaseConstants.java#L120-L121
+const (
+	_REQ_CMD_DATA        = "PicUp.DataUp"
+	_REQ_CMD_HEART_BREAK = "PicUp.Echo"
 )
 
 type Session struct {
@@ -74,7 +79,7 @@ func (s *Session) Upload(addr Addr, input Input) error {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
+			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, input.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      length,
 				Dataoffset:    int64(offset),
@@ -86,7 +91,7 @@ func (s *Session) Upload(addr Addr, input Input) error {
 			ReqExtendinfo: []byte{},
 		})
 		offset += rl
-		frame := network.HeadBodyFrame(head, chunk)
+		frame := newFrame(head, chunk)
 		_, err = frame.WriteTo(conn)
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
@@ -134,7 +139,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(0, input.CommandID, 0),
+			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 0, input.CommandID, 0),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      fileLength,
 				Dataoffset:    offset,
@@ -146,7 +151,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += int64(rl)
-		frame := network.HeadBodyFrame(head, chunk)
+		frame := newFrame(head, chunk)
 		req, _ := http.NewRequest("POST", url, &frame)
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Connection", "Keep-Alive")
@@ -182,33 +187,24 @@ func (s *Session) nextSeq() int32 {
 	return atomic.AddInt32(&s.seq, 2)
 }
 
-func (s *Session) dataHighwayHead(flag, cmd, locale int32) *pb.DataHighwayHead {
+func (s *Session) dataHighwayHead(cmd string, flag, cmdID, locale int32) *pb.DataHighwayHead {
 	return &pb.DataHighwayHead{
 		Version:   1,
 		Uin:       s.Uin,
-		Command:   "PicUp.DataUp",
+		Command:   cmd,
 		Seq:       s.nextSeq(),
 		Appid:     s.AppID,
 		Dataflag:  flag,
-		CommandId: cmd,
+		CommandId: cmdID,
 		LocaleId:  locale,
 	}
 }
 
 func (s *Session) sendHeartbreak(conn net.Conn) error {
 	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-		MsgBasehead: &pb.DataHighwayHead{
-			Version:   1,
-			Uin:       s.Uin,
-			Command:   "PicUp.Echo",
-			Seq:       s.nextSeq(),
-			Appid:     s.AppID,
-			Dataflag:  4096,
-			CommandId: 0,
-			LocaleId:  2052,
-		},
+		MsgBasehead: s.dataHighwayHead(_REQ_CMD_HEART_BREAK, 4096, 0, 2052),
 	})
-	frame := network.HeadBodyFrame(head, nil)
+	frame := newFrame(head, nil)
 	_, err := frame.WriteTo(conn)
 	return err
 }
