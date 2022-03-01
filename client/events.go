@@ -46,8 +46,6 @@ type eventHandlers struct {
 	guildChannelDestroyedHandlers        []func(*QQClient, *GuildChannelOperationEvent)
 	memberJoinedGuildHandlers            []func(*QQClient, *MemberJoinGuildEvent)
 
-	// consider Logger interface?
-	logHandlers                 []func(*QQClient, *LogEvent)
 	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent) bool
 	groupMessageReceiptHandlers sync.Map
 }
@@ -82,10 +80,6 @@ func (s *GuildService) OnMemberJoinedGuild(f func(*QQClient, *MemberJoinGuildEve
 
 func (c *QQClient) OnServerUpdated(f func(*QQClient, *ServerUpdatedEvent) bool) {
 	c.eventHandlers.serverUpdatedHandlers = append(c.eventHandlers.serverUpdatedHandlers, f)
-}
-
-func (c *QQClient) OnLog(f func(*QQClient, *LogEvent)) {
-	c.eventHandlers.logHandlers = append(c.eventHandlers.logHandlers, f)
 }
 
 func NewUinFilterPrivate(uin int64) func(*message.PrivateMessage) bool {
@@ -184,17 +178,6 @@ func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent)
 		go f.(func(*QQClient, *groupMessageReceiptEvent))(c, e)
 		return true
 	})
-}
-
-func (c *QQClient) dispatchLogEvent(e *LogEvent) {
-	if e == nil {
-		return
-	}
-	for _, f := range c.eventHandlers.logHandlers {
-		cover(func() {
-			f(c, e)
-		})
-	}
 }
 
 func cover(f func()) {

@@ -118,7 +118,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 					return nil, errors.Wrap(err, "decode online push 0x210 error")
 				}
 			} else {
-				c.Debug("unknown online push 0x210 sub type 0x%v", strconv.FormatInt(subType, 16))
+				c.debug("unknown online push 0x210 sub type 0x%v", strconv.FormatInt(subType, 16))
 			}
 		}
 	}
@@ -241,7 +241,7 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 	if s44.GroupSyncMsg.GrpCode == 0 { // member sync
 		return errors.New("invalid group code")
 	}
-	c.Debug("syncing members.")
+	c.debug("syncing members.")
 	if group := c.FindGroup(s44.GroupSyncMsg.GrpCode); group != nil {
 		group.lock.Lock()
 		defer group.lock.Unlock()

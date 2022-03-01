@@ -139,7 +139,7 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 			}
 		}
 		if event.Uin == 0 {
-			c.Error("process special title updated tips error: missing cmd")
+			c.error("process special title updated tips error: missing cmd")
 			return
 		}
 		if mem := c.FindGroup(groupCode).FindMember(event.Uin); mem != nil {

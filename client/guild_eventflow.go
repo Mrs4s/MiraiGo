@@ -80,7 +80,7 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *network.IncomingPacketInfo, payl
 			}
 			eventBody := new(channel.EventBody)
 			if err := proto.Unmarshal(common.PbElem, eventBody); err != nil {
-				c.Error("failed to unmarshal guild channel event body: %v", err)
+				c.error("failed to unmarshal guild channel event body: %v", err)
 				continue
 			}
 			c.processGuildEventBody(m, eventBody)
@@ -106,7 +106,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 	var guild *GuildInfo
 	if m.Head.RoutingHead.GetGuildId() != 0 {
 		if guild = c.GuildService.FindGuild(m.Head.RoutingHead.GetGuildId()); guild == nil {
-			c.Warning("process channel event error: guild not found.")
+			c.warning("process channel event error: guild not found.")
 			return
 		}
 	}
@@ -118,7 +118,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 			}
 			channelInfo, err := c.GuildService.FetchChannelInfo(guild.GuildId, chanId.GetChanId())
 			if err != nil {
-				c.Warning("process create channel event error: fetch channel info error: %v", err)
+				c.warning("process create channel event error: fetch channel info error: %v", err)
 				continue
 			}
 			guild.Channels = append(guild.Channels, channelInfo)
@@ -148,7 +148,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		if oldInfo == nil {
 			info, err := c.GuildService.FetchChannelInfo(m.Head.RoutingHead.GetGuildId(), eventBody.ChangeChanInfo.GetChanId())
 			if err != nil {
-				c.Error("error to decode channel info updated event: fetch channel info failed: %v", err)
+				c.error("error to decode channel info updated event: fetch channel info failed: %v", err)
 				return
 			}
 			guild.Channels = append(guild.Channels, info)
@@ -159,7 +159,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		}
 		newInfo, err := c.GuildService.FetchChannelInfo(m.Head.RoutingHead.GetGuildId(), eventBody.ChangeChanInfo.GetChanId())
 		if err != nil {
-			c.Error("error to decode channel info updated event: fetch channel info failed: %v", err)
+			c.error("error to decode channel info updated event: fetch channel info failed: %v", err)
 			return
 		}
 		for i := range guild.Channels {
@@ -178,13 +178,13 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 	case eventBody.JoinGuild != nil:
 		/* 应该不会重复推送把, 不会吧不会吧
 		if mem := guild.FindMember(eventBody.JoinGuild.GetMemberTinyid()); mem != nil {
-			c.Info("ignore join guild event: member %v already exists", mem.TinyId)
+			c.info("ignore join guild event: member %v already exists", mem.TinyId)
 			return
 		}
 		*/
 		profile, err := c.GuildService.FetchGuildMemberProfileInfo(guild.GuildId, eventBody.JoinGuild.GetMemberTinyid())
 		if err != nil {
-			c.Error("error to decode member join guild event: get member profile error: %v", err)
+			c.error("error to decode member join guild event: get member profile error: %v", err)
 			return
 		}
 		info := &GuildMemberInfo{
@@ -210,7 +210,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		if eventBody.UpdateMsg.GetEventType() == 4 { // 消息贴表情更新 (包含添加或删除)
 			t, err := c.GuildService.pullChannelMessages(m.Head.RoutingHead.GetGuildId(), m.Head.RoutingHead.GetChannelId(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetMsgSeq(), eventBody.UpdateMsg.GetEventVersion()-1, false)
 			if err != nil || len(t) == 0 {
-				c.Error("process guild event flow error: pull eventMsg message error: %v", err)
+				c.error("process guild event flow error: pull eventMsg message error: %v", err)
 				return
 			}
 			// 自己的消息被贴表情会单独推送一个tips, 这里不需要解析

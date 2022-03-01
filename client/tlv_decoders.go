@@ -139,11 +139,11 @@ func (c *QQClient) decodeT119R(data []byte) {
 	if t120, ok := m[0x120]; ok {
 		c.sig.SKey = t120
 		c.sig.SKeyExpiredTime = time.Now().Unix() + 21600
-		c.Debug("skey updated: %v", c.sig.SKey)
+		c.debug("skey updated: %v", c.sig.SKey)
 	}
 	if t11a, ok := m[0x11a]; ok {
 		c.Nickname, c.Age, c.Gender = readT11A(t11a)
-		c.Debug("account info updated: " + c.Nickname)
+		c.debug("account info updated: " + c.Nickname)
 	}
 }
 

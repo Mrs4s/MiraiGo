@@ -171,9 +171,9 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 			ErrorMessage: t146r.ReadStringShort(),
 		}, nil
 	}
-	c.Debug("unknown login response: %v", t)
+	c.debug("unknown login response: %v", t)
 	for k, v := range m {
-		c.Debug("Type: %v Value: %v", strconv.FormatInt(int64(k), 16), hex.EncodeToString(v))
+		c.debug("Type: %v Value: %v", strconv.FormatInt(int64(k), 16), hex.EncodeToString(v))
 	}
 	return nil, errors.Errorf("unknown login response: %v", t) // ?
 }
@@ -188,7 +188,7 @@ func decodeClientRegisterResponse(c *QQClient, _ *network.IncomingPacketInfo, pa
 	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
 	if svcRsp.Result != "" || svcRsp.ReplyCode != 0 {
 		if svcRsp.Result != "" {
-			c.Error("reg error: %v", svcRsp.Result)
+			c.error("reg error: %v", svcRsp.Result)
 		}
 		return nil, errors.New("reg failed")
 	}
@@ -318,7 +318,7 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 					if strings.Contains(s.Server, "com") {
 						continue
 					}
-					c.Debug("got new server addr: %v location: %v", s.Server, s.Location)
+					c.debug("got new server addr: %v location: %v", s.Server, s.Location)
 					adds = append(adds, &net.TCPAddr{
 						IP:   net.ParseIP(s.Server),
 						Port: int(s.Port),
@@ -341,7 +341,7 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 			fmtPkt := jce.NewJceReader(jceBuf)
 			list := &jce.FileStoragePushFSSvcList{}
 			list.ReadFrom(fmtPkt)
-			c.Debug("got file storage svc push.")
+			c.debug("got file storage svc push.")
 			// c.fileStorageInfo = list
 			rsp := cmd0x6ff.C501RspBody{}
 			if err := proto.Unmarshal(list.BigDataChannel.PbBuf, &rsp); err == nil && rsp.RspBody != nil {

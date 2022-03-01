@@ -141,7 +141,7 @@ ok:
 	width := int32(i.Width)
 	height := int32(i.Height)
 	if err != nil && target.SourceType != message.SourceGroup {
-		c.Warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
+		c.warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
 		width = 200
 		height = 200
 	}

@@ -60,7 +60,7 @@ func (c *QQClient) GetGroupSystemMessages() (*GroupSystemMessages, error) {
 
 func (c *QQClient) exceptAndDispatchGroupSysMsg() {
 	if c.groupSysMsgCache == nil {
-		c.Error("warning: groupSysMsgCache is nil")
+		c.error("warning: groupSysMsgCache is nil")
 		c.groupSysMsgCache, _ = c.GetGroupSystemMessages()
 		return
 	}
@@ -243,12 +243,12 @@ func decodeSystemMsgGroupPacket(c *QQClient, _ *network.IncomingPacketInfo, payl
 					ActionUinNick: st.Msg.ActionUinQqNick,
 				})
 			default:
-				c.Debug("unknown group system message type: %v", st.Msg.GroupMsgType)
+				c.debug("unknown group system message type: %v", st.Msg.GroupMsgType)
 			}
 		case 3: // ?
 		case 5: // 自身状态变更(管理员/加群退群)
 		default:
-			c.Debug("unknown group system msg: %v", st.Msg.SubType)
+			c.debug("unknown group system msg: %v", st.Msg.SubType)
 		}
 	}
 	return ret, nil

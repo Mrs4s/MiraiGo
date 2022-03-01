@@ -175,12 +175,6 @@ type (
 		client *QQClient
 	}
 
-	LogEvent struct {
-		Type    string
-		Message string
-		Dump    []byte
-	}
-
 	ServerUpdatedEvent struct {
 		Servers []jce.SsoServerInfo
 	}

@@ -61,7 +61,7 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				Message:    m.Elements,
 			}))
 		if err != nil {
-			c.Error("%v", err)
+			c.error("%v", err)
 			return nil
 		}
 		ret := c.sendGroupMessage(groupCode, false, &message.SendingMessage{Elements: []message.IMessageElement{lmsg}})
@@ -178,7 +178,7 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 		}
 		err := c.highwaySession.Upload(addr, input)
 		if err != nil {
-			c.Error("highway upload long message error: %v", err)
+			c.error("highway upload long message error: %v", err)
 			continue
 		}
 		return genLongTemplate(rsp.MsgResid, m.Brief(), ts), nil
@@ -340,9 +340,9 @@ func decodeMsgSendResponse(c *QQClient, _ *network.IncomingPacketInfo, payload [
 	switch rsp.GetResult() {
 	case 0: // OK.
 	case 55:
-		c.Error("sendPacket msg error: %v Bot has blocked target's content", rsp.GetResult())
+		c.error("sendPacket msg error: %v Bot has blocked target's content", rsp.GetResult())
 	default:
-		c.Error("sendPacket msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
+		c.error("sendPacket msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
 	}
 	return nil, nil
 }
@@ -353,7 +353,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.GetResult() != 0 {
-		c.Error("get msg error: %v %v", rsp.GetResult(), rsp.GetErrmsg())
+		c.error("get msg error: %v %v", rsp.GetResult(), rsp.GetErrmsg())
 		return nil, errors.Errorf("get msg error: %v msg: %v", rsp.GetResult(), rsp.GetErrmsg())
 	}
 	var ret []*message.GroupMessage
@@ -363,7 +363,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 		}
 		if m.Content != nil && m.Content.GetPkgNum() > 1 && !info.Params.Bool("raw") {
 			if m.Content.GetPkgIndex() == 0 {
-				c.Debug("build fragmented message from history")
+				c.debug("build fragmented message from history")
 				i := m.Head.GetMsgSeq() - m.Content.GetPkgNum()
 				builder := &messageBuilder{}
 				for {
@@ -412,10 +412,10 @@ func decodeAtAllRemainResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
 	if group == nil {
-		c.Debug("sync group %v.", m.Head.GroupInfo.GetGroupCode())
+		c.debug("sync group %v.", m.Head.GroupInfo.GetGroupCode())
 		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
 		if err != nil {
-			c.Error("error to sync group %v : %+v", m.Head.GroupInfo.GetGroupCode(), err)
+			c.error("error to sync group %v : %+v", m.Head.GroupInfo.GetGroupCode(), err)
 			return nil
 		}
 		group = info
@@ -424,7 +424,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if len(group.Members) == 0 {
 		mem, err := c.GetGroupMembers(group)
 		if err != nil {
-			c.Error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
+			c.error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
 			return nil
 		}
 		group.Members = mem

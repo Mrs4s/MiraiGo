@@ -52,7 +52,7 @@ func (c *QQClient) getQiDianAddressDetailList() ([]*FriendInfo, error) {
 	ret := []*FriendInfo{}
 	for _, detail := range rsp.GetAddressDetailListRspBody.AddressDetail {
 		if len(detail.Qq) == 0 {
-			c.Warning("address detail %v QQ is 0", string(detail.Name))
+			c.warning("address detail %v QQ is 0", string(detail.Name))
 			continue
 		}
 		ret = append(ret, &FriendInfo{

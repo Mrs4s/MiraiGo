@@ -55,6 +55,7 @@ type QQClient struct {
 
 	transport *network.Transport
 	oicq      *oicq.Codec
+	logger    Logger
 
 	// internal state
 	handlers        HandlerMap
@@ -420,7 +421,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 func (c *QQClient) RequestSMS() bool {
 	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
 	if err != nil {
-		c.Error("request sms error: %v", err)
+		c.error("request sms error: %v", err)
 		return false
 	}
 	return rsp.(LoginResponse).Error == SMSNeededError
@@ -428,7 +429,7 @@ func (c *QQClient) RequestSMS() bool {
 
 func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.sig.G) == 0 {
-		c.Warning("device lock is disable. http api may fail.")
+		c.warning("device lock is disable. http api may fail.")
 	}
 	c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)
 	if err := c.registerClient(); err != nil {
@@ -703,7 +704,7 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 
 func (c *QQClient) getSKey() string {
 	if c.sig.SKeyExpiredTime < time.Now().Unix() && len(c.sig.G) > 0 {
-		c.Debug("skey expired. refresh...")
+		c.debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
 	}
 	return string(c.sig.SKey)

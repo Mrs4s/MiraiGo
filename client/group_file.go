@@ -71,7 +71,7 @@ func init() {
 func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err error) {
 	defer func() {
 		if pan := recover(); pan != nil {
-			c.Error("get group fs error: %v\n%s", pan, debug.Stack())
+			c.error("get group fs error: %v\n%s", pan, debug.Stack())
 			err = errors.New("fs error")
 		}
 	}()

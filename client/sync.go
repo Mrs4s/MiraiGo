@@ -90,7 +90,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		if e.GroupNum != -1 {
 			groupNum = e.GroupNum
 		}
-		c.Debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
+		c.debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
 		if groupNum != -1 && len(ret.GroupSessions) >= int(groupNum) {
 			notifyChan <- true
 		}
