@@ -397,13 +397,10 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 }
 
 func decodeAtAllRemainResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D8A7RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return &AtAllRemainInfo{
 		CanAtAll:                 rsp.GetCanAtAll(),
@@ -593,13 +590,10 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 
 // OidbSvc.0xeac_1/2
 func decodeEssenceMsgResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
 	rsp := &oidb.EACRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return rsp, nil
 }

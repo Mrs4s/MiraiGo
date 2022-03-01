@@ -42,13 +42,10 @@ func (c *QQClient) Translate(src, dst, text string) (string, error) {
 
 // OidbSvc.0x990
 func decodeTranslateResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.TranslateRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return rsp.BatchTranslateRsp, nil
 }

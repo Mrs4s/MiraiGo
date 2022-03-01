@@ -405,13 +405,10 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 
 // OidbSvc.0xe07_0
 func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.DE07RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.Wording != "" {
 		if strings.Contains(rsp.Wording, "服务忙") {

@@ -49,13 +49,10 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 }
 
 func decodeUrlCheckResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := &oidb.OIDBSSOPkg{}
 	rsp := &oidb.DBCBRspBody{}
-	if err := proto.Unmarshal(payload, pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.CheckUrlRsp == nil || len(rsp.CheckUrlRsp.Results) == 0 {
 		return nil, errors.New("response is empty")

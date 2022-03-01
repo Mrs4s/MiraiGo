@@ -783,13 +783,10 @@ func decodeMSFOfflinePacket(c *QQClient, _ *network.IncomingPacketInfo, _ []byte
 
 // OidbSvc.0xd79
 func decodeWordSegmentation(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
 	rsp := &oidb.D79RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.Content != nil {
 		return rsp.Content.SliceContent, nil

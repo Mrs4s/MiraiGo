@@ -356,15 +356,15 @@ func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Messag
 	return c.packOIDBPackage(cmd, serviceType, b)
 }
 
-func unpackOIDBPackage(buff []byte, payload proto.Message) error {
+func unpackOIDBPackage(payload []byte, rsp proto.Message) error {
 	pkg := new(oidb.OIDBSSOPkg)
-	if err := proto.Unmarshal(buff, pkg); err != nil {
+	if err := proto.Unmarshal(payload, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if pkg.Result != 0 {
 		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.Result, pkg.ErrorMsg)
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, payload); err != nil {
+	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return nil

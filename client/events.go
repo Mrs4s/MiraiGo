@@ -25,8 +25,8 @@ func (handle *EventHandle[T]) Subscribe(handler func(client *QQClient, event T))
 
 func (handle *EventHandle[T]) dispatch(client *QQClient, event T) {
 	eventMu.RLock()
-	defer eventMu.RUnlock()
 	defer func() {
+		eventMu.RUnlock()
 		if pan := recover(); pan != nil {
 			fmt.Printf("event error: %v\n%s", pan, debug.Stack())
 		}

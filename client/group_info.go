@@ -227,13 +227,10 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 
 // OidbSvc.0x88d_0
 func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
 	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if len(rsp.RspGroupInfo) == 0 {
 		return nil, errors.New(string(rsp.StrErrorInfo))
