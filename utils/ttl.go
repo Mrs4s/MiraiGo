@@ -90,7 +90,7 @@ func (cache *Cache[T]) Add(key string, value T, ttl time.Duration) {
 }
 
 // GetKeys - return all keys of cache map
-func (cache *Cache[T]) GetKeys() []string {
+func (cache *Cache[_]) GetKeys() []string {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
