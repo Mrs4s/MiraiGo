@@ -659,10 +659,10 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 			switch typ {
 			case 0x02:
 				if target == c.Uin {
-					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
+					c.GroupLeaveEvent.dispatch(c, &GroupLeaveEvent{Group: g})
 				} else if m := g.FindMember(target); m != nil {
 					g.removeMember(target)
-					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+					c.GroupMemberLeaveEvent.dispatch(c, &MemberLeaveGroupEvent{
 						Group:  g,
 						Member: m,
 					})
@@ -672,13 +672,13 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 					return nil, err
 				}
 				if target == c.Uin {
-					c.dispatchLeaveGroupEvent(&GroupLeaveEvent{
+					c.GroupLeaveEvent.dispatch(c, &GroupLeaveEvent{
 						Group:    g,
 						Operator: g.FindMember(operator),
 					})
 				} else if m := g.FindMember(target); m != nil {
 					g.removeMember(target)
-					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+					c.GroupMemberLeaveEvent.dispatch(c, &MemberLeaveGroupEvent{
 						Group:    g,
 						Member:   m,
 						Operator: g.FindMember(operator),
@@ -687,7 +687,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 			case 0x82:
 				if m := g.FindMember(target); m != nil {
 					g.removeMember(target)
-					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+					c.GroupMemberLeaveEvent.dispatch(c, &MemberLeaveGroupEvent{
 						Group:  g,
 						Member: m,
 					})
@@ -695,7 +695,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 			case 0x83:
 				if m := g.FindMember(target); m != nil {
 					g.removeMember(target)
-					c.dispatchMemberLeaveEvent(&MemberLeaveGroupEvent{
+					c.GroupMemberLeaveEvent.dispatch(c, &MemberLeaveGroupEvent{
 						Group:    g,
 						Member:   m,
 						Operator: g.FindMember(operator),
@@ -724,7 +724,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 				if mem.Permission != newPermission {
 					old := mem.Permission
 					mem.Permission = newPermission
-					c.dispatchPermissionChanged(&MemberPermissionChangedEvent{
+					c.GroupMemberPermissionChangedEvent.dispatch(c, &MemberPermissionChangedEvent{
 						Group:         g,
 						Member:        mem,
 						OldPermission: old,
@@ -748,7 +748,7 @@ func decodeSystemMsgFriendPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 	}
 	st := rsp.Friendmsgs[0]
 	if st.Msg != nil {
-		c.dispatchNewFriendRequest(&NewFriendRequest{
+		c.NewFriendRequestEvent.dispatch(c, &NewFriendRequest{
 			RequestId:     st.MsgSeq,
 			Message:       st.Msg.MsgAdditional,
 			RequesterUin:  st.ReqUin,
@@ -768,7 +768,7 @@ func decodeForceOfflinePacket(c *QQClient, _ *network.IncomingPacketInfo, payloa
 	r := jce.NewJceReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
 	tips := r.ReadString(2)
 	c.Disconnect()
-	go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: tips})
+	go c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: tips})
 	return nil, nil
 }
 
@@ -777,7 +777,7 @@ func decodeMSFOfflinePacket(c *QQClient, _ *network.IncomingPacketInfo, _ []byte
 	// c.lastLostMsg = "服务器端强制下线."
 	c.Disconnect()
 	// 这个decoder不能消耗太多时间, event另起线程处理
-	go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "服务端强制下线."})
+	go c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "服务端强制下线."})
 	return nil, nil
 }
 

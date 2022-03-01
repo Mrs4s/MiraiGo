@@ -317,17 +317,17 @@ func decodeGroupMessagePacket(c *QQClient, _ *network.IncomingPacketInfo, payloa
 		if builder.len() >= pkt.Message.Content.GetPkgNum() {
 			c.msgBuilders.Delete(seq)
 			if pkt.Message.Head.GetFromUin() == c.Uin {
-				c.dispatchGroupMessageSelf(c.parseGroupMessage(builder.build()))
+				c.SelfGroupMessageEvent.dispatch(c, c.parseGroupMessage(builder.build()))
 			} else {
-				c.dispatchGroupMessage(c.parseGroupMessage(builder.build()))
+				c.GroupMessageEvent.dispatch(c, c.parseGroupMessage(builder.build()))
 			}
 		}
 		return nil, nil
 	}
 	if pkt.Message.Head.GetFromUin() == c.Uin {
-		c.dispatchGroupMessageSelf(c.parseGroupMessage(pkt.Message))
+		c.SelfGroupMessageEvent.dispatch(c, c.parseGroupMessage(pkt.Message))
 	} else {
-		c.dispatchGroupMessage(c.parseGroupMessage(pkt.Message))
+		c.GroupMessageEvent.dispatch(c, c.parseGroupMessage(pkt.Message))
 	}
 	return nil, nil
 }
@@ -463,7 +463,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				mem = info
 				group.Members = append(group.Members, mem)
 				group.sort()
-				go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+				go c.GroupMemberJoinEvent.dispatch(c, &MemberJoinGroupEvent{
 					Group:  group,
 					Member: info,
 				})
@@ -531,7 +531,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 				mem.CardName = groupCard
 			}
 			if old != mem.CardName {
-				go c.dispatchMemberCardUpdatedEvent(&MemberCardUpdatedEvent{
+				c.MemberCardUpdatedEvent.dispatch(c, &MemberCardUpdatedEvent{
 					Group:   group,
 					OldCard: old,
 					Member:  mem,

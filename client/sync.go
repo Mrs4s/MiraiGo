@@ -443,7 +443,7 @@ func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload
 				t := ac
 				if ac.AppId == notify.AppId {
 					c.OnlineClients = append(c.OnlineClients, t)
-					c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+					c.OtherClientStatusChangedEvent.dispatch(c, &OtherClientStatusChangedEvent{
 						Client: t,
 						Online: true,
 					})
@@ -462,7 +462,7 @@ func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload
 		if rmi != -1 {
 			rmc := c.OnlineClients[rmi]
 			c.OnlineClients = append(c.OnlineClients[:rmi], c.OnlineClients[rmi+1:]...)
-			c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+			c.OtherClientStatusChangedEvent.dispatch(c, &OtherClientStatusChangedEvent{
 				Client: rmc,
 				Online: false,
 			})

@@ -55,19 +55,18 @@ func (cache *Cache[_]) Count() int {
 }
 
 // Get - return value from cache
-func (cache *Cache[_]) Get(key string) (interface{}, bool) {
+func (cache *Cache[T]) Get(key string) (value T, _ bool) {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
 	e, ok := cache.cache[key]
-
 	if ok && e.expiry.After(time.Now()) {
 		return e.value, true
 	}
-	return nil, false
+	return
 }
 
-func (cache *Cache[_]) GetAndUpdate(key string, ttl time.Duration) (interface{}, bool) {
+func (cache *Cache[T]) GetAndUpdate(key string, ttl time.Duration) (_ T, _ bool) {
 	cache.lock.RLock()
 	defer cache.lock.RUnlock()
 
@@ -75,7 +74,7 @@ func (cache *Cache[_]) GetAndUpdate(key string, ttl time.Duration) (interface{},
 		e.expiry = time.Now().Add(ttl)
 		return e.value, true
 	}
-	return nil, false
+	return
 }
 
 // Add - add key/value in cache

@@ -19,6 +19,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
@@ -76,6 +77,35 @@ type QQClient struct {
 	// otherSrvAddrs   []string
 	// fileStorageInfo *jce.FileStoragePushFSSvcList
 
+	// event handles
+	eventHandlers                     eventHandlers
+	PrivateMessageEvent               EventHandle[*message.PrivateMessage]
+	TempMessageEvent                  EventHandle[*TempMessageEvent]
+	GroupMessageEvent                 EventHandle[*message.GroupMessage]
+	SelfPrivateMessageEvent           EventHandle[*message.PrivateMessage]
+	SelfGroupMessageEvent             EventHandle[*message.GroupMessage]
+	GroupMuteEvent                    EventHandle[*GroupMuteEvent]
+	GroupMessageRecalledEvent         EventHandle[*GroupMessageRecalledEvent]
+	FriendMessageRecalledEvent        EventHandle[*FriendMessageRecalledEvent]
+	GroupJoinEvent                    EventHandle[*GroupInfo]
+	GroupLeaveEvent                   EventHandle[*GroupLeaveEvent]
+	GroupMemberJoinEvent              EventHandle[*MemberJoinGroupEvent]
+	GroupMemberLeaveEvent             EventHandle[*MemberLeaveGroupEvent]
+	MemberCardUpdatedEvent            EventHandle[*MemberCardUpdatedEvent]
+	GroupNameUpdatedEvent             EventHandle[*GroupNameUpdatedEvent]
+	GroupMemberPermissionChangedEvent EventHandle[*MemberPermissionChangedEvent]
+	GroupInvitedEvent                 EventHandle[*GroupInvitedRequest]
+	UserWantJoinGroupEvent            EventHandle[*UserJoinGroupRequest]
+	NewFriendEvent                    EventHandle[*NewFriendEvent]
+	NewFriendRequestEvent             EventHandle[*NewFriendRequest]
+	DisconnectedEvent                 EventHandle[*ClientDisconnectedEvent]
+	GroupNotifyEvent                  EventHandle[INotifyEvent]
+	FriendNotifyEvent                 EventHandle[INotifyEvent]
+	MemberSpecialTitleUpdatedEvent    EventHandle[*MemberSpecialTitleUpdatedEvent]
+	GroupDigestEvent                  EventHandle[*GroupDigestEvent]
+	OtherClientStatusChangedEvent     EventHandle[*OtherClientStatusChangedEvent]
+	OfflineFileEvent                  EventHandle[*OfflineFileEvent]
+
 	// message state
 	msgSvcCache            *utils.Cache[unit]
 	lastC2CMsgTime         int64
@@ -88,7 +118,6 @@ type QQClient struct {
 	groupSeq               atomic.Int32
 	friendSeq              atomic.Int32
 	highwayApplyUpSeq      atomic.Int32
-	eventHandlers          eventHandlers
 
 	groupListLock sync.Mutex
 }

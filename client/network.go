@@ -102,15 +102,15 @@ func (c *QQClient) connect() error {
 		return err
 	}
 	c.once.Do(func() {
-		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
+		c.GroupMessageEvent.Subscribe(func(_ *QQClient, _ *message.GroupMessage) {
 			c.stat.MessageReceived.Add(1)
 			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
-		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
+		c.PrivateMessageEvent.Subscribe(func(_ *QQClient, _ *message.PrivateMessage) {
 			c.stat.MessageReceived.Add(1)
 			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
-		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
+		c.TempMessageEvent.Subscribe(func(_ *QQClient, _ *TempMessageEvent) {
 			c.stat.MessageReceived.Add(1)
 			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
@@ -130,13 +130,13 @@ func (c *QQClient) quickReconnect() {
 	time.Sleep(time.Millisecond * 200)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "quick reconnect failed"})
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "quick reconnect failed"})
 		return
 	}
 	if err := c.registerClient(); err != nil {
 		c.Error("register client failed: %v", err)
 		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "register error"})
 		return
 	}
 }
@@ -263,13 +263,13 @@ func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
 	c.Online.Store(false)
 	if err := c.connect(); err != nil {
 		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "connection dropped by server."})
 		return
 	}
 	if err := c.registerClient(); err != nil {
 		c.Error("register client failed: %v", err)
 		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "register error"})
 		return
 	}
 }
@@ -298,7 +298,7 @@ func (c *QQClient) netLoop() {
 			c.Error("parse incoming packet error: %v", err)
 			if errors.Is(err, network.ErrSessionExpired) || errors.Is(err, network.ErrPacketDropped) {
 				c.Disconnect()
-				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
+				go c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "session expired"})
 				continue
 			}
 			errCount++
