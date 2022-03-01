@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, typeparam ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, typeparam ]
 
 jobs:
 
@@ -16,7 +16,7 @@ jobs:
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
-        go-version: ^1.13
+        go-version: 1.18rc1
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
