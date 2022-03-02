@@ -13,21 +13,31 @@ func (c *QQClient) SetLogger(logger Logger) {
 }
 
 func (c *QQClient) info(msg string, args ...any) {
-	c.logger.Info(msg, args...)
+	if c.logger != nil {
+		c.logger.Info(msg, args...)
+	}
 }
 
 func (c *QQClient) warning(msg string, args ...any) {
-	c.logger.Warning(msg, args...)
+	if c.logger != nil {
+		c.logger.Warning(msg, args...)
+	}
 }
 
 func (c *QQClient) error(msg string, args ...any) {
-	c.logger.Error(msg, args...)
+	if c.logger != nil {
+		c.logger.Error(msg, args...)
+	}
 }
 
 func (c *QQClient) debug(msg string, args ...any) {
-	c.logger.Debug(msg, args...)
+	if c.logger != nil {
+		c.logger.Debug(msg, args...)
+	}
 }
 
 func (c *QQClient) dump(msg string, data []byte, args ...any) {
-	c.logger.Dump(data, msg, args...)
+	if c.logger != nil {
+		c.logger.Dump(data, msg, args...)
+	}
 }
