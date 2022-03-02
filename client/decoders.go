@@ -45,11 +45,11 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 	}
 	if t == 0 { // login success
 		// if t150, ok := m[0x150]; ok {
-		// 	 c.t150 = t150
+		//  	c.t150 = t150
 		// }
-		if t161, ok := m[0x161]; ok {
-			c.decodeT161(t161)
-		}
+		// if t161, ok := m[0x161]; ok {
+		//  	c.decodeT161(t161)
+		// }
 		if m.Exists(0x403) {
 			c.sig.RandSeed = m[0x403]
 		}

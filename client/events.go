@@ -20,7 +20,11 @@ type EventHandle[T any] struct {
 func (handle *EventHandle[T]) Subscribe(handler func(client *QQClient, event T)) {
 	eventMu.Lock()
 	defer eventMu.Unlock()
-	handle.handlers = append(handle.handlers, handler)
+	// shrink the slice
+	newHandlers := make([]func(client *QQClient, event T), len(handle.handlers)+1)
+	copy(newHandlers, handle.handlers)
+	newHandlers[len(handle.handlers)] = handler
+	handle.handlers = newHandlers
 }
 
 func (handle *EventHandle[T]) dispatch(client *QQClient, event T) {

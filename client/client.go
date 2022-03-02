@@ -49,7 +49,6 @@ type QQClient struct {
 	// protocol public field
 	SequenceId  atomic.Int32
 	SessionId   []byte
-	RandomKey   []byte
 	TCP         *network.TCPListener // todo: combine other protocol state into one struct
 	ConnectTime time.Time
 
@@ -269,7 +268,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
 	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
-	rand.Read(cli.RandomKey)
 	return cli
 }
 
