@@ -122,7 +122,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 					WriteString("00000", 4).WriteInt32(100, 5).
 					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
 					WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
-					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).WriteByte(1, 14).Bytes()
+					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).Bytes()
 	buf := &jce.RequestDataVersion3{
 		Map: map[string][]byte{"HttpServerListReq": packUniRequestData(payload)},
 	}
@@ -140,7 +140,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	tea := binary.NewTeaCipher(key)
 	encpkt := tea.Encrypt(b)
 	cl()
-	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp", encpkt)
+	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp?mType=getssolist", encpkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to fetch server list")
 	}
