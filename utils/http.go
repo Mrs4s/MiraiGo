@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var client = &http.Client{
+var Client = &http.Client{
 	Transport: &http.Transport{
 		ForceAttemptHTTP2:   true,
 		MaxConnsPerHost:     0,
@@ -34,7 +34,7 @@ func HttpPostBytes(url string, data []byte) ([]byte, error) {
 	}
 	req.Header["User-Agent"] = []string{"QQ/8.2.0.1296 CFNetwork/1126"}
 	req.Header["Net-Type"] = []string{"Wifi"}
-	resp, err := client.Do(req)
+	resp, err := Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func HttpPostBytesWithCookie(url string, data []byte, cookie string, contentType
 	if cookie != "" {
 		req.Header["Cookie"] = []string{cookie}
 	}
-	resp, err := client.Do(req)
+	resp, err := Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func HTTPGetReadCloser(url string, cookie string) (io.ReadCloser, error) {
 	if cookie != "" {
 		req.Header["Cookie"] = []string{cookie}
 	}
-	resp, err := client.Do(req)
+	resp, err := Client.Do(req)
 	if err != nil {
 		return nil, err
 	}

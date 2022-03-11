@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/RomiChan/protobuf v0.0.0-20220227114948-643565fff248
 	github.com/fumiama/imgsz v0.0.2
+	github.com/jinzhu/copier v0.3.5
 	github.com/pierrec/lz4/v4 v4.1.11
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
