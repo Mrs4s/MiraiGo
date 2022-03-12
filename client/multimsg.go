@@ -225,6 +225,6 @@ func forwardDisplay(resID, fileName, preview, summary string) string {
 	sb.WriteString(`<hr></hr><summary size="26" color="#808080">`)
 	sb.WriteString(summary)
 	// todo: 私聊的聊天记录？
-	sb.WriteString(`</summary></item><source name="群聊的聊天记录"></source></msg>`)
+	sb.WriteString(`</summary></item><source name="聊天记录"></source></msg>`)
 	return sb.String()
 }
