@@ -62,7 +62,7 @@ func (c *QQClient) grayTipProcessor(groupCode int64, tipInfo *notify.GeneralGray
 			}
 		}
 		if sender != 0 {
-			c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
+			c.GroupNotifyEvent.dispatch(c, &GroupPokeNotifyEvent{
 				GroupCode: groupCode,
 				Sender:    sender,
 				Receiver:  receiver,
@@ -81,7 +81,7 @@ func (c *QQClient) grayTipProcessor(groupCode int64, tipInfo *notify.GeneralGray
 				uin, _ = strconv.ParseInt(templ.Value, 10, 64)
 			}
 		}
-		c.dispatchGroupNotifyEvent(&MemberHonorChangedNotifyEvent{
+		c.GroupNotifyEvent.dispatch(c, &MemberHonorChangedNotifyEvent{
 			GroupCode: groupCode,
 			Honor: func() HonorType {
 				switch tipInfo.TemplId {
@@ -139,13 +139,13 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 			}
 		}
 		if event.Uin == 0 {
-			c.Error("process special title updated tips error: missing cmd")
+			c.error("process special title updated tips error: missing cmd")
 			return
 		}
 		if mem := c.FindGroup(groupCode).FindMember(event.Uin); mem != nil {
 			mem.SpecialTitle = event.NewTitle
 		}
-		c.dispatchMemberSpecialTitleUpdateEvent(event)
+		c.MemberSpecialTitleUpdatedEvent.dispatch(c, event)
 	}
 }
 

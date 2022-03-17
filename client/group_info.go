@@ -116,12 +116,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 		},
 		PcClientVersion: proto.Uint32(0),
 	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2189,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(2189, 0, body)
 	return c.uniPacket("OidbSvc.0x88d_0", payload)
 }
 
@@ -188,7 +183,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 }
 
 // SummaryCard.ReqSearch
-func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -226,14 +221,11 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 }
 
 // OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if len(rsp.RspGroupInfo) == 0 {
 		return nil, errors.New(string(rsp.StrErrorInfo))
@@ -336,7 +328,7 @@ func (g *GroupInfo) AdministratorOrOwner() bool {
 }
 
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
-	r := g.Read(func(info *GroupInfo) interface{} {
+	r := g.Read(func(info *GroupInfo) any {
 		return info.FindMemberWithoutLock(uin)
 	})
 	if r == nil {
@@ -368,7 +360,7 @@ func (g *GroupInfo) Update(f func(*GroupInfo)) {
 	f(g)
 }
 
-func (g *GroupInfo) Read(f func(*GroupInfo) interface{}) interface{} {
+func (g *GroupInfo) Read(f func(*GroupInfo) any) any {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
 	return f(g)

@@ -52,7 +52,7 @@ func (c *QQClient) getQiDianAddressDetailList() ([]*FriendInfo, error) {
 	ret := []*FriendInfo{}
 	for _, detail := range rsp.GetAddressDetailListRspBody.AddressDetail {
 		if len(detail.Qq) == 0 {
-			c.Warning("address detail %v QQ is 0", string(detail.Name))
+			c.warning("address detail %v QQ is 0", string(detail.Name))
 			continue
 		}
 		ret = append(ret, &FriendInfo{
@@ -152,7 +152,7 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 	return tea.Decrypt(payload), nil
 }
 
-func decodeLoginExtraResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeLoginExtraResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := cmd0x3f6.C3F6RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -168,7 +168,7 @@ func decodeLoginExtraResponse(c *QQClient, _ *network.IncomingPacketInfo, payloa
 	return nil, nil
 }
 
-func decodeConnKeyResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeConnKeyResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := cmd0x6ff.C501RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

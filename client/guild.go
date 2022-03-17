@@ -710,7 +710,7 @@ func convertChannelInfo(info *channel.GuildChannelInfo) *ChannelInfo {
 func (c *QQClient) syncChannelFirstView() {
 	rsp, err := c.sendAndWaitDynamic(c.buildSyncChannelFirstViewPacket())
 	if err != nil {
-		c.Error("sync channel error: %v", err)
+		c.error("sync channel error: %v", err)
 		return
 	}
 	firstViewRsp := new(channel.FirstViewRsp)
@@ -723,7 +723,7 @@ func (c *QQClient) syncChannelFirstView() {
 		c.GuildService.Nickname = self.Nickname
 		c.GuildService.AvatarUrl = self.AvatarUrl
 	} else {
-		c.Error("get self guild profile error: %v", err)
+		c.error("get self guild profile error: %v", err)
 	}
 }
 
@@ -737,7 +737,7 @@ func (c *QQClient) buildSyncChannelFirstViewPacket() (uint16, []byte) {
 	return c.uniPacket("trpc.group_pro.synclogic.SyncLogic.SyncFirstView", payload)
 }
 
-func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	firstViewMsg := new(channel.FirstViewMsg)
 	if err := proto.Unmarshal(payload, firstViewMsg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -754,7 +754,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payloa
 			}
 			channels, err := c.GuildService.FetchChannelList(info.GuildId)
 			if err != nil {
-				c.Warning("waring: fetch guild %v channel error %v. will use sync node to fill channel list field", guild.GuildId, err)
+				c.warning("waring: fetch guild %v channel error %v. will use sync node to fill channel list field", guild.GuildId, err)
 				for _, node := range guild.ChannelNodes {
 					meta := new(channel.ChannelMsgMeta)
 					_ = proto.Unmarshal(node.Meta, meta)

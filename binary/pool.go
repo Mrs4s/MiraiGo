@@ -8,7 +8,7 @@ import (
 )
 
 var bufferPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return new(Writer)
 	},
 }
@@ -24,7 +24,7 @@ func SelectWriter() *Writer {
 // PutWriter 将 Writer 放回池中
 func PutWriter(w *Writer) {
 	// See https://golang.org/issue/23199
-	const maxSize = 1 << 16
+	const maxSize = 32 * 1024
 	if (*bytes.Buffer)(w).Cap() < maxSize { // 对于大Buffer直接丢弃
 		w.Reset()
 		bufferPool.Put(w)
@@ -32,7 +32,7 @@ func PutWriter(w *Writer) {
 }
 
 var gzipPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		buf := new(bytes.Buffer)
 		w := gzip.NewWriter(buf)
 		return &GzipWriter{
@@ -64,7 +64,7 @@ type zlibWriter struct {
 }
 
 var zlibPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		buf := new(bytes.Buffer)
 		w := zlib.NewWriter(buf)
 		return &zlibWriter{

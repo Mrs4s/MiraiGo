@@ -90,7 +90,7 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		}.Encode()
 	}
 
-	var r interface{}
+	var r any
 	var err error
 	var input highway.BdhInput
 	switch target.SourceType {
@@ -141,7 +141,7 @@ ok:
 	width := int32(i.Width)
 	height := int32(i.Height)
 	if err != nil && target.SourceType != message.SourceGroup {
-		c.Warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
+		c.warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
 		width = 200
 		height = 200
 	}
@@ -203,7 +203,7 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	return e, nil
 }
 
-func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
+func (c *QQClient) ImageOcr(img any) (*OcrResponse, error) {
 	url := ""
 	switch e := img.(type) {
 	case *message.GroupImageElement:
@@ -362,7 +362,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -389,7 +389,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
 	if err := proto.Unmarshal(payload, &pkt); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
@@ -404,14 +404,11 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.DE07RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.Wording != "" {
 		if strings.Contains(rsp.Wording, "服务忙") {

@@ -71,7 +71,7 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *ne
 		_, _ = c.sendAndWait(c.buildDeleteMessageRequestPacket(delItems))
 	}
 	if rsp.GetSyncFlag() != msg.SyncFlag_STOP {
-		c.Debug("continue sync with flag: %v", rsp.SyncFlag)
+		c.debug("continue sync with flag: %v", rsp.SyncFlag)
 		seq, pkt := c.buildGetMessageRequestPacket(rsp.GetSyncFlag(), time.Now().Unix())
 		_, _ = c.sendAndWait(seq, pkt, info.Params)
 	}
@@ -80,12 +80,12 @@ func (c *QQClient) c2cMessageSyncProcessor(rsp *msg.GetMessageResponse, info *ne
 func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *network.IncomingPacketInfo) {
 	strKey := fmt.Sprintf("%d%d%d%d", pMsg.Head.GetFromUin(), pMsg.Head.GetToUin(), pMsg.Head.GetMsgSeq(), pMsg.Head.GetMsgUid())
 	if _, ok := c.msgSvcCache.GetAndUpdate(strKey, time.Hour); ok {
-		c.Debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
+		c.debug("c2c msg %v already exists in cache. skip.", pMsg.Head.GetMsgUid())
 		return
 	}
-	c.msgSvcCache.Add(strKey, "", time.Hour)
+	c.msgSvcCache.Add(strKey, unit{}, time.Hour)
 	if c.lastC2CMsgTime > int64(pMsg.Head.GetMsgTime()) && (c.lastC2CMsgTime-int64(pMsg.Head.GetMsgTime())) > 60*10 {
-		c.Debug("c2c msg filtered by time. lastMsgTime: %v  msgTime: %v", c.lastC2CMsgTime, pMsg.Head.GetMsgTime())
+		c.debug("c2c msg filtered by time. lastMsgTime: %v  msgTime: %v", c.lastC2CMsgTime, pMsg.Head.GetMsgTime())
 		return
 	}
 	c.lastC2CMsgTime = int64(pMsg.Head.GetMsgTime())
@@ -95,7 +95,7 @@ func (c *QQClient) commMsgProcessor(pMsg *msg.Message, info *network.IncomingPac
 	if decoder, _ := peekC2CDecoder(pMsg.Head.GetMsgType()); decoder != nil {
 		decoder(c, pMsg, info)
 	} else {
-		c.Debug("unknown msg type on c2c processor: %v - %v", pMsg.Head.GetMsgType(), pMsg.Head.GetC2CCmd())
+		c.debug("unknown msg type on c2c processor: %v - %v", pMsg.Head.GetMsgType(), pMsg.Head.GetC2CCmd())
 	}
 }
 
@@ -132,12 +132,12 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPa
 		}
 
 		if pMsg.Head.GetFromUin() == c.Uin {
-			c.dispatchPrivateMessageSelf(c.parsePrivateMessage(pMsg))
+			c.SelfPrivateMessageEvent.dispatch(c, c.parsePrivateMessage(pMsg))
 			return
 		}
-		c.dispatchPrivateMessage(c.parsePrivateMessage(pMsg))
+		c.PrivateMessageEvent.dispatch(c, c.parsePrivateMessage(pMsg))
 	default:
-		c.Debug("unknown c2c cmd on private msg decoder: %v", pMsg.Head.GetC2CCmd())
+		c.debug("unknown c2c cmd on private msg decoder: %v", pMsg.Head.GetC2CCmd())
 	}
 }
 
@@ -149,7 +149,7 @@ func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacket
 		// m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
 		// T3 -> timestamp T8 -> voiceType T9 -> voiceLength T10 -> PbReserveStruct
 	}
-	c.dispatchPrivateMessage(c.parsePrivateMessage(pMsg))
+	c.PrivateMessageEvent.dispatch(c, c.parsePrivateMessage(pMsg))
 }
 
 func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacketInfo) {
@@ -206,7 +206,7 @@ func tempSessionDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPacke
 		if pMsg.Head.GetFromUin() == c.Uin {
 			return
 		}
-		c.dispatchTempMessage(&TempMessageEvent{
+		c.TempMessageEvent.dispatch(c, &TempMessageEvent{
 			Message: c.parseTempMessage(pMsg),
 			Session: session,
 		})
@@ -219,20 +219,20 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ *network.I
 	group := c.FindGroupByUin(pMsg.Head.GetFromUin())
 	if pMsg.Head.GetAuthUin() == c.Uin {
 		if group == nil && c.ReloadGroupList() == nil {
-			c.dispatchJoinGroupEvent(c.FindGroupByUin(pMsg.Head.GetFromUin()))
+			c.GroupJoinEvent.dispatch(c, c.FindGroupByUin(pMsg.Head.GetFromUin()))
 		}
 	} else {
 		if group != nil && group.FindMember(pMsg.Head.GetAuthUin()) == nil {
 			mem, err := c.GetMemberInfo(group.Code, pMsg.Head.GetAuthUin())
 			if err != nil {
-				c.Debug("error to fetch new member info: %v", err)
+				c.debug("error to fetch new member info: %v", err)
 				return
 			}
 			group.Update(func(info *GroupInfo) {
 				info.Members = append(info.Members, mem)
 				info.sort()
 			})
-			c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+			c.GroupMemberJoinEvent.dispatch(c, &MemberJoinGroupEvent{
 				Group:  group,
 				Member: mem,
 			})
@@ -255,7 +255,7 @@ func troopSystemMessageDecoder(c *QQClient, pMsg *msg.Message, info *network.Inc
 	reader := binary.NewReader(pMsg.Body.MsgContent)
 	groupCode := uint32(reader.ReadInt32())
 	if info := c.FindGroup(int64(groupCode)); info != nil && pMsg.Head.GetGroupName() != "" && info.Name != pMsg.Head.GetGroupName() {
-		c.Debug("group %v name updated. %v -> %v", groupCode, info.Name, pMsg.Head.GetGroupName())
+		c.debug("group %v name updated. %v -> %v", groupCode, info.Name, pMsg.Head.GetGroupName())
 		info.Name = pMsg.Head.GetGroupName()
 	}
 }
@@ -267,7 +267,7 @@ func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *network.IncomingP
 	sub4 := msg.SubMsgType0X4Body{}
 	if err := proto.Unmarshal(pMsg.Body.MsgContent, &sub4); err != nil {
 		err = errors.Wrap(err, "unmarshal sub msg 0x4 error")
-		c.Error("unmarshal sub msg 0x4 error: %v", err)
+		c.error("unmarshal sub msg 0x4 error: %v", err)
 		return
 	}
 	if sub4.NotOnlineFile != nil && sub4.NotOnlineFile.GetSubcmd() == 1 { // subcmd: 1 -> sendPacket, 2-> recv
@@ -275,7 +275,7 @@ func msgType0x211Decoder(c *QQClient, pMsg *msg.Message, info *network.IncomingP
 		if err != nil {
 			return
 		}
-		c.dispatchOfflineFileEvent(&OfflineFileEvent{
+		c.OfflineFileEvent.dispatch(c, &OfflineFileEvent{
 			FileName:    string(sub4.NotOnlineFile.FileName),
 			FileSize:    sub4.NotOnlineFile.GetFileSize(),
 			Sender:      pMsg.Head.GetFromUin(),

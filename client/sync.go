@@ -79,7 +79,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 	ret := &SessionSyncResponse{}
 	notifyChan := make(chan bool)
 	var groupNum int32 = -1
-	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i interface{}, err error) {
+	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i any, err error) {
 		if err != nil {
 			return
 		}
@@ -90,7 +90,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		if e.GroupNum != -1 {
 			groupNum = e.GroupNum
 		}
-		c.Debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
+		c.debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
 		if groupNum != -1 && len(ret.GroupSessions) >= int(groupNum) {
 			notifyChan <- true
 		}
@@ -285,7 +285,7 @@ func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte)
 }
 
 // StatSvc.GetDevLoginInfo
-func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -307,7 +307,7 @@ func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload [
 }
 
 // RegPrxySvc.PushParam
-func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -352,7 +352,7 @@ func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload [
 }
 
 // RegPrxySvc.PbSyncMsg
-func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := &msf.SvcRegisterProxyMsgResp{}
 	if err := proto.Unmarshal(payload, rsp); err != nil {
 		return nil, err
@@ -396,7 +396,7 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 }
 
 // OnlinePush.PbC2CMsgSync
-func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (any, error) {
 	m := msg.PbPushMsg{}
 	if err := proto.Unmarshal(payload, &m); err != nil {
 		return nil, err
@@ -406,7 +406,7 @@ func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload 
 	return nil, nil
 }
 
-func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := msg.PbMsgReadedReportResp{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -420,7 +420,7 @@ func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload
 var loginNotifyLock sync.Mutex
 
 // StatSvc.SvcReqMSFLoginNotify
-func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -443,7 +443,7 @@ func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload
 				t := ac
 				if ac.AppId == notify.AppId {
 					c.OnlineClients = append(c.OnlineClients, t)
-					c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+					c.OtherClientStatusChangedEvent.dispatch(c, &OtherClientStatusChangedEvent{
 						Client: t,
 						Online: true,
 					})
@@ -462,7 +462,7 @@ func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload
 		if rmi != -1 {
 			rmc := c.OnlineClients[rmi]
 			c.OnlineClients = append(c.OnlineClients[:rmi], c.OnlineClients[rmi+1:]...)
-			c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+			c.OtherClientStatusChangedEvent.dispatch(c, &OtherClientStatusChangedEvent{
 				Client: rmc,
 				Online: false,
 			})

@@ -175,12 +175,6 @@ type (
 		client *QQClient
 	}
 
-	LogEvent struct {
-		Type    string
-		Message string
-		Dump    []byte
-	}
-
 	ServerUpdatedEvent struct {
 		Servers []jce.SsoServerInfo
 	}
@@ -296,6 +290,9 @@ type (
 		SigSession []byte
 		SessionKey []byte
 	}
+
+	// unit is an alias for struct{}, like `()` in rust
+	unit = struct{}
 )
 
 const (

@@ -5,7 +5,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/oidb"
-	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
 func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) {
@@ -16,13 +15,7 @@ func (c *QQClient) buildTranslatePacket(src, dst, text string) (uint16, []byte) 
 			SrcTextList: []string{text},
 		},
 	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     2448,
-		ServiceType: 2,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(2448, 2, body)
 	return c.uniPacket("OidbSvc.0x990", payload)
 }
 
@@ -41,14 +34,11 @@ func (c *QQClient) Translate(src, dst, text string) (string, error) {
 }
 
 // OidbSvc.0x990
-func decodeTranslateResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeTranslateResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.TranslateRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return rsp.BatchTranslateRsp, nil
 }

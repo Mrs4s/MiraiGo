@@ -6,7 +6,7 @@ type IncomingPacketInfo struct {
 	Params      RequestParams
 }
 
-type RequestParams map[string]interface{}
+type RequestParams map[string]any
 
 func (p RequestParams) Bool(k string) bool {
 	if p == nil {

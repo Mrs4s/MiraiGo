@@ -99,7 +99,7 @@ func TestJceReader_ReadBytes(t *testing.T) {
 	assert.Equal(t, b, rb)
 }
 
-func (w *JceWriter) WriteObject(i interface{}, tag byte) {
+func (w *JceWriter) WriteObject(i any, tag byte) {
 	t := reflect.TypeOf(i)
 	if t.Kind() == reflect.Map {
 		w.WriteMap(i, tag)
@@ -192,7 +192,7 @@ type decoder struct {
 var decoderCache = sync.Map{}
 
 // WriteJceStructRaw 写入 Jce 结构体
-func (w *JceWriter) WriteJceStructRaw(s interface{}) {
+func (w *JceWriter) WriteJceStructRaw(s any) {
 	t := reflect.TypeOf(s)
 	if t.Kind() != reflect.Ptr {
 		return
@@ -234,7 +234,7 @@ func (w *JceWriter) WriteJceStruct(s IJceStruct, tag byte) {
 	w.writeHead(11, 0)
 }
 
-func (w *JceWriter) WriteSlice(i interface{}, tag byte) {
+func (w *JceWriter) WriteSlice(i any, tag byte) {
 	va := reflect.ValueOf(i)
 	if va.Kind() != reflect.Slice {
 		panic("JceWriter.WriteSlice: not a slice")
@@ -270,7 +270,7 @@ func (w *JceWriter) WriteJceStructSlice(l []IJceStruct, tag byte) {
 	}
 }
 
-func (w *JceWriter) WriteMap(m interface{}, tag byte) {
+func (w *JceWriter) WriteMap(m any, tag byte) {
 	va := reflect.ValueOf(m)
 	if va.Kind() != reflect.Map {
 		panic("JceWriter.WriteMap: not a map")
