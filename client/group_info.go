@@ -183,7 +183,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 }
 
 // SummaryCard.ReqSearch
-func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}
@@ -221,7 +221,7 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 }
 
 // OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D88DRspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
@@ -328,7 +328,7 @@ func (g *GroupInfo) AdministratorOrOwner() bool {
 }
 
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
-	r := g.Read(func(info *GroupInfo) interface{} {
+	r := g.Read(func(info *GroupInfo) any {
 		return info.FindMemberWithoutLock(uin)
 	})
 	if r == nil {
@@ -360,7 +360,7 @@ func (g *GroupInfo) Update(f func(*GroupInfo)) {
 	f(g)
 }
 
-func (g *GroupInfo) Read(f func(*GroupInfo) interface{}) interface{} {
+func (g *GroupInfo) Read(f func(*GroupInfo) any) any {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
 	return f(g)

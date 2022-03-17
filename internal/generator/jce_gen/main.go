@@ -173,7 +173,7 @@ func (g Generator) Generate(w io.Writer) {
 	}
 }
 
-func assert(cond bool, val interface{}) {
+func assert(cond bool, val any) {
 	if !cond {
 		panic("assertion failed: " + fmt.Sprint(val))
 	}

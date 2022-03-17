@@ -8,7 +8,7 @@ import (
 )
 
 var bufferPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return new(Writer)
 	},
 }
@@ -32,7 +32,7 @@ func PutWriter(w *Writer) {
 }
 
 var gzipPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		buf := new(bytes.Buffer)
 		w := gzip.NewWriter(buf)
 		return &GzipWriter{
@@ -64,7 +64,7 @@ type zlibWriter struct {
 }
 
 var zlibPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		buf := new(bytes.Buffer)
 		w := zlib.NewWriter(buf)
 		return &zlibWriter{

@@ -132,7 +132,7 @@ type QiDianAccountInfo struct {
 }
 
 type handlerInfo struct {
-	fun     func(i interface{}, err error)
+	fun     func(i any, err error)
 	dynamic bool
 	params  network.RequestParams
 }
@@ -144,7 +144,7 @@ func (h *handlerInfo) getParams() network.RequestParams {
 	return h.params
 }
 
-var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (interface{}, error){
+var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (any, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 	"wtlogin.trans_emp":                            decodeTransEmpResponse,
@@ -435,10 +435,10 @@ func (c *QQClient) init(tokenLogin bool) error {
 	}
 	if tokenLogin {
 		notify := make(chan struct{})
-		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i interface{}, err error) {
+		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i any, err error) {
 			notify <- struct{}{}
 		})
-		d2 := c.waitPacket("MessageSvc.PushForceOffline", func(i interface{}, err error) {
+		d2 := c.waitPacket("MessageSvc.PushForceOffline", func(i any, err error) {
 			notify <- struct{}{}
 		})
 		select {
@@ -673,7 +673,7 @@ func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	return nil
 }
 
-func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reason string) {
+func (c *QQClient) SolveGroupJoinRequest(i any, accept, block bool, reason string) {
 	if accept {
 		block = false
 		reason = ""

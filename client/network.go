@@ -148,9 +148,9 @@ func (c *QQClient) Disconnect() {
 }
 
 // sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (interface{}, error) {
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
 	type T struct {
-		Response interface{}
+		Response any
 		Error    error
 	}
 	ch := make(chan T, 1)
@@ -160,7 +160,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.Request
 		p = params[0]
 	}
 
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
+	c.handlers.Store(seq, &handlerInfo{fun: func(i any, err error) {
 		ch <- T{
 			Response: i,
 			Error:    err,
@@ -204,7 +204,7 @@ func (c *QQClient) sendPacket(pkt []byte) error {
 // waitPacket
 // 等待一个或多个数据包解析, 优先级低于 sendAndWait
 // 返回终止解析函数
-func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
+func (c *QQClient) waitPacket(cmd string, f func(any, error)) func() {
 	c.waiters.Store(cmd, f)
 	return func() {
 		c.waiters.Delete(cmd)
@@ -213,9 +213,9 @@ func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
 
 // waitPacketTimeoutSyncF
 // 等待一个数据包解析, 优先级低于 sendAndWait
-func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, filter func(interface{}) bool) (r interface{}, e error) {
+func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, filter func(any) bool) (r any, e error) {
 	notifyChan := make(chan bool)
-	defer c.waitPacket(cmd, func(i interface{}, err error) {
+	defer c.waitPacket(cmd, func(i any, err error) {
 		if filter(i) {
 			r = i
 			e = err
@@ -234,7 +234,7 @@ func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, fil
 // 发送数据包并返回需要解析的 response
 func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 	ch := make(chan []byte, 1)
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) { ch <- i.([]byte) }, dynamic: true})
+	c.handlers.Store(seq, &handlerInfo{fun: func(i any, err error) { ch <- i.([]byte) }, dynamic: true})
 	err := c.sendPacket(pkt)
 	if err != nil {
 		c.handlers.Delete(seq)
@@ -337,7 +337,7 @@ func (c *QQClient) netLoop() {
 			if decoder, ok := decoders[pkt.CommandName]; ok {
 				// found predefined decoder
 				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
-				var decoded interface{}
+				var decoded any
 				decoded = pkt.Payload
 				if info == nil || !info.dynamic {
 					decoded, err = decoder(c, &network.IncomingPacketInfo{
@@ -352,7 +352,7 @@ func (c *QQClient) netLoop() {
 				if ok {
 					info.fun(decoded, err)
 				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
-					f.(func(interface{}, error))(decoded, err)
+					f.(func(any, error))(decoded, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder

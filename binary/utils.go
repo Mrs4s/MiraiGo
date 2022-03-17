@@ -118,7 +118,7 @@ func ToChunkedBytesF(b []byte, size int, f func([]byte)) {
 	}
 }
 
-func ToBytes(i interface{}) []byte {
+func ToBytes(i any) []byte {
 	return NewWriterF(func(w *Writer) {
 		// TODO: more types
 		switch t := i.(type) {

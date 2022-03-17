@@ -41,7 +41,7 @@ func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
 	return c.uniPacket("Faceroam.OpReq", payload)
 }
 
-func decodeFaceroamResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeFaceroamResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := faceroam.FaceroamRspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

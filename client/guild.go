@@ -737,7 +737,7 @@ func (c *QQClient) buildSyncChannelFirstViewPacket() (uint16, []byte) {
 	return c.uniPacket("trpc.group_pro.synclogic.SyncLogic.SyncFirstView", payload)
 }
 
-func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	firstViewMsg := new(channel.FirstViewMsg)
 	if err := proto.Unmarshal(payload, firstViewMsg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

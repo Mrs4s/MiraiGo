@@ -178,7 +178,7 @@ func (c *QQClient) dispatchMemberJoinedGuildEvent(e *MemberJoinGuildEvent) {
 }
 
 func (c *QQClient) dispatchGroupMessageReceiptEvent(e *groupMessageReceiptEvent) {
-	c.eventHandlers.groupMessageReceiptHandlers.Range(func(_, f interface{}) bool {
+	c.eventHandlers.groupMessageReceiptHandlers.Range(func(_, f any) bool {
 		go f.(func(*QQClient, *groupMessageReceiptEvent))(c, e)
 		return true
 	})
