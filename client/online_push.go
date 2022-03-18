@@ -53,6 +53,16 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 				r.ReadBytes(6)
 				target := int64(uint32(r.ReadInt32()))
 				t := r.ReadInt32()
+
+				if target != 0 {
+					member := c.FindGroup(groupCode).FindMember(target)
+					if t > 0 {
+						member.ShutUpTimestamp = time.Now().Add(time.Second * time.Duration(t)).Unix()
+					} else {
+						member.ShutUpTimestamp = 0
+					}
+				}
+
 				c.GroupMuteEvent.dispatch(c, &GroupMuteEvent{
 					GroupCode:   groupCode,
 					OperatorUin: operator,
