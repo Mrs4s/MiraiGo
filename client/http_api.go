@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -181,13 +180,15 @@ type GroupNoticeMessage struct {
 	SenderId    uint32 `json:"sender_id"`
 	PublishTime uint64 `json:"publish_time"`
 	Message     struct {
-		Text   string `json:"text"`
-		Images []struct {
-			Height string `json:"height"`
-			Width  string `json:"width"`
-			ID     string `json:"id"`
-		} `json:"images"`
+		Text   string             `json:"text"`
+		Images []GroupNoticeImage `json:"images"`
 	} `json:"message"`
+}
+
+type GroupNoticeImage struct {
+	Height string `json:"height"`
+	Width  string `json:"width"`
+	ID     string `json:"id"`
 }
 
 type noticePicUpResponse struct {
@@ -235,8 +236,35 @@ func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err
 		return
 	}
 
-	copier.Copy(&l, &r.Feeds)
-	return l, nil
+	return c.parseGroupNoticeJson(&r), nil
+}
+
+func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) (o []*GroupNoticeMessage) {
+
+	for _, v := range s.Feeds {
+
+		var ims []GroupNoticeImage
+		for i := 0; i < len(v.Message.Images); i++ {
+			ims = append(ims, GroupNoticeImage{
+				Height: v.Message.Images[i].Height,
+				Width:  v.Message.Images[i].Width,
+				ID:     v.Message.Images[i].ID,
+			})
+		}
+
+		o = append(o, &GroupNoticeMessage{
+			SenderId:    v.SenderId,
+			PublishTime: v.PublishTime,
+			Message: struct {
+				Text   string             `json:"text"`
+				Images []GroupNoticeImage `json:"images"`
+			}{
+				Text:   v.Message.Text,
+				Images: ims,
+			},
+		})
+	}
+	return
 }
 
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
