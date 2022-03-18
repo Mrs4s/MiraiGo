@@ -165,6 +165,32 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 
 /* -------- GroupNotice -------- */
 
+type groupNoticeRsp struct {
+	Feeds []*struct {
+		SenderId    uint32 `json:"u"`
+		PublishTime uint64 `json:"pubt"`
+		Message     struct {
+			Text   string        `json:"text"`
+			Images []noticeImage `json:"pics"`
+		} `json:"msg"`
+	} `json:"feeds"`
+}
+
+type GroupNoticeMessage struct {
+	SenderId    uint32 `json:"sender_id"`
+	PublishTime uint64 `json:"publish_time"`
+	Message     struct {
+		Text   string             `json:"text"`
+		Images []GroupNoticeImage `json:"images"`
+	} `json:"message"`
+}
+
+type GroupNoticeImage struct {
+	Height string `json:"height"`
+	Width  string `json:"width"`
+	ID     string `json:"id"`
+}
+
 type noticePicUpResponse struct {
 	ErrorCode    int    `json:"ec"`
 	ErrorMessage string `json:"em"`
@@ -175,6 +201,66 @@ type noticeImage struct {
 	Height string `json:"h"`
 	Width  string `json:"w"`
 	ID     string `json:"id"`
+}
+
+func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err error) {
+
+	v := url.Values{}
+	v.Set("bkn", strconv.Itoa(c.getCSRFToken()))
+	v.Set("qid", strconv.FormatInt(groupCode, 10))
+	v.Set("ft", "23")
+	v.Set("ni", "1")
+	v.Set("n", "1")
+	v.Set("i", "1")
+	v.Set("log_read", "1")
+	v.Set("platform", "1")
+	v.Set("s", "-1")
+	v.Set("n", "20")
+
+	req, _ := http.NewRequest(http.MethodGet, "https://web.qun.qq.com/cgi-bin/announce/get_t_list?"+v.Encode(), nil)
+	req.Header.Set("Cookie", c.getCookies())
+	rsp, err := utils.Client.Do(req)
+	if err != nil {
+		return
+	}
+	defer rsp.Body.Close()
+
+	r := groupNoticeRsp{}
+	err = json.NewDecoder(rsp.Body).Decode(&r)
+	if err != nil {
+		return
+	}
+
+	return c.parseGroupNoticeJson(&r), nil
+}
+
+func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage {
+	o := make([]*GroupNoticeMessage, 0, len(s.Feeds))
+	for _, v := range s.Feeds {
+
+		ims := make([]GroupNoticeImage, 0, len(v.Message.Images))
+		for i := 0; i < len(v.Message.Images); i++ {
+			ims = append(ims, GroupNoticeImage{
+				Height: v.Message.Images[i].Height,
+				Width:  v.Message.Images[i].Width,
+				ID:     v.Message.Images[i].ID,
+			})
+		}
+
+		o = append(o, &GroupNoticeMessage{
+			SenderId:    v.SenderId,
+			PublishTime: v.PublishTime,
+			Message: struct {
+				Text   string             `json:"text"`
+				Images []GroupNoticeImage `json:"images"`
+			}{
+				Text:   v.Message.Text,
+				Images: ims,
+			},
+		})
+	}
+
+	return o
 }
 
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
