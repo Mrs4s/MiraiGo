@@ -66,8 +66,6 @@ func (s *Session) Upload(addr Addr, input Input) error {
 	chunk := make([]byte, chunkSize)
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	w := binary.SelectWriter()
-	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(input.Body, chunk)
