@@ -57,11 +57,14 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	}
 
 	const chunkSize = 256 * 1024
-	var rspExt []byte
+	var rspExt, chunk []byte
 	offset := 0
-	chunk := make([]byte, chunkSize)
+	if input.Size > chunkSize {
+		chunk = make([]byte, chunkSize)
+	} else {
+		chunk = make([]byte, input.Size)
+	}
 	for {
-		chunk = chunk[:chunkSize]
 		rl, err := io.ReadFull(input.Body, chunk)
 		if errors.Is(err, io.EOF) {
 			break
@@ -121,7 +124,7 @@ func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte,
 		return nil, err
 	}
 
-	const blockSize int64 = 1024 * 512
+	const blockSize int64 = 256 * 1024
 	var (
 		rspExt          []byte
 		completedThread uint32
