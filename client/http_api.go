@@ -225,13 +225,8 @@ func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err
 	}
 	defer rsp.Body.Close()
 
-	buff, err := io.ReadAll(rsp.Body)
-	if err != nil {
-		return
-	}
-
 	r := groupNoticeRsp{}
-	err = json.Unmarshal(buff, &r)
+	err = json.NewDecoder(rsp.Body).Decode(&r)
 	if err != nil {
 		return
 	}
@@ -239,11 +234,11 @@ func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err
 	return c.parseGroupNoticeJson(&r), nil
 }
 
-func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) (o []*GroupNoticeMessage) {
-
+func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage {
+	o := make([]*GroupNoticeMessage, 0, len(s.Feeds))
 	for _, v := range s.Feeds {
 
-		var ims []GroupNoticeImage
+		ims := make([]GroupNoticeImage, 0, len(v.Message.Images))
 		for i := 0; i < len(v.Message.Images); i++ {
 			ims = append(ims, GroupNoticeImage{
 				Height: v.Message.Images[i].Height,
@@ -264,7 +259,8 @@ func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) (o []*GroupNoticeMess
 			},
 		})
 	}
-	return
+
+	return o
 }
 
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
