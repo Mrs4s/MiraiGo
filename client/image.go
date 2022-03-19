@@ -329,7 +329,6 @@ func (c *QQClient) uploadOcrImage(img io.Reader, size int32, sum []byte) (string
 		Sum:       sum,
 		Ticket:    c.highwaySession.SigSession,
 		Ext:       ext,
-		Encrypt:   false,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "upload ocr image error")

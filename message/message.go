@@ -778,7 +778,7 @@ func splitPlainMessage(content string) []IMessageElement {
 		}
 	}
 	if last != len(content) {
-		splittedMessage = append(splittedMessage, NewText(content[last:len(content)]))
+		splittedMessage = append(splittedMessage, NewText(content[last:]))
 	}
 
 	return splittedMessage

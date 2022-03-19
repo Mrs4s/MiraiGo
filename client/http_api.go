@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"io"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
@@ -158,7 +157,6 @@ type noticeImage struct {
 }
 
 func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err error) {
-
 	v := url.Values{}
 	v.Set("bkn", strconv.Itoa(c.getCSRFToken()))
 	v.Set("qid", strconv.FormatInt(groupCode, 10))
@@ -220,33 +218,15 @@ func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 	buf := new(bytes.Buffer)
 	w := multipart.NewWriter(buf)
-	err := w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<bkn> failed")
-	}
-	err = w.WriteField("source", "troopNotice")
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<source> failed")
-	}
-	err = w.WriteField("m", "0")
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<m> failed")
-	}
+	_ = w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
+	_ = w.WriteField("source", "troopNotice")
+	_ = w.WriteField("m", "0")
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition", `form-data; name="pic_up"; filename="temp_uploadFile.png"`)
 	h.Set("Content-Type", "image/png")
-	fw, err := w.CreatePart(h)
-	if err != nil {
-		return nil, errors.Wrap(err, "create multipart field<pic_up> failed")
-	}
-	_, err = fw.Write(img)
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<pic_up> failed")
-	}
-	err = w.Close()
-	if err != nil {
-		return nil, errors.Wrap(err, "close multipart failed")
-	}
+	fw, _ := w.CreatePart(h)
+	_, _ = fw.Write(img)
+	_ = w.Close()
 	req, err := http.NewRequest("POST", "https://web.qun.qq.com/cgi-bin/announce/upload_img", buf)
 	if err != nil {
 		return nil, errors.Wrap(err, "new request error")
@@ -258,12 +238,8 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 		return nil, errors.Wrap(err, "post error")
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "read body error")
-	}
-	res := noticePicUpResponse{}
-	err = json.Unmarshal(body, &res)
+	var res noticePicUpResponse
+	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal json")
 	}

@@ -192,7 +192,6 @@ func (c *QQClient) buildGroupTempSendingPacket(groupUin, target int64, msgSeq, r
 }
 
 func (c *QQClient) buildWPATempSendingPacket(uin int64, sig []byte, msgSeq, r int32, time int64, m *message.SendingMessage) (uint16, []byte) {
-
 	req := &msg.SendMessageRequest{
 		RoutingHead: &msg.RoutingHead{WpaTmp: &msg.WPATmp{
 			ToUin: proto.Uint64(uint64(uin)),

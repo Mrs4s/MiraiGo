@@ -79,7 +79,6 @@ func (c *QQClient) UploadVoice(target message.Source, voice io.ReadSeeker) (*mes
 		Size:      length,
 		Ticket:    c.highwaySession.SigSession,
 		Ext:       ext,
-		Encrypt:   false,
 	})
 	if err != nil {
 		return nil, err
