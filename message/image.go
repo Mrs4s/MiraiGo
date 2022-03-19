@@ -1,9 +1,7 @@
 package message
 
 import (
-	"strings"
-
-	"github.com/Mrs4s/MiraiGo/binary"
+	"fmt"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
@@ -73,7 +71,7 @@ func NewGroupImage(id string, md5 []byte, fid int64, size, width, height, imageT
 		ImageType: imageType,
 		Width:     width,
 		Height:    height,
-		Url:       "https://gchat.qpic.cn/gchatpic_new/1/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(md5)[1:37], "-", "") + "/0?term=2",
+		Url:       fmt.Sprintf("https://gchat.qpic.cn/gchatpic_new/1/0-0-%X/0?term=2", md5),
 	}
 }
 
