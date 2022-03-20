@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/RomiChan/protobuf v0.0.0-20220318113238-d8a99598f896
+	github.com/RomiChan/syncx v0.0.0-20220320065321-8d448f958257
 	github.com/fumiama/imgsz v0.0.2
 	github.com/pierrec/lz4/v4 v4.1.11
 	github.com/pkg/errors v0.9.1

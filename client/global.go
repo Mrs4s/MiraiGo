@@ -244,14 +244,15 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 }
 
 func (c *QQClient) messageBuilder(seq int32) *messageBuilder {
-	builder := &messageBuilder{}
-	actual, ok := c.msgBuilders.LoadOrStore(seq, builder)
+	actual, ok := c.msgBuilders.Load(seq)
 	if !ok {
+		builder := &messageBuilder{}
+		actual, _ = c.msgBuilders.LoadOrStore(seq, builder)
 		time.AfterFunc(time.Minute, func() {
 			c.msgBuilders.Delete(seq) // delete avoid memory leak
 		})
 	}
-	return actual.(*messageBuilder)
+	return actual
 }
 
 type messageBuilder struct {

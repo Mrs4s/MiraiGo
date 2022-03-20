@@ -352,7 +352,7 @@ func (c *QQClient) netLoop() {
 				if ok {
 					info.fun(decoded, err)
 				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
-					f.(func(any, error))(decoded, err)
+					f(decoded, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder

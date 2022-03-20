@@ -13,6 +13,8 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/atomic"
 
+	"github.com/RomiChan/syncx"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
@@ -22,8 +24,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-//go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]*handlerInfo"
 
 type QQClient struct {
 	Uin         int64
@@ -57,8 +57,8 @@ type QQClient struct {
 	logger    Logger
 
 	// internal state
-	handlers        HandlerMap
-	waiters         sync.Map
+	handlers        syncx.Map[uint16, *handlerInfo]
+	waiters         syncx.Map[string, func(any, error)]
 	servers         []*net.TCPAddr
 	currServerIndex int
 	retryTimes      int
@@ -111,7 +111,7 @@ type QQClient struct {
 	lastC2CMsgTime         int64
 	transCache             *utils.Cache[unit]
 	groupSysMsgCache       *GroupSystemMessages
-	msgBuilders            sync.Map
+	msgBuilders            syncx.Map[int32, *messageBuilder]
 	onlinePushCache        *utils.Cache[unit]
 	heartbeatEnabled       bool
 	requestPacketRequestID atomic.Int32
