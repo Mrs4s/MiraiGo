@@ -434,7 +434,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 		return errors.Wrap(err, "register error")
 	}
 	if tokenLogin {
-		notify := make(chan struct{})
+		notify := make(chan struct{}, 2)
 		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i any, err error) {
 			notify <- struct{}{}
 		})

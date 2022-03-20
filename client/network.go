@@ -214,7 +214,7 @@ func (c *QQClient) waitPacket(cmd string, f func(any, error)) func() {
 // waitPacketTimeoutSyncF
 // 等待一个数据包解析, 优先级低于 sendAndWait
 func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, filter func(any) bool) (r any, e error) {
-	notifyChan := make(chan bool)
+	notifyChan := make(chan bool, 4)
 	defer c.waitPacket(cmd, func(i any, err error) {
 		if filter(i) {
 			r = i

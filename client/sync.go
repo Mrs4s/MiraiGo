@@ -77,7 +77,7 @@ func (c *QQClient) RefreshStatus() error {
 // SyncSessions 同步会话列表
 func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 	ret := &SessionSyncResponse{}
-	notifyChan := make(chan bool)
+	notifyChan := make(chan bool, 4)
 	var groupNum int32 = -1
 	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i any, err error) {
 		if err != nil {
