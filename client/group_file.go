@@ -104,7 +104,7 @@ func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) 
 		return ""
 	}
 	url := i.(string)
-	url += "?fname=" + hex.EncodeToString([]byte(fileId))
+	url += fmt.Sprintf("?fname=%x", fileId)
 	return url
 }
 

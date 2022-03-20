@@ -1,7 +1,7 @@
 package client
 
 import (
-	"encoding/hex"
+	"fmt"
 	"io"
 	"math/rand"
 	"strconv"
@@ -88,7 +88,7 @@ func (s *GuildService) QueryImage(guildId, channelId uint64, hash []byte, size u
 	if body.IsExists {
 		return &message.GuildImageElement{
 			FileId:        body.FileId,
-			FilePath:      hex.EncodeToString(hash) + ".jpg",
+			FilePath:      fmt.Sprintf("%x.jpg", hash),
 			Size:          int32(size),
 			DownloadIndex: body.DownloadIndex,
 			Width:         body.Width,
@@ -177,7 +177,7 @@ func (c *QQClient) buildGuildImageStorePacket(guildId, channelId uint64, hash []
 				FileId:          proto.Uint64(0),
 				FileMd5:         hash,
 				FileSize:        &size,
-				FileName:        []byte(hex.EncodeToString(hash) + ".jpg"),
+				FileName:        []byte(fmt.Sprintf("%x.jpg", hash)),
 				SrcTerm:         proto.Uint32(5),
 				PlatformType:    proto.Uint32(9),
 				BuType:          proto.Uint32(211),

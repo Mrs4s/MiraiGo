@@ -2,7 +2,7 @@ package client
 
 import (
 	"crypto/md5"
-	"encoding/hex"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -903,7 +903,7 @@ func (c *QQClient) buildOffPicUpPacket(target int64, md5 []byte, size int32) (ui
 				DstUin:       proto.Uint64(uint64(target)),
 				FileMd5:      md5,
 				FileSize:     proto.Uint64(uint64(size)),
-				FileName:     []byte(hex.EncodeToString(md5) + ".jpg"),
+				FileName:     []byte(fmt.Sprintf("%x.jpg", md5)),
 				SrcTerm:      proto.Uint32(5),
 				PlatformType: proto.Uint32(9),
 				BuType:       proto.Uint32(1),

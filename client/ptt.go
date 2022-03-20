@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io"
 
 	"github.com/pkg/errors"
@@ -90,7 +91,7 @@ func (c *QQClient) UploadVoice(target message.Source, voice io.ReadSeeker) (*mes
 		FileType:  proto.Int32(4),
 		SrcUin:    &c.Uin,
 		FileMd5:   fh,
-		FileName:  proto.String(hex.EncodeToString(fh) + ".amr"),
+		FileName:  proto.String(fmt.Sprintf("%x.amr", fh)),
 		FileSize:  proto.Int32(int32(length)),
 		BoolValid: proto.Bool(true),
 	}
@@ -259,7 +260,7 @@ func (c *QQClient) buildPttShortVideoProto(target message.Source, videoHash, thu
 			ChatType:   chatType,
 			ClientType: 2,
 			Info: &pttcenter.ShortVideoFileInfo{
-				FileName:      hex.EncodeToString(videoHash) + ".mp4",
+				FileName:      fmt.Sprintf("%x.mp4", videoHash),
 				FileMd5:       videoHash,
 				ThumbFileMd5:  thumbHash,
 				FileSize:      videoSize,

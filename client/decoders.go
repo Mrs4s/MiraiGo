@@ -2,7 +2,6 @@ package client
 
 import (
 	"crypto/md5"
-	"encoding/hex"
 	"net"
 	"strconv"
 	"strings"
@@ -173,7 +172,7 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 	}
 	c.debug("unknown login response: %v", t)
 	for k, v := range m {
-		c.debug("Type: %v Value: %v", strconv.FormatInt(int64(k), 16), hex.EncodeToString(v))
+		c.debug("Type: %d Value: %x", k, v)
 	}
 	return nil, errors.Errorf("unknown login response: %v", t) // ?
 }

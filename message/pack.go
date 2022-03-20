@@ -1,7 +1,6 @@
 package message
 
 import (
-	"encoding/hex"
 	"fmt"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -126,7 +125,7 @@ func (e *ShortVideoElement) Pack() (r []*msg.Elem) {
 	video := &msg.VideoFile{
 		FileUuid:               e.Uuid,
 		FileMd5:                e.Md5,
-		FileName:               []byte(hex.EncodeToString(e.Md5) + ".mp4"),
+		FileName:               []byte(fmt.Sprintf("%x.mp4", e.Md5)),
 		FileFormat:             proto.Int32(3),
 		FileTime:               proto.Int32(10),
 		FileSize:               proto.Int32(e.Size),

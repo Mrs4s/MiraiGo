@@ -1,7 +1,7 @@
 package client
 
 import (
-	"encoding/hex"
+	"fmt"
 	"io"
 	"math/rand"
 	"strings"
@@ -154,7 +154,7 @@ ok:
 	}
 	return &message.GuildImageElement{
 		FileId:        rsp.FileId,
-		FilePath:      hex.EncodeToString(fh) + ".jpg",
+		FilePath:      fmt.Sprintf("%x.jpg", fh),
 		Size:          int32(length),
 		DownloadIndex: rsp.DownloadIndex,
 		Width:         width,
@@ -214,7 +214,7 @@ func (c *QQClient) ImageOcr(img any) (*OcrResponse, error) {
 			}
 			_ = b.Close()
 		}
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
+		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, fmt.Sprintf("%X", e.Md5), e.Size, e.Width, e.Height))
 		if err != nil {
 			return nil, err
 		}
@@ -399,7 +399,7 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 	if len(pkt.GetimgUrlRsp[0].FailMsg) != 0 {
 		return nil, errors.New(utils.B2S(pkt.GetimgUrlRsp[0].FailMsg))
 	}
-	return "https://" + utils.B2S(pkt.GetimgUrlRsp[0].DownDomain) + utils.B2S(pkt.GetimgUrlRsp[0].BigDownPara), nil
+	return fmt.Sprintf("https://%s%s", pkt.GetimgUrlRsp[0].DownDomain, pkt.GetimgUrlRsp[0].BigDownPara), nil
 }
 
 // OidbSvc.0xe07_0
