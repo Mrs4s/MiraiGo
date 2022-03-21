@@ -14,10 +14,9 @@ import (
 
 // *----- Definitions -----* //
 
-// ForwardMessage 添加 Node 请用 AddNode 方法
+// ForwardMessage 合并转发消息
 type ForwardMessage struct {
 	Nodes []*ForwardNode
-	items []*msg.PbMultiMsgItem
 }
 
 type ForwardNode struct {
@@ -72,9 +71,6 @@ func (f *ForwardMessage) AddNode(node *ForwardNode) *ForwardMessage {
 		if item.Type() != Forward { // quick path
 			continue
 		}
-		if forward, ok := item.(*ForwardElement); ok {
-			f.items = append(f.items, forward.Items...)
-		}
 	}
 	return f
 }
@@ -109,7 +105,7 @@ func (f *ForwardMessage) Preview() string {
 }
 
 func (f *ForwardMessage) CalculateValidationData(seq, random int32, groupCode int64) ([]byte, []byte) {
-	msgs := f.packForwardMsg(seq, random, groupCode)
+	msgs := f.PackForwardMessage(seq, random, groupCode)
 	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
 		{
 			FileName: proto.String("MultiMsg"),
@@ -122,23 +118,7 @@ func (f *ForwardMessage) CalculateValidationData(seq, random int32, groupCode in
 	return data, hash[:]
 }
 
-// CalculateValidationDataForward 屎代码
-func (f *ForwardMessage) CalculateValidationDataForward(seq, random int32, groupCode int64) ([]byte, []byte, []*msg.PbMultiMsgItem) {
-	msgs := f.packForwardMsg(seq, random, groupCode)
-	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
-		{
-			FileName: proto.String("MultiMsg"),
-			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
-		},
-	}}
-	trans.PbItemList = append(trans.PbItemList, f.items...)
-	b, _ := proto.Marshal(trans)
-	data := binary.GZipCompress(b)
-	hash := md5.Sum(data)
-	return data, hash[:], trans.PbItemList
-}
-
-func (f *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
+func (f *ForwardMessage) PackForwardMessage(seq int32, random int32, groupCode int64) []*msg.Message {
 	ml := make([]*msg.Message, 0, len(f.Nodes))
 	for _, node := range f.Nodes {
 		ml = append(ml, &msg.Message{

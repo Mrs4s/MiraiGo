@@ -2,14 +2,18 @@ package client
 
 import (
 	"bytes"
+	"crypto/md5"
 	"fmt"
 	"math"
+	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
+	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/longmsg"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -227,4 +231,83 @@ func forwardDisplay(resID, fileName, preview, summary string) string {
 	// todo: 私聊的聊天记录？
 	sb.WriteString(`</summary></item><source name="聊天记录"></source></msg>`)
 	return sb.String()
+}
+
+func (c *QQClient) NewForwardMessageBuilder(groupCode int64) *ForwardMessageBuilder {
+	return &ForwardMessageBuilder{
+		c:         c,
+		groupCode: groupCode,
+	}
+}
+
+type ForwardMessageBuilder struct {
+	c         *QQClient
+	groupCode int64
+	objs      []*msg.PbMultiMsgItem
+}
+
+// NestedNode 返回一个嵌套转发节点，其内容将会被 Builder 重定位
+func (builder *ForwardMessageBuilder) NestedNode() *message.ForwardElement {
+	filename := strconv.FormatInt(time.Now().UnixNano(), 10) // 大概率不会重复
+	return &message.ForwardElement{FileName: filename}
+}
+
+// Link 将真实的消息内容填充 reloc
+func (builder *ForwardMessageBuilder) Link(reloc *message.ForwardElement, fmsg *message.ForwardMessage) {
+	seq := builder.c.nextGroupSeq()
+	m := fmsg.PackForwardMessage(seq, rand.Int31(), builder.groupCode)
+	builder.objs = append(builder.objs, &msg.PbMultiMsgItem{
+		FileName: proto.String(reloc.FileName),
+		Buffer: &msg.PbMultiMsgNew{
+			Msg: m,
+		},
+	})
+	reloc.Content = forwardDisplay("", reloc.FileName, fmsg.Preview(), fmt.Sprintf("查看 %d 条转发消息", fmsg.Length()))
+}
+
+// Main 最外层的转发消息, 调用该方法后即上传消息
+func (builder *ForwardMessageBuilder) Main(m *message.ForwardMessage) *message.ForwardElement {
+	if m.Length() > 200 {
+		return nil
+	}
+	c := builder.c
+	seq := c.nextGroupSeq()
+	fm := m.PackForwardMessage(seq, rand.Int31(), builder.groupCode)
+	const filename = "MultiMsg"
+	builder.objs = append(builder.objs, &msg.PbMultiMsgItem{
+		FileName: proto.String(filename),
+		Buffer: &msg.PbMultiMsgNew{
+			Msg: fm,
+		},
+	})
+	trans := &msg.PbMultiMsgTransmit{
+		Msg:        fm,
+		PbItemList: builder.objs,
+	}
+	b, _ := proto.Marshal(trans)
+	data := binary.GZipCompress(b)
+	hash := md5.Sum(data)
+	rsp, body, err := c.multiMsgApplyUp(builder.groupCode, data, hash[:], 2)
+	if err != nil {
+		return nil
+	}
+	content := forwardDisplay(rsp.MsgResid, filename, m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()))
+	for i, ip := range rsp.Uint32UpIp {
+		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
+		input := highway.Input{
+			CommandID: 27,
+			Key:       rsp.MsgSig,
+			Body:      bytes.NewReader(body),
+		}
+		err := c.highwaySession.Upload(addr, input)
+		if err != nil {
+			continue
+		}
+		return &message.ForwardElement{
+			FileName: filename,
+			Content:  content,
+			ResId:    rsp.MsgResid,
+		}
+	}
+	return nil
 }

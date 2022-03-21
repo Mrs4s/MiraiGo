@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -184,33 +183,6 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 		return genLongTemplate(rsp.MsgResid, m.Brief(), ts), nil
 	}
 	return nil, errors.New("upload long message error: highway server list is empty or not available server.")
-}
-
-func (c *QQClient) UploadGroupForwardMessage(groupCode int64, m *message.ForwardMessage) *message.ForwardElement {
-	if m.Length() > 200 {
-		return nil
-	}
-	ts := time.Now().UnixNano()
-	seq := c.nextGroupSeq()
-	data, hash, items := m.CalculateValidationDataForward(seq, rand.Int31(), groupCode)
-	rsp, body, err := c.multiMsgApplyUp(groupCode, data, hash, 2)
-	if err != nil {
-		return nil
-	}
-	for i, ip := range rsp.Uint32UpIp {
-		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
-		input := highway.Input{
-			CommandID: 27,
-			Key:       rsp.MsgSig,
-			Body:      bytes.NewReader(body),
-		}
-		err := c.highwaySession.Upload(addr, input)
-		if err != nil {
-			continue
-		}
-		return genForwardTemplate(rsp.MsgResid, m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()), ts, items)
-	}
-	return nil
 }
 
 func (c *QQClient) multiMsgApplyUp(groupCode int64, data []byte, hash []byte, buType int32) (*multimsg.MultiMsgApplyUpRsp, []byte, error) {

@@ -296,11 +296,6 @@ func packUniRequestData(data []byte) []byte {
 
 func genForwardTemplate(resID, preview, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
 	template := forwardDisplay(resID, strconv.FormatInt(ts, 10), preview, summary)
-	for _, item := range items {
-		if item.GetFileName() == "MultiMsg" {
-			*item.FileName = strconv.FormatInt(ts, 10)
-		}
-	}
 	return &message.ForwardElement{
 		FileName: strconv.FormatInt(ts, 10),
 		Content:  template,
