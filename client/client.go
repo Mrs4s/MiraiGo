@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/netip"
 	"sort"
 	"strconv"
 	"sync"
@@ -59,7 +60,7 @@ type QQClient struct {
 	// internal state
 	handlers        syncx.Map[uint16, *handlerInfo]
 	waiters         syncx.Map[string, func(any, error)]
-	servers         []*net.TCPAddr
+	servers         []netip.AddrPort
 	currServerIndex int
 	retryTimes      int
 	version         *auth.AppVersion
@@ -196,7 +197,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		msgSvcCache:     utils.NewCache[unit](time.Second * 15),
 		transCache:      utils.NewCache[unit](time.Second * 15),
 		onlinePushCache: utils.NewCache[unit](time.Second * 15),
-		servers:         []*net.TCPAddr{},
 		alive:           true,
 		highwaySession:  new(highway.Session),
 
@@ -226,28 +226,29 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
-		var hostAddrs []*net.TCPAddr
+		var hostAddrs []netip.AddrPort
 		for _, addr := range adds {
-			hostAddrs = append(hostAddrs, &net.TCPAddr{
-				IP:   addr,
-				Port: 8080,
-			})
+			ip, ok := netip.AddrFromSlice(addr.To4())
+			if ok {
+				hostAddrs = append(hostAddrs, netip.AddrPortFrom(ip, 8080))
+			}
 		}
 		cli.servers = append(hostAddrs, cli.servers...)
 	}
 	if len(cli.servers) == 0 {
-		cli.servers = []*net.TCPAddr{ // default servers
-			{IP: net.IP{42, 81, 172, 81}, Port: 80},
-			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
-			{IP: net.IP{42, 81, 172, 147}, Port: 443},
-			{IP: net.IP{125, 94, 60, 146}, Port: 80},
-			{IP: net.IP{114, 221, 144, 215}, Port: 80},
-			{IP: net.IP{42, 81, 172, 22}, Port: 80},
+		cli.servers = []netip.AddrPort{ // default servers
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 81}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{114, 221, 148, 59}), 14000),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 147}), 443),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{125, 94, 60, 146}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{114, 221, 144, 215}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 22}), 80),
 		}
 	}
 	pings := make([]int64, len(cli.servers))
 	wg := sync.WaitGroup{}
 	wg.Add(len(cli.servers))
+	println(len(cli.servers))
 	for i := range cli.servers {
 		go func(index int) {
 			defer wg.Done()
@@ -783,7 +784,7 @@ func (c *QQClient) UpdateProfile(profile ProfileDetailUpdate) {
 	_, _ = c.sendAndWait(c.buildUpdateProfileDetailPacket(profile))
 }
 
-func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
+func (c *QQClient) SetCustomServer(servers []netip.AddrPort) {
 	c.servers = append(servers, c.servers...)
 }
 

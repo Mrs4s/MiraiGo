@@ -34,9 +34,9 @@ func (t *TCPListener) UnexpectedDisconnect(f func(*TCPListener, error)) {
 	t.unexpectedDisconnect = f
 }
 
-func (t *TCPListener) Connect(addr *net.TCPAddr) error {
+func (t *TCPListener) Connect(addr string) error {
 	t.Close()
-	conn, err := net.DialTCP("tcp", nil, addr)
+	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		return errors.Wrap(err, "dial tcp error")
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/netip"
 	"sort"
 	"strconv"
 	"strings"
@@ -114,7 +115,7 @@ func GenIMEI() string {
 	return final.String()
 }
 
-func getSSOAddress() ([]*net.TCPAddr, error) {
+func getSSOAddress() ([]netip.AddrPort, error) {
 	protocol := SystemDeviceInfo.Protocol.Version()
 	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")
 	payload := jce.NewJceWriter(). // see ServerConfig.d
@@ -150,15 +151,15 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
 	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
 	servers := reader.ReadSsoServerInfos(2)
-	adds := make([]*net.TCPAddr, 0, len(servers))
+	adds := make([]netip.AddrPort, 0, len(servers))
 	for _, s := range servers {
 		if strings.Contains(s.Server, "com") {
 			continue
 		}
-		adds = append(adds, &net.TCPAddr{
-			IP:   net.ParseIP(s.Server),
-			Port: int(s.Port),
-		})
+		ip, ok := netip.AddrFromSlice(net.ParseIP(s.Server))
+		if ok {
+			adds = append(adds, netip.AddrPortFrom(ip, uint16(s.Port)))
+		}
 	}
 	return adds, nil
 }

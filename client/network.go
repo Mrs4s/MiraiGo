@@ -40,11 +40,13 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	r := &ConnectionQualityInfo{}
 	wg := sync.WaitGroup{}
 	wg.Add(2)
+
+	currentServerAddr := c.servers[c.currServerIndex].String()
 	go func() {
 		defer wg.Done()
 		var err error
 
-		if r.ChatServerLatency, err = qualityTest(c.servers[c.currServerIndex].String()); err != nil {
+		if r.ChatServerLatency, err = qualityTest(currentServerAddr); err != nil {
 			c.error("test chat server latency error: %v", err)
 			r.ChatServerLatency = 9999
 		}
@@ -67,7 +69,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	}()
 	go func() {
 		defer wg.Done()
-		res := utils.RunTCPPingLoop(c.servers[c.currServerIndex].String(), 10)
+		res := utils.RunTCPPingLoop(currentServerAddr, 10)
 		r.ChatServerPacketLoss = res.PacketsLoss
 		if c.highwaySession.AddrLength() > 0 {
 			res = utils.RunTCPPingLoop(c.highwaySession.SsoAddr[0].String(), 10)
@@ -87,8 +89,9 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 
 // connect 连接到 QQClient.servers 中的服务器
 func (c *QQClient) connect() error {
-	c.info("connect to server: %v", c.servers[c.currServerIndex].String())
-	err := c.TCP.Connect(c.servers[c.currServerIndex])
+	addr := c.servers[c.currServerIndex].String()
+	c.info("connect to server: %v", addr)
+	err := c.TCP.Connect(addr)
 	c.currServerIndex++
 	if c.currServerIndex == len(c.servers) {
 		c.currServerIndex = 0

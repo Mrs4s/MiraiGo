@@ -2,7 +2,7 @@ package client
 
 import (
 	"crypto/md5"
-	"net"
+	"net/netip"
 	"strconv"
 	"strings"
 	"sync"
@@ -312,16 +312,16 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 			ssoPkt := jce.NewJceReader(jceBuf)
 			servers := ssoPkt.ReadSsoServerInfos(1)
 			if len(servers) > 0 {
-				var adds []*net.TCPAddr
+				var adds []netip.AddrPort
 				for _, s := range servers {
 					if strings.Contains(s.Server, "com") {
 						continue
 					}
 					c.debug("got new server addr: %v location: %v", s.Server, s.Location)
-					adds = append(adds, &net.TCPAddr{
-						IP:   net.ParseIP(s.Server),
-						Port: int(s.Port),
-					})
+					addr, err := netip.ParseAddr(s.Server)
+					if err == nil {
+						adds = append(adds, netip.AddrPortFrom(addr, uint16(s.Port)))
+					}
 				}
 				f := true
 				for _, e := range c.eventHandlers.serverUpdatedHandlers {
