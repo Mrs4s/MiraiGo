@@ -48,9 +48,8 @@ func (c *QQClient) getGtk(domain string) int {
 			accu = accu + (accu << 5) + int(b)
 		}
 		return 2147483647 & accu
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
