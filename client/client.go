@@ -248,7 +248,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	pings := make([]int64, len(cli.servers))
 	wg := sync.WaitGroup{}
 	wg.Add(len(cli.servers))
-	println(len(cli.servers))
+	// println(len(cli.servers))
 	for i := range cli.servers {
 		go func(index int) {
 			defer wg.Done()
