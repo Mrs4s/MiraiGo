@@ -1,9 +1,9 @@
 package message
 
 import (
-	"bytes"
 	"crypto/md5"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -79,7 +79,7 @@ func (f *ForwardMessage) AddNode(node *ForwardNode) *ForwardMessage {
 func (f *ForwardMessage) Length() int { return len(f.Nodes) }
 
 func (f *ForwardMessage) Brief() string {
-	var brief bytes.Buffer
+	var brief strings.Builder
 	for _, n := range f.Nodes {
 		brief.WriteString(ToReadableString(n.Message))
 		if brief.Len() >= 27 {
@@ -90,7 +90,7 @@ func (f *ForwardMessage) Brief() string {
 }
 
 func (f *ForwardMessage) Preview() string {
-	var pv bytes.Buffer
+	var pv strings.Builder
 	for i, node := range f.Nodes {
 		if i >= 4 {
 			break

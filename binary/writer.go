@@ -12,7 +12,8 @@ type Writer bytes.Buffer
 func NewWriterF(f func(writer *Writer)) []byte {
 	w := SelectWriter()
 	f(w)
-	b := append([]byte(nil), w.Bytes()...)
+	b := make([]byte, len(w.Bytes()))
+	copy(b, w.Bytes())
 	w.put()
 	return b
 }

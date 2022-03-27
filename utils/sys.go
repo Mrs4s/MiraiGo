@@ -20,7 +20,7 @@ func ComputeMd5AndLength(r io.Reader) ([]byte, int64) {
 
 func (r *multiReadSeeker) Read(p []byte) (int, error) {
 	if r.multiReader == nil {
-		var readers []io.Reader
+		readers := make([]io.Reader, len(r.readers))
 		for i := range r.readers {
 			_, _ = r.readers[i].Seek(0, io.SeekStart)
 			readers = append(readers, r.readers[i])

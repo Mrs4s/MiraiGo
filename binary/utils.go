@@ -6,7 +6,6 @@ import (
 	"compress/zlib"
 	binary2 "encoding/binary"
 	"encoding/hex"
-	"io"
 	"net"
 
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -34,7 +33,7 @@ func ZlibUncompress(src []byte) []byte {
 	var out bytes.Buffer
 	r, _ := zlib.NewReader(b)
 	defer r.Close()
-	io.Copy(&out, r)
+	_, _ = out.ReadFrom(r)
 	return out.Bytes()
 }
 
@@ -42,7 +41,8 @@ func ZlibCompress(data []byte) []byte {
 	zw := acquireZlibWriter()
 	_, _ = zw.w.Write(data)
 	_ = zw.w.Close()
-	ret := append([]byte(nil), zw.buf.Bytes()...)
+	ret := make([]byte, len(zw.buf.Bytes()))
+	copy(ret, zw.buf.Bytes())
 	releaseZlibWriter(zw)
 	return ret
 }
@@ -51,7 +51,8 @@ func GZipCompress(data []byte) []byte {
 	gw := AcquireGzipWriter()
 	_, _ = gw.Write(data)
 	_ = gw.Close()
-	ret := append([]byte(nil), gw.buf.Bytes()...)
+	ret := make([]byte, len(gw.buf.Bytes()))
+	copy(ret, gw.buf.Bytes())
 	ReleaseGzipWriter(gw)
 	return ret
 }
@@ -61,7 +62,7 @@ func GZipUncompress(src []byte) []byte {
 	var out bytes.Buffer
 	r, _ := gzip.NewReader(b)
 	defer r.Close()
-	_, _ = io.Copy(&out, r)
+	_, _ = out.ReadFrom(r)
 	return out.Bytes()
 }
 
