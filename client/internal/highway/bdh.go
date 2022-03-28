@@ -16,7 +16,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 )
 
-type BdhInput struct {
+type Transaction struct {
 	CommandID int32
 	Body      io.Reader
 	Sum       []byte // md5 sum of body
@@ -26,7 +26,7 @@ type BdhInput struct {
 	Encrypt   bool
 }
 
-func (bdh *BdhInput) encrypt(key []byte) error {
+func (bdh *Transaction) encrypt(key []byte) error {
 	if bdh.Encrypt {
 		if len(key) == 0 {
 			return errors.New("session key not found. maybe miss some packet?")
@@ -36,7 +36,7 @@ func (bdh *BdhInput) encrypt(key []byte) error {
 	return nil
 }
 
-func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
+func (s *Session) UploadBDH(input Transaction) ([]byte, error) {
 	if len(s.SsoAddr) == 0 {
 		return nil, errors.New("srv addrs not found. maybe miss some packet?")
 	}
@@ -108,7 +108,7 @@ func (s *Session) UploadBDH(input BdhInput) ([]byte, error) {
 	return rspExt, nil
 }
 
-func (s *Session) UploadBDHMultiThread(input BdhInput, threadCount int) ([]byte, error) {
+func (s *Session) UploadBDHMultiThread(input Transaction, threadCount int) ([]byte, error) {
 	// for small file and small thread count,
 	// use UploadBDH instead of UploadBDHMultiThread
 	if input.Size < 1024*1024*3 || threadCount < 2 {

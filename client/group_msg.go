@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
 	"math"
@@ -170,10 +171,13 @@ func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMes
 	}
 	for i, ip := range rsp.Uint32UpIp {
 		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
-		input := highway.Input{
+		hash := md5.Sum(body)
+		input := highway.Transaction{
 			CommandID: 27,
-			Key:       rsp.MsgSig,
+			Ticket:    rsp.MsgSig,
 			Body:      bytes.NewReader(body),
+			Size:      int64(len(body)),
+			Sum:       hash[:],
 		}
 		err := c.highwaySession.Upload(addr, input)
 		if err != nil {

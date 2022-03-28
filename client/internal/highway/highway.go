@@ -47,15 +47,7 @@ func (s *Session) AppendAddr(ip, port uint32) {
 	s.SsoAddr = append(s.SsoAddr, addr)
 }
 
-type Input struct {
-	CommandID int32
-	Key       []byte
-	Body      io.ReadSeeker
-}
-
-func (s *Session) Upload(addr Addr, input Input) error {
-	fh, length := utils.ComputeMd5AndLength(input.Body)
-	_, _ = input.Body.Seek(0, io.SeekStart)
+func (s *Session) Upload(addr Addr, input Transaction) error {
 	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*3)
 	if err != nil {
 		return errors.Wrap(err, "connect error")
@@ -79,12 +71,12 @@ func (s *Session) Upload(addr Addr, input Input) error {
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
 			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, input.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
-				Filesize:      length,
+				Filesize:      input.Size,
 				Dataoffset:    int64(offset),
 				Datalength:    int32(rl),
-				Serviceticket: input.Key,
+				Serviceticket: input.Ticket,
 				Md5:           ch[:],
-				FileMd5:       fh,
+				FileMd5:       input.Sum,
 			},
 			ReqExtendinfo: []byte{},
 		})

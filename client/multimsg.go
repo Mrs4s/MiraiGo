@@ -294,10 +294,13 @@ func (builder *ForwardMessageBuilder) Main(m *message.ForwardMessage) *message.F
 	content := forwardDisplay(rsp.MsgResid, filename, m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()))
 	for i, ip := range rsp.Uint32UpIp {
 		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
-		input := highway.Input{
+		hash := md5.Sum(body)
+		input := highway.Transaction{
 			CommandID: 27,
-			Key:       rsp.MsgSig,
+			Ticket:    rsp.MsgSig,
 			Body:      bytes.NewReader(body),
+			Sum:       hash[:],
+			Size:      int64(len(body)),
 		}
 		err := c.highwaySession.Upload(addr, input)
 		if err != nil {

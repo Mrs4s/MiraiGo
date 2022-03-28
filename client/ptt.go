@@ -73,7 +73,7 @@ func (c *QQClient) UploadVoice(target message.Source, voice io.ReadSeeker) (*mes
 		ext = c.buildGroupPttStoreBDHExt(target.PrimaryID, fh, int32(length), 0, int32(length))
 	}
 	// multi-thread upload is no need
-	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+	rsp, err := c.highwaySession.UploadBDH(highway.Transaction{
 		CommandID: cmd,
 		Body:      voice,
 		Sum:       fh,
@@ -157,7 +157,7 @@ func (c *QQClient) UploadShortVideo(target message.Source, video, thumb io.ReadS
 	}
 	ext, _ := proto.Marshal(c.buildPttShortVideoProto(target, videoSum, thumbSum, videoLen, thumbLen).PttShortVideoUploadReq)
 	combined := utils.MultiReadSeeker(thumb, video)
-	input := highway.BdhInput{
+	input := highway.Transaction{
 		CommandID: cmd,
 		Body:      combined,
 		Size:      videoLen + thumbLen,

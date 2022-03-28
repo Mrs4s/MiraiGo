@@ -92,7 +92,7 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 
 	var r any
 	var err error
-	var input highway.BdhInput
+	var input highway.Transaction
 	switch target.SourceType {
 	case message.SourceGroup:
 		r, err = c.sendAndWait(c.buildGroupImageStorePacket(target.PrimaryID, fh, int32(length)))
@@ -115,7 +115,7 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		}
 	}
 
-	input = highway.BdhInput{
+	input = highway.Transaction{
 		CommandID: cmd,
 		Body:      img,
 		Size:      length,
@@ -322,7 +322,7 @@ func (c *QQClient) uploadOcrImage(img io.Reader, size int32, sum []byte) (string
 		Uuid:       binary.GenUUID(r),
 	})
 
-	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+	rsp, err := c.highwaySession.UploadBDH(highway.Transaction{
 		CommandID: 76,
 		Body:      img,
 		Size:      int64(size),
