@@ -23,7 +23,7 @@ func (r *multiReadSeeker) Read(p []byte) (int, error) {
 		readers := make([]io.Reader, len(r.readers))
 		for i := range r.readers {
 			_, _ = r.readers[i].Seek(0, io.SeekStart)
-			readers = append(readers, r.readers[i])
+			readers[i] = r.readers[i]
 		}
 		r.multiReader = io.MultiReader(readers...)
 	}

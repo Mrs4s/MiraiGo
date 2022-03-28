@@ -156,7 +156,7 @@ func (c *QQClient) UploadShortVideo(target message.Source, video, thumb io.ReadS
 		cmd = 89
 	}
 	ext, _ := proto.Marshal(c.buildPttShortVideoProto(target, videoSum, thumbSum, videoLen, thumbLen).PttShortVideoUploadReq)
-	combined := utils.MultiReadSeeker(thumb, video)
+	combined := io.MultiReader(thumb, video)
 	input := highway.Transaction{
 		CommandID: cmd,
 		Body:      combined,
