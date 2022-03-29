@@ -1,11 +1,11 @@
 package utils
 
 import (
-	"encoding/xml"
 	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 	"unsafe"
 )
 
@@ -69,9 +69,63 @@ func S2B(s string) (b []byte) {
 	return
 }
 
+const (
+	escQuot = "&#34;" // shorter than "&quot;"
+	escApos = "&#39;" // shorter than "&apos;"
+	escAmp  = "&amp;"
+	escLT   = "&lt;"
+	escGT   = "&gt;"
+	escTab  = "&#x9;"
+	escNL   = "&#xA;"
+	escCR   = "&#xD;"
+	escFFFD = "\uFFFD" // Unicode replacement character
+)
+
+func isInCharacterRange(r rune) (inrange bool) {
+	return r == 0x09 ||
+		r == 0x0A ||
+		r == 0x0D ||
+		r >= 0x20 && r <= 0xD7FF ||
+		r >= 0xE000 && r <= 0xFFFD ||
+		r >= 0x10000 && r <= 0x10FFFF
+}
+
 // XmlEscape xml escape string
-func XmlEscape(c string) string {
-	buf := new(strings.Builder)
-	_ = xml.EscapeText(buf, []byte(c))
-	return buf.String()
+func XmlEscape(s string) string {
+	var esc string
+	var sb strings.Builder
+	sb.Grow(len(s))
+	last := 0
+	for i, r := range s {
+		width := utf8.RuneLen(r)
+		switch r {
+		case '"':
+			esc = escQuot
+		case '\'':
+			esc = escApos
+		case '&':
+			esc = escAmp
+		case '<':
+			esc = escLT
+		case '>':
+			esc = escGT
+		case '\t':
+			esc = escTab
+		case '\n':
+			esc = escNL
+		case '\r':
+			esc = escCR
+		default:
+			if !isInCharacterRange(r) || (r == 0xFFFD && width == 1) {
+				esc = escFFFD
+				break
+			}
+			continue
+		}
+		sb.WriteString(s[last:i])
+		sb.WriteString(esc)
+		last = i + width
+	}
+	sb.WriteString(s[last:])
+	return sb.String()
 }

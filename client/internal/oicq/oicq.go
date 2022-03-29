@@ -84,7 +84,8 @@ func (c *Codec) Marshal(m *Message) []byte {
 	}
 	w.WriteByte(0x03)
 
-	buf := append([]byte(nil), w.Bytes()...)
+	buf := make([]byte, len(w.Bytes()))
+	copy(buf, w.Bytes())
 	goBinary.BigEndian.PutUint16(buf[1:3], uint16(len(buf)))
 	return buf
 }

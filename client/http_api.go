@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
-	"io"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
 	"net/url"
 	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -20,51 +18,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-/* -------- VipInfo -------- */
-
-type VipInfo struct {
-	Uin            int64
-	Name           string
-	Level          int
-	LevelSpeed     float64
-	VipLevel       string
-	VipGrowthSpeed int
-	VipGrowthTotal int
-}
-
-func (c *QQClient) GetVipInfo(target int64) (*VipInfo, error) {
-	b, err := utils.HttpGetBytes(fmt.Sprintf("https://h5.vip.qq.com/p/mc/cardv2/other?platform=1&qq=%d&adtag=geren&aid=mvip.pingtai.mobileqq.androidziliaoka.fromqita", target), c.getCookiesWithDomain("h5.vip.qq.com"))
-	if err != nil {
-		return nil, err
-	}
-	ret := VipInfo{Uin: target}
-	b = b[bytes.Index(b, []byte(`<span class="ui-nowrap">`))+24:]
-	t := b[:bytes.Index(b, []byte(`</span>`))]
-	ret.Name = string(t)
-	b = b[bytes.Index(b, []byte(`<small>LV</small>`))+17:]
-	t = b[:bytes.Index(b, []byte(`</p>`))]
-	ret.Level, _ = strconv.Atoi(string(t))
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	t = b[:bytes.Index(b, []byte(`<small>倍`))]
-	ret.LevelSpeed, _ = strconv.ParseFloat(string(t), 64)
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	st := string(b[:bytes.Index(b, []byte(`</p>`))])
-	st = strings.Replace(st, "<small>", "", 1)
-	st = strings.Replace(st, "</small>", "", 1)
-	ret.VipLevel = st
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	t = b[:bytes.Index(b, []byte(`</p>`))]
-	ret.VipGrowthSpeed, _ = strconv.Atoi(string(t))
-	b = b[bytes.Index(b, []byte(`<div class="pk-line pk-line-guest">`))+35:]
-	b = b[bytes.Index(b, []byte(`<p>`))+3:]
-	t = b[:bytes.Index(b, []byte(`</p>`))]
-	ret.VipGrowthTotal, _ = strconv.Atoi(string(t))
-	return &ret, nil
-}
 
 /* -------- GroupHonorInfo -------- */
 
@@ -165,6 +118,32 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 
 /* -------- GroupNotice -------- */
 
+type groupNoticeRsp struct {
+	Feeds []*struct {
+		SenderId    uint32 `json:"u"`
+		PublishTime uint64 `json:"pubt"`
+		Message     struct {
+			Text   string        `json:"text"`
+			Images []noticeImage `json:"pics"`
+		} `json:"msg"`
+	} `json:"feeds"`
+}
+
+type GroupNoticeMessage struct {
+	SenderId    uint32 `json:"sender_id"`
+	PublishTime uint64 `json:"publish_time"`
+	Message     struct {
+		Text   string             `json:"text"`
+		Images []GroupNoticeImage `json:"images"`
+	} `json:"message"`
+}
+
+type GroupNoticeImage struct {
+	Height string `json:"height"`
+	Width  string `json:"width"`
+	ID     string `json:"id"`
+}
+
 type noticePicUpResponse struct {
 	ErrorCode    int    `json:"ec"`
 	ErrorMessage string `json:"em"`
@@ -177,36 +156,77 @@ type noticeImage struct {
 	ID     string `json:"id"`
 }
 
+func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err error) {
+	v := url.Values{}
+	v.Set("bkn", strconv.Itoa(c.getCSRFToken()))
+	v.Set("qid", strconv.FormatInt(groupCode, 10))
+	v.Set("ft", "23")
+	v.Set("ni", "1")
+	v.Set("n", "1")
+	v.Set("i", "1")
+	v.Set("log_read", "1")
+	v.Set("platform", "1")
+	v.Set("s", "-1")
+	v.Set("n", "20")
+
+	req, _ := http.NewRequest(http.MethodGet, "https://web.qun.qq.com/cgi-bin/announce/get_t_list?"+v.Encode(), nil)
+	req.Header.Set("Cookie", c.getCookies())
+	rsp, err := utils.Client.Do(req)
+	if err != nil {
+		return
+	}
+	defer rsp.Body.Close()
+
+	r := groupNoticeRsp{}
+	err = json.NewDecoder(rsp.Body).Decode(&r)
+	if err != nil {
+		return
+	}
+
+	return c.parseGroupNoticeJson(&r), nil
+}
+
+func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage {
+	o := make([]*GroupNoticeMessage, 0, len(s.Feeds))
+	for _, v := range s.Feeds {
+
+		ims := make([]GroupNoticeImage, 0, len(v.Message.Images))
+		for i := 0; i < len(v.Message.Images); i++ {
+			ims = append(ims, GroupNoticeImage{
+				Height: v.Message.Images[i].Height,
+				Width:  v.Message.Images[i].Width,
+				ID:     v.Message.Images[i].ID,
+			})
+		}
+
+		o = append(o, &GroupNoticeMessage{
+			SenderId:    v.SenderId,
+			PublishTime: v.PublishTime,
+			Message: struct {
+				Text   string             `json:"text"`
+				Images []GroupNoticeImage `json:"images"`
+			}{
+				Text:   v.Message.Text,
+				Images: ims,
+			},
+		})
+	}
+
+	return o
+}
+
 func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 	buf := new(bytes.Buffer)
 	w := multipart.NewWriter(buf)
-	err := w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<bkn> failed")
-	}
-	err = w.WriteField("source", "troopNotice")
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<source> failed")
-	}
-	err = w.WriteField("m", "0")
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<m> failed")
-	}
+	_ = w.WriteField("bkn", strconv.Itoa(c.getCSRFToken()))
+	_ = w.WriteField("source", "troopNotice")
+	_ = w.WriteField("m", "0")
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition", `form-data; name="pic_up"; filename="temp_uploadFile.png"`)
 	h.Set("Content-Type", "image/png")
-	fw, err := w.CreatePart(h)
-	if err != nil {
-		return nil, errors.Wrap(err, "create multipart field<pic_up> failed")
-	}
-	_, err = fw.Write(img)
-	if err != nil {
-		return nil, errors.Wrap(err, "write multipart<pic_up> failed")
-	}
-	err = w.Close()
-	if err != nil {
-		return nil, errors.Wrap(err, "close multipart failed")
-	}
+	fw, _ := w.CreatePart(h)
+	_, _ = fw.Write(img)
+	_ = w.Close()
 	req, err := http.NewRequest("POST", "https://web.qun.qq.com/cgi-bin/announce/upload_img", buf)
 	if err != nil {
 		return nil, errors.Wrap(err, "new request error")
@@ -218,12 +238,8 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 		return nil, errors.Wrap(err, "post error")
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.Wrap(err, "read body error")
-	}
-	res := noticePicUpResponse{}
-	err = json.Unmarshal(body, &res)
+	var res noticePicUpResponse
+	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal json")
 	}

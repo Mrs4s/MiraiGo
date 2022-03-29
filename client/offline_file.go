@@ -33,18 +33,18 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, [
 	return seq, packet
 }
 
-func decodeOfflineFileDownloadResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOfflineFileDownloadResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := cmd0x346.C346RspBody{}
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
-		c.Error("unmarshal cmd0x346 rsp body error: %v", err)
+		c.error("unmarshal cmd0x346 rsp body error: %v", err)
 		return nil, errors.Wrap(err, "unmarshal cmd0x346 rsp body error")
 	}
 	if rsp.ApplyDownloadRsp == nil {
-		c.Error("decode apply download 1200 error: apply rsp is nil.")
+		c.error("decode apply download 1200 error: apply rsp is nil.")
 		return nil, errors.New("apply rsp is nil")
 	}
 	if rsp.ApplyDownloadRsp.RetCode != 0 {
-		c.Error("decode apply download 1200 error: %v", rsp.ApplyDownloadRsp.RetCode)
+		c.error("decode apply download 1200 error: %v", rsp.ApplyDownloadRsp.RetCode)
 		return nil, errors.Errorf("apply download rsp error: %d", rsp.ApplyDownloadRsp.RetCode)
 	}
 	return "http://" + rsp.ApplyDownloadRsp.DownloadInfo.DownloadDomain + rsp.ApplyDownloadRsp.DownloadInfo.DownloadUrl, nil

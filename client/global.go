@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/netip"
 	"sort"
 	"strconv"
 	"strings"
@@ -114,7 +115,7 @@ func GenIMEI() string {
 	return final.String()
 }
 
-func getSSOAddress() ([]*net.TCPAddr, error) {
+func getSSOAddress() ([]netip.AddrPort, error) {
 	protocol := SystemDeviceInfo.Protocol.Version()
 	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")
 	payload := jce.NewJceWriter(). // see ServerConfig.d
@@ -122,7 +123,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 					WriteString("00000", 4).WriteInt32(100, 5).
 					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
 					WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
-					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).WriteByte(1, 14).Bytes()
+					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).Bytes()
 	buf := &jce.RequestDataVersion3{
 		Map: map[string][]byte{"HttpServerListReq": packUniRequestData(payload)},
 	}
@@ -140,7 +141,7 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	tea := binary.NewTeaCipher(key)
 	encpkt := tea.Encrypt(b)
 	cl()
-	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp", encpkt)
+	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp?mType=getssolist", encpkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to fetch server list")
 	}
@@ -150,15 +151,15 @@ func getSSOAddress() ([]*net.TCPAddr, error) {
 	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
 	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
 	servers := reader.ReadSsoServerInfos(2)
-	adds := make([]*net.TCPAddr, 0, len(servers))
+	adds := make([]netip.AddrPort, 0, len(servers))
 	for _, s := range servers {
 		if strings.Contains(s.Server, "com") {
 			continue
 		}
-		adds = append(adds, &net.TCPAddr{
-			IP:   net.ParseIP(s.Server),
-			Port: int(s.Port),
-		})
+		ip, ok := netip.AddrFromSlice(net.ParseIP(s.Server))
+		if ok {
+			adds = append(adds, netip.AddrPortFrom(ip, uint16(s.Port)))
+		}
 	}
 	return adds, nil
 }
@@ -244,14 +245,15 @@ func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 }
 
 func (c *QQClient) messageBuilder(seq int32) *messageBuilder {
-	builder := &messageBuilder{}
-	actual, ok := c.msgBuilders.LoadOrStore(seq, builder)
+	actual, ok := c.msgBuilders.Load(seq)
 	if !ok {
+		builder := &messageBuilder{}
+		actual, _ = c.msgBuilders.LoadOrStore(seq, builder)
 		time.AfterFunc(time.Minute, func() {
 			c.msgBuilders.Delete(seq) // delete avoid memory leak
 		})
 	}
-	return actual.(*messageBuilder)
+	return actual
 }
 
 type messageBuilder struct {
@@ -295,11 +297,6 @@ func packUniRequestData(data []byte) []byte {
 
 func genForwardTemplate(resID, preview, summary string, ts int64, items []*msg.PbMultiMsgItem) *message.ForwardElement {
 	template := forwardDisplay(resID, strconv.FormatInt(ts, 10), preview, summary)
-	for _, item := range items {
-		if item.GetFileName() == "MultiMsg" {
-			*item.FileName = strconv.FormatInt(ts, 10)
-		}
-	}
 	return &message.ForwardElement{
 		FileName: strconv.FormatInt(ts, 10),
 		Content:  template,
@@ -356,59 +353,16 @@ func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Messag
 	return c.packOIDBPackage(cmd, serviceType, b)
 }
 
-func unpackOIDBPackage(buff []byte, payload proto.Message) error {
+func unpackOIDBPackage(payload []byte, rsp proto.Message) error {
 	pkg := new(oidb.OIDBSSOPkg)
-	if err := proto.Unmarshal(buff, pkg); err != nil {
+	if err := proto.Unmarshal(payload, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if pkg.Result != 0 {
 		return errors.Errorf("oidb result unsuccessful: %v msg: %v", pkg.Result, pkg.ErrorMsg)
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, payload); err != nil {
+	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	return nil
-}
-
-func (c *QQClient) Error(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "ERROR",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
-func (c *QQClient) Warning(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "WARNING",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
-func (c *QQClient) Info(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "INFO",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
-func (c *QQClient) Debug(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "DEBUG",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
-func (c *QQClient) Trace(msg string, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "TRACE",
-		Message: fmt.Sprintf(msg, args...),
-	})
-}
-
-func (c *QQClient) Dump(msg string, data []byte, args ...interface{}) {
-	c.dispatchLogEvent(&LogEvent{
-		Type:    "DUMP",
-		Message: fmt.Sprintf(msg, args...),
-		Dump:    data,
-	})
 }

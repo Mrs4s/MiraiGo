@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
+	"net/netip"
 	"sort"
 	"strconv"
 	"sync"
@@ -13,16 +14,17 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/atomic"
 
+	"github.com/RomiChan/syncx"
+
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
+	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
-
-//go:generate go run github.com/a8m/syncmap -o "handler_map_gen.go" -pkg client -name HandlerMap "map[uint16]*handlerInfo"
 
 type QQClient struct {
 	Uin         int64
@@ -48,17 +50,17 @@ type QQClient struct {
 	// protocol public field
 	SequenceId  atomic.Int32
 	SessionId   []byte
-	RandomKey   []byte
 	TCP         *network.TCPListener // todo: combine other protocol state into one struct
 	ConnectTime time.Time
 
 	transport *network.Transport
 	oicq      *oicq.Codec
+	logger    Logger
 
 	// internal state
-	handlers        HandlerMap
-	waiters         sync.Map
-	servers         []*net.TCPAddr
+	handlers        syncx.Map[uint16, *handlerInfo]
+	waiters         syncx.Map[string, func(any, error)]
+	servers         []netip.AddrPort
 	currServerIndex int
 	retryTimes      int
 	version         *auth.AppVersion
@@ -76,19 +78,47 @@ type QQClient struct {
 	// otherSrvAddrs   []string
 	// fileStorageInfo *jce.FileStoragePushFSSvcList
 
+	// event handles
+	eventHandlers                     eventHandlers
+	PrivateMessageEvent               EventHandle[*message.PrivateMessage]
+	TempMessageEvent                  EventHandle[*TempMessageEvent]
+	GroupMessageEvent                 EventHandle[*message.GroupMessage]
+	SelfPrivateMessageEvent           EventHandle[*message.PrivateMessage]
+	SelfGroupMessageEvent             EventHandle[*message.GroupMessage]
+	GroupMuteEvent                    EventHandle[*GroupMuteEvent]
+	GroupMessageRecalledEvent         EventHandle[*GroupMessageRecalledEvent]
+	FriendMessageRecalledEvent        EventHandle[*FriendMessageRecalledEvent]
+	GroupJoinEvent                    EventHandle[*GroupInfo]
+	GroupLeaveEvent                   EventHandle[*GroupLeaveEvent]
+	GroupMemberJoinEvent              EventHandle[*MemberJoinGroupEvent]
+	GroupMemberLeaveEvent             EventHandle[*MemberLeaveGroupEvent]
+	MemberCardUpdatedEvent            EventHandle[*MemberCardUpdatedEvent]
+	GroupNameUpdatedEvent             EventHandle[*GroupNameUpdatedEvent]
+	GroupMemberPermissionChangedEvent EventHandle[*MemberPermissionChangedEvent]
+	GroupInvitedEvent                 EventHandle[*GroupInvitedRequest]
+	UserWantJoinGroupEvent            EventHandle[*UserJoinGroupRequest]
+	NewFriendEvent                    EventHandle[*NewFriendEvent]
+	NewFriendRequestEvent             EventHandle[*NewFriendRequest]
+	DisconnectedEvent                 EventHandle[*ClientDisconnectedEvent]
+	GroupNotifyEvent                  EventHandle[INotifyEvent]
+	FriendNotifyEvent                 EventHandle[INotifyEvent]
+	MemberSpecialTitleUpdatedEvent    EventHandle[*MemberSpecialTitleUpdatedEvent]
+	GroupDigestEvent                  EventHandle[*GroupDigestEvent]
+	OtherClientStatusChangedEvent     EventHandle[*OtherClientStatusChangedEvent]
+	OfflineFileEvent                  EventHandle[*OfflineFileEvent]
+
 	// message state
-	msgSvcCache            *utils.Cache
+	msgSvcCache            *utils.Cache[unit]
 	lastC2CMsgTime         int64
-	transCache             *utils.Cache
+	transCache             *utils.Cache[unit]
 	groupSysMsgCache       *GroupSystemMessages
-	msgBuilders            sync.Map
-	onlinePushCache        *utils.Cache
+	msgBuilders            syncx.Map[int32, *messageBuilder]
+	onlinePushCache        *utils.Cache[unit]
 	heartbeatEnabled       bool
 	requestPacketRequestID atomic.Int32
 	groupSeq               atomic.Int32
 	friendSeq              atomic.Int32
 	highwayApplyUpSeq      atomic.Int32
-	eventHandlers          eventHandlers
 
 	groupListLock sync.Mutex
 }
@@ -103,7 +133,7 @@ type QiDianAccountInfo struct {
 }
 
 type handlerInfo struct {
-	fun     func(i interface{}, err error)
+	fun     func(i any, err error)
 	dynamic bool
 	params  network.RequestParams
 }
@@ -115,7 +145,7 @@ func (h *handlerInfo) getParams() network.RequestParams {
 	return h.params
 }
 
-var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (interface{}, error){
+var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (any, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 	"wtlogin.trans_emp":                            decodeTransEmpResponse,
@@ -164,10 +194,9 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},
-		msgSvcCache:     utils.NewCache(time.Second * 15),
-		transCache:      utils.NewCache(time.Second * 15),
-		onlinePushCache: utils.NewCache(time.Second * 15),
-		servers:         []*net.TCPAddr{},
+		msgSvcCache:     utils.NewCache[unit](time.Second * 15),
+		transCache:      utils.NewCache[unit](time.Second * 15),
+		onlinePushCache: utils.NewCache[unit](time.Second * 15),
 		alive:           true,
 		highwaySession:  new(highway.Session),
 
@@ -197,28 +226,29 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
 	if err == nil && len(adds) > 0 {
-		var hostAddrs []*net.TCPAddr
+		var hostAddrs []netip.AddrPort
 		for _, addr := range adds {
-			hostAddrs = append(hostAddrs, &net.TCPAddr{
-				IP:   addr,
-				Port: 8080,
-			})
+			ip, ok := netip.AddrFromSlice(addr.To4())
+			if ok {
+				hostAddrs = append(hostAddrs, netip.AddrPortFrom(ip, 8080))
+			}
 		}
 		cli.servers = append(hostAddrs, cli.servers...)
 	}
 	if len(cli.servers) == 0 {
-		cli.servers = []*net.TCPAddr{ // default servers
-			{IP: net.IP{42, 81, 172, 81}, Port: 80},
-			{IP: net.IP{114, 221, 148, 59}, Port: 14000},
-			{IP: net.IP{42, 81, 172, 147}, Port: 443},
-			{IP: net.IP{125, 94, 60, 146}, Port: 80},
-			{IP: net.IP{114, 221, 144, 215}, Port: 80},
-			{IP: net.IP{42, 81, 172, 22}, Port: 80},
+		cli.servers = []netip.AddrPort{ // default servers
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 81}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{114, 221, 148, 59}), 14000),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 147}), 443),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{125, 94, 60, 146}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{114, 221, 144, 215}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 22}), 80),
 		}
 	}
 	pings := make([]int64, len(cli.servers))
 	wg := sync.WaitGroup{}
 	wg.Add(len(cli.servers))
+	// println(len(cli.servers))
 	for i := range cli.servers {
 		go func(index int) {
 			defer wg.Done()
@@ -239,7 +269,6 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	}
 	cli.TCP.PlannedDisconnect(cli.plannedDisconnect)
 	cli.TCP.UnexpectedDisconnect(cli.unexpectedDisconnect)
-	rand.Read(cli.RandomKey)
 	return cli
 }
 
@@ -391,7 +420,7 @@ func (c *QQClient) SubmitSMS(code string) (*LoginResponse, error) {
 func (c *QQClient) RequestSMS() bool {
 	rsp, err := c.sendAndWait(c.buildSMSRequestPacket())
 	if err != nil {
-		c.Error("request sms error: %v", err)
+		c.error("request sms error: %v", err)
 		return false
 	}
 	return rsp.(LoginResponse).Error == SMSNeededError
@@ -399,18 +428,18 @@ func (c *QQClient) RequestSMS() bool {
 
 func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.sig.G) == 0 {
-		c.Warning("device lock is disable. http api may fail.")
+		c.warning("device lock is disable. http api may fail.")
 	}
 	c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)
 	if err := c.registerClient(); err != nil {
 		return errors.Wrap(err, "register error")
 	}
 	if tokenLogin {
-		notify := make(chan struct{})
-		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i interface{}, err error) {
+		notify := make(chan struct{}, 2)
+		d := c.waitPacket("StatSvc.ReqMSFOffline", func(i any, err error) {
 			notify <- struct{}{}
 		})
-		d2 := c.waitPacket("MessageSvc.PushForceOffline", func(i interface{}, err error) {
+		d2 := c.waitPacket("MessageSvc.PushForceOffline", func(i any, err error) {
 			notify <- struct{}{}
 		})
 		select {
@@ -651,7 +680,7 @@ func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	return nil
 }
 
-func (c *QQClient) SolveGroupJoinRequest(i interface{}, accept, block bool, reason string) {
+func (c *QQClient) SolveGroupJoinRequest(i any, accept, block bool, reason string) {
 	if accept {
 		block = false
 		reason = ""
@@ -680,7 +709,7 @@ func (c *QQClient) SolveFriendRequest(req *NewFriendRequest, accept bool) {
 
 func (c *QQClient) getSKey() string {
 	if c.sig.SKeyExpiredTime < time.Now().Unix() && len(c.sig.G) > 0 {
-		c.Debug("skey expired. refresh...")
+		c.debug("skey expired. refresh...")
 		_, _ = c.sendAndWait(c.buildRequestTgtgtNopicsigPacket())
 	}
 	return string(c.sig.SKey)
@@ -761,7 +790,7 @@ func (c *QQClient) UpdateProfile(profile ProfileDetailUpdate) {
 	_, _ = c.sendAndWait(c.buildUpdateProfileDetailPacket(profile))
 }
 
-func (c *QQClient) SetCustomServer(servers []*net.TCPAddr) {
+func (c *QQClient) SetCustomServer(servers []netip.AddrPort) {
 	c.servers = append(servers, c.servers...)
 }
 

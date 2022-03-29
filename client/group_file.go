@@ -71,7 +71,7 @@ func init() {
 func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err error) {
 	defer func() {
 		if pan := recover(); pan != nil {
-			c.Error("get group fs error: %v\n%s", pan, debug.Stack())
+			c.error("get group fs error: %v\n%s", pan, debug.Stack())
 			err = errors.New("fs error")
 		}
 	}()
@@ -104,7 +104,7 @@ func (c *QQClient) GetGroupFileUrl(groupCode int64, fileId string, busId int32) 
 		return ""
 	}
 	url := i.(string)
-	url += "?fname=" + hex.EncodeToString([]byte(fileId))
+	url += fmt.Sprintf("?fname=%x", fileId)
 	return url
 }
 
@@ -276,7 +276,7 @@ func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32
 }
 
 func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string, groupCode, fileSize int64, md5, sha1 []byte) (uint16, []byte) {
-	b, _ := proto.Marshal(&oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
+	body := &oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
 		GroupCode:          &groupCode,
 		AppId:              proto.Int32(3),
 		BusId:              proto.Int32(102),
@@ -288,14 +288,8 @@ func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string
 		Sha:                sha1,
 		Md5:                md5,
 		SupportMultiUpload: proto.Bool(true),
-	}})
-	req := &oidb.OIDBSSOPkg{
-		Command:       1750,
-		ServiceType:   0,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	}}
+	payload := c.packOIDBPackageProto(1750, 0, body)
 	return c.uniPacket("OidbSvc.0x6d6_0", payload)
 }
 
@@ -328,31 +322,19 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 		StartIndex:   &startIndex,
 		Context:      EmptyBytes,
 	}}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:       1752,
-		ServiceType:   1,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(1752, 1, body)
 	return c.uniPacket("OidbSvc.0x6d8_1", payload)
 }
 
 func (c *QQClient) buildGroupFileCountRequestPacket(groupCode int64) (uint16, []byte) {
-	body := &oidb.D6D8ReqBody{GroupFileCountReq: &oidb.GetFileCountReqBody{
-		GroupCode: proto.Uint64(uint64(groupCode)),
-		AppId:     proto.Uint32(3),
-		BusId:     proto.Uint32(0),
-	}}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:       1752,
-		ServiceType:   2,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
+	body := &oidb.D6D8ReqBody{
+		GroupFileCountReq: &oidb.GetFileCountReqBody{
+			GroupCode: proto.Uint64(uint64(groupCode)),
+			AppId:     proto.Uint32(3),
+			BusId:     proto.Uint32(0),
+		},
 	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(1752, 2, body)
 	return c.uniPacket("OidbSvc.0x6d8_1", payload)
 }
 
@@ -361,14 +343,7 @@ func (c *QQClient) buildGroupFileSpaceRequestPacket(groupCode int64) (uint16, []
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 	}}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:       1752,
-		ServiceType:   3,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(1752, 3, body)
 	return c.uniPacket("OidbSvc.0x6d8_1", payload)
 }
 
@@ -411,13 +386,7 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 			FileId:    &fileId,
 		},
 	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:     1750,
-		ServiceType: 2,
-		Bodybuffer:  b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(1750, 2, body)
 	return c.uniPacket("OidbSvc.0x6d6_2", payload)
 }
 
@@ -429,38 +398,25 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 		ParentFolderId: &parentFolderId,
 		FileId:         &fileId,
 	}}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:       1750,
-		ServiceType:   3,
-		Bodybuffer:    b,
-		ClientVersion: "android 8.4.8",
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(1750, 3, body)
 	return c.uniPacket("OidbSvc.0x6d6_3", payload)
 }
 
-func decodeOIDB6d81Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeOIDB6d81Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D6D8RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return &rsp, nil
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D6D6RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.DownloadFileRsp.DownloadUrl == nil {
 		return nil, errors.New(rsp.DownloadFileRsp.GetClientWording())
@@ -470,50 +426,38 @@ func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
-func decodeOIDB6d63Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeOIDB6d63Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D6D6RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if rsp.DeleteFileRsp == nil {
-		return "", nil
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return rsp.DeleteFileRsp.GetClientWording(), nil
 }
 
-func decodeOIDB6d60Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeOIDB6d60Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D6D6RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	return rsp.UploadFileRsp, nil
 }
 
-func decodeOIDB6d7Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeOIDB6d7Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.D6D7RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	if retCode := rsp.CreateFolderRsp.GetRetCode(); retCode != 0 {
+		return nil, errors.Errorf("create folder error: %v", retCode)
 	}
-	if rsp.CreateFolderRsp != nil && rsp.CreateFolderRsp.GetRetCode() != 0 {
-		return nil, errors.Errorf("create folder error: %v", rsp.CreateFolderRsp.GetRetCode())
+	if retCode := rsp.RenameFolderRsp.GetRetCode(); retCode != 0 {
+		return nil, errors.Errorf("rename folder error: %v", retCode)
 	}
-	if rsp.RenameFolderRsp != nil && rsp.RenameFolderRsp.GetRetCode() != 0 {
-		return nil, errors.Errorf("rename folder error: %v", rsp.CreateFolderRsp.GetRetCode())
-	}
-	if rsp.DeleteFolderRsp != nil && rsp.DeleteFolderRsp.GetRetCode() != 0 {
-		return nil, errors.Errorf("delete folder error: %v", rsp.CreateFolderRsp.GetRetCode())
+	if retCode := rsp.DeleteFolderRsp.GetRetCode(); retCode != 0 {
+		return nil, errors.Errorf("delete folder error: %v", retCode)
 	}
 	return nil, nil
 }

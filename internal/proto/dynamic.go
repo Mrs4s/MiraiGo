@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-type DynamicMessage map[uint64]interface{}
+type DynamicMessage map[uint64]any
 
 type encoder struct {
 	bytes.Buffer

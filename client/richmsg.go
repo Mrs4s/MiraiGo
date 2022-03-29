@@ -66,7 +66,7 @@ var musicType = [...]musicTypeInfo{
 
 // SendGroupMusicShare 发送群聊音乐卡片
 func (c *QQClient) SendGroupMusicShare(target int64, msg *message.MusicShareElement) (*message.GroupMessage, error) {
-	ch := make(chan *message.GroupMessage)
+	ch := make(chan *message.GroupMessage, 2)
 	eid := utils.RandomString(6)
 	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
 		for _, elem := range e.Msg.Elements {

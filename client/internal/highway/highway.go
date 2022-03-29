@@ -12,10 +12,15 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/utils"
+)
+
+// see com/tencent/mobileqq/highway/utils/BaseConstants.java#L120-L121
+const (
+	_REQ_CMD_DATA        = "PicUp.DataUp"
+	_REQ_CMD_HEART_BREAK = "PicUp.Echo"
 )
 
 type Session struct {
@@ -42,15 +47,7 @@ func (s *Session) AppendAddr(ip, port uint32) {
 	s.SsoAddr = append(s.SsoAddr, addr)
 }
 
-type Input struct {
-	CommandID int32
-	Key       []byte
-	Body      io.ReadSeeker
-}
-
-func (s *Session) Upload(addr Addr, input Input) error {
-	fh, length := utils.ComputeMd5AndLength(input.Body)
-	_, _ = input.Body.Seek(0, io.SeekStart)
+func (s *Session) Upload(addr Addr, trans Transaction) error {
 	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*3)
 	if err != nil {
 		return errors.Wrap(err, "connect error")
@@ -61,11 +58,9 @@ func (s *Session) Upload(addr Addr, input Input) error {
 	chunk := make([]byte, chunkSize)
 	offset := 0
 	reader := binary.NewNetworkReader(conn)
-	w := binary.SelectWriter()
-	defer binary.PutWriter(w)
 	for {
 		chunk = chunk[:chunkSize]
-		rl, err := io.ReadFull(input.Body, chunk)
+		rl, err := io.ReadFull(trans.Body, chunk)
 		if errors.Is(err, io.EOF) {
 			break
 		}
@@ -74,19 +69,20 @@ func (s *Session) Upload(addr Addr, input Input) error {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(4096, input.CommandID, 2052),
+			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
-				Filesize:      length,
+				Filesize:      trans.Size,
 				Dataoffset:    int64(offset),
 				Datalength:    int32(rl),
-				Serviceticket: input.Key,
+				Serviceticket: trans.Ticket,
 				Md5:           ch[:],
-				FileMd5:       fh,
+				FileMd5:       trans.Sum,
 			},
 			ReqExtendinfo: []byte{},
 		})
 		offset += rl
-		_, err = io.Copy(conn, network.HeadBodyFrame(head, chunk))
+		frame := newFrame(head, chunk)
+		_, err = frame.WriteTo(conn)
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
 		}
@@ -133,7 +129,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(0, input.CommandID, 0),
+			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 0, input.CommandID, 0),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      fileLength,
 				Dataoffset:    offset,
@@ -145,7 +141,8 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 			ReqExtendinfo: input.Ext,
 		})
 		offset += int64(rl)
-		req, _ := http.NewRequest("POST", url, network.HeadBodyFrame(head, chunk))
+		frame := newFrame(head, chunk)
+		req, _ := http.NewRequest("POST", url, &frame)
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Connection", "Keep-Alive")
 		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
@@ -180,33 +177,25 @@ func (s *Session) nextSeq() int32 {
 	return atomic.AddInt32(&s.seq, 2)
 }
 
-func (s *Session) dataHighwayHead(flag, cmd, locale int32) *pb.DataHighwayHead {
+func (s *Session) dataHighwayHead(cmd string, flag, cmdID, locale int32) *pb.DataHighwayHead {
 	return &pb.DataHighwayHead{
 		Version:   1,
 		Uin:       s.Uin,
-		Command:   "PicUp.DataUp",
+		Command:   cmd,
 		Seq:       s.nextSeq(),
 		Appid:     s.AppID,
 		Dataflag:  flag,
-		CommandId: cmd,
+		CommandId: cmdID,
 		LocaleId:  locale,
 	}
 }
 
 func (s *Session) sendHeartbreak(conn net.Conn) error {
 	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-		MsgBasehead: &pb.DataHighwayHead{
-			Version:   1,
-			Uin:       s.Uin,
-			Command:   "PicUp.Echo",
-			Seq:       s.nextSeq(),
-			Appid:     s.AppID,
-			Dataflag:  4096,
-			CommandId: 0,
-			LocaleId:  2052,
-		},
+		MsgBasehead: s.dataHighwayHead(_REQ_CMD_HEART_BREAK, 4096, 0, 2052),
 	})
-	_, err := io.Copy(conn, network.HeadBodyFrame(head, nil))
+	frame := newFrame(head, nil)
+	_, err := frame.WriteTo(conn)
 	return err
 }
 

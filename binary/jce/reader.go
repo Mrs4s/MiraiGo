@@ -49,7 +49,7 @@ func (r *JceReader) skipHead() {
 }
 
 func (r *JceReader) skip(l int) {
-	r.skipBytes(l)
+	r.off += l
 }
 
 func (r *JceReader) skipField(t byte) {
@@ -105,17 +105,6 @@ func (r *JceReader) readBytes(n int) []byte {
 	return b
 }
 
-func (r *JceReader) skipBytes(n int) {
-	if r.off+n > len(r.buf) {
-		panic("skipBytes: EOF")
-	}
-	lremain := len(r.buf[r.off:])
-	if lremain < n {
-		n = lremain
-	}
-	r.off += n
-}
-
 func (r *JceReader) readByte() byte {
 	if r.off >= len(r.buf) {
 		panic("readByte: EOF")
@@ -126,15 +115,21 @@ func (r *JceReader) readByte() byte {
 }
 
 func (r *JceReader) readUInt16() uint16 {
-	return goBinary.BigEndian.Uint16(r.readBytes(2))
+	b := make([]byte, 2)
+	r.off += copy(b, r.buf[r.off:])
+	return goBinary.BigEndian.Uint16(b)
 }
 
 func (r *JceReader) readUInt32() uint32 {
-	return goBinary.BigEndian.Uint32(r.readBytes(4))
+	b := make([]byte, 4)
+	r.off += copy(b, r.buf[r.off:])
+	return goBinary.BigEndian.Uint32(b)
 }
 
 func (r *JceReader) readUInt64() uint64 {
-	return goBinary.BigEndian.Uint64(r.readBytes(8))
+	b := make([]byte, 8)
+	r.off += copy(b, r.buf[r.off:])
+	return goBinary.BigEndian.Uint64(b)
 }
 
 func (r *JceReader) readFloat32() float32 {

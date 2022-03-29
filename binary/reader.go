@@ -52,17 +52,20 @@ func (r *Reader) ReadBytesShort() []byte {
 }
 
 func (r *Reader) ReadUInt16() uint16 {
-	b := r.ReadBytes(2)
+	b := make([]byte, 2)
+	_, _ = r.buf.Read(b)
 	return binary.BigEndian.Uint16(b)
 }
 
 func (r *Reader) ReadInt32() int32 {
-	b := r.ReadBytes(4)
+	b := make([]byte, 4)
+	_, _ = r.buf.Read(b)
 	return int32(binary.BigEndian.Uint32(b))
 }
 
 func (r *Reader) ReadInt64() int64 {
-	b := r.ReadBytes(8)
+	b := make([]byte, 8)
+	_, _ = r.buf.Read(b)
 	return int64(binary.BigEndian.Uint64(b))
 }
 
@@ -154,7 +157,8 @@ func (r *NetworkReader) ReadBytes(len int) ([]byte, error) {
 }
 
 func (r *NetworkReader) ReadInt32() (int32, error) {
-	b, err := r.ReadBytes(4)
+	b := make([]byte, 4)
+	_, err := r.conn.Read(b)
 	if err != nil {
 		return 0, err
 	}

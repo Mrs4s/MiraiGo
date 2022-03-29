@@ -40,34 +40,36 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	r := &ConnectionQualityInfo{}
 	wg := sync.WaitGroup{}
 	wg.Add(2)
+
+	currentServerAddr := c.servers[c.currServerIndex].String()
 	go func() {
 		defer wg.Done()
 		var err error
 
-		if r.ChatServerLatency, err = qualityTest(c.servers[c.currServerIndex].String()); err != nil {
-			c.Error("test chat server latency error: %v", err)
+		if r.ChatServerLatency, err = qualityTest(currentServerAddr); err != nil {
+			c.error("test chat server latency error: %v", err)
 			r.ChatServerLatency = 9999
 		}
 
 		if addr, err := net.ResolveIPAddr("ip", "ssl.htdata.qq.com"); err == nil {
 			if r.LongMessageServerLatency, err = qualityTest((&net.TCPAddr{IP: addr.IP, Port: 443}).String()); err != nil {
-				c.Error("test long message server latency error: %v", err)
+				c.error("test long message server latency error: %v", err)
 				r.LongMessageServerLatency = 9999
 			}
 		} else {
-			c.Error("resolve long message server error: %v", err)
+			c.error("resolve long message server error: %v", err)
 			r.LongMessageServerLatency = 9999
 		}
 		if c.highwaySession.AddrLength() > 0 {
 			if r.SrvServerLatency, err = qualityTest(c.highwaySession.SsoAddr[0].String()); err != nil {
-				c.Error("test srv server latency error: %v", err)
+				c.error("test srv server latency error: %v", err)
 				r.SrvServerLatency = 9999
 			}
 		}
 	}()
 	go func() {
 		defer wg.Done()
-		res := utils.RunTCPPingLoop(c.servers[c.currServerIndex].String(), 10)
+		res := utils.RunTCPPingLoop(currentServerAddr, 10)
 		r.ChatServerPacketLoss = res.PacketsLoss
 		if c.highwaySession.AddrLength() > 0 {
 			res = utils.RunTCPPingLoop(c.highwaySession.SsoAddr[0].String(), 10)
@@ -78,7 +80,7 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	if _, err := utils.HttpGetBytes("https://ssl.htdata.qq.com", ""); err == nil {
 		r.LongMessageServerResponseLatency = time.Since(start).Milliseconds()
 	} else {
-		c.Error("test long message server response latency error: %v", err)
+		c.error("test long message server response latency error: %v", err)
 		r.LongMessageServerResponseLatency = 9999
 	}
 	wg.Wait()
@@ -87,8 +89,9 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 
 // connect 连接到 QQClient.servers 中的服务器
 func (c *QQClient) connect() error {
-	c.Info("connect to server: %v", c.servers[c.currServerIndex].String())
-	err := c.TCP.Connect(c.servers[c.currServerIndex])
+	addr := c.servers[c.currServerIndex].String()
+	c.info("connect to server: %v", addr)
+	err := c.TCP.Connect(addr)
 	c.currServerIndex++
 	if c.currServerIndex == len(c.servers) {
 		c.currServerIndex = 0
@@ -98,19 +101,19 @@ func (c *QQClient) connect() error {
 		if c.retryTimes > len(c.servers) {
 			return errors.New("All servers are unreachable")
 		}
-		c.Error("connect server error: %v", err)
+		c.error("connect server error: %v", err)
 		return err
 	}
 	c.once.Do(func() {
-		c.OnGroupMessage(func(_ *QQClient, _ *message.GroupMessage) {
+		c.GroupMessageEvent.Subscribe(func(_ *QQClient, _ *message.GroupMessage) {
 			c.stat.MessageReceived.Add(1)
 			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
-		c.OnPrivateMessage(func(_ *QQClient, _ *message.PrivateMessage) {
+		c.PrivateMessageEvent.Subscribe(func(_ *QQClient, _ *message.PrivateMessage) {
 			c.stat.MessageReceived.Add(1)
 			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
-		c.OnTempMessage(func(_ *QQClient, _ *TempMessageEvent) {
+		c.TempMessageEvent.Subscribe(func(_ *QQClient, _ *TempMessageEvent) {
 			c.stat.MessageReceived.Add(1)
 			c.stat.LastMessageTime.Store(time.Now().Unix())
 		})
@@ -129,14 +132,14 @@ func (c *QQClient) quickReconnect() {
 	c.Disconnect()
 	time.Sleep(time.Millisecond * 200)
 	if err := c.connect(); err != nil {
-		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "quick reconnect failed"})
+		c.error("connect server error: %v", err)
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "quick reconnect failed"})
 		return
 	}
 	if err := c.registerClient(); err != nil {
-		c.Error("register client failed: %v", err)
+		c.error("register client failed: %v", err)
 		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "register error"})
 		return
 	}
 }
@@ -148,9 +151,9 @@ func (c *QQClient) Disconnect() {
 }
 
 // sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (interface{}, error) {
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
 	type T struct {
-		Response interface{}
+		Response any
 		Error    error
 	}
 	ch := make(chan T, 1)
@@ -160,7 +163,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.Request
 		p = params[0]
 	}
 
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) {
+	c.handlers.Store(seq, &handlerInfo{fun: func(i any, err error) {
 		ch <- T{
 			Response: i,
 			Error:    err,
@@ -204,7 +207,7 @@ func (c *QQClient) sendPacket(pkt []byte) error {
 // waitPacket
 // 等待一个或多个数据包解析, 优先级低于 sendAndWait
 // 返回终止解析函数
-func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
+func (c *QQClient) waitPacket(cmd string, f func(any, error)) func() {
 	c.waiters.Store(cmd, f)
 	return func() {
 		c.waiters.Delete(cmd)
@@ -213,9 +216,9 @@ func (c *QQClient) waitPacket(cmd string, f func(interface{}, error)) func() {
 
 // waitPacketTimeoutSyncF
 // 等待一个数据包解析, 优先级低于 sendAndWait
-func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, filter func(interface{}) bool) (r interface{}, e error) {
-	notifyChan := make(chan bool)
-	defer c.waitPacket(cmd, func(i interface{}, err error) {
+func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, filter func(any) bool) (r any, e error) {
+	notifyChan := make(chan bool, 4)
+	defer c.waitPacket(cmd, func(i any, err error) {
 		if filter(i) {
 			r = i
 			e = err
@@ -234,7 +237,7 @@ func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, fil
 // 发送数据包并返回需要解析的 response
 func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 	ch := make(chan []byte, 1)
-	c.handlers.Store(seq, &handlerInfo{fun: func(i interface{}, err error) { ch <- i.([]byte) }, dynamic: true})
+	c.handlers.Store(seq, &handlerInfo{fun: func(i any, err error) { ch <- i.([]byte) }, dynamic: true})
 	err := c.sendPacket(pkt)
 	if err != nil {
 		c.handlers.Delete(seq)
@@ -251,25 +254,25 @@ func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 
 // plannedDisconnect 计划中断线事件
 func (c *QQClient) plannedDisconnect(_ *network.TCPListener) {
-	c.Debug("planned disconnect.")
+	c.debug("planned disconnect.")
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
 }
 
 // unexpectedDisconnect 非预期断线事件
 func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
-	c.Error("unexpected disconnect: %v", e)
+	c.error("unexpected disconnect: %v", e)
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
 	if err := c.connect(); err != nil {
-		c.Error("connect server error: %v", err)
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "connection dropped by server."})
+		c.error("connect server error: %v", err)
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "connection dropped by server."})
 		return
 	}
 	if err := c.registerClient(); err != nil {
-		c.Error("register client failed: %v", err)
+		c.error("register client failed: %v", err)
 		c.Disconnect()
-		c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "register error"})
+		c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "register error"})
 		return
 	}
 }
@@ -284,7 +287,7 @@ func (c *QQClient) netLoop() {
 			continue
 		}
 		if l < 4 || l > 1024*1024*10 { // max 10MB
-			c.Error("parse incoming packet error: invalid packet length %v", l)
+			c.error("parse incoming packet error: invalid packet length %v", l)
 			errCount++
 			if errCount > 2 {
 				go c.quickReconnect()
@@ -295,10 +298,10 @@ func (c *QQClient) netLoop() {
 		resp, err := c.transport.ReadResponse(data)
 		// pkt, err := packets.ParseIncomingPacket(data, c.sig.D2Key)
 		if err != nil {
-			c.Error("parse incoming packet error: %v", err)
+			c.error("parse incoming packet error: %v", err)
 			if errors.Is(err, network.ErrSessionExpired) || errors.Is(err, network.ErrPacketDropped) {
 				c.Disconnect()
-				go c.dispatchDisconnectEvent(&ClientDisconnectedEvent{Message: "session expired"})
+				go c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: "session expired"})
 				continue
 			}
 			errCount++
@@ -310,7 +313,7 @@ func (c *QQClient) netLoop() {
 		if resp.EncryptType == network.EncryptTypeEmptyKey {
 			m, err := c.oicq.Unmarshal(resp.Body)
 			if err != nil {
-				c.Error("decrypt payload error: %v", err)
+				c.error("decrypt payload error: %v", err)
 				if errors.Is(err, oicq.ErrUnknownFlag) {
 					go c.quickReconnect()
 				}
@@ -319,7 +322,7 @@ func (c *QQClient) netLoop() {
 			resp.Body = m.Body
 		}
 		errCount = 0
-		c.Debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
+		c.debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
 		c.stat.PacketReceived.Add(1)
 		pkt := &packets.IncomingPacket{
 			SequenceId:  uint16(resp.SequenceID),
@@ -329,15 +332,15 @@ func (c *QQClient) netLoop() {
 		go func(pkt *packets.IncomingPacket) {
 			defer func() {
 				if pan := recover(); pan != nil {
-					c.Error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
-					c.Dump("packet decode error: %v - %v", pkt.Payload, pkt.CommandName, pan)
+					c.error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
+					c.dump("packet decode error: %v - %v", pkt.Payload, pkt.CommandName, pan)
 				}
 			}()
 
 			if decoder, ok := decoders[pkt.CommandName]; ok {
 				// found predefined decoder
 				info, ok := c.handlers.LoadAndDelete(pkt.SequenceId)
-				var decoded interface{}
+				var decoded any
 				decoded = pkt.Payload
 				if info == nil || !info.dynamic {
 					decoded, err = decoder(c, &network.IncomingPacketInfo{
@@ -346,19 +349,19 @@ func (c *QQClient) netLoop() {
 						Params:      info.getParams(),
 					}, pkt.Payload)
 					if err != nil {
-						c.Debug("decode pkt %v error: %+v", pkt.CommandName, err)
+						c.debug("decode pkt %v error: %+v", pkt.CommandName, err)
 					}
 				}
 				if ok {
 					info.fun(decoded, err)
 				} else if f, ok := c.waiters.Load(pkt.CommandName); ok { // 在不存在handler的情况下触发wait
-					f.(func(interface{}, error))(decoded, err)
+					f(decoded, err)
 				}
 			} else if f, ok := c.handlers.LoadAndDelete(pkt.SequenceId); ok {
 				// does not need decoder
 				f.fun(pkt.Payload, nil)
 			} else {
-				c.Debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
+				c.debug("Unhandled Command: %s\nSeq: %d\nThis message can be ignored.", pkt.CommandName, pkt.SequenceId)
 			}
 		}(pkt)
 	}

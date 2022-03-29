@@ -55,10 +55,10 @@ type (
 		pack(patternId string, isPatternData bool) content
 	}
 
-	content map[string]interface{}
+	content map[string]any
 )
 
-var globalBlockId int64 = 0
+var globalBlockId int64
 
 func genBlockId() string {
 	id := atomic.AddInt64(&globalBlockId, 1)

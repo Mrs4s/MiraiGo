@@ -103,8 +103,10 @@ type AnimatedSticker struct {
 	Name string
 }
 
-type RedBagMessageType int
-type AtType int
+type (
+	RedBagMessageType int
+	AtType            int
+)
 
 // /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
 const (

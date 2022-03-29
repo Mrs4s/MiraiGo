@@ -2,7 +2,7 @@ package proto
 
 import "github.com/RomiChan/protobuf/proto"
 
-type Message = interface{}
+type Message = any
 
 func Marshal(m Message) ([]byte, error) {
 	return proto.Marshal(m)

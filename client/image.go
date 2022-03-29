@@ -1,8 +1,7 @@
 package client
 
 import (
-	"bytes"
-	"encoding/hex"
+	"fmt"
 	"io"
 	"math/rand"
 	"strings"
@@ -91,8 +90,9 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		}.Encode()
 	}
 
-	var r interface{}
+	var r any
 	var err error
+	var input highway.Transaction
 	switch target.SourceType {
 	case message.SourceGroup:
 		r, err = c.sendAndWait(c.buildGroupImageStorePacket(target.PrimaryID, fh, int32(length)))
@@ -115,22 +115,18 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		}
 	}
 
+	input = highway.Transaction{
+		CommandID: cmd,
+		Body:      img,
+		Size:      length,
+		Sum:       fh,
+		Ticket:    rsp.UploadKey,
+		Ext:       ext,
+	}
 	if tc > 1 && length > 3*1024*1024 {
-		_, err = c.highwaySession.UploadBDHMultiThread(highway.BdhMultiThreadInput{
-			CommandID: cmd,
-			Body:      utils.ReaderAtFrom2ReadSeeker(img, nil),
-			Size:      length,
-			Sum:       fh,
-			Ticket:    rsp.UploadKey,
-			Ext:       ext,
-		}, 4)
+		_, err = c.highwaySession.UploadBDHMultiThread(input, tc)
 	} else {
-		_, err = c.highwaySession.UploadBDH(highway.BdhInput{
-			CommandID: cmd,
-			Body:      img,
-			Ticket:    rsp.UploadKey,
-			Ext:       ext,
-		})
+		_, err = c.highwaySession.UploadBDH(input)
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "upload failed")
@@ -145,7 +141,7 @@ ok:
 	width := int32(i.Width)
 	height := int32(i.Height)
 	if err != nil && target.SourceType != message.SourceGroup {
-		c.Warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
+		c.warning("waring: decode image error: %v. this image will be displayed by wrong size in pc guild client", err)
 		width = 200
 		height = 200
 	}
@@ -158,7 +154,7 @@ ok:
 	}
 	return &message.GuildImageElement{
 		FileId:        rsp.FileId,
-		FilePath:      hex.EncodeToString(fh) + ".jpg",
+		FilePath:      fmt.Sprintf("%x.jpg", fh),
 		Size:          int32(length),
 		DownloadIndex: rsp.DownloadIndex,
 		Width:         width,
@@ -207,18 +203,18 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	return e, nil
 }
 
-func (c *QQClient) ImageOcr(img interface{}) (*OcrResponse, error) {
+func (c *QQClient) ImageOcr(img any) (*OcrResponse, error) {
 	url := ""
 	switch e := img.(type) {
 	case *message.GroupImageElement:
 		url = e.Url
 		if b, err := utils.HTTPGetReadCloser(e.Url, ""); err == nil {
-			if url, err = c.uploadOcrImage(b); err != nil {
+			if url, err = c.uploadOcrImage(b, e.Size, e.Md5); err != nil {
 				url = e.Url
 			}
 			_ = b.Close()
 		}
-		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, strings.ToUpper(hex.EncodeToString(e.Md5)), e.Size, e.Width, e.Height))
+		rsp, err := c.sendAndWait(c.buildImageOcrRequestPacket(url, fmt.Sprintf("%X", e.Md5), e.Size, e.Width, e.Height))
 		if err != nil {
 			return nil, err
 		}
@@ -318,7 +314,7 @@ func (c *QQClient) buildGroupImageDownloadPacket(fileId, groupCode int64, fileMd
 	return c.uniPacket("ImgStore.GroupPicDown", payload)
 }
 
-func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
+func (c *QQClient) uploadOcrImage(img io.Reader, size int32, sum []byte) (string, error) {
 	r := make([]byte, 16)
 	rand.Read(r)
 	ext, _ := proto.Marshal(&highway2.CommFileExtReq{
@@ -326,13 +322,13 @@ func (c *QQClient) uploadOcrImage(img io.Reader) (string, error) {
 		Uuid:       binary.GenUUID(r),
 	})
 
-	buf, _ := io.ReadAll(img)
-	rsp, err := c.highwaySession.UploadBDH(highway.BdhInput{
+	rsp, err := c.highwaySession.UploadBDH(highway.Transaction{
 		CommandID: 76,
-		Body:      bytes.NewReader(buf),
+		Body:      img,
+		Size:      int64(size),
+		Sum:       sum,
 		Ticket:    c.highwaySession.SigSession,
 		Ext:       ext,
-		Encrypt:   false,
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "upload ocr image error")
@@ -365,7 +361,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -392,7 +388,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
 	if err := proto.Unmarshal(payload, &pkt); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
@@ -403,18 +399,15 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 	if len(pkt.GetimgUrlRsp[0].FailMsg) != 0 {
 		return nil, errors.New(utils.B2S(pkt.GetimgUrlRsp[0].FailMsg))
 	}
-	return "https://" + utils.B2S(pkt.GetimgUrlRsp[0].DownDomain) + utils.B2S(pkt.GetimgUrlRsp[0].BigDownPara), nil
+	return fmt.Sprintf("https://%s%s", pkt.GetimgUrlRsp[0].DownDomain, pkt.GetimgUrlRsp[0].BigDownPara), nil
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	rsp := oidb.DE07RspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.Wording != "" {
 		if strings.Contains(rsp.Wording, "服务忙") {
