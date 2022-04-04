@@ -25,6 +25,12 @@ jobs:
         GO111MODULE=off go get golang.org/x/tools/cmd/goimports
         goimports -l -w ./
 
+    - name: Static Check
+      uses: dominikh/staticcheck-action@v1.2.0
+      with:
+        install-go: false
+        version: "2022.1"
+
     - name: Commit back
       if: github.repository_owner == 'Mrs4s'
       continue-on-error: true
