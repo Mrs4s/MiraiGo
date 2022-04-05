@@ -60,13 +60,12 @@ func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, 
 				Time:       int32(time.Now().Unix()),
 				Message:    m.Elements,
 			}))
-		if err != nil {
-			c.error("%v", err)
-			return nil
+		if err == nil {
+			ret := c.sendGroupMessage(groupCode, false, &message.SendingMessage{Elements: []message.IMessageElement{lmsg}})
+			ret.Elements = m.Elements
+			return ret
 		}
-		ret := c.sendGroupMessage(groupCode, false, &message.SendingMessage{Elements: []message.IMessageElement{lmsg}})
-		ret.Elements = m.Elements
-		return ret
+		c.error("%v", err)
 	}
 	return c.sendGroupMessage(groupCode, false, m)
 }
