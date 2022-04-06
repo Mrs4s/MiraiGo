@@ -184,7 +184,7 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 	for _, item := range m.Items {
 		linker.items[item.GetFileName()] = item
 	}
-	return linker.link(m.FileName)
+	return linker.link("MultiMsg")
 }
 
 func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement {
@@ -291,7 +291,7 @@ func (builder *ForwardMessageBuilder) Main(m *message.ForwardMessage) *message.F
 	if err != nil {
 		return nil
 	}
-	content := forwardDisplay(rsp.MsgResid, filename, m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()))
+	content := forwardDisplay(rsp.MsgResid, utils.RandomString(32), m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()))
 	for i, ip := range rsp.Uint32UpIp {
 		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
 		hash := md5.Sum(body)
