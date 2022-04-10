@@ -231,6 +231,9 @@ func msgType0x210Sub122Decoder(c *QQClient, protobuf []byte) error {
 	if sender == 0 {
 		return nil
 	}
+	if receiver == 0 {
+		receiver = c.Uin
+	}
 	c.FriendNotifyEvent.dispatch(c, &FriendPokeNotifyEvent{
 		Sender:   sender,
 		Receiver: receiver,
