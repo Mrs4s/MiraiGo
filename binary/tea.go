@@ -8,6 +8,7 @@ import (
 type TEA [4]uint32
 
 // randuint32 returns a lock free uint32 value.
+//
 //go:linkname randuint32 runtime.fastrand
 func randuint32() uint32
 
@@ -95,6 +96,7 @@ func (t *TEA) encode(n uint64) uint64 {
 }
 
 // 每次8字节
+//
 //go:nosplit
 func (t *TEA) decode(n uint64) uint64 {
 	v0, v1 := uint32(n>>32), uint32(n)
@@ -141,9 +143,9 @@ func NewTeaCipher(key []byte) (t TEA) {
 	if len(key) != 16 {
 		return TEA{}
 	}
-	t[3] = binary.BigEndian.Uint32(key[12:])
-	t[2] = binary.BigEndian.Uint32(key[8:])
-	t[1] = binary.BigEndian.Uint32(key[4:])
-	t[0] = binary.BigEndian.Uint32(key[0:])
+	t[3] = binary.BigEndian.Uint32(key[12:16])
+	t[2] = binary.BigEndian.Uint32(key[8:12])
+	t[1] = binary.BigEndian.Uint32(key[4:8])
+	t[0] = binary.BigEndian.Uint32(key[:4])
 	return t
 }
