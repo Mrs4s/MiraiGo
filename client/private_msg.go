@@ -29,7 +29,7 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 	if msgLen > message.MaxMessageSize || imgCount > 50 {
 		return nil
 	}
-	if frag && (msgLen > 300 || imgCount > 2) {
+	if frag && (msgLen > 300 || imgCount > 2) && target == c.Uin {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
@@ -42,8 +42,10 @@ func (c *QQClient) SendPrivateMessage(target int64, m *message.SendingMessage) *
 		}
 	} else {
 		seq = c.nextFriendSeq()
-		_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
-		_ = c.sendPacket(pkt)
+		if target != c.Uin {
+			_, pkt := c.buildFriendSendingPacket(target, seq, mr, 1, 0, 0, t, m.Elements)
+			_ = c.sendPacket(pkt)
+		}
 	}
 	c.stat.MessageSent.Add(1)
 	ret := &message.PrivateMessage{
