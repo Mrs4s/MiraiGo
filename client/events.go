@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"reflect"
 	"runtime/debug"
 	"sync"
 
@@ -38,6 +39,21 @@ func (handle *EventHandle[T]) dispatch(client *QQClient, event T) {
 	for _, handler := range handle.handlers {
 		handler(client, event)
 	}
+	if len(client.eventHandlers.subscribedEventHandlers) > 0 {
+		for _, h := range client.eventHandlers.subscribedEventHandlers {
+			ht := reflect.TypeOf(h)
+			for i := 0; i < ht.NumMethod(); i++ {
+				method := ht.Method(i)
+				if method.Type.NumIn() != 3 {
+					continue
+				}
+				if method.Type.In(1) != reflect.TypeOf(client) || method.Type.In(2) != reflect.TypeOf(event) {
+					continue
+				}
+				method.Func.Call([]reflect.Value{reflect.ValueOf(h), reflect.ValueOf(client), reflect.ValueOf(event)})
+			}
+		}
+	}
 }
 
 type eventHandlers struct {
@@ -51,7 +67,12 @@ type eventHandlers struct {
 	memberJoinedGuildHandlers            []func(*QQClient, *MemberJoinGuildEvent)
 
 	serverUpdatedHandlers       []func(*QQClient, *ServerUpdatedEvent) bool
+	subscribedEventHandlers     []any
 	groupMessageReceiptHandlers sync.Map
+}
+
+func (c *QQClient) SubscribeEventHandler(handler any) {
+	c.eventHandlers.subscribedEventHandlers = append(c.eventHandlers.subscribedEventHandlers, handler)
 }
 
 func (s *GuildService) OnGuildChannelMessage(f func(*QQClient, *message.GuildChannelMessage)) {
