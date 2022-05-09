@@ -35,7 +35,7 @@ func T106(uin, salt, appId, ssoVer uint32, passwordMd5 [16]byte, guidAvailable b
 			} else {
 				w.WriteUInt64(uint64(uin))
 			}
-			w.WriteUInt32(uint32(time.Now().UnixNano() / 1e6))
+			w.WriteUInt32(uint32(time.Now().Unix()))
 			w.WriteUInt32(0) // fake ip w.Write([]byte{0x00, 0x00, 0x00, 0x00})
 			w.WriteByte(0x01)
 			w.Write(passwordMd5[:])
