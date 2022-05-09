@@ -16,7 +16,7 @@ type Transport struct {
 	Device    *auth.Device
 
 	// connection
-	// conn *TCPListener
+	// conn *TCPClient
 }
 
 func (t *Transport) packBody(req *Request, w *binary.Writer) {

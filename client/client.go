@@ -50,7 +50,7 @@ type QQClient struct {
 	// protocol public field
 	SequenceId  atomic.Int32
 	SessionId   []byte
-	TCP         *network.TCPListener // todo: combine other protocol state into one struct
+	TCP         *network.TCPClient // todo: combine other protocol state into one struct
 	ConnectTime time.Time
 
 	transport *network.Transport
@@ -190,7 +190,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		Uin:         uin,
 		PasswordMd5: passwordMd5,
 		AllowSlider: true,
-		TCP:         &network.TCPListener{},
+		TCP:         &network.TCPClient{},
 		sig: &auth.SigInfo{
 			OutPacketSessionID: []byte{0x02, 0xB0, 0x5B, 0x8B},
 		},

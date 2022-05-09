@@ -253,14 +253,14 @@ func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 }
 
 // plannedDisconnect 计划中断线事件
-func (c *QQClient) plannedDisconnect(_ *network.TCPListener) {
+func (c *QQClient) plannedDisconnect(_ *network.TCPClient) {
 	c.debug("planned disconnect.")
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
 }
 
 // unexpectedDisconnect 非预期断线事件
-func (c *QQClient) unexpectedDisconnect(_ *network.TCPListener, e error) {
+func (c *QQClient) unexpectedDisconnect(_ *network.TCPClient, e error) {
 	c.error("unexpected disconnect: %v", e)
 	c.stat.DisconnectTimes.Add(1)
 	c.Online.Store(false)
