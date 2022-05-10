@@ -143,6 +143,9 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 	}
 	defer func() { _ = rsp.Body.Close() }()
 	rspBody, _ := io.ReadAll(rsp.Body)
+	if len(rspBody) == 0 {
+		return nil, errors.Wrap(err, "request error")
+	}
 	r := binary.NewReader(rspBody)
 	r.ReadByte()
 	l1 := int(r.ReadInt32())
