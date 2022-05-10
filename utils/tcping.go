@@ -2,7 +2,6 @@ package utils
 
 import (
 	"net"
-	"strings"
 	"time"
 )
 
@@ -47,13 +46,10 @@ func RunTCPPingLoop(ipport string, count int) (r ICMPPingResult) {
 
 func tcping(ipport string) (int64, error) {
 	t := time.Now().UnixMilli()
-	conn, err := net.DialTimeout("tcp", ipport, time.Second*2)
+	conn, err := net.DialTimeout("tcp", ipport, time.Second*10)
 	if err != nil {
-		if strings.Contains(err.Error(), "timeout") {
-			return 9999, err
-		}
-	} else {
-		_ = conn.Close()
+		return 9999, err
 	}
+	_ = conn.Close()
 	return time.Now().UnixMilli() - t, nil
 }
