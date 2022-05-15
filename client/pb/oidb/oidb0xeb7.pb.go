@@ -3,194 +3,191 @@
 
 package oidb
 
-type Oidb_0Xeb7 struct {
+type ReqBody struct {
+	SignInStatusReq *StSignInStatusReq `protobuf:"bytes,1,opt"`
+	SignInWriteReq  *StSignInWriteReq  `protobuf:"bytes,2,opt"`
 }
 
-type Oidb_0Xeb7_ReqBody struct {
-	SignInStatusReq *Oidb_0Xeb7_StSignInStatusReq `protobuf:"bytes,1,opt"`
-	SignInWriteReq  *Oidb_0Xeb7_StSignInWriteReq  `protobuf:"bytes,2,opt"`
-}
-
-type Oidb_0Xeb7_Ret struct {
+type Ret struct {
 	Code *uint32 `protobuf:"varint,1,opt"`
 	Msg  *string `protobuf:"bytes,2,opt"`
 }
 
-func (x *Oidb_0Xeb7_Ret) GetCode() uint32 {
+func (x *Ret) GetCode() uint32 {
 	if x != nil && x.Code != nil {
 		return *x.Code
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_Ret) GetMsg() string {
+func (x *Ret) GetMsg() string {
 	if x != nil && x.Msg != nil {
 		return *x.Msg
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_RspBody struct {
-	SignInStatusRsp *Oidb_0Xeb7_StSignInStatusRsp `protobuf:"bytes,1,opt"`
-	SignInWriteRsp  *Oidb_0Xeb7_StSignInWriteRsp  `protobuf:"bytes,2,opt"`
+type RspBody struct {
+	SignInStatusRsp *StSignInStatusRsp `protobuf:"bytes,1,opt"`
+	SignInWriteRsp  *StSignInWriteRsp  `protobuf:"bytes,2,opt"`
 }
 
-type Oidb_0Xeb7_SignInStatusBase struct {
+type SignInStatusBase struct {
 	Status           *uint32 `protobuf:"varint,1,opt"`
 	CurrentTimeStamp *int64  `protobuf:"varint,2,opt"`
 }
 
-func (x *Oidb_0Xeb7_SignInStatusBase) GetStatus() uint32 {
+func (x *SignInStatusBase) GetStatus() uint32 {
 	if x != nil && x.Status != nil {
 		return *x.Status
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_SignInStatusBase) GetCurrentTimeStamp() int64 {
+func (x *SignInStatusBase) GetCurrentTimeStamp() int64 {
 	if x != nil && x.CurrentTimeStamp != nil {
 		return *x.CurrentTimeStamp
 	}
 	return 0
 }
 
-type Oidb_0Xeb7_SignInStatusDoneInfo struct {
+type SignInStatusDoneInfo struct {
 	LeftTitleWrod      *string  `protobuf:"bytes,1,opt"`
 	RightDescWord      *string  `protobuf:"bytes,2,opt"`
 	BelowPortraitWords []string `protobuf:"bytes,3,rep"`
 	RecordUrl          *string  `protobuf:"bytes,4,opt"`
 }
 
-func (x *Oidb_0Xeb7_SignInStatusDoneInfo) GetLeftTitleWrod() string {
+func (x *SignInStatusDoneInfo) GetLeftTitleWrod() string {
 	if x != nil && x.LeftTitleWrod != nil {
 		return *x.LeftTitleWrod
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusDoneInfo) GetRightDescWord() string {
+func (x *SignInStatusDoneInfo) GetRightDescWord() string {
 	if x != nil && x.RightDescWord != nil {
 		return *x.RightDescWord
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusDoneInfo) GetRecordUrl() string {
+func (x *SignInStatusDoneInfo) GetRecordUrl() string {
 	if x != nil && x.RecordUrl != nil {
 		return *x.RecordUrl
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_SignInStatusGroupScore struct {
+type SignInStatusGroupScore struct {
 	GroupScoreWord *string `protobuf:"bytes,1,opt"`
 	ScoreUrl       *string `protobuf:"bytes,2,opt"`
 }
 
-func (x *Oidb_0Xeb7_SignInStatusGroupScore) GetGroupScoreWord() string {
+func (x *SignInStatusGroupScore) GetGroupScoreWord() string {
 	if x != nil && x.GroupScoreWord != nil {
 		return *x.GroupScoreWord
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusGroupScore) GetScoreUrl() string {
+func (x *SignInStatusGroupScore) GetScoreUrl() string {
 	if x != nil && x.ScoreUrl != nil {
 		return *x.ScoreUrl
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_SignInStatusNotInfo struct {
+type SignInStatusNotInfo struct {
 	ButtonWord        *string `protobuf:"bytes,1,opt"`
 	SignDescWordLeft  *string `protobuf:"bytes,2,opt"`
 	SignDescWordRight *string `protobuf:"bytes,3,opt"`
 }
 
-func (x *Oidb_0Xeb7_SignInStatusNotInfo) GetButtonWord() string {
+func (x *SignInStatusNotInfo) GetButtonWord() string {
 	if x != nil && x.ButtonWord != nil {
 		return *x.ButtonWord
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusNotInfo) GetSignDescWordLeft() string {
+func (x *SignInStatusNotInfo) GetSignDescWordLeft() string {
 	if x != nil && x.SignDescWordLeft != nil {
 		return *x.SignDescWordLeft
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusNotInfo) GetSignDescWordRight() string {
+func (x *SignInStatusNotInfo) GetSignDescWordRight() string {
 	if x != nil && x.SignDescWordRight != nil {
 		return *x.SignDescWordRight
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_SignInStatusYesterdayFirst struct {
+type SignInStatusYesterdayFirst struct {
 	YesterdayFirstUid *string `protobuf:"bytes,1,opt"`
 	YesterdayWord     *string `protobuf:"bytes,2,opt"`
 	YesterdayNick     *string `protobuf:"bytes,3,opt"`
 }
 
-func (x *Oidb_0Xeb7_SignInStatusYesterdayFirst) GetYesterdayFirstUid() string {
+func (x *SignInStatusYesterdayFirst) GetYesterdayFirstUid() string {
 	if x != nil && x.YesterdayFirstUid != nil {
 		return *x.YesterdayFirstUid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusYesterdayFirst) GetYesterdayWord() string {
+func (x *SignInStatusYesterdayFirst) GetYesterdayWord() string {
 	if x != nil && x.YesterdayWord != nil {
 		return *x.YesterdayWord
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_SignInStatusYesterdayFirst) GetYesterdayNick() string {
+func (x *SignInStatusYesterdayFirst) GetYesterdayNick() string {
 	if x != nil && x.YesterdayNick != nil {
 		return *x.YesterdayNick
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StDaySignedInfo struct {
+type StDaySignedInfo struct {
 	Uid             *string `protobuf:"bytes,1,opt"`
 	UidGroupNick    *string `protobuf:"bytes,2,opt"`
 	SignedTimeStamp *int64  `protobuf:"varint,3,opt"`
 	SignInRank      *int32  `protobuf:"varint,4,opt"`
 }
 
-func (x *Oidb_0Xeb7_StDaySignedInfo) GetUid() string {
+func (x *StDaySignedInfo) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StDaySignedInfo) GetUidGroupNick() string {
+func (x *StDaySignedInfo) GetUidGroupNick() string {
 	if x != nil && x.UidGroupNick != nil {
 		return *x.UidGroupNick
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StDaySignedInfo) GetSignedTimeStamp() int64 {
+func (x *StDaySignedInfo) GetSignedTimeStamp() int64 {
 	if x != nil && x.SignedTimeStamp != nil {
 		return *x.SignedTimeStamp
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StDaySignedInfo) GetSignInRank() int32 {
+func (x *StDaySignedInfo) GetSignInRank() int32 {
 	if x != nil && x.SignInRank != nil {
 		return *x.SignInRank
 	}
 	return 0
 }
 
-type Oidb_0Xeb7_StDaySignedListReq struct {
+type StDaySignedListReq struct {
 	DayYmd  *string `protobuf:"bytes,1,opt"`
 	Uid     *string `protobuf:"bytes,2,opt"`
 	GroupId *string `protobuf:"bytes,3,opt"`
@@ -198,206 +195,206 @@ type Oidb_0Xeb7_StDaySignedListReq struct {
 	Limit   *int32  `protobuf:"varint,5,opt"`
 }
 
-func (x *Oidb_0Xeb7_StDaySignedListReq) GetDayYmd() string {
+func (x *StDaySignedListReq) GetDayYmd() string {
 	if x != nil && x.DayYmd != nil {
 		return *x.DayYmd
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StDaySignedListReq) GetUid() string {
+func (x *StDaySignedListReq) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StDaySignedListReq) GetGroupId() string {
+func (x *StDaySignedListReq) GetGroupId() string {
 	if x != nil && x.GroupId != nil {
 		return *x.GroupId
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StDaySignedListReq) GetOffset() int32 {
+func (x *StDaySignedListReq) GetOffset() int32 {
 	if x != nil && x.Offset != nil {
 		return *x.Offset
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StDaySignedListReq) GetLimit() int32 {
+func (x *StDaySignedListReq) GetLimit() int32 {
 	if x != nil && x.Limit != nil {
 		return *x.Limit
 	}
 	return 0
 }
 
-type Oidb_0Xeb7_StDaySignedListRsp struct {
-	Ret  *Oidb_0Xeb7_Ret               `protobuf:"bytes,1,opt"`
-	Page []*Oidb_0Xeb7_StDaySignedPage `protobuf:"bytes,2,rep"`
+type StDaySignedListRsp struct {
+	Ret  *Ret               `protobuf:"bytes,1,opt"`
+	Page []*StDaySignedPage `protobuf:"bytes,2,rep"`
 }
 
-type Oidb_0Xeb7_StDaySignedPage struct {
-	Infos  []*Oidb_0Xeb7_StDaySignedInfo `protobuf:"bytes,1,rep"`
-	Offset *int32                        `protobuf:"varint,2,opt"`
-	Total  *int32                        `protobuf:"varint,3,opt"`
+type StDaySignedPage struct {
+	Infos  []*StDaySignedInfo `protobuf:"bytes,1,rep"`
+	Offset *int32             `protobuf:"varint,2,opt"`
+	Total  *int32             `protobuf:"varint,3,opt"`
 }
 
-func (x *Oidb_0Xeb7_StDaySignedPage) GetOffset() int32 {
+func (x *StDaySignedPage) GetOffset() int32 {
 	if x != nil && x.Offset != nil {
 		return *x.Offset
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StDaySignedPage) GetTotal() int32 {
+func (x *StDaySignedPage) GetTotal() int32 {
 	if x != nil && x.Total != nil {
 		return *x.Total
 	}
 	return 0
 }
 
-type Oidb_0Xeb7_StKingSignedInfo struct {
+type StKingSignedInfo struct {
 	Uid             *string `protobuf:"bytes,1,opt"`
 	GroupNick       *string `protobuf:"bytes,2,opt"`
 	SignedTimeStamp *int64  `protobuf:"varint,3,opt"`
 	SignedCount     *int32  `protobuf:"varint,4,opt"`
 }
 
-func (x *Oidb_0Xeb7_StKingSignedInfo) GetUid() string {
+func (x *StKingSignedInfo) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StKingSignedInfo) GetGroupNick() string {
+func (x *StKingSignedInfo) GetGroupNick() string {
 	if x != nil && x.GroupNick != nil {
 		return *x.GroupNick
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StKingSignedInfo) GetSignedTimeStamp() int64 {
+func (x *StKingSignedInfo) GetSignedTimeStamp() int64 {
 	if x != nil && x.SignedTimeStamp != nil {
 		return *x.SignedTimeStamp
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StKingSignedInfo) GetSignedCount() int32 {
+func (x *StKingSignedInfo) GetSignedCount() int32 {
 	if x != nil && x.SignedCount != nil {
 		return *x.SignedCount
 	}
 	return 0
 }
 
-type Oidb_0Xeb7_StKingSignedListReq struct {
+type StKingSignedListReq struct {
 	Uid     *string `protobuf:"bytes,1,opt"`
 	GroupId *string `protobuf:"bytes,2,opt"`
 }
 
-func (x *Oidb_0Xeb7_StKingSignedListReq) GetUid() string {
+func (x *StKingSignedListReq) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StKingSignedListReq) GetGroupId() string {
+func (x *StKingSignedListReq) GetGroupId() string {
 	if x != nil && x.GroupId != nil {
 		return *x.GroupId
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StKingSignedListRsp struct {
-	Ret               *Oidb_0Xeb7_Ret                `protobuf:"bytes,1,opt"`
-	YesterdayFirst    *Oidb_0Xeb7_StKingSignedInfo   `protobuf:"bytes,2,opt"`
-	TopSignedTotal    []*Oidb_0Xeb7_StKingSignedInfo `protobuf:"bytes,3,rep"`
-	TopSignedContinue []*Oidb_0Xeb7_StKingSignedInfo `protobuf:"bytes,4,rep"`
+type StKingSignedListRsp struct {
+	Ret               *Ret                `protobuf:"bytes,1,opt"`
+	YesterdayFirst    *StKingSignedInfo   `protobuf:"bytes,2,opt"`
+	TopSignedTotal    []*StKingSignedInfo `protobuf:"bytes,3,rep"`
+	TopSignedContinue []*StKingSignedInfo `protobuf:"bytes,4,rep"`
 }
 
-type Oidb_0Xeb7_StSignInRecordDaySigned struct {
-	DaySignedRatio    *float32                    `protobuf:"fixed32,1,opt"`
-	DayTotalSignedUid *int32                      `protobuf:"varint,2,opt"`
-	DaySignedPage     *Oidb_0Xeb7_StDaySignedPage `protobuf:"bytes,3,opt"`
-	DaySignedUrl      *string                     `protobuf:"bytes,4,opt"`
+type StSignInRecordDaySigned struct {
+	DaySignedRatio    *float32         `protobuf:"fixed32,1,opt"`
+	DayTotalSignedUid *int32           `protobuf:"varint,2,opt"`
+	DaySignedPage     *StDaySignedPage `protobuf:"bytes,3,opt"`
+	DaySignedUrl      *string          `protobuf:"bytes,4,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordDaySigned) GetDaySignedRatio() float32 {
+func (x *StSignInRecordDaySigned) GetDaySignedRatio() float32 {
 	if x != nil && x.DaySignedRatio != nil {
 		return *x.DaySignedRatio
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordDaySigned) GetDayTotalSignedUid() int32 {
+func (x *StSignInRecordDaySigned) GetDayTotalSignedUid() int32 {
 	if x != nil && x.DayTotalSignedUid != nil {
 		return *x.DayTotalSignedUid
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordDaySigned) GetDaySignedUrl() string {
+func (x *StSignInRecordDaySigned) GetDaySignedUrl() string {
 	if x != nil && x.DaySignedUrl != nil {
 		return *x.DaySignedUrl
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInRecordKing struct {
-	YesterdayFirst    *Oidb_0Xeb7_StKingSignedInfo   `protobuf:"bytes,1,opt"`
-	TopSignedTotal    []*Oidb_0Xeb7_StKingSignedInfo `protobuf:"bytes,2,rep"`
-	TopSignedContinue []*Oidb_0Xeb7_StKingSignedInfo `protobuf:"bytes,3,rep"`
-	KingUrl           *string                        `protobuf:"bytes,4,opt"`
+type StSignInRecordKing struct {
+	YesterdayFirst    *StKingSignedInfo   `protobuf:"bytes,1,opt"`
+	TopSignedTotal    []*StKingSignedInfo `protobuf:"bytes,2,rep"`
+	TopSignedContinue []*StKingSignedInfo `protobuf:"bytes,3,rep"`
+	KingUrl           *string             `protobuf:"bytes,4,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordKing) GetKingUrl() string {
+func (x *StSignInRecordKing) GetKingUrl() string {
 	if x != nil && x.KingUrl != nil {
 		return *x.KingUrl
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInRecordReq struct {
+type StSignInRecordReq struct {
 	DayYmd  *string `protobuf:"bytes,1,opt"`
 	Uid     *string `protobuf:"bytes,2,opt"`
 	GroupId *string `protobuf:"bytes,3,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordReq) GetDayYmd() string {
+func (x *StSignInRecordReq) GetDayYmd() string {
 	if x != nil && x.DayYmd != nil {
 		return *x.DayYmd
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordReq) GetUid() string {
+func (x *StSignInRecordReq) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordReq) GetGroupId() string {
+func (x *StSignInRecordReq) GetGroupId() string {
 	if x != nil && x.GroupId != nil {
 		return *x.GroupId
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInRecordRsp struct {
-	Ret        *Oidb_0Xeb7_Ret                     `protobuf:"bytes,1,opt"`
-	Base       *Oidb_0Xeb7_SignInStatusBase        `protobuf:"bytes,2,opt"`
-	UserRecord *Oidb_0Xeb7_StSignInRecordUser      `protobuf:"bytes,3,opt"`
-	DaySigned  *Oidb_0Xeb7_StSignInRecordDaySigned `protobuf:"bytes,4,opt"`
-	KingRecord *Oidb_0Xeb7_StSignInRecordKing      `protobuf:"bytes,5,opt"`
-	Level      *Oidb_0Xeb7_StViewGroupLevel        `protobuf:"bytes,6,opt"`
+type StSignInRecordRsp struct {
+	Ret        *Ret                     `protobuf:"bytes,1,opt"`
+	Base       *SignInStatusBase        `protobuf:"bytes,2,opt"`
+	UserRecord *StSignInRecordUser      `protobuf:"bytes,3,opt"`
+	DaySigned  *StSignInRecordDaySigned `protobuf:"bytes,4,opt"`
+	KingRecord *StSignInRecordKing      `protobuf:"bytes,5,opt"`
+	Level      *StViewGroupLevel        `protobuf:"bytes,6,opt"`
 }
 
-type Oidb_0Xeb7_StSignInRecordUser struct {
+type StSignInRecordUser struct {
 	TotalSignedDays         *int32   `protobuf:"varint,2,opt"`
 	EarliestSignedTimeStamp *int64   `protobuf:"varint,3,opt"`
 	ContinueSignedDays      *int64   `protobuf:"varint,4,opt"`
@@ -405,140 +402,140 @@ type Oidb_0Xeb7_StSignInRecordUser struct {
 	GroupName               *string  `protobuf:"bytes,6,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordUser) GetTotalSignedDays() int32 {
+func (x *StSignInRecordUser) GetTotalSignedDays() int32 {
 	if x != nil && x.TotalSignedDays != nil {
 		return *x.TotalSignedDays
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordUser) GetEarliestSignedTimeStamp() int64 {
+func (x *StSignInRecordUser) GetEarliestSignedTimeStamp() int64 {
 	if x != nil && x.EarliestSignedTimeStamp != nil {
 		return *x.EarliestSignedTimeStamp
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordUser) GetContinueSignedDays() int64 {
+func (x *StSignInRecordUser) GetContinueSignedDays() int64 {
 	if x != nil && x.ContinueSignedDays != nil {
 		return *x.ContinueSignedDays
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StSignInRecordUser) GetGroupName() string {
+func (x *StSignInRecordUser) GetGroupName() string {
 	if x != nil && x.GroupName != nil {
 		return *x.GroupName
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInStatusReq struct {
+type StSignInStatusReq struct {
 	Uid           *string `protobuf:"bytes,1,opt"`
 	GroupId       *string `protobuf:"bytes,2,opt"`
 	Scene         *uint32 `protobuf:"varint,3,opt"`
 	ClientVersion *string `protobuf:"bytes,4,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInStatusReq) GetUid() string {
+func (x *StSignInStatusReq) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInStatusReq) GetGroupId() string {
+func (x *StSignInStatusReq) GetGroupId() string {
 	if x != nil && x.GroupId != nil {
 		return *x.GroupId
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInStatusReq) GetScene() uint32 {
+func (x *StSignInStatusReq) GetScene() uint32 {
 	if x != nil && x.Scene != nil {
 		return *x.Scene
 	}
 	return 0
 }
 
-func (x *Oidb_0Xeb7_StSignInStatusReq) GetClientVersion() string {
+func (x *StSignInStatusReq) GetClientVersion() string {
 	if x != nil && x.ClientVersion != nil {
 		return *x.ClientVersion
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInStatusRsp struct {
-	Ret           *Oidb_0Xeb7_Ret                        `protobuf:"bytes,1,opt"`
-	Base          *Oidb_0Xeb7_SignInStatusBase           `protobuf:"bytes,2,opt"`
-	Yesterday     *Oidb_0Xeb7_SignInStatusYesterdayFirst `protobuf:"bytes,3,opt"`
-	NotInfo       *Oidb_0Xeb7_SignInStatusNotInfo        `protobuf:"bytes,4,opt"`
-	DoneInfo      *Oidb_0Xeb7_SignInStatusDoneInfo       `protobuf:"bytes,5,opt"`
-	GroupScore    *Oidb_0Xeb7_SignInStatusGroupScore     `protobuf:"bytes,6,opt"`
-	MantleUrl     *string                                `protobuf:"bytes,7,opt"`
-	BackgroundUrl *string                                `protobuf:"bytes,8,opt"`
+type StSignInStatusRsp struct {
+	Ret           *Ret                        `protobuf:"bytes,1,opt"`
+	Base          *SignInStatusBase           `protobuf:"bytes,2,opt"`
+	Yesterday     *SignInStatusYesterdayFirst `protobuf:"bytes,3,opt"`
+	NotInfo       *SignInStatusNotInfo        `protobuf:"bytes,4,opt"`
+	DoneInfo      *SignInStatusDoneInfo       `protobuf:"bytes,5,opt"`
+	GroupScore    *SignInStatusGroupScore     `protobuf:"bytes,6,opt"`
+	MantleUrl     *string                     `protobuf:"bytes,7,opt"`
+	BackgroundUrl *string                     `protobuf:"bytes,8,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInStatusRsp) GetMantleUrl() string {
+func (x *StSignInStatusRsp) GetMantleUrl() string {
 	if x != nil && x.MantleUrl != nil {
 		return *x.MantleUrl
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInStatusRsp) GetBackgroundUrl() string {
+func (x *StSignInStatusRsp) GetBackgroundUrl() string {
 	if x != nil && x.BackgroundUrl != nil {
 		return *x.BackgroundUrl
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInWriteReq struct {
+type StSignInWriteReq struct {
 	Uid           *string `protobuf:"bytes,1,opt"`
 	GroupId       *string `protobuf:"bytes,2,opt"`
 	ClientVersion *string `protobuf:"bytes,3,opt"`
 }
 
-func (x *Oidb_0Xeb7_StSignInWriteReq) GetUid() string {
+func (x *StSignInWriteReq) GetUid() string {
 	if x != nil && x.Uid != nil {
 		return *x.Uid
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInWriteReq) GetGroupId() string {
+func (x *StSignInWriteReq) GetGroupId() string {
 	if x != nil && x.GroupId != nil {
 		return *x.GroupId
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StSignInWriteReq) GetClientVersion() string {
+func (x *StSignInWriteReq) GetClientVersion() string {
 	if x != nil && x.ClientVersion != nil {
 		return *x.ClientVersion
 	}
 	return ""
 }
 
-type Oidb_0Xeb7_StSignInWriteRsp struct {
-	Ret        *Oidb_0Xeb7_Ret                    `protobuf:"bytes,1,opt"`
-	DoneInfo   *Oidb_0Xeb7_SignInStatusDoneInfo   `protobuf:"bytes,2,opt"`
-	GroupScore *Oidb_0Xeb7_SignInStatusGroupScore `protobuf:"bytes,3,opt"`
+type StSignInWriteRsp struct {
+	Ret        *Ret                    `protobuf:"bytes,1,opt"`
+	DoneInfo   *SignInStatusDoneInfo   `protobuf:"bytes,2,opt"`
+	GroupScore *SignInStatusGroupScore `protobuf:"bytes,3,opt"`
 }
 
-type Oidb_0Xeb7_StViewGroupLevel struct {
+type StViewGroupLevel struct {
 	Title *string `protobuf:"bytes,1,opt"`
 	Url   *string `protobuf:"bytes,2,opt"`
 }
 
-func (x *Oidb_0Xeb7_StViewGroupLevel) GetTitle() string {
+func (x *StViewGroupLevel) GetTitle() string {
 	if x != nil && x.Title != nil {
 		return *x.Title
 	}
 	return ""
 }
 
-func (x *Oidb_0Xeb7_StViewGroupLevel) GetUrl() string {
+func (x *StViewGroupLevel) GetUrl() string {
 	if x != nil && x.Url != nil {
 		return *x.Url
 	}
