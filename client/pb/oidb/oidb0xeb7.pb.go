@@ -3,31 +3,32 @@
 
 package oidb
 
-type ReqBody struct {
+// DEB7 prefix
+type DEB7ReqBody struct {
 	SignInStatusReq *StSignInStatusReq `protobuf:"bytes,1,opt"`
 	SignInWriteReq  *StSignInWriteReq  `protobuf:"bytes,2,opt"`
 }
 
-type Ret struct {
+type DEB7Ret struct {
 	Code *uint32 `protobuf:"varint,1,opt"`
 	Msg  *string `protobuf:"bytes,2,opt"`
 }
 
-func (x *Ret) GetCode() uint32 {
+func (x *DEB7Ret) GetCode() uint32 {
 	if x != nil && x.Code != nil {
 		return *x.Code
 	}
 	return 0
 }
 
-func (x *Ret) GetMsg() string {
+func (x *DEB7Ret) GetMsg() string {
 	if x != nil && x.Msg != nil {
 		return *x.Msg
 	}
 	return ""
 }
 
-type RspBody struct {
+type DEB7RspBody struct {
 	SignInStatusRsp *StSignInStatusRsp `protobuf:"bytes,1,opt"`
 	SignInWriteRsp  *StSignInWriteRsp  `protobuf:"bytes,2,opt"`
 }
@@ -231,7 +232,7 @@ func (x *StDaySignedListReq) GetLimit() int32 {
 }
 
 type StDaySignedListRsp struct {
-	Ret  *Ret               `protobuf:"bytes,1,opt"`
+	Ret  *DEB7Ret           `protobuf:"bytes,1,opt"`
 	Page []*StDaySignedPage `protobuf:"bytes,2,rep"`
 }
 
@@ -310,7 +311,7 @@ func (x *StKingSignedListReq) GetGroupId() string {
 }
 
 type StKingSignedListRsp struct {
-	Ret               *Ret                `protobuf:"bytes,1,opt"`
+	Ret               *DEB7Ret            `protobuf:"bytes,1,opt"`
 	YesterdayFirst    *StKingSignedInfo   `protobuf:"bytes,2,opt"`
 	TopSignedTotal    []*StKingSignedInfo `protobuf:"bytes,3,rep"`
 	TopSignedContinue []*StKingSignedInfo `protobuf:"bytes,4,rep"`
@@ -386,7 +387,7 @@ func (x *StSignInRecordReq) GetGroupId() string {
 }
 
 type StSignInRecordRsp struct {
-	Ret        *Ret                     `protobuf:"bytes,1,opt"`
+	Ret        *DEB7Ret                 `protobuf:"bytes,1,opt"`
 	Base       *SignInStatusBase        `protobuf:"bytes,2,opt"`
 	UserRecord *StSignInRecordUser      `protobuf:"bytes,3,opt"`
 	DaySigned  *StSignInRecordDaySigned `protobuf:"bytes,4,opt"`
@@ -466,7 +467,7 @@ func (x *StSignInStatusReq) GetClientVersion() string {
 }
 
 type StSignInStatusRsp struct {
-	Ret           *Ret                        `protobuf:"bytes,1,opt"`
+	Ret           *DEB7Ret                    `protobuf:"bytes,1,opt"`
 	Base          *SignInStatusBase           `protobuf:"bytes,2,opt"`
 	Yesterday     *SignInStatusYesterdayFirst `protobuf:"bytes,3,opt"`
 	NotInfo       *SignInStatusNotInfo        `protobuf:"bytes,4,opt"`
@@ -518,7 +519,7 @@ func (x *StSignInWriteReq) GetClientVersion() string {
 }
 
 type StSignInWriteRsp struct {
-	Ret        *Ret                    `protobuf:"bytes,1,opt"`
+	Ret        *DEB7Ret                `protobuf:"bytes,1,opt"`
 	DoneInfo   *SignInStatusDoneInfo   `protobuf:"bytes,2,opt"`
 	GroupScore *SignInStatusGroupScore `protobuf:"bytes,3,opt"`
 }

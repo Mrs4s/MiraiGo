@@ -12,7 +12,7 @@ func (c *QQClient) SendGroupSign(target int64) {
 }
 
 func (c *QQClient) buildGroupSignPacket(groupId int64, scene uint32) (uint16, []byte) {
-	body := &oidb.ReqBody{
+	body := &oidb.DEB7ReqBody{
 		SignInStatusReq: &oidb.StSignInStatusReq{
 			Uid:           proto.String(strconv.Itoa(int(c.Uin))),
 			GroupId:       proto.String(strconv.Itoa(int(groupId))),
