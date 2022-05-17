@@ -307,8 +307,8 @@ func genForwardTemplate(resID, preview, summary string, ts int64, items []*msg.P
 
 func genLongTemplate(resID, brief string, ts int64) *message.ServiceElement {
 	limited := func() string {
-		if len(brief) > 30 {
-			return brief[:30] + "…"
+		if ss := []rune(brief); len(ss) > 30 {
+			return string(ss[:30]) + "…"
 		}
 		return brief
 	}()
