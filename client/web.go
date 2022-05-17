@@ -16,7 +16,7 @@ import (
 type UnidirectionalFriendInfo struct {
 	Uin      int64
 	Nickname string
-	Age      int32
+	Age      uint32
 	Source   string
 }
 
@@ -25,8 +25,8 @@ func (c *QQClient) GetUnidirectionalFriendList() (ret []*UnidirectionalFriendInf
 		BlockList []struct {
 			Uin         int64  `json:"uint64_uin"`
 			NickBytes   string `json:"bytes_nick"`
-			Age         int32  `json:"uint32_age"`
-			Sex         int32  `json:"uint32_sex"`
+			Age         uint32 `json:"uint32_age"`
+			Sex         uint32 `json:"uint32_sex"`
 			SourceBytes string `json:"bytes_source"`
 		} `json:"rpt_block_list"`
 		ErrorCode int32 `json:"ErrorCode"`
