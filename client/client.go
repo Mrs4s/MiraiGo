@@ -34,7 +34,9 @@ type QQClient struct {
 	once sync.Once
 
 	// option
-	AllowSlider bool
+	AllowSlider        bool
+	UseHighwayMessage  bool
+	UseFragmentMessage bool
 
 	// account info
 	Online        atomic.Bool

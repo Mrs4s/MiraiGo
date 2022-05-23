@@ -34,25 +34,23 @@ func init() {
 }
 
 // SendGroupMessage 发送群消息
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
-	useFram := false
-	if len(f) > 0 {
-		useFram = f[0]
-	}
+func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {
+	useHighwayMessage := false
 	imgCount := 0
 	for _, e := range m.Elements {
 		switch e.Type() {
 		case message.Image:
 			imgCount++
 		case message.Reply:
-			useFram = false
+			useHighwayMessage = true
 		}
 	}
 	msgLen := message.EstimateLength(m.Elements)
 	if msgLen > message.MaxMessageSize || imgCount > 50 {
 		return nil
 	}
-	if !useFram && (msgLen > 100 || imgCount > 2) {
+	useHighwayMessage = useHighwayMessage || msgLen > 100 || imgCount > 2
+	if useHighwayMessage && c.UseHighwayMessage {
 		lmsg, err := c.uploadGroupLongMessage(groupCode,
 			message.NewForwardMessage().AddNode(&message.ForwardNode{
 				SenderId:   c.Uin,
@@ -118,7 +116,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 			serviceFlag = false
 		}
 	}
-	if !forward && serviceFlag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
+	if !forward && serviceFlag && c.UseFragmentMessage && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
