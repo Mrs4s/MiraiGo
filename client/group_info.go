@@ -27,7 +27,6 @@ type (
 		Uin             int64
 		Code            int64
 		Name            string
-		Memo            string
 		OwnerUin        int64
 		GroupCreateTime uint32
 		GroupLevel      uint32
@@ -237,7 +236,6 @@ func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 		Uin:             int64(*info.GroupInfo.GroupUin),
 		Code:            int64(*info.GroupCode),
 		Name:            string(info.GroupInfo.GroupName),
-		Memo:            string(info.GroupInfo.GroupMemo),
 		GroupCreateTime: *info.GroupInfo.GroupCreateTime,
 		GroupLevel:      *info.GroupInfo.GroupLevel,
 		OwnerUin:        int64(*info.GroupInfo.GroupOwner),
@@ -267,13 +265,6 @@ func (g *GroupInfo) UpdateName(newName string) {
 	if g.AdministratorOrOwner() && newName != "" && strings.Count(newName, "") <= 20 {
 		g.client.updateGroupName(g.Code, newName)
 		g.Name = newName
-	}
-}
-
-func (g *GroupInfo) UpdateMemo(newMemo string) {
-	if g.AdministratorOrOwner() {
-		g.client.updateGroupMemo(g.Code, newMemo)
-		g.Memo = newMemo
 	}
 }
 

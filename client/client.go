@@ -19,6 +19,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/highway"
+	"github.com/Mrs4s/MiraiGo/client/internal/intern"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/client/pb/msg"
@@ -578,6 +579,7 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	interner := intern.NewStringInterner()
 	r := rsp.([]*GroupInfo)
 	wg := sync.WaitGroup{}
 	batch := 50
@@ -590,11 +592,12 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 		for j := i; j < k; j++ {
 			go func(g *GroupInfo, wg *sync.WaitGroup) {
 				defer wg.Done()
-				m, err := c.GetGroupMembers(g)
+				m, err := c.getGroupMembers(g, interner)
 				if err != nil {
 					return
 				}
 				g.Members = m
+				g.Name = interner.Intern(g.Name)
 			}(r[j], &wg)
 		}
 		wg.Wait()
@@ -603,6 +606,11 @@ func (c *QQClient) GetGroupList() ([]*GroupInfo, error) {
 }
 
 func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error) {
+	interner := intern.NewStringInterner()
+	return c.getGroupMembers(group, interner)
+}
+
+func (c *QQClient) getGroupMembers(group *GroupInfo, interner *intern.StringInterner) ([]*GroupMemberInfo, error) {
 	var nextUin int64
 	var list []*GroupMemberInfo
 	for {
@@ -620,6 +628,9 @@ func (c *QQClient) GetGroupMembers(group *GroupInfo) ([]*GroupMemberInfo, error)
 			if m.Uin == group.OwnerUin {
 				m.Permission = Owner
 			}
+			m.CardName = interner.Intern(m.CardName)
+			m.Nickname = interner.Intern(m.Nickname)
+			m.SpecialTitle = interner.Intern(m.SpecialTitle)
 		}
 		list = append(list, rsp.list...)
 		if nextUin == 0 {
@@ -753,10 +764,6 @@ func (c *QQClient) setGroupAdmin(groupCode, memberUin int64, flag bool) {
 
 func (c *QQClient) updateGroupName(groupCode int64, newName string) {
 	_, _ = c.sendAndWait(c.buildGroupNameUpdatePacket(groupCode, newName))
-}
-
-func (c *QQClient) updateGroupMemo(groupCode int64, newMemo string) {
-	_, _ = c.sendAndWait(c.buildGroupMemoUpdatePacket(groupCode, newMemo))
 }
 
 func (c *QQClient) groupMuteAll(groupCode int64, mute bool) {

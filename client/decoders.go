@@ -509,7 +509,6 @@ func decodeGroupListResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 			Uin:            g.GroupUin,
 			Code:           g.GroupCode,
 			Name:           g.GroupName,
-			Memo:           g.GroupMemo,
 			OwnerUin:       g.GroupOwnerUin,
 			MemberCount:    uint16(g.MemberNum),
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
@@ -537,6 +536,10 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	next := r.ReadInt64(4)
 	l := make([]*GroupMemberInfo, 0, len(members))
 	for _, m := range members {
+		permission := Member
+		if m.Flag&1 != 0 {
+			permission = Administrator
+		}
 		l = append(l, &GroupMemberInfo{
 			Uin:             m.MemberUin,
 			Nickname:        m.Nick,
@@ -547,12 +550,7 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 			LastSpeakTime:   m.LastSpeakTime,
 			SpecialTitle:    m.SpecialTitle,
 			ShutUpTimestamp: m.ShutUpTimestap,
-			Permission: func() MemberPermission {
-				if m.Flag == 1 {
-					return Administrator
-				}
-				return Member
-			}(),
+			Permission:      permission,
 		})
 	}
 	return &groupMemberListResponse{
