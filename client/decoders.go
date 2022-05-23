@@ -538,16 +538,15 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	l := make([]*GroupMemberInfo, 0, len(members))
 	for _, m := range members {
 		l = append(l, &GroupMemberInfo{
-			Uin:                    m.MemberUin,
-			Nickname:               m.Nick,
-			Gender:                 m.Gender,
-			CardName:               m.Name,
-			Level:                  uint16(m.MemberLevel),
-			JoinTime:               m.JoinTime,
-			LastSpeakTime:          m.LastSpeakTime,
-			SpecialTitle:           m.SpecialTitle,
-			SpecialTitleExpireTime: m.SpecialTitleExpireTime,
-			ShutUpTimestamp:        m.ShutUpTimestap,
+			Uin:             m.MemberUin,
+			Nickname:        m.Nick,
+			Gender:          m.Gender,
+			CardName:        m.Name,
+			Level:           uint16(m.MemberLevel),
+			JoinTime:        m.JoinTime,
+			LastSpeakTime:   m.LastSpeakTime,
+			SpecialTitle:    m.SpecialTitle,
+			ShutUpTimestamp: m.ShutUpTimestap,
 			Permission: func() MemberPermission {
 				if m.Flag == 1 {
 					return Administrator
@@ -572,26 +571,24 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, p
 		return nil, errors.WithStack(ErrMemberNotFound)
 	}
 	group := c.FindGroup(rsp.GroupCode)
+	permission := Member
+	if rsp.MemInfo.Uin == group.OwnerUin {
+		permission = Owner
+	}
+	if rsp.MemInfo.Role == 2 {
+		permission = Administrator
+	}
 	return &GroupMemberInfo{
-		Group:                  group,
-		Uin:                    rsp.MemInfo.Uin,
-		Gender:                 byte(rsp.MemInfo.Sex),
-		Nickname:               string(rsp.MemInfo.Nick),
-		CardName:               string(rsp.MemInfo.Card),
-		Level:                  uint16(rsp.MemInfo.Level),
-		JoinTime:               rsp.MemInfo.Join,
-		LastSpeakTime:          rsp.MemInfo.LastSpeak,
-		SpecialTitle:           string(rsp.MemInfo.SpecialTitle),
-		SpecialTitleExpireTime: int64(rsp.MemInfo.SpecialTitleExpireTime),
-		Permission: func() MemberPermission {
-			if rsp.MemInfo.Uin == group.OwnerUin {
-				return Owner
-			}
-			if rsp.MemInfo.Role == 2 {
-				return Administrator
-			}
-			return Member
-		}(),
+		Group:         group,
+		Uin:           rsp.MemInfo.Uin,
+		Gender:        byte(rsp.MemInfo.Sex),
+		Nickname:      string(rsp.MemInfo.Nick),
+		CardName:      string(rsp.MemInfo.Card),
+		Level:         uint16(rsp.MemInfo.Level),
+		JoinTime:      rsp.MemInfo.Join,
+		LastSpeakTime: rsp.MemInfo.LastSpeak,
+		SpecialTitle:  string(rsp.MemInfo.SpecialTitle),
+		Permission:    permission,
 	}, nil
 }
 
@@ -713,12 +710,10 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 		}
 		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
 			if var5 == 0 && data.Len() == 1 {
-				newPermission := func() MemberPermission {
-					if data.ReadByte() == 1 {
-						return Administrator
-					}
-					return Member
-				}()
+				newPermission := Member
+				if data.ReadByte() == 1 {
+					newPermission = Administrator
+				}
 				mem := g.FindMember(target)
 				if mem.Permission != newPermission {
 					old := mem.Permission
@@ -782,7 +777,7 @@ func decodeMSFOfflinePacket(c *QQClient, _ *network.IncomingPacketInfo, _ []byte
 
 // OidbSvc.0xd79
 func decodeWordSegmentation(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
-	rsp := &oidb.D79RspBody{}
+	rsp := oidb.D79RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
 		return nil, err

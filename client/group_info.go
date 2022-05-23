@@ -43,18 +43,17 @@ type (
 	}
 
 	GroupMemberInfo struct {
-		Group                  *GroupInfo
-		Uin                    int64
-		Gender                 byte
-		Nickname               string
-		CardName               string
-		Level                  uint16
-		JoinTime               int64
-		LastSpeakTime          int64
-		SpecialTitle           string
-		SpecialTitleExpireTime int64
-		ShutUpTimestamp        int64
-		Permission             MemberPermission
+		Group           *GroupInfo
+		Uin             int64
+		Nickname        string
+		CardName        string
+		JoinTime        int64
+		LastSpeakTime   int64
+		SpecialTitle    string
+		ShutUpTimestamp int64
+		Permission      MemberPermission
+		Level           uint16
+		Gender          byte
 	}
 
 	// GroupSearchInfo 通过搜索得到的群信息

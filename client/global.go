@@ -333,8 +333,20 @@ func (c *QQClient) getWebDeviceInfo() (i string) {
 	return
 }
 
+var oidbSSOPool = sync.Pool{}
+
+func getOidbSSOPackage() *oidb.OIDBSSOPkg {
+	g := oidbSSOPool.Get()
+	if g == nil {
+		return new(oidb.OIDBSSOPkg)
+	}
+	return g.(*oidb.OIDBSSOPkg)
+}
+
 func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
-	pkg := &oidb.OIDBSSOPkg{
+	pkg := getOidbSSOPackage()
+	defer oidbSSOPool.Put(pkg)
+	*pkg = oidb.OIDBSSOPkg{
 		Command:       cmd,
 		ServiceType:   serviceType,
 		Bodybuffer:    body,
@@ -354,7 +366,8 @@ func (c *QQClient) packOIDBPackageProto(cmd, serviceType int32, msg proto.Messag
 }
 
 func unpackOIDBPackage(payload []byte, rsp proto.Message) error {
-	pkg := new(oidb.OIDBSSOPkg)
+	pkg := getOidbSSOPackage()
+	defer oidbSSOPool.Put(pkg)
 	if err := proto.Unmarshal(payload, pkg); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
