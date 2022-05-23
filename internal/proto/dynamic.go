@@ -1,7 +1,6 @@
 package proto
 
 import (
-	"bytes"
 	"encoding/binary"
 	"math"
 )
@@ -9,11 +8,11 @@ import (
 type DynamicMessage map[uint64]any
 
 type encoder struct {
-	bytes.Buffer
+	buf []byte
 }
 
 func (msg DynamicMessage) Encode() []byte {
-	en := &encoder{}
+	en := encoder{}
 	//nolint:staticcheck
 	for id, value := range msg {
 		key := id << 3
@@ -48,9 +47,8 @@ func (msg DynamicMessage) Encode() []byte {
 			en.u64(math.Float64bits(v))
 		case string:
 			en.uvarint(key | 2)
-			b := []byte(v)
-			en.uvarint(uint64(len(b)))
-			_, _ = en.Write(b)
+			en.uvarint(uint64(len(v)))
+			en.buf = append(en.buf, v...)
 		case []uint64:
 			for i := 0; i < len(v); i++ {
 				en.uvarint(key | 0)
@@ -59,21 +57,21 @@ func (msg DynamicMessage) Encode() []byte {
 		case []byte:
 			en.uvarint(key | 2)
 			en.uvarint(uint64(len(v)))
-			_, _ = en.Write(v)
+			en.buf = append(en.buf, v...)
 		case DynamicMessage:
 			en.uvarint(key | 2)
 			b := v.Encode()
 			en.uvarint(uint64(len(b)))
-			_, _ = en.Write(b)
+			en.buf = append(en.buf, b...)
 		}
 	}
-	return en.Bytes()
+	return en.buf
 }
 
 func (en *encoder) uvarint(v uint64) {
 	var b [binary.MaxVarintLen64]byte
 	n := binary.PutUvarint(b[:], v)
-	_, _ = en.Write(b[:n])
+	en.buf = append(en.buf, b[:n]...)
 }
 
 func (en *encoder) svarint(v int64) {
@@ -83,11 +81,11 @@ func (en *encoder) svarint(v int64) {
 func (en *encoder) u32(v uint32) {
 	var b [4]byte
 	binary.LittleEndian.PutUint32(b[:], v)
-	_, _ = en.Write(b[:])
+	en.buf = append(en.buf, b[:]...)
 }
 
 func (en *encoder) u64(v uint64) {
 	var b [8]byte
 	binary.LittleEndian.PutUint64(b[:], v)
-	_, _ = en.Write(b[:])
+	en.buf = append(en.buf, b[:]...)
 }

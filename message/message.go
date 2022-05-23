@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -444,7 +445,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 			var url string
 			if elem.CustomFace.GetOrigUrl() == "" {
-				url = "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
+				url = fmt.Sprintf("https://gchat.qpic.cn/gchatpic_new/0/0-0-%X/0?term=2", elem.CustomFace.Md5)
 			} else {
 				url = "https://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
 			}
@@ -460,24 +461,22 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				})
 				continue
 			}
+			bizType := UnknownBizType
+			if len(elem.CustomFace.PbReserve) != 0 {
+				attr := new(msg.ResvAttr)
+				if proto.Unmarshal(elem.CustomFace.PbReserve, attr) == nil {
+					bizType = ImageBizType(attr.GetImageBizType())
+				}
+			}
 			res = append(res, &GroupImageElement{
-				FileId:  int64(elem.CustomFace.GetFileId()),
-				ImageId: elem.CustomFace.GetFilePath(),
-				Size:    elem.CustomFace.GetSize(),
-				Width:   elem.CustomFace.GetWidth(),
-				Height:  elem.CustomFace.GetHeight(),
-				Url:     url,
-				ImageBizType: func() ImageBizType {
-					if len(elem.CustomFace.PbReserve) == 0 {
-						return UnknownBizType
-					}
-					attr := new(msg.ResvAttr)
-					if proto.Unmarshal(elem.CustomFace.PbReserve, attr) != nil {
-						return UnknownBizType
-					}
-					return ImageBizType(attr.GetImageBizType())
-				}(),
-				Md5: elem.CustomFace.Md5,
+				FileId:       int64(elem.CustomFace.GetFileId()),
+				ImageId:      elem.CustomFace.GetFilePath(),
+				Size:         elem.CustomFace.GetSize(),
+				Width:        elem.CustomFace.GetWidth(),
+				Height:       elem.CustomFace.GetHeight(),
+				Url:          url,
+				ImageBizType: bizType,
+				Md5:          elem.CustomFace.Md5,
 			})
 		}
 		if elem.MarketFace != nil {
@@ -492,19 +491,17 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
 			}
 			if face.Name == "[骰子]" || face.Name == "[随机骰子]" {
+				_, v, _ := strings.Cut(face.MagicValue, "=")
+				t, _ := strconv.ParseInt(v, 10, 32)
 				return []IMessageElement{
 					&DiceElement{
 						MarketFaceElement: face,
-						Value: func() int32 {
-							v := strings.SplitN(face.MagicValue, "=", 2)[1]
-							t, _ := strconv.ParseInt(v, 10, 32)
-							return int32(t) + 1
-						}(),
+						Value:             int32(t) + 1,
 					},
 				}
 			}
 			if face.Name == "[猜拳]" {
-				v := strings.SplitN(face.MagicValue, "=", 2)[1]
+				_, v, _ := strings.Cut(face.MagicValue, "=")
 				t, _ := strconv.ParseInt(v, 10, 32)
 				return []IMessageElement{
 					&FingerGuessingElement{
