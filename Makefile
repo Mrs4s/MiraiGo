@@ -43,4 +43,4 @@ install-protoc-plugin: protoc-gen-golite-version
 	go install github.com/RomiChan/protobuf/cmd/protoc-gen-golite@$(PROTOC_GEN_GOLITE_VERSION)
 
 proto: install-protoc-plugin
-	protoc --golite_out=$(PROTO_IMPORT_PATH) --golite_opt=paths=source_relative -I=$(PROTO_IMPORT_PATH) $(PROTO_FILES)
+	protoc --golite_out=$(PROTO_OUTPUT_PATH) --golite_opt=paths=source_relative -I=$(PROTO_IMPORT_PATH) $(PROTO_FILES)
