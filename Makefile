@@ -1,7 +1,8 @@
-PROTO_DIR=./client/pb
-PROTO_IMPORT_PATH=./client
+PROTO_DIR=client/pb
+PROTO_OUTPUT_PATH=client
+PROTO_IMPORT_PATH=client
 
-PROTO_FILES = \
+PROTO_FILES := \
 	$(PROTO_DIR)/*.proto \
 	$(PROTO_DIR)/channel/*.proto  \
 	$(PROTO_DIR)/cmd0x3f6/*.proto \
@@ -26,6 +27,20 @@ PROTO_FILES = \
 	$(PROTO_DIR)/structmsg/*.proto    \
 	$(PROTO_DIR)/web/*.proto
 
-proto:
-	protoc --golite_out=. --golite_opt=paths=source_relative -I=$(PROTO_IMPORT_PATH) $(PROTO_FILES)
+PROTOC_GEN_GOLITE_VERSION := \
+	$(shell grep "github.com/RomiChan/protobuf" go.mod | awk -F v '{print "v"$$2}')
 
+.PHONY: protoc-gen-golite-version clean install-protoc-plugin proto
+.DEFAULT_GOAL := proto
+
+protoc-gen-golite-version:
+	@echo "Use protoc-gen-golite version: $(PROTOC_GEN_GOLITE_VERSION)"
+
+clean:
+	find . -name "*.pb.go" | xargs rm -f
+
+install-protoc-plugin: protoc-gen-golite-version
+	go install github.com/RomiChan/protobuf/cmd/protoc-gen-golite@$(PROTOC_GEN_GOLITE_VERSION)
+
+proto: install-protoc-plugin
+	protoc --golite_out=$(PROTO_IMPORT_PATH) --golite_opt=paths=source_relative -I=$(PROTO_IMPORT_PATH) $(PROTO_FILES)

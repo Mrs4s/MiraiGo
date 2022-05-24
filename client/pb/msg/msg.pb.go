@@ -16,18 +16,18 @@ const (
 )
 
 type GetMessageRequest struct {
-	SyncFlag           proto.Option[int32] `protobuf:"varint,1,opt"`
-	SyncCookie         []byte              `protobuf:"bytes,2,opt"`
-	RambleFlag         proto.Option[int32] `protobuf:"varint,3,opt"`
-	LatestRambleNumber proto.Option[int32] `protobuf:"varint,4,opt"`
-	OtherRambleNumber  proto.Option[int32] `protobuf:"varint,5,opt"`
-	OnlineSyncFlag     proto.Option[int32] `protobuf:"varint,6,opt"`
-	ContextFlag        proto.Option[int32] `protobuf:"varint,7,opt"`
-	WhisperSessionId   proto.Option[int32] `protobuf:"varint,8,opt"`
-	MsgReqType         proto.Option[int32] `protobuf:"varint,9,opt"`
-	PubaccountCookie   []byte              `protobuf:"bytes,10,opt"`
-	MsgCtrlBuf         []byte              `protobuf:"bytes,11,opt"`
-	ServerBuf          []byte              `protobuf:"bytes,12,opt"`
+	SyncFlag           proto.Option[SyncFlag] `protobuf:"varint,1,opt"`
+	SyncCookie         []byte                 `protobuf:"bytes,2,opt"`
+	RambleFlag         proto.Option[int32]    `protobuf:"varint,3,opt"`
+	LatestRambleNumber proto.Option[int32]    `protobuf:"varint,4,opt"`
+	OtherRambleNumber  proto.Option[int32]    `protobuf:"varint,5,opt"`
+	OnlineSyncFlag     proto.Option[int32]    `protobuf:"varint,6,opt"`
+	ContextFlag        proto.Option[int32]    `protobuf:"varint,7,opt"`
+	WhisperSessionId   proto.Option[int32]    `protobuf:"varint,8,opt"`
+	MsgReqType         proto.Option[int32]    `protobuf:"varint,9,opt"`
+	PubaccountCookie   []byte                 `protobuf:"bytes,10,opt"`
+	MsgCtrlBuf         []byte                 `protobuf:"bytes,11,opt"`
+	ServerBuf          []byte                 `protobuf:"bytes,12,opt"`
 }
 
 type SendMessageRequest struct {
