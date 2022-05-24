@@ -3,6 +3,10 @@
 
 package oidb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 // DEB7 prefix
 type DEB7ReqBody struct {
 	SignInStatusReq *StSignInStatusReq `protobuf:"bytes,1,opt"`
@@ -10,22 +14,8 @@ type DEB7ReqBody struct {
 }
 
 type DEB7Ret struct {
-	Code *uint32 `protobuf:"varint,1,opt"`
-	Msg  *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *DEB7Ret) GetCode() uint32 {
-	if x != nil && x.Code != nil {
-		return *x.Code
-	}
-	return 0
-}
-
-func (x *DEB7Ret) GetMsg() string {
-	if x != nil && x.Msg != nil {
-		return *x.Msg
-	}
-	return ""
+	Code proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Msg  proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type DEB7RspBody struct {
@@ -34,201 +24,47 @@ type DEB7RspBody struct {
 }
 
 type SignInStatusBase struct {
-	Status           *uint32 `protobuf:"varint,1,opt"`
-	CurrentTimeStamp *int64  `protobuf:"varint,2,opt"`
-}
-
-func (x *SignInStatusBase) GetStatus() uint32 {
-	if x != nil && x.Status != nil {
-		return *x.Status
-	}
-	return 0
-}
-
-func (x *SignInStatusBase) GetCurrentTimeStamp() int64 {
-	if x != nil && x.CurrentTimeStamp != nil {
-		return *x.CurrentTimeStamp
-	}
-	return 0
+	Status           proto.Option[uint32] `protobuf:"varint,1,opt"`
+	CurrentTimeStamp proto.Option[int64]  `protobuf:"varint,2,opt"`
 }
 
 type SignInStatusDoneInfo struct {
-	LeftTitleWrod      *string  `protobuf:"bytes,1,opt"`
-	RightDescWord      *string  `protobuf:"bytes,2,opt"`
-	BelowPortraitWords []string `protobuf:"bytes,3,rep"`
-	RecordUrl          *string  `protobuf:"bytes,4,opt"`
-}
-
-func (x *SignInStatusDoneInfo) GetLeftTitleWrod() string {
-	if x != nil && x.LeftTitleWrod != nil {
-		return *x.LeftTitleWrod
-	}
-	return ""
-}
-
-func (x *SignInStatusDoneInfo) GetRightDescWord() string {
-	if x != nil && x.RightDescWord != nil {
-		return *x.RightDescWord
-	}
-	return ""
-}
-
-func (x *SignInStatusDoneInfo) GetRecordUrl() string {
-	if x != nil && x.RecordUrl != nil {
-		return *x.RecordUrl
-	}
-	return ""
+	LeftTitleWrod      proto.Option[string] `protobuf:"bytes,1,opt"`
+	RightDescWord      proto.Option[string] `protobuf:"bytes,2,opt"`
+	BelowPortraitWords []string             `protobuf:"bytes,3,rep"`
+	RecordUrl          proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type SignInStatusGroupScore struct {
-	GroupScoreWord *string `protobuf:"bytes,1,opt"`
-	ScoreUrl       *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *SignInStatusGroupScore) GetGroupScoreWord() string {
-	if x != nil && x.GroupScoreWord != nil {
-		return *x.GroupScoreWord
-	}
-	return ""
-}
-
-func (x *SignInStatusGroupScore) GetScoreUrl() string {
-	if x != nil && x.ScoreUrl != nil {
-		return *x.ScoreUrl
-	}
-	return ""
+	GroupScoreWord proto.Option[string] `protobuf:"bytes,1,opt"`
+	ScoreUrl       proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type SignInStatusNotInfo struct {
-	ButtonWord        *string `protobuf:"bytes,1,opt"`
-	SignDescWordLeft  *string `protobuf:"bytes,2,opt"`
-	SignDescWordRight *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *SignInStatusNotInfo) GetButtonWord() string {
-	if x != nil && x.ButtonWord != nil {
-		return *x.ButtonWord
-	}
-	return ""
-}
-
-func (x *SignInStatusNotInfo) GetSignDescWordLeft() string {
-	if x != nil && x.SignDescWordLeft != nil {
-		return *x.SignDescWordLeft
-	}
-	return ""
-}
-
-func (x *SignInStatusNotInfo) GetSignDescWordRight() string {
-	if x != nil && x.SignDescWordRight != nil {
-		return *x.SignDescWordRight
-	}
-	return ""
+	ButtonWord        proto.Option[string] `protobuf:"bytes,1,opt"`
+	SignDescWordLeft  proto.Option[string] `protobuf:"bytes,2,opt"`
+	SignDescWordRight proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type SignInStatusYesterdayFirst struct {
-	YesterdayFirstUid *string `protobuf:"bytes,1,opt"`
-	YesterdayWord     *string `protobuf:"bytes,2,opt"`
-	YesterdayNick     *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *SignInStatusYesterdayFirst) GetYesterdayFirstUid() string {
-	if x != nil && x.YesterdayFirstUid != nil {
-		return *x.YesterdayFirstUid
-	}
-	return ""
-}
-
-func (x *SignInStatusYesterdayFirst) GetYesterdayWord() string {
-	if x != nil && x.YesterdayWord != nil {
-		return *x.YesterdayWord
-	}
-	return ""
-}
-
-func (x *SignInStatusYesterdayFirst) GetYesterdayNick() string {
-	if x != nil && x.YesterdayNick != nil {
-		return *x.YesterdayNick
-	}
-	return ""
+	YesterdayFirstUid proto.Option[string] `protobuf:"bytes,1,opt"`
+	YesterdayWord     proto.Option[string] `protobuf:"bytes,2,opt"`
+	YesterdayNick     proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type StDaySignedInfo struct {
-	Uid             *string `protobuf:"bytes,1,opt"`
-	UidGroupNick    *string `protobuf:"bytes,2,opt"`
-	SignedTimeStamp *int64  `protobuf:"varint,3,opt"`
-	SignInRank      *int32  `protobuf:"varint,4,opt"`
-}
-
-func (x *StDaySignedInfo) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StDaySignedInfo) GetUidGroupNick() string {
-	if x != nil && x.UidGroupNick != nil {
-		return *x.UidGroupNick
-	}
-	return ""
-}
-
-func (x *StDaySignedInfo) GetSignedTimeStamp() int64 {
-	if x != nil && x.SignedTimeStamp != nil {
-		return *x.SignedTimeStamp
-	}
-	return 0
-}
-
-func (x *StDaySignedInfo) GetSignInRank() int32 {
-	if x != nil && x.SignInRank != nil {
-		return *x.SignInRank
-	}
-	return 0
+	Uid             proto.Option[string] `protobuf:"bytes,1,opt"`
+	UidGroupNick    proto.Option[string] `protobuf:"bytes,2,opt"`
+	SignedTimeStamp proto.Option[int64]  `protobuf:"varint,3,opt"`
+	SignInRank      proto.Option[int32]  `protobuf:"varint,4,opt"`
 }
 
 type StDaySignedListReq struct {
-	DayYmd  *string `protobuf:"bytes,1,opt"`
-	Uid     *string `protobuf:"bytes,2,opt"`
-	GroupId *string `protobuf:"bytes,3,opt"`
-	Offset  *int32  `protobuf:"varint,4,opt"`
-	Limit   *int32  `protobuf:"varint,5,opt"`
-}
-
-func (x *StDaySignedListReq) GetDayYmd() string {
-	if x != nil && x.DayYmd != nil {
-		return *x.DayYmd
-	}
-	return ""
-}
-
-func (x *StDaySignedListReq) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StDaySignedListReq) GetGroupId() string {
-	if x != nil && x.GroupId != nil {
-		return *x.GroupId
-	}
-	return ""
-}
-
-func (x *StDaySignedListReq) GetOffset() int32 {
-	if x != nil && x.Offset != nil {
-		return *x.Offset
-	}
-	return 0
-}
-
-func (x *StDaySignedListReq) GetLimit() int32 {
-	if x != nil && x.Limit != nil {
-		return *x.Limit
-	}
-	return 0
+	DayYmd  proto.Option[string] `protobuf:"bytes,1,opt"`
+	Uid     proto.Option[string] `protobuf:"bytes,2,opt"`
+	GroupId proto.Option[string] `protobuf:"bytes,3,opt"`
+	Offset  proto.Option[int32]  `protobuf:"varint,4,opt"`
+	Limit   proto.Option[int32]  `protobuf:"varint,5,opt"`
 }
 
 type StDaySignedListRsp struct {
@@ -237,77 +73,21 @@ type StDaySignedListRsp struct {
 }
 
 type StDaySignedPage struct {
-	Infos  []*StDaySignedInfo `protobuf:"bytes,1,rep"`
-	Offset *int32             `protobuf:"varint,2,opt"`
-	Total  *int32             `protobuf:"varint,3,opt"`
-}
-
-func (x *StDaySignedPage) GetOffset() int32 {
-	if x != nil && x.Offset != nil {
-		return *x.Offset
-	}
-	return 0
-}
-
-func (x *StDaySignedPage) GetTotal() int32 {
-	if x != nil && x.Total != nil {
-		return *x.Total
-	}
-	return 0
+	Infos  []*StDaySignedInfo  `protobuf:"bytes,1,rep"`
+	Offset proto.Option[int32] `protobuf:"varint,2,opt"`
+	Total  proto.Option[int32] `protobuf:"varint,3,opt"`
 }
 
 type StKingSignedInfo struct {
-	Uid             *string `protobuf:"bytes,1,opt"`
-	GroupNick       *string `protobuf:"bytes,2,opt"`
-	SignedTimeStamp *int64  `protobuf:"varint,3,opt"`
-	SignedCount     *int32  `protobuf:"varint,4,opt"`
-}
-
-func (x *StKingSignedInfo) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StKingSignedInfo) GetGroupNick() string {
-	if x != nil && x.GroupNick != nil {
-		return *x.GroupNick
-	}
-	return ""
-}
-
-func (x *StKingSignedInfo) GetSignedTimeStamp() int64 {
-	if x != nil && x.SignedTimeStamp != nil {
-		return *x.SignedTimeStamp
-	}
-	return 0
-}
-
-func (x *StKingSignedInfo) GetSignedCount() int32 {
-	if x != nil && x.SignedCount != nil {
-		return *x.SignedCount
-	}
-	return 0
+	Uid             proto.Option[string] `protobuf:"bytes,1,opt"`
+	GroupNick       proto.Option[string] `protobuf:"bytes,2,opt"`
+	SignedTimeStamp proto.Option[int64]  `protobuf:"varint,3,opt"`
+	SignedCount     proto.Option[int32]  `protobuf:"varint,4,opt"`
 }
 
 type StKingSignedListReq struct {
-	Uid     *string `protobuf:"bytes,1,opt"`
-	GroupId *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StKingSignedListReq) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StKingSignedListReq) GetGroupId() string {
-	if x != nil && x.GroupId != nil {
-		return *x.GroupId
-	}
-	return ""
+	Uid     proto.Option[string] `protobuf:"bytes,1,opt"`
+	GroupId proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type StKingSignedListRsp struct {
@@ -318,72 +98,23 @@ type StKingSignedListRsp struct {
 }
 
 type StSignInRecordDaySigned struct {
-	DaySignedRatio    *float32         `protobuf:"fixed32,1,opt"`
-	DayTotalSignedUid *int32           `protobuf:"varint,2,opt"`
-	DaySignedPage     *StDaySignedPage `protobuf:"bytes,3,opt"`
-	DaySignedUrl      *string          `protobuf:"bytes,4,opt"`
-}
-
-func (x *StSignInRecordDaySigned) GetDaySignedRatio() float32 {
-	if x != nil && x.DaySignedRatio != nil {
-		return *x.DaySignedRatio
-	}
-	return 0
-}
-
-func (x *StSignInRecordDaySigned) GetDayTotalSignedUid() int32 {
-	if x != nil && x.DayTotalSignedUid != nil {
-		return *x.DayTotalSignedUid
-	}
-	return 0
-}
-
-func (x *StSignInRecordDaySigned) GetDaySignedUrl() string {
-	if x != nil && x.DaySignedUrl != nil {
-		return *x.DaySignedUrl
-	}
-	return ""
+	DaySignedRatio    proto.Option[float32] `protobuf:"fixed32,1,opt"`
+	DayTotalSignedUid proto.Option[int32]   `protobuf:"varint,2,opt"`
+	DaySignedPage     *StDaySignedPage      `protobuf:"bytes,3,opt"`
+	DaySignedUrl      proto.Option[string]  `protobuf:"bytes,4,opt"`
 }
 
 type StSignInRecordKing struct {
-	YesterdayFirst    *StKingSignedInfo   `protobuf:"bytes,1,opt"`
-	TopSignedTotal    []*StKingSignedInfo `protobuf:"bytes,2,rep"`
-	TopSignedContinue []*StKingSignedInfo `protobuf:"bytes,3,rep"`
-	KingUrl           *string             `protobuf:"bytes,4,opt"`
-}
-
-func (x *StSignInRecordKing) GetKingUrl() string {
-	if x != nil && x.KingUrl != nil {
-		return *x.KingUrl
-	}
-	return ""
+	YesterdayFirst    *StKingSignedInfo    `protobuf:"bytes,1,opt"`
+	TopSignedTotal    []*StKingSignedInfo  `protobuf:"bytes,2,rep"`
+	TopSignedContinue []*StKingSignedInfo  `protobuf:"bytes,3,rep"`
+	KingUrl           proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type StSignInRecordReq struct {
-	DayYmd  *string `protobuf:"bytes,1,opt"`
-	Uid     *string `protobuf:"bytes,2,opt"`
-	GroupId *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *StSignInRecordReq) GetDayYmd() string {
-	if x != nil && x.DayYmd != nil {
-		return *x.DayYmd
-	}
-	return ""
-}
-
-func (x *StSignInRecordReq) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StSignInRecordReq) GetGroupId() string {
-	if x != nil && x.GroupId != nil {
-		return *x.GroupId
-	}
-	return ""
+	DayYmd  proto.Option[string] `protobuf:"bytes,1,opt"`
+	Uid     proto.Option[string] `protobuf:"bytes,2,opt"`
+	GroupId proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type StSignInRecordRsp struct {
@@ -396,74 +127,18 @@ type StSignInRecordRsp struct {
 }
 
 type StSignInRecordUser struct {
-	TotalSignedDays         *int32   `protobuf:"varint,2,opt"`
-	EarliestSignedTimeStamp *int64   `protobuf:"varint,3,opt"`
-	ContinueSignedDays      *int64   `protobuf:"varint,4,opt"`
-	HistorySignedDays       []string `protobuf:"bytes,5,rep"`
-	GroupName               *string  `protobuf:"bytes,6,opt"`
-}
-
-func (x *StSignInRecordUser) GetTotalSignedDays() int32 {
-	if x != nil && x.TotalSignedDays != nil {
-		return *x.TotalSignedDays
-	}
-	return 0
-}
-
-func (x *StSignInRecordUser) GetEarliestSignedTimeStamp() int64 {
-	if x != nil && x.EarliestSignedTimeStamp != nil {
-		return *x.EarliestSignedTimeStamp
-	}
-	return 0
-}
-
-func (x *StSignInRecordUser) GetContinueSignedDays() int64 {
-	if x != nil && x.ContinueSignedDays != nil {
-		return *x.ContinueSignedDays
-	}
-	return 0
-}
-
-func (x *StSignInRecordUser) GetGroupName() string {
-	if x != nil && x.GroupName != nil {
-		return *x.GroupName
-	}
-	return ""
+	TotalSignedDays         proto.Option[int32]  `protobuf:"varint,2,opt"`
+	EarliestSignedTimeStamp proto.Option[int64]  `protobuf:"varint,3,opt"`
+	ContinueSignedDays      proto.Option[int64]  `protobuf:"varint,4,opt"`
+	HistorySignedDays       []string             `protobuf:"bytes,5,rep"`
+	GroupName               proto.Option[string] `protobuf:"bytes,6,opt"`
 }
 
 type StSignInStatusReq struct {
-	Uid           *string `protobuf:"bytes,1,opt"`
-	GroupId       *string `protobuf:"bytes,2,opt"`
-	Scene         *uint32 `protobuf:"varint,3,opt"`
-	ClientVersion *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *StSignInStatusReq) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StSignInStatusReq) GetGroupId() string {
-	if x != nil && x.GroupId != nil {
-		return *x.GroupId
-	}
-	return ""
-}
-
-func (x *StSignInStatusReq) GetScene() uint32 {
-	if x != nil && x.Scene != nil {
-		return *x.Scene
-	}
-	return 0
-}
-
-func (x *StSignInStatusReq) GetClientVersion() string {
-	if x != nil && x.ClientVersion != nil {
-		return *x.ClientVersion
-	}
-	return ""
+	Uid           proto.Option[string] `protobuf:"bytes,1,opt"`
+	GroupId       proto.Option[string] `protobuf:"bytes,2,opt"`
+	Scene         proto.Option[uint32] `protobuf:"varint,3,opt"`
+	ClientVersion proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type StSignInStatusRsp struct {
@@ -473,49 +148,14 @@ type StSignInStatusRsp struct {
 	NotInfo       *SignInStatusNotInfo        `protobuf:"bytes,4,opt"`
 	DoneInfo      *SignInStatusDoneInfo       `protobuf:"bytes,5,opt"`
 	GroupScore    *SignInStatusGroupScore     `protobuf:"bytes,6,opt"`
-	MantleUrl     *string                     `protobuf:"bytes,7,opt"`
-	BackgroundUrl *string                     `protobuf:"bytes,8,opt"`
-}
-
-func (x *StSignInStatusRsp) GetMantleUrl() string {
-	if x != nil && x.MantleUrl != nil {
-		return *x.MantleUrl
-	}
-	return ""
-}
-
-func (x *StSignInStatusRsp) GetBackgroundUrl() string {
-	if x != nil && x.BackgroundUrl != nil {
-		return *x.BackgroundUrl
-	}
-	return ""
+	MantleUrl     proto.Option[string]        `protobuf:"bytes,7,opt"`
+	BackgroundUrl proto.Option[string]        `protobuf:"bytes,8,opt"`
 }
 
 type StSignInWriteReq struct {
-	Uid           *string `protobuf:"bytes,1,opt"`
-	GroupId       *string `protobuf:"bytes,2,opt"`
-	ClientVersion *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *StSignInWriteReq) GetUid() string {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return ""
-}
-
-func (x *StSignInWriteReq) GetGroupId() string {
-	if x != nil && x.GroupId != nil {
-		return *x.GroupId
-	}
-	return ""
-}
-
-func (x *StSignInWriteReq) GetClientVersion() string {
-	if x != nil && x.ClientVersion != nil {
-		return *x.ClientVersion
-	}
-	return ""
+	Uid           proto.Option[string] `protobuf:"bytes,1,opt"`
+	GroupId       proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientVersion proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type StSignInWriteRsp struct {
@@ -525,20 +165,6 @@ type StSignInWriteRsp struct {
 }
 
 type StViewGroupLevel struct {
-	Title *string `protobuf:"bytes,1,opt"`
-	Url   *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StViewGroupLevel) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *StViewGroupLevel) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
+	Title proto.Option[string] `protobuf:"bytes,1,opt"`
+	Url   proto.Option[string] `protobuf:"bytes,2,opt"`
 }
