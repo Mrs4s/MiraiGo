@@ -98,25 +98,10 @@ func AppendUUID(dst []byte, uuid []byte) []byte {
 	return dst
 }
 
-func ToIPV4Address(arr []byte) string {
-	ip := (net.IP)(arr)
-	return ip.String()
-}
-
 func UInt32ToIPV4Address(i uint32) string {
 	ip := net.IP{0, 0, 0, 0}
 	binary2.LittleEndian.PutUint32(ip, i)
 	return ip.String()
-}
-
-func ToChunkedBytesF(b []byte, size int, f func([]byte)) {
-	r := NewReader(b)
-	for r.Len() >= size {
-		f(r.ReadBytes(size))
-	}
-	if r.Len() > 0 {
-		f(r.ReadAvailable())
-	}
 }
 
 func ToBytes(i any) []byte {

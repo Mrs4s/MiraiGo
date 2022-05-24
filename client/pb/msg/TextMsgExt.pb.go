@@ -3,80 +3,28 @@
 
 package msg
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type ExtChannelInfo struct {
-	GuildId   *uint64 `protobuf:"varint,1,opt"`
-	ChannelId *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *ExtChannelInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ExtChannelInfo) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
+	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type TextResvAttr struct {
-	Wording            []byte          `protobuf:"bytes,1,opt"`
-	TextAnalysisResult *uint32         `protobuf:"varint,2,opt"`
-	AtType             *uint32         `protobuf:"varint,3,opt"`
-	AtMemberUin        *uint64         `protobuf:"varint,4,opt"`
-	AtMemberTinyid     *uint64         `protobuf:"varint,5,opt"`
-	AtMemberRoleInfo   *ExtRoleInfo    `protobuf:"bytes,6,opt"`
-	AtRoleInfo         *ExtRoleInfo    `protobuf:"bytes,7,opt"`
-	AtChannelInfo      *ExtChannelInfo `protobuf:"bytes,8,opt"`
-}
-
-func (x *TextResvAttr) GetTextAnalysisResult() uint32 {
-	if x != nil && x.TextAnalysisResult != nil {
-		return *x.TextAnalysisResult
-	}
-	return 0
-}
-
-func (x *TextResvAttr) GetAtType() uint32 {
-	if x != nil && x.AtType != nil {
-		return *x.AtType
-	}
-	return 0
-}
-
-func (x *TextResvAttr) GetAtMemberUin() uint64 {
-	if x != nil && x.AtMemberUin != nil {
-		return *x.AtMemberUin
-	}
-	return 0
-}
-
-func (x *TextResvAttr) GetAtMemberTinyid() uint64 {
-	if x != nil && x.AtMemberTinyid != nil {
-		return *x.AtMemberTinyid
-	}
-	return 0
+	Wording            []byte               `protobuf:"bytes,1,opt"`
+	TextAnalysisResult proto.Option[uint32] `protobuf:"varint,2,opt"`
+	AtType             proto.Option[uint32] `protobuf:"varint,3,opt"`
+	AtMemberUin        proto.Option[uint64] `protobuf:"varint,4,opt"`
+	AtMemberTinyid     proto.Option[uint64] `protobuf:"varint,5,opt"`
+	AtMemberRoleInfo   *ExtRoleInfo         `protobuf:"bytes,6,opt"`
+	AtRoleInfo         *ExtRoleInfo         `protobuf:"bytes,7,opt"`
+	AtChannelInfo      *ExtChannelInfo      `protobuf:"bytes,8,opt"`
 }
 
 type ExtRoleInfo struct {
-	Id   *uint64 `protobuf:"varint,1,opt"`
-	Info []byte  `protobuf:"bytes,2,opt"`
-	Flag *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *ExtRoleInfo) GetId() uint64 {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return 0
-}
-
-func (x *ExtRoleInfo) GetFlag() uint32 {
-	if x != nil && x.Flag != nil {
-		return *x.Flag
-	}
-	return 0
+	Id   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Info []byte               `protobuf:"bytes,2,opt"`
+	Flag proto.Option[uint32] `protobuf:"varint,3,opt"`
 }

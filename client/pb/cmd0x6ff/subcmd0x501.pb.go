@@ -3,6 +3,10 @@
 
 package cmd0x6ff
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type C501ReqBody struct {
 	ReqBody *SubCmd0X501ReqBody `protobuf:"bytes,1281,opt"`
 }
@@ -12,56 +16,14 @@ type C501RspBody struct {
 }
 
 type SubCmd0X501ReqBody struct {
-	Uin            *uint64  `protobuf:"varint,1,opt"`
-	IdcId          *uint32  `protobuf:"varint,2,opt"`
-	Appid          *uint32  `protobuf:"varint,3,opt"`
-	LoginSigType   *uint32  `protobuf:"varint,4,opt"`
-	LoginSigTicket []byte   `protobuf:"bytes,5,opt"`
-	RequestFlag    *uint32  `protobuf:"varint,6,opt"`
-	ServiceTypes   []uint32 `protobuf:"varint,7,rep"`
-	Bid            *uint32  `protobuf:"varint,8,opt"`
-}
-
-func (x *SubCmd0X501ReqBody) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *SubCmd0X501ReqBody) GetIdcId() uint32 {
-	if x != nil && x.IdcId != nil {
-		return *x.IdcId
-	}
-	return 0
-}
-
-func (x *SubCmd0X501ReqBody) GetAppid() uint32 {
-	if x != nil && x.Appid != nil {
-		return *x.Appid
-	}
-	return 0
-}
-
-func (x *SubCmd0X501ReqBody) GetLoginSigType() uint32 {
-	if x != nil && x.LoginSigType != nil {
-		return *x.LoginSigType
-	}
-	return 0
-}
-
-func (x *SubCmd0X501ReqBody) GetRequestFlag() uint32 {
-	if x != nil && x.RequestFlag != nil {
-		return *x.RequestFlag
-	}
-	return 0
-}
-
-func (x *SubCmd0X501ReqBody) GetBid() uint32 {
-	if x != nil && x.Bid != nil {
-		return *x.Bid
-	}
-	return 0
+	Uin            proto.Option[uint64] `protobuf:"varint,1,opt"`
+	IdcId          proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Appid          proto.Option[uint32] `protobuf:"varint,3,opt"`
+	LoginSigType   proto.Option[uint32] `protobuf:"varint,4,opt"`
+	LoginSigTicket []byte               `protobuf:"bytes,5,opt"`
+	RequestFlag    proto.Option[uint32] `protobuf:"varint,6,opt"`
+	ServiceTypes   []uint32             `protobuf:"varint,7,rep"`
+	Bid            proto.Option[uint32] `protobuf:"varint,8,opt"`
 }
 
 type SubCmd0X501RspBody struct {
@@ -71,48 +33,13 @@ type SubCmd0X501RspBody struct {
 }
 
 type SrvAddrs struct {
-	ServiceType *uint32   `protobuf:"varint,1,opt"`
-	Addrs       []*IpAddr `protobuf:"bytes,2,rep"`
-}
-
-func (x *SrvAddrs) GetServiceType() uint32 {
-	if x != nil && x.ServiceType != nil {
-		return *x.ServiceType
-	}
-	return 0
+	ServiceType proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Addrs       []*IpAddr            `protobuf:"bytes,2,rep"`
 }
 
 type IpAddr struct {
-	Type *uint32 `protobuf:"varint,1,opt"`
-	Ip   *uint32 `protobuf:"fixed32,2,opt"`
-	Port *uint32 `protobuf:"varint,3,opt"`
-	Area *uint32 `protobuf:"varint,4,opt"`
-}
-
-func (x *IpAddr) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *IpAddr) GetIp() uint32 {
-	if x != nil && x.Ip != nil {
-		return *x.Ip
-	}
-	return 0
-}
-
-func (x *IpAddr) GetPort() uint32 {
-	if x != nil && x.Port != nil {
-		return *x.Port
-	}
-	return 0
-}
-
-func (x *IpAddr) GetArea() uint32 {
-	if x != nil && x.Area != nil {
-		return *x.Area
-	}
-	return 0
+	Type proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Ip   proto.Option[uint32] `protobuf:"fixed32,2,opt"`
+	Port proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Area proto.Option[uint32] `protobuf:"varint,4,opt"`
 }

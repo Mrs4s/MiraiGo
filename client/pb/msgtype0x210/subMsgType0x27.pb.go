@@ -3,231 +3,60 @@
 
 package msgtype0x210
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type AddGroup struct {
-	Groupid   *uint32 `protobuf:"varint,1,opt"`
-	Sortid    *uint32 `protobuf:"varint,2,opt"`
-	Groupname []byte  `protobuf:"bytes,3,opt"`
-}
-
-func (x *AddGroup) GetGroupid() uint32 {
-	if x != nil && x.Groupid != nil {
-		return *x.Groupid
-	}
-	return 0
-}
-
-func (x *AddGroup) GetSortid() uint32 {
-	if x != nil && x.Sortid != nil {
-		return *x.Sortid
-	}
-	return 0
+	Groupid   proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Sortid    proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Groupname []byte               `protobuf:"bytes,3,opt"`
 }
 
 type AppointmentNotify struct {
-	FromUin         *uint64 `protobuf:"varint,1,opt"`
-	AppointId       *string `protobuf:"bytes,2,opt"`
-	Notifytype      *uint32 `protobuf:"varint,3,opt"`
-	TipsContent     *string `protobuf:"bytes,4,opt"`
-	UnreadCount     *uint32 `protobuf:"varint,5,opt"`
-	JoinWording     *string `protobuf:"bytes,6,opt"`
-	ViewWording     *string `protobuf:"bytes,7,opt"`
-	Sig             []byte  `protobuf:"bytes,8,opt"`
-	EventInfo       []byte  `protobuf:"bytes,9,opt"`
-	NearbyEventInfo []byte  `protobuf:"bytes,10,opt"`
-	FeedEventInfo   []byte  `protobuf:"bytes,11,opt"`
-}
-
-func (x *AppointmentNotify) GetFromUin() uint64 {
-	if x != nil && x.FromUin != nil {
-		return *x.FromUin
-	}
-	return 0
-}
-
-func (x *AppointmentNotify) GetAppointId() string {
-	if x != nil && x.AppointId != nil {
-		return *x.AppointId
-	}
-	return ""
-}
-
-func (x *AppointmentNotify) GetNotifytype() uint32 {
-	if x != nil && x.Notifytype != nil {
-		return *x.Notifytype
-	}
-	return 0
-}
-
-func (x *AppointmentNotify) GetTipsContent() string {
-	if x != nil && x.TipsContent != nil {
-		return *x.TipsContent
-	}
-	return ""
-}
-
-func (x *AppointmentNotify) GetUnreadCount() uint32 {
-	if x != nil && x.UnreadCount != nil {
-		return *x.UnreadCount
-	}
-	return 0
-}
-
-func (x *AppointmentNotify) GetJoinWording() string {
-	if x != nil && x.JoinWording != nil {
-		return *x.JoinWording
-	}
-	return ""
-}
-
-func (x *AppointmentNotify) GetViewWording() string {
-	if x != nil && x.ViewWording != nil {
-		return *x.ViewWording
-	}
-	return ""
+	FromUin         proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppointId       proto.Option[string] `protobuf:"bytes,2,opt"`
+	Notifytype      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	TipsContent     proto.Option[string] `protobuf:"bytes,4,opt"`
+	UnreadCount     proto.Option[uint32] `protobuf:"varint,5,opt"`
+	JoinWording     proto.Option[string] `protobuf:"bytes,6,opt"`
+	ViewWording     proto.Option[string] `protobuf:"bytes,7,opt"`
+	Sig             []byte               `protobuf:"bytes,8,opt"`
+	EventInfo       []byte               `protobuf:"bytes,9,opt"`
+	NearbyEventInfo []byte               `protobuf:"bytes,10,opt"`
+	FeedEventInfo   []byte               `protobuf:"bytes,11,opt"`
 }
 
 type BinaryMsg struct {
-	OpType  *uint32 `protobuf:"varint,1,opt"`
-	OpValue []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *BinaryMsg) GetOpType() uint32 {
-	if x != nil && x.OpType != nil {
-		return *x.OpType
-	}
-	return 0
+	OpType  proto.Option[uint32] `protobuf:"varint,1,opt"`
+	OpValue []byte               `protobuf:"bytes,2,opt"`
 }
 
 type ChatMatchInfo struct {
-	Sig              []byte  `protobuf:"bytes,1,opt"`
-	Uin              *uint64 `protobuf:"varint,2,opt"`
-	MatchUin         *uint64 `protobuf:"varint,3,opt"`
-	TipsWording      []byte  `protobuf:"bytes,4,opt"`
-	LeftChatTime     *uint32 `protobuf:"varint,5,opt"`
-	TimeStamp        *uint64 `protobuf:"varint,6,opt"`
-	MatchExpiredTime *uint32 `protobuf:"varint,7,opt"`
-	C2CExpiredTime   *uint32 `protobuf:"varint,8,opt"`
-	MatchCount       *uint32 `protobuf:"varint,9,opt"`
-	Nick             []byte  `protobuf:"bytes,10,opt"`
-}
-
-func (x *ChatMatchInfo) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *ChatMatchInfo) GetMatchUin() uint64 {
-	if x != nil && x.MatchUin != nil {
-		return *x.MatchUin
-	}
-	return 0
-}
-
-func (x *ChatMatchInfo) GetLeftChatTime() uint32 {
-	if x != nil && x.LeftChatTime != nil {
-		return *x.LeftChatTime
-	}
-	return 0
-}
-
-func (x *ChatMatchInfo) GetTimeStamp() uint64 {
-	if x != nil && x.TimeStamp != nil {
-		return *x.TimeStamp
-	}
-	return 0
-}
-
-func (x *ChatMatchInfo) GetMatchExpiredTime() uint32 {
-	if x != nil && x.MatchExpiredTime != nil {
-		return *x.MatchExpiredTime
-	}
-	return 0
-}
-
-func (x *ChatMatchInfo) GetC2CExpiredTime() uint32 {
-	if x != nil && x.C2CExpiredTime != nil {
-		return *x.C2CExpiredTime
-	}
-	return 0
-}
-
-func (x *ChatMatchInfo) GetMatchCount() uint32 {
-	if x != nil && x.MatchCount != nil {
-		return *x.MatchCount
-	}
-	return 0
+	Sig              []byte               `protobuf:"bytes,1,opt"`
+	Uin              proto.Option[uint64] `protobuf:"varint,2,opt"`
+	MatchUin         proto.Option[uint64] `protobuf:"varint,3,opt"`
+	TipsWording      []byte               `protobuf:"bytes,4,opt"`
+	LeftChatTime     proto.Option[uint32] `protobuf:"varint,5,opt"`
+	TimeStamp        proto.Option[uint64] `protobuf:"varint,6,opt"`
+	MatchExpiredTime proto.Option[uint32] `protobuf:"varint,7,opt"`
+	C2CExpiredTime   proto.Option[uint32] `protobuf:"varint,8,opt"`
+	MatchCount       proto.Option[uint32] `protobuf:"varint,9,opt"`
+	Nick             []byte               `protobuf:"bytes,10,opt"`
 }
 
 type ConfMsgRoamFlag struct {
-	Confid    *uint64 `protobuf:"varint,1,opt"`
-	Flag      *uint32 `protobuf:"varint,2,opt"`
-	Timestamp *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *ConfMsgRoamFlag) GetConfid() uint64 {
-	if x != nil && x.Confid != nil {
-		return *x.Confid
-	}
-	return 0
-}
-
-func (x *ConfMsgRoamFlag) GetFlag() uint32 {
-	if x != nil && x.Flag != nil {
-		return *x.Flag
-	}
-	return 0
-}
-
-func (x *ConfMsgRoamFlag) GetTimestamp() uint64 {
-	if x != nil && x.Timestamp != nil {
-		return *x.Timestamp
-	}
-	return 0
+	Confid    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Flag      proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Timestamp proto.Option[uint64] `protobuf:"varint,3,opt"`
 }
 
 type DaRenNotify struct {
-	Uin             *uint64 `protobuf:"varint,1,opt"`
-	LoginDays       *uint32 `protobuf:"varint,2,opt"`
-	Days            *uint32 `protobuf:"varint,3,opt"`
-	IsYestodayLogin *uint32 `protobuf:"varint,4,opt"`
-	IsTodayLogin    *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *DaRenNotify) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *DaRenNotify) GetLoginDays() uint32 {
-	if x != nil && x.LoginDays != nil {
-		return *x.LoginDays
-	}
-	return 0
-}
-
-func (x *DaRenNotify) GetDays() uint32 {
-	if x != nil && x.Days != nil {
-		return *x.Days
-	}
-	return 0
-}
-
-func (x *DaRenNotify) GetIsYestodayLogin() uint32 {
-	if x != nil && x.IsYestodayLogin != nil {
-		return *x.IsYestodayLogin
-	}
-	return 0
-}
-
-func (x *DaRenNotify) GetIsTodayLogin() uint32 {
-	if x != nil && x.IsTodayLogin != nil {
-		return *x.IsTodayLogin
-	}
-	return 0
+	Uin             proto.Option[uint64] `protobuf:"varint,1,opt"`
+	LoginDays       proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Days            proto.Option[uint32] `protobuf:"varint,3,opt"`
+	IsYestodayLogin proto.Option[uint32] `protobuf:"varint,4,opt"`
+	IsTodayLogin    proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type DelFriend struct {
@@ -235,40 +64,19 @@ type DelFriend struct {
 }
 
 type DelGroup struct {
-	Groupid *uint32 `protobuf:"varint,1,opt"`
-}
-
-func (x *DelGroup) GetGroupid() uint32 {
-	if x != nil && x.Groupid != nil {
-		return *x.Groupid
-	}
-	return 0
+	Groupid proto.Option[uint32] `protobuf:"varint,1,opt"`
 }
 
 type FanpaiziNotify struct {
-	FromUin     *uint64 `protobuf:"varint,1,opt"`
-	FromNick    *string `protobuf:"bytes,2,opt"`
-	TipsContent []byte  `protobuf:"bytes,3,opt"`
-	Sig         []byte  `protobuf:"bytes,4,opt"`
-}
-
-func (x *FanpaiziNotify) GetFromUin() uint64 {
-	if x != nil && x.FromUin != nil {
-		return *x.FromUin
-	}
-	return 0
-}
-
-func (x *FanpaiziNotify) GetFromNick() string {
-	if x != nil && x.FromNick != nil {
-		return *x.FromNick
-	}
-	return ""
+	FromUin     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	FromNick    proto.Option[string] `protobuf:"bytes,2,opt"`
+	TipsContent []byte               `protobuf:"bytes,3,opt"`
+	Sig         []byte               `protobuf:"bytes,4,opt"`
 }
 
 type ForwardBody struct {
-	NotifyType                  *uint32                      `protobuf:"varint,1,opt"`
-	OpType                      *uint32                      `protobuf:"varint,2,opt"`
+	NotifyType                  proto.Option[uint32]         `protobuf:"varint,1,opt"`
+	OpType                      proto.Option[uint32]         `protobuf:"varint,2,opt"`
 	AddGroup                    *AddGroup                    `protobuf:"bytes,3,opt"`
 	DelGroup                    *DelGroup                    `protobuf:"bytes,4,opt"`
 	ModGroupName                *ModGroupName                `protobuf:"bytes,5,opt"`
@@ -305,412 +113,90 @@ type ForwardBody struct {
 	FanpanziNotify              *FanpaiziNotify              `protobuf:"bytes,2000,opt"`
 }
 
-func (x *ForwardBody) GetNotifyType() uint32 {
-	if x != nil && x.NotifyType != nil {
-		return *x.NotifyType
-	}
-	return 0
-}
-
-func (x *ForwardBody) GetOpType() uint32 {
-	if x != nil && x.OpType != nil {
-		return *x.OpType
-	}
-	return 0
-}
-
 type FrdCustomOnlineStatusChange struct {
-	Uin *uint64 `protobuf:"varint,1,opt"`
-}
-
-func (x *FrdCustomOnlineStatusChange) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
+	Uin proto.Option[uint64] `protobuf:"varint,1,opt"`
 }
 
 type FriendGroup struct {
-	Fuin       *uint64  `protobuf:"varint,1,opt"`
-	OldGroupId []uint32 `protobuf:"varint,2,rep"`
-	NewGroupId []uint32 `protobuf:"varint,3,rep"`
-}
-
-func (x *FriendGroup) GetFuin() uint64 {
-	if x != nil && x.Fuin != nil {
-		return *x.Fuin
-	}
-	return 0
+	Fuin       proto.Option[uint64] `protobuf:"varint,1,opt"`
+	OldGroupId []uint32             `protobuf:"varint,2,rep"`
+	NewGroupId []uint32             `protobuf:"varint,3,rep"`
 }
 
 type FriendRemark struct {
-	Type      *uint32 `protobuf:"varint,1,opt"`
-	Fuin      *uint64 `protobuf:"varint,2,opt"`
-	RmkName   []byte  `protobuf:"bytes,3,opt"`
-	GroupCode *uint64 `protobuf:"varint,4,opt"`
-}
-
-func (x *FriendRemark) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *FriendRemark) GetFuin() uint64 {
-	if x != nil && x.Fuin != nil {
-		return *x.Fuin
-	}
-	return 0
-}
-
-func (x *FriendRemark) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
+	Type      proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Fuin      proto.Option[uint64] `protobuf:"varint,2,opt"`
+	RmkName   []byte               `protobuf:"bytes,3,opt"`
+	GroupCode proto.Option[uint64] `protobuf:"varint,4,opt"`
 }
 
 type GPS struct {
-	Lat  *int32 `protobuf:"varint,1,opt"`
-	Lon  *int32 `protobuf:"varint,2,opt"`
-	Alt  *int32 `protobuf:"varint,3,opt"`
-	Type *int32 `protobuf:"varint,4,opt"`
-}
-
-func (x *GPS) GetLat() int32 {
-	if x != nil && x.Lat != nil {
-		return *x.Lat
-	}
-	return 0
-}
-
-func (x *GPS) GetLon() int32 {
-	if x != nil && x.Lon != nil {
-		return *x.Lon
-	}
-	return 0
-}
-
-func (x *GPS) GetAlt() int32 {
-	if x != nil && x.Alt != nil {
-		return *x.Alt
-	}
-	return 0
-}
-
-func (x *GPS) GetType() int32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
+	Lat  proto.Option[int32] `protobuf:"varint,1,opt"`
+	Lon  proto.Option[int32] `protobuf:"varint,2,opt"`
+	Alt  proto.Option[int32] `protobuf:"varint,3,opt"`
+	Type proto.Option[int32] `protobuf:"varint,4,opt"`
 }
 
 type GroupMemberProfileInfo struct {
-	Field *uint32 `protobuf:"varint,1,opt"`
-	Value []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *GroupMemberProfileInfo) GetField() uint32 {
-	if x != nil && x.Field != nil {
-		return *x.Field
-	}
-	return 0
+	Field proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Value []byte               `protobuf:"bytes,2,opt"`
 }
 
 type GroupProfileInfo struct {
-	Field *uint32 `protobuf:"varint,1,opt"`
-	Value []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *GroupProfileInfo) GetField() uint32 {
-	if x != nil && x.Field != nil {
-		return *x.Field
-	}
-	return 0
+	Field proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Value []byte               `protobuf:"bytes,2,opt"`
 }
 
 type GroupSort struct {
-	Groupid *uint32 `protobuf:"varint,1,opt"`
-	Sortid  *uint32 `protobuf:"varint,2,opt"`
-}
-
-func (x *GroupSort) GetGroupid() uint32 {
-	if x != nil && x.Groupid != nil {
-		return *x.Groupid
-	}
-	return 0
-}
-
-func (x *GroupSort) GetSortid() uint32 {
-	if x != nil && x.Sortid != nil {
-		return *x.Sortid
-	}
-	return 0
+	Groupid proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Sortid  proto.Option[uint32] `protobuf:"varint,2,opt"`
 }
 
 type GrpMsgRoamFlag struct {
-	Groupcode *uint64 `protobuf:"varint,1,opt"`
-	Flag      *uint32 `protobuf:"varint,2,opt"`
-	Timestamp *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *GrpMsgRoamFlag) GetGroupcode() uint64 {
-	if x != nil && x.Groupcode != nil {
-		return *x.Groupcode
-	}
-	return 0
-}
-
-func (x *GrpMsgRoamFlag) GetFlag() uint32 {
-	if x != nil && x.Flag != nil {
-		return *x.Flag
-	}
-	return 0
-}
-
-func (x *GrpMsgRoamFlag) GetTimestamp() uint64 {
-	if x != nil && x.Timestamp != nil {
-		return *x.Timestamp
-	}
-	return 0
+	Groupcode proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Flag      proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Timestamp proto.Option[uint64] `protobuf:"varint,3,opt"`
 }
 
 type HotFriendNotify struct {
-	DstUin         *uint64 `protobuf:"varint,1,opt"`
-	PraiseHotLevel *uint32 `protobuf:"varint,2,opt"`
-	ChatHotLevel   *uint32 `protobuf:"varint,3,opt"`
-	PraiseHotDays  *uint32 `protobuf:"varint,4,opt"`
-	ChatHotDays    *uint32 `protobuf:"varint,5,opt"`
-	CloseLevel     *uint32 `protobuf:"varint,6,opt"`
-	CloseDays      *uint32 `protobuf:"varint,7,opt"`
-	PraiseFlag     *uint32 `protobuf:"varint,8,opt"`
-	ChatFlag       *uint32 `protobuf:"varint,9,opt"`
-	CloseFlag      *uint32 `protobuf:"varint,10,opt"`
-	NotifyTime     *uint64 `protobuf:"varint,11,opt"`
-	LastPraiseTime *uint64 `protobuf:"varint,12,opt"`
-	LastChatTime   *uint64 `protobuf:"varint,13,opt"`
-	QzoneHotLevel  *uint32 `protobuf:"varint,14,opt"`
-	QzoneHotDays   *uint32 `protobuf:"varint,15,opt"`
-	QzoneFlag      *uint32 `protobuf:"varint,16,opt"`
-	LastQzoneTime  *uint64 `protobuf:"varint,17,opt"`
-}
-
-func (x *HotFriendNotify) GetDstUin() uint64 {
-	if x != nil && x.DstUin != nil {
-		return *x.DstUin
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetPraiseHotLevel() uint32 {
-	if x != nil && x.PraiseHotLevel != nil {
-		return *x.PraiseHotLevel
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetChatHotLevel() uint32 {
-	if x != nil && x.ChatHotLevel != nil {
-		return *x.ChatHotLevel
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetPraiseHotDays() uint32 {
-	if x != nil && x.PraiseHotDays != nil {
-		return *x.PraiseHotDays
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetChatHotDays() uint32 {
-	if x != nil && x.ChatHotDays != nil {
-		return *x.ChatHotDays
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetCloseLevel() uint32 {
-	if x != nil && x.CloseLevel != nil {
-		return *x.CloseLevel
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetCloseDays() uint32 {
-	if x != nil && x.CloseDays != nil {
-		return *x.CloseDays
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetPraiseFlag() uint32 {
-	if x != nil && x.PraiseFlag != nil {
-		return *x.PraiseFlag
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetChatFlag() uint32 {
-	if x != nil && x.ChatFlag != nil {
-		return *x.ChatFlag
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetCloseFlag() uint32 {
-	if x != nil && x.CloseFlag != nil {
-		return *x.CloseFlag
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetNotifyTime() uint64 {
-	if x != nil && x.NotifyTime != nil {
-		return *x.NotifyTime
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetLastPraiseTime() uint64 {
-	if x != nil && x.LastPraiseTime != nil {
-		return *x.LastPraiseTime
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetLastChatTime() uint64 {
-	if x != nil && x.LastChatTime != nil {
-		return *x.LastChatTime
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetQzoneHotLevel() uint32 {
-	if x != nil && x.QzoneHotLevel != nil {
-		return *x.QzoneHotLevel
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetQzoneHotDays() uint32 {
-	if x != nil && x.QzoneHotDays != nil {
-		return *x.QzoneHotDays
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetQzoneFlag() uint32 {
-	if x != nil && x.QzoneFlag != nil {
-		return *x.QzoneFlag
-	}
-	return 0
-}
-
-func (x *HotFriendNotify) GetLastQzoneTime() uint64 {
-	if x != nil && x.LastQzoneTime != nil {
-		return *x.LastQzoneTime
-	}
-	return 0
+	DstUin         proto.Option[uint64] `protobuf:"varint,1,opt"`
+	PraiseHotLevel proto.Option[uint32] `protobuf:"varint,2,opt"`
+	ChatHotLevel   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	PraiseHotDays  proto.Option[uint32] `protobuf:"varint,4,opt"`
+	ChatHotDays    proto.Option[uint32] `protobuf:"varint,5,opt"`
+	CloseLevel     proto.Option[uint32] `protobuf:"varint,6,opt"`
+	CloseDays      proto.Option[uint32] `protobuf:"varint,7,opt"`
+	PraiseFlag     proto.Option[uint32] `protobuf:"varint,8,opt"`
+	ChatFlag       proto.Option[uint32] `protobuf:"varint,9,opt"`
+	CloseFlag      proto.Option[uint32] `protobuf:"varint,10,opt"`
+	NotifyTime     proto.Option[uint64] `protobuf:"varint,11,opt"`
+	LastPraiseTime proto.Option[uint64] `protobuf:"varint,12,opt"`
+	LastChatTime   proto.Option[uint64] `protobuf:"varint,13,opt"`
+	QzoneHotLevel  proto.Option[uint32] `protobuf:"varint,14,opt"`
+	QzoneHotDays   proto.Option[uint32] `protobuf:"varint,15,opt"`
+	QzoneFlag      proto.Option[uint32] `protobuf:"varint,16,opt"`
+	LastQzoneTime  proto.Option[uint64] `protobuf:"varint,17,opt"`
 }
 
 type MQQCampusNotify struct {
-	FromUin *uint64 `protobuf:"varint,1,opt"`
-	Wording *string `protobuf:"bytes,2,opt"`
-	Target  *string `protobuf:"bytes,3,opt"`
-	Type    *uint32 `protobuf:"varint,4,opt"`
-	Source  *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *MQQCampusNotify) GetFromUin() uint64 {
-	if x != nil && x.FromUin != nil {
-		return *x.FromUin
-	}
-	return 0
-}
-
-func (x *MQQCampusNotify) GetWording() string {
-	if x != nil && x.Wording != nil {
-		return *x.Wording
-	}
-	return ""
-}
-
-func (x *MQQCampusNotify) GetTarget() string {
-	if x != nil && x.Target != nil {
-		return *x.Target
-	}
-	return ""
-}
-
-func (x *MQQCampusNotify) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *MQQCampusNotify) GetSource() string {
-	if x != nil && x.Source != nil {
-		return *x.Source
-	}
-	return ""
+	FromUin proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Wording proto.Option[string] `protobuf:"bytes,2,opt"`
+	Target  proto.Option[string] `protobuf:"bytes,3,opt"`
+	Type    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Source  proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type ModConfProfile struct {
-	Uin          *uint64        `protobuf:"varint,1,opt"`
-	ConfUin      *uint32        `protobuf:"varint,2,opt"`
-	ProfileInfos []*ProfileInfo `protobuf:"bytes,3,rep"`
-}
-
-func (x *ModConfProfile) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *ModConfProfile) GetConfUin() uint32 {
-	if x != nil && x.ConfUin != nil {
-		return *x.ConfUin
-	}
-	return 0
+	Uin          proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ConfUin      proto.Option[uint32] `protobuf:"varint,2,opt"`
+	ProfileInfos []*ProfileInfo       `protobuf:"bytes,3,rep"`
 }
 
 type ModCustomFace struct {
-	Type      *uint32 `protobuf:"varint,1,opt"`
-	Uin       *uint64 `protobuf:"varint,2,opt"`
-	GroupCode *uint64 `protobuf:"varint,3,opt"`
-	CmdUin    *uint64 `protobuf:"varint,4,opt"`
-}
-
-func (x *ModCustomFace) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *ModCustomFace) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *ModCustomFace) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *ModCustomFace) GetCmdUin() uint64 {
-	if x != nil && x.CmdUin != nil {
-		return *x.CmdUin
-	}
-	return 0
+	Type      proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Uin       proto.Option[uint64] `protobuf:"varint,2,opt"`
+	GroupCode proto.Option[uint64] `protobuf:"varint,3,opt"`
+	CmdUin    proto.Option[uint64] `protobuf:"varint,4,opt"`
 }
 
 type ModFrdRoamPriv struct {
@@ -726,71 +212,22 @@ type ModFriendRemark struct {
 }
 
 type ModGroupMemberProfile struct {
-	GroupUin                *uint64                   `protobuf:"varint,1,opt"`
-	Uin                     *uint64                   `protobuf:"varint,2,opt"`
+	GroupUin                proto.Option[uint64]      `protobuf:"varint,1,opt"`
+	Uin                     proto.Option[uint64]      `protobuf:"varint,2,opt"`
 	GroupMemberProfileInfos []*GroupMemberProfileInfo `protobuf:"bytes,3,rep"`
-	GroupCode               *uint64                   `protobuf:"varint,4,opt"`
-}
-
-func (x *ModGroupMemberProfile) GetGroupUin() uint64 {
-	if x != nil && x.GroupUin != nil {
-		return *x.GroupUin
-	}
-	return 0
-}
-
-func (x *ModGroupMemberProfile) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *ModGroupMemberProfile) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
+	GroupCode               proto.Option[uint64]      `protobuf:"varint,4,opt"`
 }
 
 type ModGroupName struct {
-	Groupid   *uint32 `protobuf:"varint,1,opt"`
-	Groupname []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *ModGroupName) GetGroupid() uint32 {
-	if x != nil && x.Groupid != nil {
-		return *x.Groupid
-	}
-	return 0
+	Groupid   proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Groupname []byte               `protobuf:"bytes,2,opt"`
 }
 
 type ModGroupProfile struct {
-	GroupUin          *uint64             `protobuf:"varint,1,opt"`
-	GroupProfileInfos []*GroupProfileInfo `protobuf:"bytes,2,rep"`
-	GroupCode         *uint64             `protobuf:"varint,3,opt"`
-	CmdUin            *uint64             `protobuf:"varint,4,opt"`
-}
-
-func (x *ModGroupProfile) GetGroupUin() uint64 {
-	if x != nil && x.GroupUin != nil {
-		return *x.GroupUin
-	}
-	return 0
-}
-
-func (x *ModGroupProfile) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *ModGroupProfile) GetCmdUin() uint64 {
-	if x != nil && x.CmdUin != nil {
-		return *x.CmdUin
-	}
-	return 0
+	GroupUin          proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GroupProfileInfos []*GroupProfileInfo  `protobuf:"bytes,2,rep"`
+	GroupCode         proto.Option[uint64] `protobuf:"varint,3,opt"`
+	CmdUin            proto.Option[uint64] `protobuf:"varint,4,opt"`
 }
 
 type ModGroupSort struct {
@@ -798,27 +235,13 @@ type ModGroupSort struct {
 }
 
 type ModLongNick struct {
-	Uin   *uint64 `protobuf:"varint,1,opt"`
-	Value []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *ModLongNick) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
+	Uin   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Value []byte               `protobuf:"bytes,2,opt"`
 }
 
 type ModProfile struct {
-	Uin          *uint64        `protobuf:"varint,1,opt"`
-	ProfileInfos []*ProfileInfo `protobuf:"bytes,2,rep"`
-}
-
-func (x *ModProfile) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
+	Uin          proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ProfileInfos []*ProfileInfo       `protobuf:"bytes,2,rep"`
 }
 
 type ModSnsGeneralInfo struct {
@@ -830,291 +253,81 @@ type SubMsg0X27Body struct {
 }
 
 type NewComeinUser struct {
-	Uin    *uint64 `protobuf:"varint,1,opt"`
-	IsFrd  *uint32 `protobuf:"varint,2,opt"`
-	Remark []byte  `protobuf:"bytes,3,opt"`
-	Nick   []byte  `protobuf:"bytes,4,opt"`
-}
-
-func (x *NewComeinUser) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *NewComeinUser) GetIsFrd() uint32 {
-	if x != nil && x.IsFrd != nil {
-		return *x.IsFrd
-	}
-	return 0
+	Uin    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	IsFrd  proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Remark []byte               `protobuf:"bytes,3,opt"`
+	Nick   []byte               `protobuf:"bytes,4,opt"`
 }
 
 type NewComeinUserNotify struct {
-	MsgType       *uint32        `protobuf:"varint,1,opt"`
-	OngNotify     *bool          `protobuf:"varint,2,opt"`
-	PushTime      *uint32        `protobuf:"varint,3,opt"`
-	NewComeinUser *NewComeinUser `protobuf:"bytes,4,opt"`
-	NewGroup      *NewGroup      `protobuf:"bytes,5,opt"`
-	NewGroupUser  *NewGroupUser  `protobuf:"bytes,6,opt"`
-}
-
-func (x *NewComeinUserNotify) GetMsgType() uint32 {
-	if x != nil && x.MsgType != nil {
-		return *x.MsgType
-	}
-	return 0
-}
-
-func (x *NewComeinUserNotify) GetOngNotify() bool {
-	if x != nil && x.OngNotify != nil {
-		return *x.OngNotify
-	}
-	return false
-}
-
-func (x *NewComeinUserNotify) GetPushTime() uint32 {
-	if x != nil && x.PushTime != nil {
-		return *x.PushTime
-	}
-	return 0
+	MsgType       proto.Option[uint32] `protobuf:"varint,1,opt"`
+	OngNotify     proto.Option[bool]   `protobuf:"varint,2,opt"`
+	PushTime      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	NewComeinUser *NewComeinUser       `protobuf:"bytes,4,opt"`
+	NewGroup      *NewGroup            `protobuf:"bytes,5,opt"`
+	NewGroupUser  *NewGroupUser        `protobuf:"bytes,6,opt"`
 }
 
 type NewGroup struct {
-	GroupCode *uint64 `protobuf:"varint,1,opt"`
-	GroupName []byte  `protobuf:"bytes,2,opt"`
-	OwnerUin  *uint64 `protobuf:"varint,3,opt"`
-	OwnerNick []byte  `protobuf:"bytes,4,opt"`
-	Distance  []byte  `protobuf:"bytes,5,opt"`
-}
-
-func (x *NewGroup) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *NewGroup) GetOwnerUin() uint64 {
-	if x != nil && x.OwnerUin != nil {
-		return *x.OwnerUin
-	}
-	return 0
+	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GroupName []byte               `protobuf:"bytes,2,opt"`
+	OwnerUin  proto.Option[uint64] `protobuf:"varint,3,opt"`
+	OwnerNick []byte               `protobuf:"bytes,4,opt"`
+	Distance  []byte               `protobuf:"bytes,5,opt"`
 }
 
 type NewGroupUser struct {
-	Uin      *uint64 `protobuf:"varint,1,opt"`
-	Sex      *int32  `protobuf:"varint,2,opt"`
-	Age      *int32  `protobuf:"varint,3,opt"`
-	Nick     *string `protobuf:"bytes,4,opt"`
-	Distance []byte  `protobuf:"bytes,5,opt"`
-}
-
-func (x *NewGroupUser) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *NewGroupUser) GetSex() int32 {
-	if x != nil && x.Sex != nil {
-		return *x.Sex
-	}
-	return 0
-}
-
-func (x *NewGroupUser) GetAge() int32 {
-	if x != nil && x.Age != nil {
-		return *x.Age
-	}
-	return 0
-}
-
-func (x *NewGroupUser) GetNick() string {
-	if x != nil && x.Nick != nil {
-		return *x.Nick
-	}
-	return ""
+	Uin      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Sex      proto.Option[int32]  `protobuf:"varint,2,opt"`
+	Age      proto.Option[int32]  `protobuf:"varint,3,opt"`
+	Nick     proto.Option[string] `protobuf:"bytes,4,opt"`
+	Distance []byte               `protobuf:"bytes,5,opt"`
 }
 
 type OneRoamPriv struct {
-	Fuin      *uint64 `protobuf:"varint,1,opt"`
-	PrivTag   *uint32 `protobuf:"varint,2,opt"`
-	PrivValue *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *OneRoamPriv) GetFuin() uint64 {
-	if x != nil && x.Fuin != nil {
-		return *x.Fuin
-	}
-	return 0
-}
-
-func (x *OneRoamPriv) GetPrivTag() uint32 {
-	if x != nil && x.PrivTag != nil {
-		return *x.PrivTag
-	}
-	return 0
-}
-
-func (x *OneRoamPriv) GetPrivValue() uint32 {
-	if x != nil && x.PrivValue != nil {
-		return *x.PrivValue
-	}
-	return 0
+	Fuin      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	PrivTag   proto.Option[uint32] `protobuf:"varint,2,opt"`
+	PrivValue proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type PraiseRankNotify struct {
-	IsChampion *uint32 `protobuf:"varint,11,opt"`
-	RankNum    *uint32 `protobuf:"varint,12,opt"`
-	Msg        *string `protobuf:"bytes,13,opt"`
-}
-
-func (x *PraiseRankNotify) GetIsChampion() uint32 {
-	if x != nil && x.IsChampion != nil {
-		return *x.IsChampion
-	}
-	return 0
-}
-
-func (x *PraiseRankNotify) GetRankNum() uint32 {
-	if x != nil && x.RankNum != nil {
-		return *x.RankNum
-	}
-	return 0
-}
-
-func (x *PraiseRankNotify) GetMsg() string {
-	if x != nil && x.Msg != nil {
-		return *x.Msg
-	}
-	return ""
+	IsChampion proto.Option[uint32] `protobuf:"varint,11,opt"`
+	RankNum    proto.Option[uint32] `protobuf:"varint,12,opt"`
+	Msg        proto.Option[string] `protobuf:"bytes,13,opt"`
 }
 
 type ProfileInfo struct {
-	Field *uint32 `protobuf:"varint,1,opt"`
-	Value []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *ProfileInfo) GetField() uint32 {
-	if x != nil && x.Field != nil {
-		return *x.Field
-	}
-	return 0
+	Field proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Value []byte               `protobuf:"bytes,2,opt"`
 }
 
 type PushReportDev struct {
-	MsgType      *uint32 `protobuf:"varint,1,opt"`
-	Cookie       []byte  `protobuf:"bytes,4,opt"`
-	ReportMaxNum *uint32 `protobuf:"varint,5,opt"`
-	Sn           []byte  `protobuf:"bytes,6,opt"`
-}
-
-func (x *PushReportDev) GetMsgType() uint32 {
-	if x != nil && x.MsgType != nil {
-		return *x.MsgType
-	}
-	return 0
-}
-
-func (x *PushReportDev) GetReportMaxNum() uint32 {
-	if x != nil && x.ReportMaxNum != nil {
-		return *x.ReportMaxNum
-	}
-	return 0
+	MsgType      proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Cookie       []byte               `protobuf:"bytes,4,opt"`
+	ReportMaxNum proto.Option[uint32] `protobuf:"varint,5,opt"`
+	Sn           []byte               `protobuf:"bytes,6,opt"`
 }
 
 type PushSearchDev struct {
-	MsgType  *uint32 `protobuf:"varint,1,opt"`
-	GpsInfo  *GPS    `protobuf:"bytes,2,opt"`
-	DevTime  *uint32 `protobuf:"varint,3,opt"`
-	PushTime *uint32 `protobuf:"varint,4,opt"`
-	Din      *uint64 `protobuf:"varint,5,opt"`
-	Data     *string `protobuf:"bytes,6,opt"`
-}
-
-func (x *PushSearchDev) GetMsgType() uint32 {
-	if x != nil && x.MsgType != nil {
-		return *x.MsgType
-	}
-	return 0
-}
-
-func (x *PushSearchDev) GetDevTime() uint32 {
-	if x != nil && x.DevTime != nil {
-		return *x.DevTime
-	}
-	return 0
-}
-
-func (x *PushSearchDev) GetPushTime() uint32 {
-	if x != nil && x.PushTime != nil {
-		return *x.PushTime
-	}
-	return 0
-}
-
-func (x *PushSearchDev) GetDin() uint64 {
-	if x != nil && x.Din != nil {
-		return *x.Din
-	}
-	return 0
-}
-
-func (x *PushSearchDev) GetData() string {
-	if x != nil && x.Data != nil {
-		return *x.Data
-	}
-	return ""
+	MsgType  proto.Option[uint32] `protobuf:"varint,1,opt"`
+	GpsInfo  *GPS                 `protobuf:"bytes,2,opt"`
+	DevTime  proto.Option[uint32] `protobuf:"varint,3,opt"`
+	PushTime proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Din      proto.Option[uint64] `protobuf:"varint,5,opt"`
+	Data     proto.Option[string] `protobuf:"bytes,6,opt"`
 }
 
 type QQPayPush struct {
-	Uin   *uint64 `protobuf:"varint,1,opt"`
-	PayOk *bool   `protobuf:"varint,2,opt"`
-}
-
-func (x *QQPayPush) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *QQPayPush) GetPayOk() bool {
-	if x != nil && x.PayOk != nil {
-		return *x.PayOk
-	}
-	return false
+	Uin   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	PayOk proto.Option[bool]   `protobuf:"varint,2,opt"`
 }
 
 type SnsUpateBuffer struct {
-	Uin           *uint64          `protobuf:"varint,1,opt"`
-	Code          *uint64          `protobuf:"varint,2,opt"`
-	Result        *uint32          `protobuf:"varint,3,opt"`
-	SnsUpdateItem []*SnsUpdateItem `protobuf:"bytes,400,rep"`
-	Idlist        []uint32         `protobuf:"varint,401,rep"`
-}
-
-func (x *SnsUpateBuffer) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *SnsUpateBuffer) GetCode() uint64 {
-	if x != nil && x.Code != nil {
-		return *x.Code
-	}
-	return 0
-}
-
-func (x *SnsUpateBuffer) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
+	Uin           proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Code          proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Result        proto.Option[uint32] `protobuf:"varint,3,opt"`
+	SnsUpdateItem []*SnsUpdateItem     `protobuf:"bytes,400,rep"`
+	Idlist        []uint32             `protobuf:"varint,401,rep"`
 }
 
 type SnsUpdateFlag struct {
@@ -1122,40 +335,12 @@ type SnsUpdateFlag struct {
 }
 
 type SnsUpdateItem struct {
-	UpdateSnsType *uint32 `protobuf:"varint,1,opt"`
-	Value         []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *SnsUpdateItem) GetUpdateSnsType() uint32 {
-	if x != nil && x.UpdateSnsType != nil {
-		return *x.UpdateSnsType
-	}
-	return 0
+	UpdateSnsType proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Value         []byte               `protobuf:"bytes,2,opt"`
 }
 
 type SnsUpdateOneFlag struct {
-	XUin *uint64 `protobuf:"varint,1,opt"`
-	Id   *uint64 `protobuf:"varint,2,opt"`
-	Flag *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *SnsUpdateOneFlag) GetXUin() uint64 {
-	if x != nil && x.XUin != nil {
-		return *x.XUin
-	}
-	return 0
-}
-
-func (x *SnsUpdateOneFlag) GetId() uint64 {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return 0
-}
-
-func (x *SnsUpdateOneFlag) GetFlag() uint32 {
-	if x != nil && x.Flag != nil {
-		return *x.Flag
-	}
-	return 0
+	XUin proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Id   proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Flag proto.Option[uint32] `protobuf:"varint,3,opt"`
 }

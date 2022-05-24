@@ -3,252 +3,60 @@
 
 package oidb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type CreateFolderReqBody struct {
-	GroupCode      *uint64 `protobuf:"varint,1,opt"`
-	AppId          *uint32 `protobuf:"varint,2,opt"`
-	ParentFolderId *string `protobuf:"bytes,3,opt"`
-	FolderName     *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *CreateFolderReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *CreateFolderReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *CreateFolderReqBody) GetParentFolderId() string {
-	if x != nil && x.ParentFolderId != nil {
-		return *x.ParentFolderId
-	}
-	return ""
-}
-
-func (x *CreateFolderReqBody) GetFolderName() string {
-	if x != nil && x.FolderName != nil {
-		return *x.FolderName
-	}
-	return ""
+	GroupCode      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId          proto.Option[uint32] `protobuf:"varint,2,opt"`
+	ParentFolderId proto.Option[string] `protobuf:"bytes,3,opt"`
+	FolderName     proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type CreateFolderRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
-}
-
-func (x *CreateFolderRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *CreateFolderRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *CreateFolderRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
 }
 
 type DeleteFolderReqBody struct {
-	GroupCode *uint64 `protobuf:"varint,1,opt"`
-	AppId     *uint32 `protobuf:"varint,2,opt"`
-	FolderId  *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *DeleteFolderReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *DeleteFolderReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *DeleteFolderReqBody) GetFolderId() string {
-	if x != nil && x.FolderId != nil {
-		return *x.FolderId
-	}
-	return ""
+	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId     proto.Option[uint32] `protobuf:"varint,2,opt"`
+	FolderId  proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type DeleteFolderRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *DeleteFolderRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *DeleteFolderRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *DeleteFolderRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type MoveFolderReqBody struct {
-	GroupCode      *uint64 `protobuf:"varint,1,opt"`
-	AppId          *uint32 `protobuf:"varint,2,opt"`
-	FolderId       *string `protobuf:"bytes,3,opt"`
-	ParentFolderId *string `protobuf:"bytes,4,opt"`
-	DestFolderId   *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *MoveFolderReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *MoveFolderReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *MoveFolderReqBody) GetFolderId() string {
-	if x != nil && x.FolderId != nil {
-		return *x.FolderId
-	}
-	return ""
-}
-
-func (x *MoveFolderReqBody) GetParentFolderId() string {
-	if x != nil && x.ParentFolderId != nil {
-		return *x.ParentFolderId
-	}
-	return ""
-}
-
-func (x *MoveFolderReqBody) GetDestFolderId() string {
-	if x != nil && x.DestFolderId != nil {
-		return *x.DestFolderId
-	}
-	return ""
+	GroupCode      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId          proto.Option[uint32] `protobuf:"varint,2,opt"`
+	FolderId       proto.Option[string] `protobuf:"bytes,3,opt"`
+	ParentFolderId proto.Option[string] `protobuf:"bytes,4,opt"`
+	DestFolderId   proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type MoveFolderRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
-}
-
-func (x *MoveFolderRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *MoveFolderRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *MoveFolderRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
 }
 
 type RenameFolderReqBody struct {
-	GroupCode     *uint64 `protobuf:"varint,1,opt"`
-	AppId         *uint32 `protobuf:"varint,2,opt"`
-	FolderId      *string `protobuf:"bytes,3,opt"`
-	NewFolderName *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *RenameFolderReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *RenameFolderReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *RenameFolderReqBody) GetFolderId() string {
-	if x != nil && x.FolderId != nil {
-		return *x.FolderId
-	}
-	return ""
-}
-
-func (x *RenameFolderReqBody) GetNewFolderName() string {
-	if x != nil && x.NewFolderName != nil {
-		return *x.NewFolderName
-	}
-	return ""
+	GroupCode     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId         proto.Option[uint32] `protobuf:"varint,2,opt"`
+	FolderId      proto.Option[string] `protobuf:"bytes,3,opt"`
+	NewFolderName proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type RenameFolderRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
-}
-
-func (x *RenameFolderRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *RenameFolderRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *RenameFolderRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
 }
 
 type D6D7ReqBody struct {

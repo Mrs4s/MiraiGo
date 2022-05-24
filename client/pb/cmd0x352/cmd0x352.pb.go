@@ -3,281 +3,75 @@
 
 package cmd0x352
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type ReqBody struct {
-	Subcmd      *uint32            `protobuf:"varint,1,opt"`
-	TryupImgReq []*D352TryUpImgReq `protobuf:"bytes,2,rep"`
+	Subcmd      proto.Option[uint32] `protobuf:"varint,1,opt"`
+	TryupImgReq []*D352TryUpImgReq   `protobuf:"bytes,2,rep"`
 	// repeated GetImgUrlReq getimgUrlReq = 3;
 	// repeated DelImgReq delImgReq = 4;
-	NetType *uint32 `protobuf:"varint,10,opt"`
-}
-
-func (x *ReqBody) GetSubcmd() uint32 {
-	if x != nil && x.Subcmd != nil {
-		return *x.Subcmd
-	}
-	return 0
-}
-
-func (x *ReqBody) GetNetType() uint32 {
-	if x != nil && x.NetType != nil {
-		return *x.NetType
-	}
-	return 0
+	NetType proto.Option[uint32] `protobuf:"varint,10,opt"`
 }
 
 type RspBody struct {
-	Subcmd      *uint32        `protobuf:"varint,1,opt"`
-	TryupImgRsp []*TryUpImgRsp `protobuf:"bytes,2,rep"`
+	Subcmd      proto.Option[uint32] `protobuf:"varint,1,opt"`
+	TryupImgRsp []*TryUpImgRsp       `protobuf:"bytes,2,rep"`
 	// repeated GetImgUrlRsp getimgUrlRsp = 3;
-	NewBigchan *bool `protobuf:"varint,4,opt"`
+	NewBigchan proto.Option[bool] `protobuf:"varint,4,opt"`
 	// repeated DelImgRsp delImgRsp = 5;
 	FailMsg []byte `protobuf:"bytes,10,opt"`
 }
 
-func (x *RspBody) GetSubcmd() uint32 {
-	if x != nil && x.Subcmd != nil {
-		return *x.Subcmd
-	}
-	return 0
-}
-
-func (x *RspBody) GetNewBigchan() bool {
-	if x != nil && x.NewBigchan != nil {
-		return *x.NewBigchan
-	}
-	return false
-}
-
 type D352TryUpImgReq struct {
-	SrcUin        *uint64 `protobuf:"varint,1,opt"`
-	DstUin        *uint64 `protobuf:"varint,2,opt"`
-	FileId        *uint64 `protobuf:"varint,3,opt"`
-	FileMd5       []byte  `protobuf:"bytes,4,opt"`
-	FileSize      *uint64 `protobuf:"varint,5,opt"`
-	FileName      []byte  `protobuf:"bytes,6,opt"`
-	SrcTerm       *uint32 `protobuf:"varint,7,opt"`
-	PlatformType  *uint32 `protobuf:"varint,8,opt"`
-	InnerIp       *uint32 `protobuf:"varint,9,opt"`
-	AddressBook   *bool   `protobuf:"varint,10,opt"`
-	Retry         *uint32 `protobuf:"varint,11,opt"`
-	BuType        *uint32 `protobuf:"varint,12,opt"`
-	PicOriginal   *bool   `protobuf:"varint,13,opt"`
-	PicWidth      *uint32 `protobuf:"varint,14,opt"`
-	PicHeight     *uint32 `protobuf:"varint,15,opt"`
-	PicType       *uint32 `protobuf:"varint,16,opt"`
-	BuildVer      []byte  `protobuf:"bytes,17,opt"`
-	FileIndex     []byte  `protobuf:"bytes,18,opt"`
-	StoreDays     *uint32 `protobuf:"varint,19,opt"`
-	TryupStepflag *uint32 `protobuf:"varint,20,opt"`
-	RejectTryfast *bool   `protobuf:"varint,21,opt"`
-	SrvUpload     *uint32 `protobuf:"varint,22,opt"`
-	TransferUrl   []byte  `protobuf:"bytes,23,opt"`
-}
-
-func (x *D352TryUpImgReq) GetSrcUin() uint64 {
-	if x != nil && x.SrcUin != nil {
-		return *x.SrcUin
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetDstUin() uint64 {
-	if x != nil && x.DstUin != nil {
-		return *x.DstUin
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetFileId() uint64 {
-	if x != nil && x.FileId != nil {
-		return *x.FileId
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetFileSize() uint64 {
-	if x != nil && x.FileSize != nil {
-		return *x.FileSize
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetSrcTerm() uint32 {
-	if x != nil && x.SrcTerm != nil {
-		return *x.SrcTerm
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetPlatformType() uint32 {
-	if x != nil && x.PlatformType != nil {
-		return *x.PlatformType
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetInnerIp() uint32 {
-	if x != nil && x.InnerIp != nil {
-		return *x.InnerIp
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetAddressBook() bool {
-	if x != nil && x.AddressBook != nil {
-		return *x.AddressBook
-	}
-	return false
-}
-
-func (x *D352TryUpImgReq) GetRetry() uint32 {
-	if x != nil && x.Retry != nil {
-		return *x.Retry
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetBuType() uint32 {
-	if x != nil && x.BuType != nil {
-		return *x.BuType
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetPicOriginal() bool {
-	if x != nil && x.PicOriginal != nil {
-		return *x.PicOriginal
-	}
-	return false
-}
-
-func (x *D352TryUpImgReq) GetPicWidth() uint32 {
-	if x != nil && x.PicWidth != nil {
-		return *x.PicWidth
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetPicHeight() uint32 {
-	if x != nil && x.PicHeight != nil {
-		return *x.PicHeight
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetPicType() uint32 {
-	if x != nil && x.PicType != nil {
-		return *x.PicType
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetStoreDays() uint32 {
-	if x != nil && x.StoreDays != nil {
-		return *x.StoreDays
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetTryupStepflag() uint32 {
-	if x != nil && x.TryupStepflag != nil {
-		return *x.TryupStepflag
-	}
-	return 0
-}
-
-func (x *D352TryUpImgReq) GetRejectTryfast() bool {
-	if x != nil && x.RejectTryfast != nil {
-		return *x.RejectTryfast
-	}
-	return false
-}
-
-func (x *D352TryUpImgReq) GetSrvUpload() uint32 {
-	if x != nil && x.SrvUpload != nil {
-		return *x.SrvUpload
-	}
-	return 0
+	SrcUin        proto.Option[uint64] `protobuf:"varint,1,opt"`
+	DstUin        proto.Option[uint64] `protobuf:"varint,2,opt"`
+	FileId        proto.Option[uint64] `protobuf:"varint,3,opt"`
+	FileMd5       []byte               `protobuf:"bytes,4,opt"`
+	FileSize      proto.Option[uint64] `protobuf:"varint,5,opt"`
+	FileName      []byte               `protobuf:"bytes,6,opt"`
+	SrcTerm       proto.Option[uint32] `protobuf:"varint,7,opt"`
+	PlatformType  proto.Option[uint32] `protobuf:"varint,8,opt"`
+	InnerIp       proto.Option[uint32] `protobuf:"varint,9,opt"`
+	AddressBook   proto.Option[bool]   `protobuf:"varint,10,opt"`
+	Retry         proto.Option[uint32] `protobuf:"varint,11,opt"`
+	BuType        proto.Option[uint32] `protobuf:"varint,12,opt"`
+	PicOriginal   proto.Option[bool]   `protobuf:"varint,13,opt"`
+	PicWidth      proto.Option[uint32] `protobuf:"varint,14,opt"`
+	PicHeight     proto.Option[uint32] `protobuf:"varint,15,opt"`
+	PicType       proto.Option[uint32] `protobuf:"varint,16,opt"`
+	BuildVer      []byte               `protobuf:"bytes,17,opt"`
+	FileIndex     []byte               `protobuf:"bytes,18,opt"`
+	StoreDays     proto.Option[uint32] `protobuf:"varint,19,opt"`
+	TryupStepflag proto.Option[uint32] `protobuf:"varint,20,opt"`
+	RejectTryfast proto.Option[bool]   `protobuf:"varint,21,opt"`
+	SrvUpload     proto.Option[uint32] `protobuf:"varint,22,opt"`
+	TransferUrl   []byte               `protobuf:"bytes,23,opt"`
 }
 
 type TryUpImgRsp struct {
-	FileId   *uint64 `protobuf:"varint,1,opt"`
-	ClientIp *uint32 `protobuf:"varint,2,opt"`
-	Result   *uint32 `protobuf:"varint,3,opt"`
-	FailMsg  []byte  `protobuf:"bytes,4,opt"`
-	FileExit *bool   `protobuf:"varint,5,opt"`
+	FileId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ClientIp proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Result   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	FailMsg  []byte               `protobuf:"bytes,4,opt"`
+	FileExit proto.Option[bool]   `protobuf:"varint,5,opt"`
 	// optional ImgInfo imgInfo = 6;
-	UpIp         []uint32 `protobuf:"varint,7,rep"`
-	UpPort       []uint32 `protobuf:"varint,8,rep"`
-	UpUkey       []byte   `protobuf:"bytes,9,opt"`
-	UpResid      []byte   `protobuf:"bytes,10,opt"`
-	UpUuid       []byte   `protobuf:"bytes,11,opt"`
-	UpOffset     *uint64  `protobuf:"varint,12,opt"`
-	BlockSize    *uint64  `protobuf:"varint,13,opt"`
-	EncryptDstip []byte   `protobuf:"bytes,14,opt"`
-	Roamdays     *uint32  `protobuf:"varint,15,opt"`
+	UpIp         []uint32             `protobuf:"varint,7,rep"`
+	UpPort       []uint32             `protobuf:"varint,8,rep"`
+	UpUkey       []byte               `protobuf:"bytes,9,opt"`
+	UpResid      []byte               `protobuf:"bytes,10,opt"`
+	UpUuid       []byte               `protobuf:"bytes,11,opt"`
+	UpOffset     proto.Option[uint64] `protobuf:"varint,12,opt"`
+	BlockSize    proto.Option[uint64] `protobuf:"varint,13,opt"`
+	EncryptDstip []byte               `protobuf:"bytes,14,opt"`
+	Roamdays     proto.Option[uint32] `protobuf:"varint,15,opt"`
 	// repeated IPv6Info upIp6 = 26;
-	ClientIp6        []byte  `protobuf:"bytes,27,opt"`
-	ThumbDownPara    []byte  `protobuf:"bytes,60,opt"`
-	OriginalDownPara []byte  `protobuf:"bytes,61,opt"`
-	DownDomain       []byte  `protobuf:"bytes,62,opt"`
-	BigDownPara      []byte  `protobuf:"bytes,64,opt"`
-	BigThumbDownPara []byte  `protobuf:"bytes,65,opt"`
-	HttpsUrlFlag     *uint32 `protobuf:"varint,66,opt"` // optional TryUpInfo4Busi info4Busi = 1001;
-}
-
-func (x *TryUpImgRsp) GetFileId() uint64 {
-	if x != nil && x.FileId != nil {
-		return *x.FileId
-	}
-	return 0
-}
-
-func (x *TryUpImgRsp) GetClientIp() uint32 {
-	if x != nil && x.ClientIp != nil {
-		return *x.ClientIp
-	}
-	return 0
-}
-
-func (x *TryUpImgRsp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *TryUpImgRsp) GetFileExit() bool {
-	if x != nil && x.FileExit != nil {
-		return *x.FileExit
-	}
-	return false
-}
-
-func (x *TryUpImgRsp) GetUpOffset() uint64 {
-	if x != nil && x.UpOffset != nil {
-		return *x.UpOffset
-	}
-	return 0
-}
-
-func (x *TryUpImgRsp) GetBlockSize() uint64 {
-	if x != nil && x.BlockSize != nil {
-		return *x.BlockSize
-	}
-	return 0
-}
-
-func (x *TryUpImgRsp) GetRoamdays() uint32 {
-	if x != nil && x.Roamdays != nil {
-		return *x.Roamdays
-	}
-	return 0
-}
-
-func (x *TryUpImgRsp) GetHttpsUrlFlag() uint32 {
-	if x != nil && x.HttpsUrlFlag != nil {
-		return *x.HttpsUrlFlag
-	}
-	return 0
+	ClientIp6        []byte               `protobuf:"bytes,27,opt"`
+	ThumbDownPara    []byte               `protobuf:"bytes,60,opt"`
+	OriginalDownPara []byte               `protobuf:"bytes,61,opt"`
+	DownDomain       []byte               `protobuf:"bytes,62,opt"`
+	BigDownPara      []byte               `protobuf:"bytes,64,opt"`
+	BigThumbDownPara []byte               `protobuf:"bytes,65,opt"`
+	HttpsUrlFlag     proto.Option[uint32] `protobuf:"varint,66,opt"` // optional TryUpInfo4Busi info4Busi = 1001;
 }

@@ -3,668 +3,126 @@
 
 package msg
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type C2CHead struct {
-	ToUin       *uint64 `protobuf:"varint,1,opt"`
-	FromUin     *uint64 `protobuf:"varint,2,opt"`
-	CcType      *uint32 `protobuf:"varint,3,opt"`
-	CcCmd       *uint32 `protobuf:"varint,4,opt"`
-	AuthPicSig  []byte  `protobuf:"bytes,5,opt"`
-	AuthSig     []byte  `protobuf:"bytes,6,opt"`
-	AuthBuf     []byte  `protobuf:"bytes,7,opt"`
-	ServerTime  *uint32 `protobuf:"varint,8,opt"`
-	ClientTime  *uint32 `protobuf:"varint,9,opt"`
-	Rand        *uint32 `protobuf:"varint,10,opt"`
-	PhoneNumber *string `protobuf:"bytes,11,opt"`
-}
-
-func (x *C2CHead) GetToUin() uint64 {
-	if x != nil && x.ToUin != nil {
-		return *x.ToUin
-	}
-	return 0
-}
-
-func (x *C2CHead) GetFromUin() uint64 {
-	if x != nil && x.FromUin != nil {
-		return *x.FromUin
-	}
-	return 0
-}
-
-func (x *C2CHead) GetCcType() uint32 {
-	if x != nil && x.CcType != nil {
-		return *x.CcType
-	}
-	return 0
-}
-
-func (x *C2CHead) GetCcCmd() uint32 {
-	if x != nil && x.CcCmd != nil {
-		return *x.CcCmd
-	}
-	return 0
-}
-
-func (x *C2CHead) GetServerTime() uint32 {
-	if x != nil && x.ServerTime != nil {
-		return *x.ServerTime
-	}
-	return 0
-}
-
-func (x *C2CHead) GetClientTime() uint32 {
-	if x != nil && x.ClientTime != nil {
-		return *x.ClientTime
-	}
-	return 0
-}
-
-func (x *C2CHead) GetRand() uint32 {
-	if x != nil && x.Rand != nil {
-		return *x.Rand
-	}
-	return 0
-}
-
-func (x *C2CHead) GetPhoneNumber() string {
-	if x != nil && x.PhoneNumber != nil {
-		return *x.PhoneNumber
-	}
-	return ""
+	ToUin       proto.Option[uint64] `protobuf:"varint,1,opt"`
+	FromUin     proto.Option[uint64] `protobuf:"varint,2,opt"`
+	CcType      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	CcCmd       proto.Option[uint32] `protobuf:"varint,4,opt"`
+	AuthPicSig  []byte               `protobuf:"bytes,5,opt"`
+	AuthSig     []byte               `protobuf:"bytes,6,opt"`
+	AuthBuf     []byte               `protobuf:"bytes,7,opt"`
+	ServerTime  proto.Option[uint32] `protobuf:"varint,8,opt"`
+	ClientTime  proto.Option[uint32] `protobuf:"varint,9,opt"`
+	Rand        proto.Option[uint32] `protobuf:"varint,10,opt"`
+	PhoneNumber proto.Option[string] `protobuf:"bytes,11,opt"`
 }
 
 type CSHead struct {
-	Uin           *uint64 `protobuf:"varint,1,opt"`
-	Command       *uint32 `protobuf:"varint,2,opt"`
-	Seq           *uint32 `protobuf:"varint,3,opt"`
-	Version       *uint32 `protobuf:"varint,4,opt"`
-	RetryTimes    *uint32 `protobuf:"varint,5,opt"`
-	ClientType    *uint32 `protobuf:"varint,6,opt"`
-	Pubno         *uint32 `protobuf:"varint,7,opt"`
-	Localid       *uint32 `protobuf:"varint,8,opt"`
-	Timezone      *uint32 `protobuf:"varint,9,opt"`
-	ClientIp      *uint32 `protobuf:"fixed32,10,opt"`
-	ClientPort    *uint32 `protobuf:"varint,11,opt"`
-	ConnIp        *uint32 `protobuf:"fixed32,12,opt"`
-	ConnPort      *uint32 `protobuf:"varint,13,opt"`
-	InterfaceIp   *uint32 `protobuf:"fixed32,14,opt"`
-	InterfacePort *uint32 `protobuf:"varint,15,opt"`
-	ActualIp      *uint32 `protobuf:"fixed32,16,opt"`
-	Flag          *uint32 `protobuf:"varint,17,opt"`
-	Timestamp     *uint32 `protobuf:"fixed32,18,opt"`
-	Subcmd        *uint32 `protobuf:"varint,19,opt"`
-	Result        *uint32 `protobuf:"varint,20,opt"`
-	AppId         *uint32 `protobuf:"varint,21,opt"`
-	InstanceId    *uint32 `protobuf:"varint,22,opt"`
-	SessionId     *uint64 `protobuf:"varint,23,opt"`
-	IdcId         *uint32 `protobuf:"varint,24,opt"`
-}
-
-func (x *CSHead) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *CSHead) GetCommand() uint32 {
-	if x != nil && x.Command != nil {
-		return *x.Command
-	}
-	return 0
-}
-
-func (x *CSHead) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *CSHead) GetVersion() uint32 {
-	if x != nil && x.Version != nil {
-		return *x.Version
-	}
-	return 0
-}
-
-func (x *CSHead) GetRetryTimes() uint32 {
-	if x != nil && x.RetryTimes != nil {
-		return *x.RetryTimes
-	}
-	return 0
-}
-
-func (x *CSHead) GetClientType() uint32 {
-	if x != nil && x.ClientType != nil {
-		return *x.ClientType
-	}
-	return 0
-}
-
-func (x *CSHead) GetPubno() uint32 {
-	if x != nil && x.Pubno != nil {
-		return *x.Pubno
-	}
-	return 0
-}
-
-func (x *CSHead) GetLocalid() uint32 {
-	if x != nil && x.Localid != nil {
-		return *x.Localid
-	}
-	return 0
-}
-
-func (x *CSHead) GetTimezone() uint32 {
-	if x != nil && x.Timezone != nil {
-		return *x.Timezone
-	}
-	return 0
-}
-
-func (x *CSHead) GetClientIp() uint32 {
-	if x != nil && x.ClientIp != nil {
-		return *x.ClientIp
-	}
-	return 0
-}
-
-func (x *CSHead) GetClientPort() uint32 {
-	if x != nil && x.ClientPort != nil {
-		return *x.ClientPort
-	}
-	return 0
-}
-
-func (x *CSHead) GetConnIp() uint32 {
-	if x != nil && x.ConnIp != nil {
-		return *x.ConnIp
-	}
-	return 0
-}
-
-func (x *CSHead) GetConnPort() uint32 {
-	if x != nil && x.ConnPort != nil {
-		return *x.ConnPort
-	}
-	return 0
-}
-
-func (x *CSHead) GetInterfaceIp() uint32 {
-	if x != nil && x.InterfaceIp != nil {
-		return *x.InterfaceIp
-	}
-	return 0
-}
-
-func (x *CSHead) GetInterfacePort() uint32 {
-	if x != nil && x.InterfacePort != nil {
-		return *x.InterfacePort
-	}
-	return 0
-}
-
-func (x *CSHead) GetActualIp() uint32 {
-	if x != nil && x.ActualIp != nil {
-		return *x.ActualIp
-	}
-	return 0
-}
-
-func (x *CSHead) GetFlag() uint32 {
-	if x != nil && x.Flag != nil {
-		return *x.Flag
-	}
-	return 0
-}
-
-func (x *CSHead) GetTimestamp() uint32 {
-	if x != nil && x.Timestamp != nil {
-		return *x.Timestamp
-	}
-	return 0
-}
-
-func (x *CSHead) GetSubcmd() uint32 {
-	if x != nil && x.Subcmd != nil {
-		return *x.Subcmd
-	}
-	return 0
-}
-
-func (x *CSHead) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *CSHead) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *CSHead) GetInstanceId() uint32 {
-	if x != nil && x.InstanceId != nil {
-		return *x.InstanceId
-	}
-	return 0
-}
-
-func (x *CSHead) GetSessionId() uint64 {
-	if x != nil && x.SessionId != nil {
-		return *x.SessionId
-	}
-	return 0
-}
-
-func (x *CSHead) GetIdcId() uint32 {
-	if x != nil && x.IdcId != nil {
-		return *x.IdcId
-	}
-	return 0
+	Uin           proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Command       proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Seq           proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Version       proto.Option[uint32] `protobuf:"varint,4,opt"`
+	RetryTimes    proto.Option[uint32] `protobuf:"varint,5,opt"`
+	ClientType    proto.Option[uint32] `protobuf:"varint,6,opt"`
+	Pubno         proto.Option[uint32] `protobuf:"varint,7,opt"`
+	Localid       proto.Option[uint32] `protobuf:"varint,8,opt"`
+	Timezone      proto.Option[uint32] `protobuf:"varint,9,opt"`
+	ClientIp      proto.Option[uint32] `protobuf:"fixed32,10,opt"`
+	ClientPort    proto.Option[uint32] `protobuf:"varint,11,opt"`
+	ConnIp        proto.Option[uint32] `protobuf:"fixed32,12,opt"`
+	ConnPort      proto.Option[uint32] `protobuf:"varint,13,opt"`
+	InterfaceIp   proto.Option[uint32] `protobuf:"fixed32,14,opt"`
+	InterfacePort proto.Option[uint32] `protobuf:"varint,15,opt"`
+	ActualIp      proto.Option[uint32] `protobuf:"fixed32,16,opt"`
+	Flag          proto.Option[uint32] `protobuf:"varint,17,opt"`
+	Timestamp     proto.Option[uint32] `protobuf:"fixed32,18,opt"`
+	Subcmd        proto.Option[uint32] `protobuf:"varint,19,opt"`
+	Result        proto.Option[uint32] `protobuf:"varint,20,opt"`
+	AppId         proto.Option[uint32] `protobuf:"varint,21,opt"`
+	InstanceId    proto.Option[uint32] `protobuf:"varint,22,opt"`
+	SessionId     proto.Option[uint64] `protobuf:"varint,23,opt"`
+	IdcId         proto.Option[uint32] `protobuf:"varint,24,opt"`
 }
 
 type DeltaHead struct {
-	TotalLen  *uint64 `protobuf:"varint,1,opt"`
-	Offset    *uint64 `protobuf:"varint,2,opt"`
-	AckOffset *uint64 `protobuf:"varint,3,opt"`
-	Cookie    []byte  `protobuf:"bytes,4,opt"`
-	AckCookie []byte  `protobuf:"bytes,5,opt"`
-	Result    *uint32 `protobuf:"varint,6,opt"`
-	Flags     *uint32 `protobuf:"varint,7,opt"`
-}
-
-func (x *DeltaHead) GetTotalLen() uint64 {
-	if x != nil && x.TotalLen != nil {
-		return *x.TotalLen
-	}
-	return 0
-}
-
-func (x *DeltaHead) GetOffset() uint64 {
-	if x != nil && x.Offset != nil {
-		return *x.Offset
-	}
-	return 0
-}
-
-func (x *DeltaHead) GetAckOffset() uint64 {
-	if x != nil && x.AckOffset != nil {
-		return *x.AckOffset
-	}
-	return 0
-}
-
-func (x *DeltaHead) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *DeltaHead) GetFlags() uint32 {
-	if x != nil && x.Flags != nil {
-		return *x.Flags
-	}
-	return 0
+	TotalLen  proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Offset    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	AckOffset proto.Option[uint64] `protobuf:"varint,3,opt"`
+	Cookie    []byte               `protobuf:"bytes,4,opt"`
+	AckCookie []byte               `protobuf:"bytes,5,opt"`
+	Result    proto.Option[uint32] `protobuf:"varint,6,opt"`
+	Flags     proto.Option[uint32] `protobuf:"varint,7,opt"`
 }
 
 type IMHead struct {
-	HeadType     *uint32       `protobuf:"varint,1,opt"`
-	CsHead       *CSHead       `protobuf:"bytes,2,opt"`
-	S2CHead      *S2CHead      `protobuf:"bytes,3,opt"`
-	HttpconnHead *HttpConnHead `protobuf:"bytes,4,opt"`
-	PaintFlag    *uint32       `protobuf:"varint,5,opt"`
-	LoginSig     *LoginSig     `protobuf:"bytes,6,opt"`
-	DeltaHead    *DeltaHead    `protobuf:"bytes,7,opt"`
-	C2CHead      *C2CHead      `protobuf:"bytes,8,opt"`
-}
-
-func (x *IMHead) GetHeadType() uint32 {
-	if x != nil && x.HeadType != nil {
-		return *x.HeadType
-	}
-	return 0
-}
-
-func (x *IMHead) GetPaintFlag() uint32 {
-	if x != nil && x.PaintFlag != nil {
-		return *x.PaintFlag
-	}
-	return 0
+	HeadType     proto.Option[uint32] `protobuf:"varint,1,opt"`
+	CsHead       *CSHead              `protobuf:"bytes,2,opt"`
+	S2CHead      *S2CHead             `protobuf:"bytes,3,opt"`
+	HttpconnHead *HttpConnHead        `protobuf:"bytes,4,opt"`
+	PaintFlag    proto.Option[uint32] `protobuf:"varint,5,opt"`
+	LoginSig     *LoginSig            `protobuf:"bytes,6,opt"`
+	DeltaHead    *DeltaHead           `protobuf:"bytes,7,opt"`
+	C2CHead      *C2CHead             `protobuf:"bytes,8,opt"`
 }
 
 type HttpConnHead struct {
-	Uin          *uint64        `protobuf:"varint,1,opt"`
-	Command      *uint32        `protobuf:"varint,2,opt"`
-	SubCommand   *uint32        `protobuf:"varint,3,opt"`
-	Seq          *uint32        `protobuf:"varint,4,opt"`
-	Version      *uint32        `protobuf:"varint,5,opt"`
-	RetryTimes   *uint32        `protobuf:"varint,6,opt"`
-	ClientType   *uint32        `protobuf:"varint,7,opt"`
-	PubNo        *uint32        `protobuf:"varint,8,opt"`
-	LocalId      *uint32        `protobuf:"varint,9,opt"`
-	TimeZone     *uint32        `protobuf:"varint,10,opt"`
-	ClientIp     *uint32        `protobuf:"fixed32,11,opt"`
-	ClientPort   *uint32        `protobuf:"varint,12,opt"`
-	QzhttpIp     *uint32        `protobuf:"fixed32,13,opt"`
-	QzhttpPort   *uint32        `protobuf:"varint,14,opt"`
-	SppIp        *uint32        `protobuf:"fixed32,15,opt"`
-	SppPort      *uint32        `protobuf:"varint,16,opt"`
-	Flag         *uint32        `protobuf:"varint,17,opt"`
-	Key          []byte         `protobuf:"bytes,18,opt"`
-	CompressType *uint32        `protobuf:"varint,19,opt"`
-	OriginSize   *uint32        `protobuf:"varint,20,opt"`
-	ErrorCode    *uint32        `protobuf:"varint,21,opt"`
-	Redirect     *RedirectMsg   `protobuf:"bytes,22,opt"`
-	CommandId    *uint32        `protobuf:"varint,23,opt"`
-	ServiceCmdid *uint32        `protobuf:"varint,24,opt"`
-	Oidbhead     *TransOidbHead `protobuf:"bytes,25,opt"`
-}
-
-func (x *HttpConnHead) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetCommand() uint32 {
-	if x != nil && x.Command != nil {
-		return *x.Command
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetSubCommand() uint32 {
-	if x != nil && x.SubCommand != nil {
-		return *x.SubCommand
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetVersion() uint32 {
-	if x != nil && x.Version != nil {
-		return *x.Version
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetRetryTimes() uint32 {
-	if x != nil && x.RetryTimes != nil {
-		return *x.RetryTimes
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetClientType() uint32 {
-	if x != nil && x.ClientType != nil {
-		return *x.ClientType
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetPubNo() uint32 {
-	if x != nil && x.PubNo != nil {
-		return *x.PubNo
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetLocalId() uint32 {
-	if x != nil && x.LocalId != nil {
-		return *x.LocalId
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetTimeZone() uint32 {
-	if x != nil && x.TimeZone != nil {
-		return *x.TimeZone
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetClientIp() uint32 {
-	if x != nil && x.ClientIp != nil {
-		return *x.ClientIp
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetClientPort() uint32 {
-	if x != nil && x.ClientPort != nil {
-		return *x.ClientPort
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetQzhttpIp() uint32 {
-	if x != nil && x.QzhttpIp != nil {
-		return *x.QzhttpIp
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetQzhttpPort() uint32 {
-	if x != nil && x.QzhttpPort != nil {
-		return *x.QzhttpPort
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetSppIp() uint32 {
-	if x != nil && x.SppIp != nil {
-		return *x.SppIp
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetSppPort() uint32 {
-	if x != nil && x.SppPort != nil {
-		return *x.SppPort
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetFlag() uint32 {
-	if x != nil && x.Flag != nil {
-		return *x.Flag
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetCompressType() uint32 {
-	if x != nil && x.CompressType != nil {
-		return *x.CompressType
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetOriginSize() uint32 {
-	if x != nil && x.OriginSize != nil {
-		return *x.OriginSize
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetErrorCode() uint32 {
-	if x != nil && x.ErrorCode != nil {
-		return *x.ErrorCode
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetCommandId() uint32 {
-	if x != nil && x.CommandId != nil {
-		return *x.CommandId
-	}
-	return 0
-}
-
-func (x *HttpConnHead) GetServiceCmdid() uint32 {
-	if x != nil && x.ServiceCmdid != nil {
-		return *x.ServiceCmdid
-	}
-	return 0
+	Uin          proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Command      proto.Option[uint32] `protobuf:"varint,2,opt"`
+	SubCommand   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Seq          proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Version      proto.Option[uint32] `protobuf:"varint,5,opt"`
+	RetryTimes   proto.Option[uint32] `protobuf:"varint,6,opt"`
+	ClientType   proto.Option[uint32] `protobuf:"varint,7,opt"`
+	PubNo        proto.Option[uint32] `protobuf:"varint,8,opt"`
+	LocalId      proto.Option[uint32] `protobuf:"varint,9,opt"`
+	TimeZone     proto.Option[uint32] `protobuf:"varint,10,opt"`
+	ClientIp     proto.Option[uint32] `protobuf:"fixed32,11,opt"`
+	ClientPort   proto.Option[uint32] `protobuf:"varint,12,opt"`
+	QzhttpIp     proto.Option[uint32] `protobuf:"fixed32,13,opt"`
+	QzhttpPort   proto.Option[uint32] `protobuf:"varint,14,opt"`
+	SppIp        proto.Option[uint32] `protobuf:"fixed32,15,opt"`
+	SppPort      proto.Option[uint32] `protobuf:"varint,16,opt"`
+	Flag         proto.Option[uint32] `protobuf:"varint,17,opt"`
+	Key          []byte               `protobuf:"bytes,18,opt"`
+	CompressType proto.Option[uint32] `protobuf:"varint,19,opt"`
+	OriginSize   proto.Option[uint32] `protobuf:"varint,20,opt"`
+	ErrorCode    proto.Option[uint32] `protobuf:"varint,21,opt"`
+	Redirect     *RedirectMsg         `protobuf:"bytes,22,opt"`
+	CommandId    proto.Option[uint32] `protobuf:"varint,23,opt"`
+	ServiceCmdid proto.Option[uint32] `protobuf:"varint,24,opt"`
+	Oidbhead     *TransOidbHead       `protobuf:"bytes,25,opt"`
 }
 
 type LoginSig struct {
-	Type *uint32 `protobuf:"varint,1,opt"`
-	Sig  []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *LoginSig) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
+	Type proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Sig  []byte               `protobuf:"bytes,2,opt"`
 }
 
 type RedirectMsg struct {
-	LastRedirectIp   *uint32 `protobuf:"fixed32,1,opt"`
-	LastRedirectPort *uint32 `protobuf:"varint,2,opt"`
-	RedirectIp       *uint32 `protobuf:"fixed32,3,opt"`
-	RedirectPort     *uint32 `protobuf:"varint,4,opt"`
-	RedirectCount    *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *RedirectMsg) GetLastRedirectIp() uint32 {
-	if x != nil && x.LastRedirectIp != nil {
-		return *x.LastRedirectIp
-	}
-	return 0
-}
-
-func (x *RedirectMsg) GetLastRedirectPort() uint32 {
-	if x != nil && x.LastRedirectPort != nil {
-		return *x.LastRedirectPort
-	}
-	return 0
-}
-
-func (x *RedirectMsg) GetRedirectIp() uint32 {
-	if x != nil && x.RedirectIp != nil {
-		return *x.RedirectIp
-	}
-	return 0
-}
-
-func (x *RedirectMsg) GetRedirectPort() uint32 {
-	if x != nil && x.RedirectPort != nil {
-		return *x.RedirectPort
-	}
-	return 0
-}
-
-func (x *RedirectMsg) GetRedirectCount() uint32 {
-	if x != nil && x.RedirectCount != nil {
-		return *x.RedirectCount
-	}
-	return 0
+	LastRedirectIp   proto.Option[uint32] `protobuf:"fixed32,1,opt"`
+	LastRedirectPort proto.Option[uint32] `protobuf:"varint,2,opt"`
+	RedirectIp       proto.Option[uint32] `protobuf:"fixed32,3,opt"`
+	RedirectPort     proto.Option[uint32] `protobuf:"varint,4,opt"`
+	RedirectCount    proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type S2CHead struct {
-	SubMsgtype *uint32 `protobuf:"varint,1,opt"`
-	MsgType    *uint32 `protobuf:"varint,2,opt"`
-	FromUin    *uint64 `protobuf:"varint,3,opt"`
-	MsgId      *uint32 `protobuf:"varint,4,opt"`
-	RelayIp    *uint32 `protobuf:"fixed32,5,opt"`
-	RelayPort  *uint32 `protobuf:"varint,6,opt"`
-	ToUin      *uint64 `protobuf:"varint,7,opt"`
-}
-
-func (x *S2CHead) GetSubMsgtype() uint32 {
-	if x != nil && x.SubMsgtype != nil {
-		return *x.SubMsgtype
-	}
-	return 0
-}
-
-func (x *S2CHead) GetMsgType() uint32 {
-	if x != nil && x.MsgType != nil {
-		return *x.MsgType
-	}
-	return 0
-}
-
-func (x *S2CHead) GetFromUin() uint64 {
-	if x != nil && x.FromUin != nil {
-		return *x.FromUin
-	}
-	return 0
-}
-
-func (x *S2CHead) GetMsgId() uint32 {
-	if x != nil && x.MsgId != nil {
-		return *x.MsgId
-	}
-	return 0
-}
-
-func (x *S2CHead) GetRelayIp() uint32 {
-	if x != nil && x.RelayIp != nil {
-		return *x.RelayIp
-	}
-	return 0
-}
-
-func (x *S2CHead) GetRelayPort() uint32 {
-	if x != nil && x.RelayPort != nil {
-		return *x.RelayPort
-	}
-	return 0
-}
-
-func (x *S2CHead) GetToUin() uint64 {
-	if x != nil && x.ToUin != nil {
-		return *x.ToUin
-	}
-	return 0
+	SubMsgtype proto.Option[uint32] `protobuf:"varint,1,opt"`
+	MsgType    proto.Option[uint32] `protobuf:"varint,2,opt"`
+	FromUin    proto.Option[uint64] `protobuf:"varint,3,opt"`
+	MsgId      proto.Option[uint32] `protobuf:"varint,4,opt"`
+	RelayIp    proto.Option[uint32] `protobuf:"fixed32,5,opt"`
+	RelayPort  proto.Option[uint32] `protobuf:"varint,6,opt"`
+	ToUin      proto.Option[uint64] `protobuf:"varint,7,opt"`
 }
 
 type TransOidbHead struct {
-	Command     *uint32 `protobuf:"varint,1,opt"`
-	ServiceType *uint32 `protobuf:"varint,2,opt"`
-	Result      *uint32 `protobuf:"varint,3,opt"`
-	ErrorMsg    *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *TransOidbHead) GetCommand() uint32 {
-	if x != nil && x.Command != nil {
-		return *x.Command
-	}
-	return 0
-}
-
-func (x *TransOidbHead) GetServiceType() uint32 {
-	if x != nil && x.ServiceType != nil {
-		return *x.ServiceType
-	}
-	return 0
-}
-
-func (x *TransOidbHead) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *TransOidbHead) GetErrorMsg() string {
-	if x != nil && x.ErrorMsg != nil {
-		return *x.ErrorMsg
-	}
-	return ""
+	Command     proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ServiceType proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Result      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	ErrorMsg    proto.Option[string] `protobuf:"bytes,4,opt"`
 }

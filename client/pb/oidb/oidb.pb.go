@@ -3,6 +3,10 @@
 
 package oidb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type OIDBSSOPkg struct {
 	Command       int32  `protobuf:"varint,1,opt"`
 	ServiceType   int32  `protobuf:"varint,2,opt"`
@@ -61,7 +65,7 @@ type D89AGroupinfo struct {
 	StGroupNewguidelines   *D89AGroupNewGuidelinesInfo `protobuf:"bytes,14,opt"`
 	GroupFace              int32                       `protobuf:"varint,15,opt"`
 	AddOption              int32                       `protobuf:"varint,16,opt"`
-	ShutupTime             *int32                      `protobuf:"varint,17,opt"`
+	ShutupTime             proto.Option[int32]         `protobuf:"varint,17,opt"`
 	GroupTypeFlag          int32                       `protobuf:"varint,18,opt"`
 	StringGroupTag         []byte                      `protobuf:"bytes,19,opt"`
 	MsgGroupGeoInfo        *D89AGroupGeoInfo           `protobuf:"bytes,20,opt"`
@@ -83,13 +87,6 @@ type D89AGroupinfo struct {
 	NoCodeFingerOpenFlag   int32                       `protobuf:"varint,36,opt"`
 	RootId                 int64                       `protobuf:"varint,37,opt"`
 	MsgLimitFrequency      int32                       `protobuf:"varint,38,opt"`
-}
-
-func (x *D89AGroupinfo) GetShutupTime() int32 {
-	if x != nil && x.ShutupTime != nil {
-		return *x.ShutupTime
-	}
-	return 0
 }
 
 type D89AGroupNewGuidelinesInfo struct {

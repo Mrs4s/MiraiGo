@@ -347,15 +347,15 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 				c.highwaySession.SigSession = rsp.RspBody.SigSession
 				c.highwaySession.SessionKey = rsp.RspBody.SessionKey
 				for _, srv := range rsp.RspBody.Addrs {
-					if srv.GetServiceType() == 10 {
+					if srv.ServiceType.Unwrap() == 10 {
 						for _, addr := range srv.Addrs {
-							c.highwaySession.AppendAddr(addr.GetIp(), addr.GetPort())
+							c.highwaySession.AppendAddr(addr.Ip.Unwrap(), addr.Port.Unwrap())
 						}
 					}
 					/*
-						if srv.GetServiceType() == 21 {
+						if srv.ServiceType.Unwrap() == 21 {
 							for _, addr := range srv.Addrs {
-								c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+								c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.Ip.Unwrap()), addr.Port.Unwrap()))
 							}
 						}
 
@@ -445,11 +445,11 @@ func decodeSummaryCardResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 	}
 	for _, buf := range services {
 		comm, payload := readService(buf)
-		if comm.GetService() == 16 {
+		if comm.Service.Unwrap() == 16 {
 			rsp := profilecard.GateVaProfileGateRsp{}
 			_ = proto.Unmarshal(payload, &rsp)
 			if rsp.QidInfo != nil {
-				info.Qid = rsp.QidInfo.GetQid()
+				info.Qid = rsp.QidInfo.Qid.Unwrap()
 			}
 		}
 	}
@@ -509,7 +509,6 @@ func decodeGroupListResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 			Uin:            g.GroupUin,
 			Code:           g.GroupCode,
 			Name:           g.GroupName,
-			Memo:           g.GroupMemo,
 			OwnerUin:       g.GroupOwnerUin,
 			MemberCount:    uint16(g.MemberNum),
 			MaxMemberCount: uint16(g.MaxGroupMemberNum),
@@ -537,23 +536,21 @@ func decodeGroupMemberListResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	next := r.ReadInt64(4)
 	l := make([]*GroupMemberInfo, 0, len(members))
 	for _, m := range members {
+		permission := Member
+		if m.Flag&1 != 0 {
+			permission = Administrator
+		}
 		l = append(l, &GroupMemberInfo{
-			Uin:                    m.MemberUin,
-			Nickname:               m.Nick,
-			Gender:                 m.Gender,
-			CardName:               m.Name,
-			Level:                  uint16(m.MemberLevel),
-			JoinTime:               m.JoinTime,
-			LastSpeakTime:          m.LastSpeakTime,
-			SpecialTitle:           m.SpecialTitle,
-			SpecialTitleExpireTime: m.SpecialTitleExpireTime,
-			ShutUpTimestamp:        m.ShutUpTimestap,
-			Permission: func() MemberPermission {
-				if m.Flag == 1 {
-					return Administrator
-				}
-				return Member
-			}(),
+			Uin:             m.MemberUin,
+			Nickname:        m.Nick,
+			Gender:          m.Gender,
+			CardName:        m.Name,
+			Level:           uint16(m.MemberLevel),
+			JoinTime:        m.JoinTime,
+			LastSpeakTime:   m.LastSpeakTime,
+			SpecialTitle:    m.SpecialTitle,
+			ShutUpTimestamp: m.ShutUpTimestap,
+			Permission:      permission,
 		})
 	}
 	return &groupMemberListResponse{
@@ -572,26 +569,24 @@ func decodeGroupMemberInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, p
 		return nil, errors.WithStack(ErrMemberNotFound)
 	}
 	group := c.FindGroup(rsp.GroupCode)
+	permission := Member
+	if rsp.MemInfo.Uin == group.OwnerUin {
+		permission = Owner
+	}
+	if rsp.MemInfo.Role == 2 {
+		permission = Administrator
+	}
 	return &GroupMemberInfo{
-		Group:                  group,
-		Uin:                    rsp.MemInfo.Uin,
-		Gender:                 byte(rsp.MemInfo.Sex),
-		Nickname:               string(rsp.MemInfo.Nick),
-		CardName:               string(rsp.MemInfo.Card),
-		Level:                  uint16(rsp.MemInfo.Level),
-		JoinTime:               rsp.MemInfo.Join,
-		LastSpeakTime:          rsp.MemInfo.LastSpeak,
-		SpecialTitle:           string(rsp.MemInfo.SpecialTitle),
-		SpecialTitleExpireTime: int64(rsp.MemInfo.SpecialTitleExpireTime),
-		Permission: func() MemberPermission {
-			if rsp.MemInfo.Uin == group.OwnerUin {
-				return Owner
-			}
-			if rsp.MemInfo.Role == 2 {
-				return Administrator
-			}
-			return Member
-		}(),
+		Group:         group,
+		Uin:           rsp.MemInfo.Uin,
+		Gender:        byte(rsp.MemInfo.Sex),
+		Nickname:      string(rsp.MemInfo.Nick),
+		CardName:      string(rsp.MemInfo.Card),
+		Level:         uint16(rsp.MemInfo.Level),
+		JoinTime:      rsp.MemInfo.Join,
+		LastSpeakTime: rsp.MemInfo.LastSpeak,
+		SpecialTitle:  string(rsp.MemInfo.SpecialTitle),
+		Permission:    permission,
 	}, nil
 }
 
@@ -607,19 +602,19 @@ func decodeOffPicUpResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 			Message:    string(rsp.FailMsg),
 		}, nil
 	}
-	if rsp.GetSubcmd() != 1 || len(rsp.TryupImgRsp) == 0 {
+	if rsp.Subcmd.Unwrap() != 1 || len(rsp.TryupImgRsp) == 0 {
 		return &imageUploadResponse{
 			ResultCode: -2,
 		}, nil
 	}
 	imgRsp := rsp.TryupImgRsp[0]
-	if imgRsp.GetResult() != 0 {
+	if imgRsp.Result.Unwrap() != 0 {
 		return &imageUploadResponse{
-			ResultCode: int32(*imgRsp.Result),
+			ResultCode: int32(imgRsp.Result.Unwrap()),
 			Message:    string(imgRsp.FailMsg),
 		}, nil
 	}
-	if imgRsp.GetFileExit() {
+	if imgRsp.FileExit.Unwrap() {
 		return &imageUploadResponse{
 			IsExists:   true,
 			ResourceId: string(imgRsp.UpResid),
@@ -641,18 +636,18 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	data := binary.NewReader(info.MsgData)
-	idStr := strconv.FormatInt(info.GetMsgUid(), 10)
+	idStr := strconv.FormatInt(info.MsgUid.Unwrap(), 10)
 	if _, ok := c.transCache.Get(idStr); ok {
 		return nil, nil
 	}
 	c.transCache.Add(idStr, unit{}, time.Second*15)
-	if info.GetMsgType() == 34 {
+	if info.MsgType.Unwrap() == 34 {
 		data.ReadInt32()
 		data.ReadByte()
 		target := int64(uint32(data.ReadInt32()))
 		typ := int32(data.ReadByte())
 		operator := int64(uint32(data.ReadInt32()))
-		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
+		if g := c.FindGroupByUin(info.FromUin.Unwrap()); g != nil {
 			groupLeaveLock.Lock()
 			defer groupLeaveLock.Unlock()
 			switch typ {
@@ -703,7 +698,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 			}
 		}
 	}
-	if info.GetMsgType() == 44 {
+	if info.MsgType.Unwrap() == 44 {
 		data.ReadBytes(5)
 		var4 := int32(data.ReadByte())
 		var5 := int64(0)
@@ -711,14 +706,12 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 		if var4 != 0 && var4 != 1 {
 			var5 = int64(uint32(data.ReadInt32()))
 		}
-		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
+		if g := c.FindGroupByUin(info.FromUin.Unwrap()); g != nil {
 			if var5 == 0 && data.Len() == 1 {
-				newPermission := func() MemberPermission {
-					if data.ReadByte() == 1 {
-						return Administrator
-					}
-					return Member
-				}()
+				newPermission := Member
+				if data.ReadByte() == 1 {
+					newPermission = Administrator
+				}
 				mem := g.FindMember(target)
 				if mem.Permission != newPermission {
 					old := mem.Permission
@@ -782,7 +775,7 @@ func decodeMSFOfflinePacket(c *QQClient, _ *network.IncomingPacketInfo, _ []byte
 
 // OidbSvc.0xd79
 func decodeWordSegmentation(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
-	rsp := &oidb.D79RspBody{}
+	rsp := oidb.D79RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
 		return nil, err
@@ -813,8 +806,8 @@ func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if pkg.GetRetCode() != 0 {
-		return nil, errors.New(pkg.GetErrMsg())
+	if pkg.RetCode.Unwrap() != 0 {
+		return nil, errors.New(pkg.ErrMsg.Unwrap())
 	}
 	if err := proto.Unmarshal(pkg.BusiBuff, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

@@ -34,25 +34,23 @@ func init() {
 }
 
 // SendGroupMessage 发送群消息
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage, f ...bool) *message.GroupMessage {
-	useFram := false
-	if len(f) > 0 {
-		useFram = f[0]
-	}
+func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {
+	useHighwayMessage := false
 	imgCount := 0
 	for _, e := range m.Elements {
 		switch e.Type() {
 		case message.Image:
 			imgCount++
 		case message.Reply:
-			useFram = false
+			useHighwayMessage = true
 		}
 	}
 	msgLen := message.EstimateLength(m.Elements)
 	if msgLen > message.MaxMessageSize || imgCount > 50 {
 		return nil
 	}
-	if !useFram && (msgLen > 100 || imgCount > 2) {
+	useHighwayMessage = useHighwayMessage || msgLen > 100 || imgCount > 2
+	if useHighwayMessage && c.UseHighwayMessage {
 		lmsg, err := c.uploadGroupLongMessage(groupCode,
 			message.NewForwardMessage().AddNode(&message.ForwardNode{
 				SenderId:   c.Uin,
@@ -118,7 +116,7 @@ func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.Se
 			serviceFlag = false
 		}
 	}
-	if !forward && serviceFlag && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
+	if !forward && serviceFlag && c.UseFragmentMessage && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
 		div := int32(rand.Uint32())
 		fragmented := m.ToFragmented()
 		for i, elems := range fragmented {
@@ -221,8 +219,8 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 		}
 	}
 	req := &msg.SendMessageRequest{
-		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: &groupCode}},
-		ContentHead: &msg.ContentHead{PkgNum: &pkgNum, PkgIndex: &pkgIndex, DivSeq: &pkgDiv},
+		RoutingHead: &msg.RoutingHead{Grp: &msg.Grp{GroupCode: proto.Some(groupCode)}},
+		ContentHead: &msg.ContentHead{PkgNum: proto.Some(pkgNum), PkgIndex: proto.Some(pkgIndex), DivSeq: proto.Some(pkgDiv)},
 		MsgBody: &msg.MessageBody{
 			RichText: &msg.RichText{
 				Elems: message.ToProtoElems(m, true),
@@ -235,7 +233,7 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 			},
 		},
 		MsgSeq:     proto.Int32(c.nextGroupSeq()),
-		MsgRand:    &r,
+		MsgRand:    proto.Some(r),
 		SyncCookie: EmptyBytes,
 		MsgVia:     proto.Int32(1),
 		MsgCtrl: func() *msg.MsgCtrl {
@@ -278,20 +276,20 @@ func decodeGroupMessagePacket(c *QQClient, _ *network.IncomingPacketInfo, payloa
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if pkt.Message.Head.GetFromUin() == c.Uin {
+	if pkt.Message.Head.FromUin.Unwrap() == c.Uin {
 		c.dispatchGroupMessageReceiptEvent(&groupMessageReceiptEvent{
-			Rand: pkt.Message.Body.RichText.Attr.GetRandom(),
-			Seq:  pkt.Message.Head.GetMsgSeq(),
+			Rand: pkt.Message.Body.RichText.Attr.Random.Unwrap(),
+			Seq:  pkt.Message.Head.MsgSeq.Unwrap(),
 			Msg:  c.parseGroupMessage(pkt.Message),
 		})
 	}
-	if pkt.Message.Content != nil && pkt.Message.Content.GetPkgNum() > 1 {
-		seq := pkt.Message.Content.GetDivSeq()
-		builder := c.messageBuilder(pkt.Message.Content.GetDivSeq())
+	if pkt.Message.Content != nil && pkt.Message.Content.PkgNum.Unwrap() > 1 {
+		seq := pkt.Message.Content.DivSeq.Unwrap()
+		builder := c.messageBuilder(pkt.Message.Content.DivSeq.Unwrap())
 		builder.append(pkt.Message)
-		if builder.len() >= pkt.Message.Content.GetPkgNum() {
+		if builder.len() >= pkt.Message.Content.PkgNum.Unwrap() {
 			c.msgBuilders.Delete(seq)
-			if pkt.Message.Head.GetFromUin() == c.Uin {
+			if pkt.Message.Head.FromUin.Unwrap() == c.Uin {
 				c.SelfGroupMessageEvent.dispatch(c, c.parseGroupMessage(builder.build()))
 			} else {
 				c.GroupMessageEvent.dispatch(c, c.parseGroupMessage(builder.build()))
@@ -299,7 +297,7 @@ func decodeGroupMessagePacket(c *QQClient, _ *network.IncomingPacketInfo, payloa
 		}
 		return nil, nil
 	}
-	if pkt.Message.Head.GetFromUin() == c.Uin {
+	if pkt.Message.Head.FromUin.Unwrap() == c.Uin {
 		c.SelfGroupMessageEvent.dispatch(c, c.parseGroupMessage(pkt.Message))
 	} else {
 		c.GroupMessageEvent.dispatch(c, c.parseGroupMessage(pkt.Message))
@@ -312,12 +310,12 @@ func decodeMsgSendResponse(c *QQClient, _ *network.IncomingPacketInfo, payload [
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	switch rsp.GetResult() {
+	switch rsp.Result.Unwrap() {
 	case 0: // OK.
 	case 55:
-		c.error("sendPacket msg error: %v Bot has blocked target's content", rsp.GetResult())
+		c.error("sendPacket msg error: %v Bot has blocked ta.'s content", rsp.Result.Unwrap())
 	default:
-		c.error("sendPacket msg error: %v %v", rsp.GetResult(), rsp.GetErrMsg())
+		c.error("sendPacket msg error: %v %v", rsp.Result.Unwrap(), rsp.ErrMsg.Unwrap())
 	}
 	return nil, nil
 }
@@ -327,33 +325,33 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 	if err := proto.Unmarshal(payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if rsp.GetResult() != 0 {
-		c.error("get msg error: %v %v", rsp.GetResult(), rsp.GetErrmsg())
-		return nil, errors.Errorf("get msg error: %v msg: %v", rsp.GetResult(), rsp.GetErrmsg())
+	if rsp.Result.Unwrap() != 0 {
+		c.error("get msg error: %v %v", rsp.Result.Unwrap(), rsp.Errmsg.Unwrap())
+		return nil, errors.Errorf("get msg error: %v msg: %v", rsp.Result.Unwrap(), rsp.Errmsg.Unwrap())
 	}
 	var ret []*message.GroupMessage
 	for _, m := range rsp.Msg {
-		if m.Head.FromUin == nil {
+		if m.Head.FromUin.IsNone() {
 			continue
 		}
-		if m.Content != nil && m.Content.GetPkgNum() > 1 && !info.Params.Bool("raw") {
-			if m.Content.GetPkgIndex() == 0 {
+		if m.Content != nil && m.Content.PkgNum.Unwrap() > 1 && !info.Params.Bool("raw") {
+			if m.Content.PkgIndex.Unwrap() == 0 {
 				c.debug("build fragmented message from history")
-				i := m.Head.GetMsgSeq() - m.Content.GetPkgNum()
+				i := m.Head.MsgSeq.Unwrap() - m.Content.PkgNum.Unwrap()
 				builder := &messageBuilder{}
 				for {
-					end := int32(math.Min(float64(i+19), float64(m.Head.GetMsgSeq()+m.Content.GetPkgNum())))
-					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GetGroupCode(), int64(i), int64(end))
+					end := int32(math.Min(float64(i+19), float64(m.Head.MsgSeq.Unwrap()+m.Content.PkgNum.Unwrap())))
+					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GroupCode.Unwrap(), int64(i), int64(end))
 					data, err := c.sendAndWait(seq, pkt, network.RequestParams{"raw": true})
 					if err != nil {
 						return nil, errors.Wrap(err, "build fragmented message error")
 					}
 					for _, fm := range data.([]*message.GroupMessage) {
-						if fm.OriginalObject.Content != nil && fm.OriginalObject.Content.GetDivSeq() == m.Content.GetDivSeq() {
+						if fm.OriginalObject.Content != nil && fm.OriginalObject.Content.DivSeq.Unwrap() == m.Content.DivSeq.Unwrap() {
 							builder.append(fm.OriginalObject)
 						}
 					}
-					if end >= m.Head.GetMsgSeq()+m.Content.GetPkgNum() {
+					if end >= m.Head.MsgSeq.Unwrap()+m.Content.PkgNum.Unwrap() {
 						break
 					}
 					i = end
@@ -378,19 +376,19 @@ func decodeAtAllRemainResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 		return nil, err
 	}
 	return &AtAllRemainInfo{
-		CanAtAll:                 rsp.GetCanAtAll(),
-		RemainAtAllCountForGroup: rsp.GetRemainAtAllCountForGroup(),
-		RemainAtAllCountForUin:   rsp.GetRemainAtAllCountForUin(),
+		CanAtAll:                 rsp.CanAtAll.Unwrap(),
+		RemainAtAllCountForGroup: rsp.RemainAtAllCountForGroup.Unwrap(),
+		RemainAtAllCountForUin:   rsp.RemainAtAllCountForUin.Unwrap(),
 	}, nil
 }
 
 func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
-	group := c.FindGroup(m.Head.GroupInfo.GetGroupCode())
+	group := c.FindGroup(m.Head.GroupInfo.GroupCode.Unwrap())
 	if group == nil {
-		c.debug("sync group %v.", m.Head.GroupInfo.GetGroupCode())
-		info, err := c.GetGroupInfo(m.Head.GroupInfo.GetGroupCode())
+		c.debug("sync group %v.", m.Head.GroupInfo.GroupCode.Unwrap())
+		info, err := c.GetGroupInfo(m.Head.GroupInfo.GroupCode.Unwrap())
 		if err != nil {
-			c.error("error to sync group %v : %+v", m.Head.GroupInfo.GetGroupCode(), err)
+			c.error("error to sync group %v : %+v", m.Head.GroupInfo.GroupCode.Unwrap(), err)
 			return nil
 		}
 		group = info
@@ -422,13 +420,13 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 			IsFriend: false,
 		}
 	} else {
-		mem := group.FindMember(m.Head.GetFromUin())
+		mem := group.FindMember(m.Head.FromUin.Unwrap())
 		if mem == nil {
 			group.Update(func(_ *GroupInfo) {
-				if mem = group.FindMemberWithoutLock(m.Head.GetFromUin()); mem != nil {
+				if mem = group.FindMemberWithoutLock(m.Head.FromUin.Unwrap()); mem != nil {
 					return
 				}
-				info, _ := c.GetMemberInfo(group.Code, m.Head.GetFromUin())
+				info, _ := c.GetMemberInfo(group.Code, m.Head.FromUin.Unwrap())
 				if info == nil {
 					return
 				}
@@ -453,11 +451,11 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	}
 	var g *message.GroupMessage
 	g = &message.GroupMessage{
-		Id:             m.Head.GetMsgSeq(),
+		Id:             m.Head.MsgSeq.Unwrap(),
 		GroupCode:      group.Code,
 		GroupName:      string(m.Head.GroupInfo.GroupName),
 		Sender:         sender,
-		Time:           m.Head.GetMsgTime(),
+		Time:           m.Head.MsgTime.Unwrap(),
 		Elements:       message.ParseMessageElems(m.Body.RichText.Elems),
 		OriginalObject: m,
 	}
@@ -465,14 +463,14 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	// pre parse
 	for _, elem := range m.Body.RichText.Elems {
 		// is rich long msg
-		if elem.GeneralFlags != nil && elem.GeneralFlags.GetLongTextResid() != "" && len(g.Elements) == 1 {
-			if f := c.GetForwardMessage(elem.GeneralFlags.GetLongTextResid()); f != nil && len(f.Nodes) == 1 {
+		if elem.GeneralFlags != nil && elem.GeneralFlags.LongTextResid.Unwrap() != "" && len(g.Elements) == 1 {
+			if f := c.GetForwardMessage(elem.GeneralFlags.LongTextResid.Unwrap()); f != nil && len(f.Nodes) == 1 {
 				g = &message.GroupMessage{
-					Id:             m.Head.GetMsgSeq(),
+					Id:             m.Head.MsgSeq.Unwrap(),
 					GroupCode:      group.Code,
 					GroupName:      string(m.Head.GroupInfo.GroupName),
 					Sender:         sender,
-					Time:           m.Head.GetMsgTime(),
+					Time:           m.Head.MsgTime.Unwrap(),
 					Elements:       f.Nodes[0].Message,
 					OriginalObject: m,
 				}
@@ -483,8 +481,8 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		}
 	}
 	if !sender.IsAnonymous() {
-		mem := group.FindMember(m.Head.GetFromUin())
-		groupCard := m.Head.GroupInfo.GetGroupCard()
+		mem := group.FindMember(m.Head.FromUin.Unwrap())
+		groupCard := m.Head.GroupInfo.GroupCard.Unwrap()
 		if extInfo != nil && len(extInfo.GroupCard) > 0 && extInfo.GroupCard[0] == 0x0A {
 			buf := oidb.D8FCCommCardNameBuf{}
 			if err := proto.Unmarshal(extInfo.GroupCard, &buf); err == nil && len(buf.RichCardName) > 0 {
@@ -514,15 +512,15 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if m.Body.RichText.Ptt != nil {
 		g.Elements = []message.IMessageElement{
 			&message.VoiceElement{
-				Name: m.Body.RichText.Ptt.GetFileName(),
+				Name: m.Body.RichText.Ptt.FileName.Unwrap(),
 				Md5:  m.Body.RichText.Ptt.FileMd5,
-				Size: m.Body.RichText.Ptt.GetFileSize(),
+				Size: m.Body.RichText.Ptt.FileSize.Unwrap(),
 				Url:  "http://grouptalk.c2c.qq.com" + string(m.Body.RichText.Ptt.DownPara),
 			},
 		}
 	}
 	if m.Body.RichText.Attr != nil {
-		g.InternalId = m.Body.RichText.Attr.GetRandom()
+		g.InternalId = m.Body.RichText.Attr.Random.Unwrap()
 	}
 	return g
 }
@@ -534,8 +532,8 @@ func (c *QQClient) SetEssenceMessage(groupCode int64, msgID, msgInternalId int32
 		return errors.Wrap(err, "set essence msg network")
 	}
 	rsp := r.(*oidb.EACRspBody)
-	if rsp.GetErrorCode() != 0 {
-		return errors.New(rsp.GetWording())
+	if rsp.ErrorCode.Unwrap() != 0 {
+		return errors.New(rsp.Wording.Unwrap())
 	}
 	return nil
 }
@@ -547,8 +545,8 @@ func (c *QQClient) DeleteEssenceMessage(groupCode int64, msgID, msgInternalId in
 		return errors.Wrap(err, "set essence msg networ")
 	}
 	rsp := r.(*oidb.EACRspBody)
-	if rsp.GetErrorCode() != 0 {
-		return errors.New(rsp.GetWording())
+	if rsp.ErrorCode.Unwrap() != 0 {
+		return errors.New(rsp.Wording.Unwrap())
 	}
 	return nil
 }

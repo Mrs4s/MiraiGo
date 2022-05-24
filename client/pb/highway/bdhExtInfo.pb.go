@@ -3,289 +3,97 @@
 
 package highway
 
-type CommFileExtReq struct {
-	ActionType *uint32 `protobuf:"varint,1,opt"`
-	Uuid       []byte  `protobuf:"bytes,2,opt"`
-}
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
 
-func (x *CommFileExtReq) GetActionType() uint32 {
-	if x != nil && x.ActionType != nil {
-		return *x.ActionType
-	}
-	return 0
+type CommFileExtReq struct {
+	ActionType proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Uuid       []byte               `protobuf:"bytes,2,opt"`
 }
 
 type CommFileExtRsp struct {
-	Retcode     *int32 `protobuf:"varint,1,opt"`
-	DownloadUrl []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *CommFileExtRsp) GetRetcode() int32 {
-	if x != nil && x.Retcode != nil {
-		return *x.Retcode
-	}
-	return 0
+	Retcode     proto.Option[int32] `protobuf:"varint,1,opt"`
+	DownloadUrl []byte              `protobuf:"bytes,2,opt"`
 }
 
 type PicInfo struct {
-	Idx    *uint32 `protobuf:"varint,1,opt"`
-	Size   *uint32 `protobuf:"varint,2,opt"`
-	BinMd5 []byte  `protobuf:"bytes,3,opt"`
-	Type   *uint32 `protobuf:"varint,4,opt"`
-}
-
-func (x *PicInfo) GetIdx() uint32 {
-	if x != nil && x.Idx != nil {
-		return *x.Idx
-	}
-	return 0
-}
-
-func (x *PicInfo) GetSize() uint32 {
-	if x != nil && x.Size != nil {
-		return *x.Size
-	}
-	return 0
-}
-
-func (x *PicInfo) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
+	Idx    proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Size   proto.Option[uint32] `protobuf:"varint,2,opt"`
+	BinMd5 []byte               `protobuf:"bytes,3,opt"`
+	Type   proto.Option[uint32] `protobuf:"varint,4,opt"`
 }
 
 type QQVoiceExtReq struct {
-	Qid     []byte  `protobuf:"bytes,1,opt"`
-	Fmt     *uint32 `protobuf:"varint,2,opt"`
-	Rate    *uint32 `protobuf:"varint,3,opt"`
-	Bits    *uint32 `protobuf:"varint,4,opt"`
-	Channel *uint32 `protobuf:"varint,5,opt"`
-	Pinyin  *uint32 `protobuf:"varint,6,opt"`
-}
-
-func (x *QQVoiceExtReq) GetFmt() uint32 {
-	if x != nil && x.Fmt != nil {
-		return *x.Fmt
-	}
-	return 0
-}
-
-func (x *QQVoiceExtReq) GetRate() uint32 {
-	if x != nil && x.Rate != nil {
-		return *x.Rate
-	}
-	return 0
-}
-
-func (x *QQVoiceExtReq) GetBits() uint32 {
-	if x != nil && x.Bits != nil {
-		return *x.Bits
-	}
-	return 0
-}
-
-func (x *QQVoiceExtReq) GetChannel() uint32 {
-	if x != nil && x.Channel != nil {
-		return *x.Channel
-	}
-	return 0
-}
-
-func (x *QQVoiceExtReq) GetPinyin() uint32 {
-	if x != nil && x.Pinyin != nil {
-		return *x.Pinyin
-	}
-	return 0
+	Qid     []byte               `protobuf:"bytes,1,opt"`
+	Fmt     proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Rate    proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Bits    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Channel proto.Option[uint32] `protobuf:"varint,5,opt"`
+	Pinyin  proto.Option[uint32] `protobuf:"varint,6,opt"`
 }
 
 type QQVoiceExtRsp struct {
-	Qid     []byte           `protobuf:"bytes,1,opt"`
-	Retcode *int32           `protobuf:"varint,2,opt"`
-	Result  []*QQVoiceResult `protobuf:"bytes,3,rep"`
-}
-
-func (x *QQVoiceExtRsp) GetRetcode() int32 {
-	if x != nil && x.Retcode != nil {
-		return *x.Retcode
-	}
-	return 0
+	Qid     []byte              `protobuf:"bytes,1,opt"`
+	Retcode proto.Option[int32] `protobuf:"varint,2,opt"`
+	Result  []*QQVoiceResult    `protobuf:"bytes,3,rep"`
 }
 
 type QQVoiceResult struct {
-	Text   []byte  `protobuf:"bytes,1,opt"`
-	Pinyin []byte  `protobuf:"bytes,2,opt"`
-	Source *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *QQVoiceResult) GetSource() uint32 {
-	if x != nil && x.Source != nil {
-		return *x.Source
-	}
-	return 0
+	Text   []byte               `protobuf:"bytes,1,opt"`
+	Pinyin []byte               `protobuf:"bytes,2,opt"`
+	Source proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type ShortVideoReqExtInfo struct {
-	Cmd                  *uint32                `protobuf:"varint,1,opt"`
-	SessionId            *uint64                `protobuf:"varint,2,opt"`
+	Cmd                  proto.Option[uint32]   `protobuf:"varint,1,opt"`
+	SessionId            proto.Option[uint64]   `protobuf:"varint,2,opt"`
 	Thumbinfo            *PicInfo               `protobuf:"bytes,3,opt"`
 	Videoinfo            *VideoInfo             `protobuf:"bytes,4,opt"`
 	ShortvideoSureReq    *ShortVideoSureReqInfo `protobuf:"bytes,5,opt"`
-	IsMergeCmdBeforeData *bool                  `protobuf:"varint,6,opt"`
-}
-
-func (x *ShortVideoReqExtInfo) GetCmd() uint32 {
-	if x != nil && x.Cmd != nil {
-		return *x.Cmd
-	}
-	return 0
-}
-
-func (x *ShortVideoReqExtInfo) GetSessionId() uint64 {
-	if x != nil && x.SessionId != nil {
-		return *x.SessionId
-	}
-	return 0
-}
-
-func (x *ShortVideoReqExtInfo) GetIsMergeCmdBeforeData() bool {
-	if x != nil && x.IsMergeCmdBeforeData != nil {
-		return *x.IsMergeCmdBeforeData
-	}
-	return false
+	IsMergeCmdBeforeData proto.Option[bool]     `protobuf:"varint,6,opt"`
 }
 
 type ShortVideoRspExtInfo struct {
-	Cmd               *uint32                `protobuf:"varint,1,opt"`
-	SessionId         *uint64                `protobuf:"varint,2,opt"`
-	Retcode           *int32                 `protobuf:"varint,3,opt"`
+	Cmd               proto.Option[uint32]   `protobuf:"varint,1,opt"`
+	SessionId         proto.Option[uint64]   `protobuf:"varint,2,opt"`
+	Retcode           proto.Option[int32]    `protobuf:"varint,3,opt"`
 	Errinfo           []byte                 `protobuf:"bytes,4,opt"`
 	Thumbinfo         *PicInfo               `protobuf:"bytes,5,opt"`
 	Videoinfo         *VideoInfo             `protobuf:"bytes,6,opt"`
 	ShortvideoSureRsp *ShortVideoSureRspInfo `protobuf:"bytes,7,opt"`
-	RetryFlag         *uint32                `protobuf:"varint,8,opt"`
-}
-
-func (x *ShortVideoRspExtInfo) GetCmd() uint32 {
-	if x != nil && x.Cmd != nil {
-		return *x.Cmd
-	}
-	return 0
-}
-
-func (x *ShortVideoRspExtInfo) GetSessionId() uint64 {
-	if x != nil && x.SessionId != nil {
-		return *x.SessionId
-	}
-	return 0
-}
-
-func (x *ShortVideoRspExtInfo) GetRetcode() int32 {
-	if x != nil && x.Retcode != nil {
-		return *x.Retcode
-	}
-	return 0
-}
-
-func (x *ShortVideoRspExtInfo) GetRetryFlag() uint32 {
-	if x != nil && x.RetryFlag != nil {
-		return *x.RetryFlag
-	}
-	return 0
+	RetryFlag         proto.Option[uint32]   `protobuf:"varint,8,opt"`
 }
 
 type ShortVideoSureReqInfo struct {
-	Fromuin         *uint64      `protobuf:"varint,1,opt"`
-	ChatType        *uint32      `protobuf:"varint,2,opt"`
-	Touin           *uint64      `protobuf:"varint,3,opt"`
-	GroupCode       *uint64      `protobuf:"varint,4,opt"`
-	ClientType      *uint32      `protobuf:"varint,5,opt"`
-	Thumbinfo       *PicInfo     `protobuf:"bytes,6,opt"`
-	MergeVideoinfo  []*VideoInfo `protobuf:"bytes,7,rep"`
-	DropVideoinfo   []*VideoInfo `protobuf:"bytes,8,rep"`
-	BusinessType    *uint32      `protobuf:"varint,9,opt"`
-	SubBusinessType *uint32      `protobuf:"varint,10,opt"`
-}
-
-func (x *ShortVideoSureReqInfo) GetFromuin() uint64 {
-	if x != nil && x.Fromuin != nil {
-		return *x.Fromuin
-	}
-	return 0
-}
-
-func (x *ShortVideoSureReqInfo) GetChatType() uint32 {
-	if x != nil && x.ChatType != nil {
-		return *x.ChatType
-	}
-	return 0
-}
-
-func (x *ShortVideoSureReqInfo) GetTouin() uint64 {
-	if x != nil && x.Touin != nil {
-		return *x.Touin
-	}
-	return 0
-}
-
-func (x *ShortVideoSureReqInfo) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *ShortVideoSureReqInfo) GetClientType() uint32 {
-	if x != nil && x.ClientType != nil {
-		return *x.ClientType
-	}
-	return 0
-}
-
-func (x *ShortVideoSureReqInfo) GetBusinessType() uint32 {
-	if x != nil && x.BusinessType != nil {
-		return *x.BusinessType
-	}
-	return 0
-}
-
-func (x *ShortVideoSureReqInfo) GetSubBusinessType() uint32 {
-	if x != nil && x.SubBusinessType != nil {
-		return *x.SubBusinessType
-	}
-	return 0
+	Fromuin         proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChatType        proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Touin           proto.Option[uint64] `protobuf:"varint,3,opt"`
+	GroupCode       proto.Option[uint64] `protobuf:"varint,4,opt"`
+	ClientType      proto.Option[uint32] `protobuf:"varint,5,opt"`
+	Thumbinfo       *PicInfo             `protobuf:"bytes,6,opt"`
+	MergeVideoinfo  []*VideoInfo         `protobuf:"bytes,7,rep"`
+	DropVideoinfo   []*VideoInfo         `protobuf:"bytes,8,rep"`
+	BusinessType    proto.Option[uint32] `protobuf:"varint,9,opt"`
+	SubBusinessType proto.Option[uint32] `protobuf:"varint,10,opt"`
 }
 
 type ShortVideoSureRspInfo struct {
-	Fileid    []byte     `protobuf:"bytes,1,opt"`
-	Ukey      []byte     `protobuf:"bytes,2,opt"`
-	Videoinfo *VideoInfo `protobuf:"bytes,3,opt"`
-	MergeCost *uint32    `protobuf:"varint,4,opt"`
-}
-
-func (x *ShortVideoSureRspInfo) GetMergeCost() uint32 {
-	if x != nil && x.MergeCost != nil {
-		return *x.MergeCost
-	}
-	return 0
+	Fileid    []byte               `protobuf:"bytes,1,opt"`
+	Ukey      []byte               `protobuf:"bytes,2,opt"`
+	Videoinfo *VideoInfo           `protobuf:"bytes,3,opt"`
+	MergeCost proto.Option[uint32] `protobuf:"varint,4,opt"`
 }
 
 type StoryVideoExtReq struct {
 }
 
 type StoryVideoExtRsp struct {
-	Retcode *int32 `protobuf:"varint,1,opt"`
-	Msg     []byte `protobuf:"bytes,2,opt"`
-	CdnUrl  []byte `protobuf:"bytes,3,opt"`
-	FileKey []byte `protobuf:"bytes,4,opt"`
-	FileId  []byte `protobuf:"bytes,5,opt"`
-}
-
-func (x *StoryVideoExtRsp) GetRetcode() int32 {
-	if x != nil && x.Retcode != nil {
-		return *x.Retcode
-	}
-	return 0
+	Retcode proto.Option[int32] `protobuf:"varint,1,opt"`
+	Msg     []byte              `protobuf:"bytes,2,opt"`
+	CdnUrl  []byte              `protobuf:"bytes,3,opt"`
+	FileKey []byte              `protobuf:"bytes,4,opt"`
+	FileId  []byte              `protobuf:"bytes,5,opt"`
 }
 
 type UploadPicExtInfo struct {
@@ -295,69 +103,13 @@ type UploadPicExtInfo struct {
 }
 
 type VideoInfo struct {
-	Idx       *uint32 `protobuf:"varint,1,opt"`
-	Size      *uint32 `protobuf:"varint,2,opt"`
-	BinMd5    []byte  `protobuf:"bytes,3,opt"`
-	Format    *uint32 `protobuf:"varint,4,opt"`
-	ResLen    *uint32 `protobuf:"varint,5,opt"`
-	ResWidth  *uint32 `protobuf:"varint,6,opt"`
-	Time      *uint32 `protobuf:"varint,7,opt"`
-	Starttime *uint64 `protobuf:"varint,8,opt"`
-	IsAudio   *uint32 `protobuf:"varint,9,opt"`
-}
-
-func (x *VideoInfo) GetIdx() uint32 {
-	if x != nil && x.Idx != nil {
-		return *x.Idx
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetSize() uint32 {
-	if x != nil && x.Size != nil {
-		return *x.Size
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetFormat() uint32 {
-	if x != nil && x.Format != nil {
-		return *x.Format
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetResLen() uint32 {
-	if x != nil && x.ResLen != nil {
-		return *x.ResLen
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetResWidth() uint32 {
-	if x != nil && x.ResWidth != nil {
-		return *x.ResWidth
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetTime() uint32 {
-	if x != nil && x.Time != nil {
-		return *x.Time
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetStarttime() uint64 {
-	if x != nil && x.Starttime != nil {
-		return *x.Starttime
-	}
-	return 0
-}
-
-func (x *VideoInfo) GetIsAudio() uint32 {
-	if x != nil && x.IsAudio != nil {
-		return *x.IsAudio
-	}
-	return 0
+	Idx       proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Size      proto.Option[uint32] `protobuf:"varint,2,opt"`
+	BinMd5    []byte               `protobuf:"bytes,3,opt"`
+	Format    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	ResLen    proto.Option[uint32] `protobuf:"varint,5,opt"`
+	ResWidth  proto.Option[uint32] `protobuf:"varint,6,opt"`
+	Time      proto.Option[uint32] `protobuf:"varint,7,opt"`
+	Starttime proto.Option[uint64] `protobuf:"varint,8,opt"`
+	IsAudio   proto.Option[uint32] `protobuf:"varint,9,opt"`
 }
