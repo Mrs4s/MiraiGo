@@ -19,7 +19,8 @@ type ForwardMessage struct {
 	Nodes []*ForwardNode
 }
 
-type ForwardNode struct {
+type ForwardNode struct {  // todo 加一个group_id
+	GroupId    int64
 	SenderId   int64
 	SenderName string
 	Time       int32

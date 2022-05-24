@@ -164,6 +164,7 @@ func (l *forwardMsgLinker) link(name string) *message.ForwardMessage {
 		}
 
 		nodes = append(nodes, &message.ForwardNode{
+			GroupId:    m.Head.GroupInfo.GetGroupCode(),
 			SenderId:   m.Head.GetFromUin(),
 			SenderName: name,
 			Time:       m.Head.GetMsgTime(),
