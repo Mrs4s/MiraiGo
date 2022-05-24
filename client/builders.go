@@ -663,9 +663,9 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 			comm, _ := proto.Marshal(&profilecard.BusiComm{
 				Ver:      proto.Int32(1),
 				Seq:      proto.Int32(int32(seq)),
-				Fromuin:  &c.Uin,
-				Touin:    &target,
-				Service:  &t,
+				Fromuin:  proto.Some(c.Uin),
+				Touin:    proto.Some(target),
+				Service:  proto.Some(t),
 				Platform: proto.Int32(2),
 				Qqver:    proto.String("8.4.18.4945"),
 				Build:    proto.Int32(4945),
@@ -680,9 +680,9 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 	}
 	gate, _ := proto.Marshal(&profilecard.GateVaProfileGateReq{
 		UCmd:           proto.Int32(3),
-		StPrivilegeReq: &profilecard.GatePrivilegeBaseInfoReq{UReqUin: &target},
+		StPrivilegeReq: &profilecard.GatePrivilegeBaseInfoReq{UReqUin: proto.Some(target)},
 		StGiftReq:      &profilecard.GateGetGiftListReq{Uin: proto.Int32(int32(target))},
-		StVipCare:      &profilecard.GateGetVipCareReq{Uin: &target},
+		StVipCare:      &profilecard.GateGetVipCareReq{Uin: proto.Some(target)},
 		OidbFlag: []*profilecard.GateOidbFlagInfo{
 			{
 				Fieled: proto.Int32(42334),
@@ -835,7 +835,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 	cook := c.sig.SyncCookie
 	if cook == nil {
 		cook, _ = proto.Marshal(&msg.SyncCookie{
-			Time:   &msgTime,
+			Time:   proto.Some(msgTime),
 			Ran1:   proto.Int64(758330138),
 			Ran2:   proto.Int64(2480149246),
 			Const1: proto.Int64(1167238020),
@@ -844,7 +844,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		})
 	}
 	req := &msg.GetMessageRequest{
-		SyncFlag:           &flag,
+		SyncFlag:           proto.Some(int32(flag)),
 		SyncCookie:         cook,
 		LatestRambleNumber: proto.Int32(20),
 		OtherRambleNumber:  proto.Int32(3),
@@ -967,10 +967,10 @@ func (c *QQClient) buildEditGroupTagPacket(groupCode, memberUin int64, newTag st
 // OidbSvc.0x8fc_2
 func (c *QQClient) buildEditSpecialTitlePacket(groupCode, memberUin int64, newTitle string) (uint16, []byte) {
 	body := &oidb.D8FCReqBody{
-		GroupCode: &groupCode,
+		GroupCode: proto.Some(groupCode),
 		MemLevelInfo: []*oidb.D8FCMemberInfo{
 			{
-				Uin:                    &memberUin,
+				Uin:                    proto.Some(memberUin),
 				UinName:                []byte(newTitle),
 				SpecialTitle:           []byte(newTitle),
 				SpecialTitleExpireTime: proto.Int32(-1),
@@ -1009,7 +1009,7 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 	body := &oidb.D89AReqBody{
 		GroupCode: groupCode,
 		StGroupInfo: &oidb.D89AGroupinfo{
-			ShutupTime: &shutUpTime,
+			ShutupTime: proto.Some(shutUpTime),
 		},
 	}
 	return c.buildGroupOperationPacket(body)

@@ -3,448 +3,116 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type AppChannelMsg struct {
-	Summary      *string `protobuf:"bytes,1,opt"`
-	Msg          *string `protobuf:"bytes,2,opt"`
-	ExpireTimeMs *uint64 `protobuf:"varint,3,opt"`
-	SchemaType   *uint32 `protobuf:"varint,4,opt"`
-	Schema       *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *AppChannelMsg) GetSummary() string {
-	if x != nil && x.Summary != nil {
-		return *x.Summary
-	}
-	return ""
-}
-
-func (x *AppChannelMsg) GetMsg() string {
-	if x != nil && x.Msg != nil {
-		return *x.Msg
-	}
-	return ""
-}
-
-func (x *AppChannelMsg) GetExpireTimeMs() uint64 {
-	if x != nil && x.ExpireTimeMs != nil {
-		return *x.ExpireTimeMs
-	}
-	return 0
-}
-
-func (x *AppChannelMsg) GetSchemaType() uint32 {
-	if x != nil && x.SchemaType != nil {
-		return *x.SchemaType
-	}
-	return 0
-}
-
-func (x *AppChannelMsg) GetSchema() string {
-	if x != nil && x.Schema != nil {
-		return *x.Schema
-	}
-	return ""
+	Summary      proto.Option[string] `protobuf:"bytes,1,opt"`
+	Msg          proto.Option[string] `protobuf:"bytes,2,opt"`
+	ExpireTimeMs proto.Option[uint64] `protobuf:"varint,3,opt"`
+	SchemaType   proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Schema       proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type CategoryChannelInfo struct {
-	ChannelIndex *uint32 `protobuf:"varint,1,opt"`
-	ChannelId    *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *CategoryChannelInfo) GetChannelIndex() uint32 {
-	if x != nil && x.ChannelIndex != nil {
-		return *x.ChannelIndex
-	}
-	return 0
-}
-
-func (x *CategoryChannelInfo) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
+	ChannelIndex proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ChannelId    proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type CategoryInfo struct {
-	CategoryIndex *uint32                `protobuf:"varint,1,opt"`
+	CategoryIndex proto.Option[uint32]   `protobuf:"varint,1,opt"`
 	ChannelInfo   []*CategoryChannelInfo `protobuf:"bytes,2,rep"`
 	CategoryName  []byte                 `protobuf:"bytes,3,opt"`
-	CategoryId    *uint64                `protobuf:"varint,4,opt"`
-}
-
-func (x *CategoryInfo) GetCategoryIndex() uint32 {
-	if x != nil && x.CategoryIndex != nil {
-		return *x.CategoryIndex
-	}
-	return 0
-}
-
-func (x *CategoryInfo) GetCategoryId() uint64 {
-	if x != nil && x.CategoryId != nil {
-		return *x.CategoryId
-	}
-	return 0
+	CategoryId    proto.Option[uint64]   `protobuf:"varint,4,opt"`
 }
 
 type ChanInfoFilter struct {
-	ChannelName            *uint32                 `protobuf:"varint,2,opt"`
-	CreatorId              *uint32                 `protobuf:"varint,3,opt"`
-	CreateTime             *uint32                 `protobuf:"varint,4,opt"`
-	GuildId                *uint32                 `protobuf:"varint,5,opt"`
-	MsgNotifyType          *uint32                 `protobuf:"varint,6,opt"`
-	ChannelType            *uint32                 `protobuf:"varint,7,opt"`
-	SpeakPermission        *uint32                 `protobuf:"varint,8,opt"`
-	LastMsgSeq             *uint32                 `protobuf:"varint,11,opt"`
-	LastCntMsgSeq          *uint32                 `protobuf:"varint,12,opt"`
+	ChannelName            proto.Option[uint32]    `protobuf:"varint,2,opt"`
+	CreatorId              proto.Option[uint32]    `protobuf:"varint,3,opt"`
+	CreateTime             proto.Option[uint32]    `protobuf:"varint,4,opt"`
+	GuildId                proto.Option[uint32]    `protobuf:"varint,5,opt"`
+	MsgNotifyType          proto.Option[uint32]    `protobuf:"varint,6,opt"`
+	ChannelType            proto.Option[uint32]    `protobuf:"varint,7,opt"`
+	SpeakPermission        proto.Option[uint32]    `protobuf:"varint,8,opt"`
+	LastMsgSeq             proto.Option[uint32]    `protobuf:"varint,11,opt"`
+	LastCntMsgSeq          proto.Option[uint32]    `protobuf:"varint,12,opt"`
 	VoiceChannelInfoFilter *VoiceChannelInfoFilter `protobuf:"bytes,14,opt"`
 	LiveChannelInfoFilter  *LiveChannelInfoFilter  `protobuf:"bytes,15,opt"`
-	BannedSpeak            *uint32                 `protobuf:"varint,16,opt"`
-}
-
-func (x *ChanInfoFilter) GetChannelName() uint32 {
-	if x != nil && x.ChannelName != nil {
-		return *x.ChannelName
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetCreatorId() uint32 {
-	if x != nil && x.CreatorId != nil {
-		return *x.CreatorId
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetCreateTime() uint32 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetGuildId() uint32 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetMsgNotifyType() uint32 {
-	if x != nil && x.MsgNotifyType != nil {
-		return *x.MsgNotifyType
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetChannelType() uint32 {
-	if x != nil && x.ChannelType != nil {
-		return *x.ChannelType
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetSpeakPermission() uint32 {
-	if x != nil && x.SpeakPermission != nil {
-		return *x.SpeakPermission
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetLastMsgSeq() uint32 {
-	if x != nil && x.LastMsgSeq != nil {
-		return *x.LastMsgSeq
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetLastCntMsgSeq() uint32 {
-	if x != nil && x.LastCntMsgSeq != nil {
-		return *x.LastCntMsgSeq
-	}
-	return 0
-}
-
-func (x *ChanInfoFilter) GetBannedSpeak() uint32 {
-	if x != nil && x.BannedSpeak != nil {
-		return *x.BannedSpeak
-	}
-	return 0
+	BannedSpeak            proto.Option[uint32]    `protobuf:"varint,16,opt"`
 }
 
 type ChangeChanInfo struct {
-	GuildId        *uint64          `protobuf:"varint,1,opt"`
-	ChanId         *uint64          `protobuf:"varint,2,opt"`
-	OperatorId     *uint64          `protobuf:"varint,3,opt"`
-	InfoSeq        *MsgSeq          `protobuf:"bytes,4,opt"`
-	UpdateType     *uint32          `protobuf:"varint,5,opt"`
-	ChanInfoFilter *ChanInfoFilter  `protobuf:"bytes,6,opt"`
-	ChanInfo       *ServChannelInfo `protobuf:"bytes,7,opt"`
-}
-
-func (x *ChangeChanInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ChangeChanInfo) GetChanId() uint64 {
-	if x != nil && x.ChanId != nil {
-		return *x.ChanId
-	}
-	return 0
-}
-
-func (x *ChangeChanInfo) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
-}
-
-func (x *ChangeChanInfo) GetUpdateType() uint32 {
-	if x != nil && x.UpdateType != nil {
-		return *x.UpdateType
-	}
-	return 0
+	GuildId        proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChanId         proto.Option[uint64] `protobuf:"varint,2,opt"`
+	OperatorId     proto.Option[uint64] `protobuf:"varint,3,opt"`
+	InfoSeq        *MsgSeq              `protobuf:"bytes,4,opt"`
+	UpdateType     proto.Option[uint32] `protobuf:"varint,5,opt"`
+	ChanInfoFilter *ChanInfoFilter      `protobuf:"bytes,6,opt"`
+	ChanInfo       *ServChannelInfo     `protobuf:"bytes,7,opt"`
 }
 
 type ChangeGuildInfo struct {
-	GuildId         *uint64          `protobuf:"varint,1,opt"`
-	OperatorId      *uint64          `protobuf:"varint,2,opt"`
-	InfoSeq         *MsgSeq          `protobuf:"bytes,3,opt"`
-	FaceSeq         *MsgSeq          `protobuf:"bytes,4,opt"`
-	UpdateType      *uint32          `protobuf:"varint,5,opt"`
-	GuildInfoFilter *GuildInfoFilter `protobuf:"bytes,6,opt"`
-	GuildInfo       *GuildInfo       `protobuf:"bytes,7,opt"`
-}
-
-func (x *ChangeGuildInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ChangeGuildInfo) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
-}
-
-func (x *ChangeGuildInfo) GetUpdateType() uint32 {
-	if x != nil && x.UpdateType != nil {
-		return *x.UpdateType
-	}
-	return 0
+	GuildId         proto.Option[uint64] `protobuf:"varint,1,opt"`
+	OperatorId      proto.Option[uint64] `protobuf:"varint,2,opt"`
+	InfoSeq         *MsgSeq              `protobuf:"bytes,3,opt"`
+	FaceSeq         *MsgSeq              `protobuf:"bytes,4,opt"`
+	UpdateType      proto.Option[uint32] `protobuf:"varint,5,opt"`
+	GuildInfoFilter *GuildInfoFilter     `protobuf:"bytes,6,opt"`
+	GuildInfo       *GuildInfo           `protobuf:"bytes,7,opt"`
 }
 
 type ChannelID struct {
-	ChanId *uint64 `protobuf:"varint,1,opt"`
-}
-
-func (x *ChannelID) GetChanId() uint64 {
-	if x != nil && x.ChanId != nil {
-		return *x.ChanId
-	}
-	return 0
+	ChanId proto.Option[uint64] `protobuf:"varint,1,opt"`
 }
 
 type ServChannelInfo struct {
-	ChannelId        *uint64           `protobuf:"varint,1,opt"`
-	ChannelName      []byte            `protobuf:"bytes,2,opt"`
-	CreatorId        *uint64           `protobuf:"varint,3,opt"`
-	CreateTime       *uint64           `protobuf:"varint,4,opt"`
-	GuildId          *uint64           `protobuf:"varint,5,opt"`
-	MsgNotifyType    *uint32           `protobuf:"varint,6,opt"`
-	ChannelType      *uint32           `protobuf:"varint,7,opt"`
-	SpeakPermission  *uint32           `protobuf:"varint,8,opt"`
-	LastMsgSeq       *MsgSeq           `protobuf:"bytes,11,opt"`
-	LastCntMsgSeq    *MsgSeq           `protobuf:"bytes,12,opt"`
-	VoiceChannelInfo *VoiceChannelInfo `protobuf:"bytes,14,opt"`
-	LiveChannelInfo  *LiveChannelInfo  `protobuf:"bytes,15,opt"`
-	BannedSpeak      *uint32           `protobuf:"varint,16,opt"`
-}
-
-func (x *ServChannelInfo) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetCreatorId() uint64 {
-	if x != nil && x.CreatorId != nil {
-		return *x.CreatorId
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetMsgNotifyType() uint32 {
-	if x != nil && x.MsgNotifyType != nil {
-		return *x.MsgNotifyType
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetChannelType() uint32 {
-	if x != nil && x.ChannelType != nil {
-		return *x.ChannelType
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetSpeakPermission() uint32 {
-	if x != nil && x.SpeakPermission != nil {
-		return *x.SpeakPermission
-	}
-	return 0
-}
-
-func (x *ServChannelInfo) GetBannedSpeak() uint32 {
-	if x != nil && x.BannedSpeak != nil {
-		return *x.BannedSpeak
-	}
-	return 0
+	ChannelId        proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelName      []byte               `protobuf:"bytes,2,opt"`
+	CreatorId        proto.Option[uint64] `protobuf:"varint,3,opt"`
+	CreateTime       proto.Option[uint64] `protobuf:"varint,4,opt"`
+	GuildId          proto.Option[uint64] `protobuf:"varint,5,opt"`
+	MsgNotifyType    proto.Option[uint32] `protobuf:"varint,6,opt"`
+	ChannelType      proto.Option[uint32] `protobuf:"varint,7,opt"`
+	SpeakPermission  proto.Option[uint32] `protobuf:"varint,8,opt"`
+	LastMsgSeq       *MsgSeq              `protobuf:"bytes,11,opt"`
+	LastCntMsgSeq    *MsgSeq              `protobuf:"bytes,12,opt"`
+	VoiceChannelInfo *VoiceChannelInfo    `protobuf:"bytes,14,opt"`
+	LiveChannelInfo  *LiveChannelInfo     `protobuf:"bytes,15,opt"`
+	BannedSpeak      proto.Option[uint32] `protobuf:"varint,16,opt"`
 }
 
 type CommGrayTips struct {
-	BusiType   *uint64                    `protobuf:"varint,1,opt"`
-	BusiId     *uint64                    `protobuf:"varint,2,opt"`
-	CtrlFlag   *uint32                    `protobuf:"varint,3,opt"`
-	TemplId    *uint64                    `protobuf:"varint,4,opt"`
+	BusiType   proto.Option[uint64]       `protobuf:"varint,1,opt"`
+	BusiId     proto.Option[uint64]       `protobuf:"varint,2,opt"`
+	CtrlFlag   proto.Option[uint32]       `protobuf:"varint,3,opt"`
+	TemplId    proto.Option[uint64]       `protobuf:"varint,4,opt"`
 	TemplParam []*CommGrayTips_TemplParam `protobuf:"bytes,5,rep"`
 	Content    []byte                     `protobuf:"bytes,6,opt"`
-	TipsSeqId  *uint64                    `protobuf:"varint,10,opt"`
+	TipsSeqId  proto.Option[uint64]       `protobuf:"varint,10,opt"`
 	PbReserv   []byte                     `protobuf:"bytes,100,opt"`
 }
 
-func (x *CommGrayTips) GetBusiType() uint64 {
-	if x != nil && x.BusiType != nil {
-		return *x.BusiType
-	}
-	return 0
-}
-
-func (x *CommGrayTips) GetBusiId() uint64 {
-	if x != nil && x.BusiId != nil {
-		return *x.BusiId
-	}
-	return 0
-}
-
-func (x *CommGrayTips) GetCtrlFlag() uint32 {
-	if x != nil && x.CtrlFlag != nil {
-		return *x.CtrlFlag
-	}
-	return 0
-}
-
-func (x *CommGrayTips) GetTemplId() uint64 {
-	if x != nil && x.TemplId != nil {
-		return *x.TemplId
-	}
-	return 0
-}
-
-func (x *CommGrayTips) GetTipsSeqId() uint64 {
-	if x != nil && x.TipsSeqId != nil {
-		return *x.TipsSeqId
-	}
-	return 0
-}
-
 type CreateChan struct {
-	GuildId    *uint64      `protobuf:"varint,1,opt"`
-	OperatorId *uint64      `protobuf:"varint,3,opt"`
-	CreateId   []*ChannelID `protobuf:"bytes,4,rep"`
-}
-
-func (x *CreateChan) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *CreateChan) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
+	GuildId    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	OperatorId proto.Option[uint64] `protobuf:"varint,3,opt"`
+	CreateId   []*ChannelID         `protobuf:"bytes,4,rep"`
 }
 
 type CreateGuild struct {
-	OperatorId *uint64 `protobuf:"varint,1,opt"`
-	GuildId    *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *CreateGuild) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
-}
-
-func (x *CreateGuild) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	OperatorId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GuildId    proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type DestroyChan struct {
-	GuildId    *uint64      `protobuf:"varint,1,opt"`
-	OperatorId *uint64      `protobuf:"varint,3,opt"`
-	DeleteId   []*ChannelID `protobuf:"bytes,4,rep"`
-}
-
-func (x *DestroyChan) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *DestroyChan) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
+	GuildId    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	OperatorId proto.Option[uint64] `protobuf:"varint,3,opt"`
+	DeleteId   []*ChannelID         `protobuf:"bytes,4,rep"`
 }
 
 type DestroyGuild struct {
-	OperatorId *uint64 `protobuf:"varint,1,opt"`
-	GuildId    *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *DestroyGuild) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
-}
-
-func (x *DestroyGuild) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	OperatorId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GuildId    proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type EventBody struct {
@@ -478,762 +146,174 @@ type EventBody struct {
 }
 
 type FeedEvent struct {
-	GuildId    *uint64 `protobuf:"varint,1,opt"`
-	ChannelId  *uint64 `protobuf:"varint,2,opt"`
-	FeedId     *string `protobuf:"bytes,3,opt"`
-	MsgSummary *string `protobuf:"bytes,4,opt"`
-	EventTime  *uint64 `protobuf:"varint,5,opt"`
-}
-
-func (x *FeedEvent) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *FeedEvent) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *FeedEvent) GetFeedId() string {
-	if x != nil && x.FeedId != nil {
-		return *x.FeedId
-	}
-	return ""
-}
-
-func (x *FeedEvent) GetMsgSummary() string {
-	if x != nil && x.MsgSummary != nil {
-		return *x.MsgSummary
-	}
-	return ""
-}
-
-func (x *FeedEvent) GetEventTime() uint64 {
-	if x != nil && x.EventTime != nil {
-		return *x.EventTime
-	}
-	return 0
+	GuildId    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId  proto.Option[uint64] `protobuf:"varint,2,opt"`
+	FeedId     proto.Option[string] `protobuf:"bytes,3,opt"`
+	MsgSummary proto.Option[string] `protobuf:"bytes,4,opt"`
+	EventTime  proto.Option[uint64] `protobuf:"varint,5,opt"`
 }
 
 type ReadFeedNotify struct {
-	ReportTime *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *ReadFeedNotify) GetReportTime() uint64 {
-	if x != nil && x.ReportTime != nil {
-		return *x.ReportTime
-	}
-	return 0
+	ReportTime proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type GroupProStatus struct {
-	IsEnable *uint32 `protobuf:"varint,1,opt"`
-	IsBanned *uint32 `protobuf:"varint,2,opt"`
-	IsFrozen *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *GroupProStatus) GetIsEnable() uint32 {
-	if x != nil && x.IsEnable != nil {
-		return *x.IsEnable
-	}
-	return 0
-}
-
-func (x *GroupProStatus) GetIsBanned() uint32 {
-	if x != nil && x.IsBanned != nil {
-		return *x.IsBanned
-	}
-	return 0
-}
-
-func (x *GroupProStatus) GetIsFrozen() uint32 {
-	if x != nil && x.IsFrozen != nil {
-		return *x.IsFrozen
-	}
-	return 0
+	IsEnable proto.Option[uint32] `protobuf:"varint,1,opt"`
+	IsBanned proto.Option[uint32] `protobuf:"varint,2,opt"`
+	IsFrozen proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type GuildInfo struct {
-	GuildCode          *uint64         `protobuf:"varint,2,opt"`
-	OwnerId            *uint64         `protobuf:"varint,3,opt"`
-	CreateTime         *uint64         `protobuf:"varint,4,opt"`
-	MemberMaxNum       *uint32         `protobuf:"varint,5,opt"`
-	MemberNum          *uint32         `protobuf:"varint,6,opt"`
-	GuildType          *uint32         `protobuf:"varint,7,opt"`
-	GuildName          []byte          `protobuf:"bytes,8,opt"`
-	RobotList          []uint64        `protobuf:"varint,9,rep"`
-	AdminList          []uint64        `protobuf:"varint,10,rep"`
-	RobotMaxNum        *uint32         `protobuf:"varint,11,opt"`
-	AdminMaxNum        *uint32         `protobuf:"varint,12,opt"`
-	Profile            []byte          `protobuf:"bytes,13,opt"`
-	FaceSeq            *uint64         `protobuf:"varint,14,opt"`
-	GuildStatus        *GroupProStatus `protobuf:"bytes,15,opt"`
-	ChannelNum         *uint32         `protobuf:"varint,16,opt"`
-	MemberChangeSeq    *MsgSeq         `protobuf:"bytes,5002,opt"`
-	GuildInfoChangeSeq *MsgSeq         `protobuf:"bytes,5003,opt"`
-	ChannelChangeSeq   *MsgSeq         `protobuf:"bytes,5004,opt"`
-}
-
-func (x *GuildInfo) GetGuildCode() uint64 {
-	if x != nil && x.GuildCode != nil {
-		return *x.GuildCode
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetOwnerId() uint64 {
-	if x != nil && x.OwnerId != nil {
-		return *x.OwnerId
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetMemberMaxNum() uint32 {
-	if x != nil && x.MemberMaxNum != nil {
-		return *x.MemberMaxNum
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetMemberNum() uint32 {
-	if x != nil && x.MemberNum != nil {
-		return *x.MemberNum
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetGuildType() uint32 {
-	if x != nil && x.GuildType != nil {
-		return *x.GuildType
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetRobotMaxNum() uint32 {
-	if x != nil && x.RobotMaxNum != nil {
-		return *x.RobotMaxNum
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetAdminMaxNum() uint32 {
-	if x != nil && x.AdminMaxNum != nil {
-		return *x.AdminMaxNum
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetFaceSeq() uint64 {
-	if x != nil && x.FaceSeq != nil {
-		return *x.FaceSeq
-	}
-	return 0
-}
-
-func (x *GuildInfo) GetChannelNum() uint32 {
-	if x != nil && x.ChannelNum != nil {
-		return *x.ChannelNum
-	}
-	return 0
+	GuildCode          proto.Option[uint64] `protobuf:"varint,2,opt"`
+	OwnerId            proto.Option[uint64] `protobuf:"varint,3,opt"`
+	CreateTime         proto.Option[uint64] `protobuf:"varint,4,opt"`
+	MemberMaxNum       proto.Option[uint32] `protobuf:"varint,5,opt"`
+	MemberNum          proto.Option[uint32] `protobuf:"varint,6,opt"`
+	GuildType          proto.Option[uint32] `protobuf:"varint,7,opt"`
+	GuildName          []byte               `protobuf:"bytes,8,opt"`
+	RobotList          []uint64             `protobuf:"varint,9,rep"`
+	AdminList          []uint64             `protobuf:"varint,10,rep"`
+	RobotMaxNum        proto.Option[uint32] `protobuf:"varint,11,opt"`
+	AdminMaxNum        proto.Option[uint32] `protobuf:"varint,12,opt"`
+	Profile            []byte               `protobuf:"bytes,13,opt"`
+	FaceSeq            proto.Option[uint64] `protobuf:"varint,14,opt"`
+	GuildStatus        *GroupProStatus      `protobuf:"bytes,15,opt"`
+	ChannelNum         proto.Option[uint32] `protobuf:"varint,16,opt"`
+	MemberChangeSeq    *MsgSeq              `protobuf:"bytes,5002,opt"`
+	GuildInfoChangeSeq *MsgSeq              `protobuf:"bytes,5003,opt"`
+	ChannelChangeSeq   *MsgSeq              `protobuf:"bytes,5004,opt"`
 }
 
 type GuildInfoFilter struct {
-	GuildCode          *uint32 `protobuf:"varint,2,opt"`
-	OwnerId            *uint32 `protobuf:"varint,3,opt"`
-	CreateTime         *uint32 `protobuf:"varint,4,opt"`
-	MemberMaxNum       *uint32 `protobuf:"varint,5,opt"`
-	MemberNum          *uint32 `protobuf:"varint,6,opt"`
-	GuildType          *uint32 `protobuf:"varint,7,opt"`
-	GuildName          *uint32 `protobuf:"varint,8,opt"`
-	RobotList          *uint32 `protobuf:"varint,9,opt"`
-	AdminList          *uint32 `protobuf:"varint,10,opt"`
-	RobotMaxNum        *uint32 `protobuf:"varint,11,opt"`
-	AdminMaxNum        *uint32 `protobuf:"varint,12,opt"`
-	Profile            *uint32 `protobuf:"varint,13,opt"`
-	FaceSeq            *uint32 `protobuf:"varint,14,opt"`
-	GuildStatus        *uint32 `protobuf:"varint,15,opt"`
-	ChannelNum         *uint32 `protobuf:"varint,16,opt"`
-	MemberChangeSeq    *uint32 `protobuf:"varint,5002,opt"`
-	GuildInfoChangeSeq *uint32 `protobuf:"varint,5003,opt"`
-	ChannelChangeSeq   *uint32 `protobuf:"varint,5004,opt"`
-}
-
-func (x *GuildInfoFilter) GetGuildCode() uint32 {
-	if x != nil && x.GuildCode != nil {
-		return *x.GuildCode
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetOwnerId() uint32 {
-	if x != nil && x.OwnerId != nil {
-		return *x.OwnerId
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetCreateTime() uint32 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetMemberMaxNum() uint32 {
-	if x != nil && x.MemberMaxNum != nil {
-		return *x.MemberMaxNum
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetMemberNum() uint32 {
-	if x != nil && x.MemberNum != nil {
-		return *x.MemberNum
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetGuildType() uint32 {
-	if x != nil && x.GuildType != nil {
-		return *x.GuildType
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetGuildName() uint32 {
-	if x != nil && x.GuildName != nil {
-		return *x.GuildName
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetRobotList() uint32 {
-	if x != nil && x.RobotList != nil {
-		return *x.RobotList
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetAdminList() uint32 {
-	if x != nil && x.AdminList != nil {
-		return *x.AdminList
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetRobotMaxNum() uint32 {
-	if x != nil && x.RobotMaxNum != nil {
-		return *x.RobotMaxNum
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetAdminMaxNum() uint32 {
-	if x != nil && x.AdminMaxNum != nil {
-		return *x.AdminMaxNum
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetProfile() uint32 {
-	if x != nil && x.Profile != nil {
-		return *x.Profile
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetFaceSeq() uint32 {
-	if x != nil && x.FaceSeq != nil {
-		return *x.FaceSeq
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetGuildStatus() uint32 {
-	if x != nil && x.GuildStatus != nil {
-		return *x.GuildStatus
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetChannelNum() uint32 {
-	if x != nil && x.ChannelNum != nil {
-		return *x.ChannelNum
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetMemberChangeSeq() uint32 {
-	if x != nil && x.MemberChangeSeq != nil {
-		return *x.MemberChangeSeq
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetGuildInfoChangeSeq() uint32 {
-	if x != nil && x.GuildInfoChangeSeq != nil {
-		return *x.GuildInfoChangeSeq
-	}
-	return 0
-}
-
-func (x *GuildInfoFilter) GetChannelChangeSeq() uint32 {
-	if x != nil && x.ChannelChangeSeq != nil {
-		return *x.ChannelChangeSeq
-	}
-	return 0
+	GuildCode          proto.Option[uint32] `protobuf:"varint,2,opt"`
+	OwnerId            proto.Option[uint32] `protobuf:"varint,3,opt"`
+	CreateTime         proto.Option[uint32] `protobuf:"varint,4,opt"`
+	MemberMaxNum       proto.Option[uint32] `protobuf:"varint,5,opt"`
+	MemberNum          proto.Option[uint32] `protobuf:"varint,6,opt"`
+	GuildType          proto.Option[uint32] `protobuf:"varint,7,opt"`
+	GuildName          proto.Option[uint32] `protobuf:"varint,8,opt"`
+	RobotList          proto.Option[uint32] `protobuf:"varint,9,opt"`
+	AdminList          proto.Option[uint32] `protobuf:"varint,10,opt"`
+	RobotMaxNum        proto.Option[uint32] `protobuf:"varint,11,opt"`
+	AdminMaxNum        proto.Option[uint32] `protobuf:"varint,12,opt"`
+	Profile            proto.Option[uint32] `protobuf:"varint,13,opt"`
+	FaceSeq            proto.Option[uint32] `protobuf:"varint,14,opt"`
+	GuildStatus        proto.Option[uint32] `protobuf:"varint,15,opt"`
+	ChannelNum         proto.Option[uint32] `protobuf:"varint,16,opt"`
+	MemberChangeSeq    proto.Option[uint32] `protobuf:"varint,5002,opt"`
+	GuildInfoChangeSeq proto.Option[uint32] `protobuf:"varint,5003,opt"`
+	ChannelChangeSeq   proto.Option[uint32] `protobuf:"varint,5004,opt"`
 }
 
 type JoinGuild struct {
-	MemberId     *uint64 `protobuf:"varint,3,opt"`
-	MemberType   *uint32 `protobuf:"varint,4,opt"`
-	MemberTinyid *uint64 `protobuf:"varint,5,opt"`
-}
-
-func (x *JoinGuild) GetMemberId() uint64 {
-	if x != nil && x.MemberId != nil {
-		return *x.MemberId
-	}
-	return 0
-}
-
-func (x *JoinGuild) GetMemberType() uint32 {
-	if x != nil && x.MemberType != nil {
-		return *x.MemberType
-	}
-	return 0
-}
-
-func (x *JoinGuild) GetMemberTinyid() uint64 {
-	if x != nil && x.MemberTinyid != nil {
-		return *x.MemberTinyid
-	}
-	return 0
+	MemberId     proto.Option[uint64] `protobuf:"varint,3,opt"`
+	MemberType   proto.Option[uint32] `protobuf:"varint,4,opt"`
+	MemberTinyid proto.Option[uint64] `protobuf:"varint,5,opt"`
 }
 
 type KickOffGuild struct {
-	MemberId     *uint64 `protobuf:"varint,3,opt"`
-	SetBlack     *uint32 `protobuf:"varint,4,opt"`
-	MemberTinyid *uint64 `protobuf:"varint,5,opt"`
-}
-
-func (x *KickOffGuild) GetMemberId() uint64 {
-	if x != nil && x.MemberId != nil {
-		return *x.MemberId
-	}
-	return 0
-}
-
-func (x *KickOffGuild) GetSetBlack() uint32 {
-	if x != nil && x.SetBlack != nil {
-		return *x.SetBlack
-	}
-	return 0
-}
-
-func (x *KickOffGuild) GetMemberTinyid() uint64 {
-	if x != nil && x.MemberTinyid != nil {
-		return *x.MemberTinyid
-	}
-	return 0
+	MemberId     proto.Option[uint64] `protobuf:"varint,3,opt"`
+	SetBlack     proto.Option[uint32] `protobuf:"varint,4,opt"`
+	MemberTinyid proto.Option[uint64] `protobuf:"varint,5,opt"`
 }
 
 type LiveChannelInfo struct {
-	RoomId    *uint64 `protobuf:"varint,1,opt"`
-	AnchorUin *uint64 `protobuf:"varint,2,opt"`
-	Name      []byte  `protobuf:"bytes,3,opt"`
-}
-
-func (x *LiveChannelInfo) GetRoomId() uint64 {
-	if x != nil && x.RoomId != nil {
-		return *x.RoomId
-	}
-	return 0
-}
-
-func (x *LiveChannelInfo) GetAnchorUin() uint64 {
-	if x != nil && x.AnchorUin != nil {
-		return *x.AnchorUin
-	}
-	return 0
+	RoomId    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AnchorUin proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Name      []byte               `protobuf:"bytes,3,opt"`
 }
 
 type LiveChannelInfoFilter struct {
-	IsNeedRoomId    *uint32 `protobuf:"varint,1,opt"`
-	IsNeedAnchorUin *uint32 `protobuf:"varint,2,opt"`
-	IsNeedName      *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *LiveChannelInfoFilter) GetIsNeedRoomId() uint32 {
-	if x != nil && x.IsNeedRoomId != nil {
-		return *x.IsNeedRoomId
-	}
-	return 0
-}
-
-func (x *LiveChannelInfoFilter) GetIsNeedAnchorUin() uint32 {
-	if x != nil && x.IsNeedAnchorUin != nil {
-		return *x.IsNeedAnchorUin
-	}
-	return 0
-}
-
-func (x *LiveChannelInfoFilter) GetIsNeedName() uint32 {
-	if x != nil && x.IsNeedName != nil {
-		return *x.IsNeedName
-	}
-	return 0
+	IsNeedRoomId    proto.Option[uint32] `protobuf:"varint,1,opt"`
+	IsNeedAnchorUin proto.Option[uint32] `protobuf:"varint,2,opt"`
+	IsNeedName      proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type LiveRoomStatusChangeMsg struct {
-	GuildId      *uint64 `protobuf:"varint,1,opt"`
-	ChannelId    *uint64 `protobuf:"varint,2,opt"`
-	RoomId       *uint64 `protobuf:"varint,3,opt"`
-	AnchorTinyid *uint64 `protobuf:"varint,4,opt"`
-	Action       *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *LiveRoomStatusChangeMsg) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *LiveRoomStatusChangeMsg) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *LiveRoomStatusChangeMsg) GetRoomId() uint64 {
-	if x != nil && x.RoomId != nil {
-		return *x.RoomId
-	}
-	return 0
-}
-
-func (x *LiveRoomStatusChangeMsg) GetAnchorTinyid() uint64 {
-	if x != nil && x.AnchorTinyid != nil {
-		return *x.AnchorTinyid
-	}
-	return 0
-}
-
-func (x *LiveRoomStatusChangeMsg) GetAction() uint32 {
-	if x != nil && x.Action != nil {
-		return *x.Action
-	}
-	return 0
+	GuildId      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	RoomId       proto.Option[uint64] `protobuf:"varint,3,opt"`
+	AnchorTinyid proto.Option[uint64] `protobuf:"varint,4,opt"`
+	Action       proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type MsgEvent struct {
-	Seq          *uint64 `protobuf:"varint,1,opt"`
-	EventType    *uint64 `protobuf:"varint,2,opt"`
-	EventVersion *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *MsgEvent) GetSeq() uint64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *MsgEvent) GetEventType() uint64 {
-	if x != nil && x.EventType != nil {
-		return *x.EventType
-	}
-	return 0
-}
-
-func (x *MsgEvent) GetEventVersion() uint64 {
-	if x != nil && x.EventVersion != nil {
-		return *x.EventVersion
-	}
-	return 0
+	Seq          proto.Option[uint64] `protobuf:"varint,1,opt"`
+	EventType    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	EventVersion proto.Option[uint64] `protobuf:"varint,3,opt"`
 }
 
 type MsgSeq struct {
-	Seq  *uint64 `protobuf:"varint,1,opt"`
-	Time *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *MsgSeq) GetSeq() uint64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *MsgSeq) GetTime() uint64 {
-	if x != nil && x.Time != nil {
-		return *x.Time
-	}
-	return 0
+	Seq  proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Time proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type QuitGuild struct {
 }
 
 type ReadNotify struct {
-	ChannelId     *uint64 `protobuf:"varint,1,opt"`
-	GuildId       *uint64 `protobuf:"varint,2,opt"`
-	ReadMsgSeq    *MsgSeq `protobuf:"bytes,3,opt"`
-	ReadCntMsgSeq *MsgSeq `protobuf:"bytes,4,opt"`
-	ReadMsgMeta   []byte  `protobuf:"bytes,5,opt"`
-}
-
-func (x *ReadNotify) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *ReadNotify) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	ChannelId     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GuildId       proto.Option[uint64] `protobuf:"varint,2,opt"`
+	ReadMsgSeq    *MsgSeq              `protobuf:"bytes,3,opt"`
+	ReadCntMsgSeq *MsgSeq              `protobuf:"bytes,4,opt"`
+	ReadMsgMeta   []byte               `protobuf:"bytes,5,opt"`
 }
 
 type SchedulerMsg struct {
-	CreatorHeadUrl []byte  `protobuf:"bytes,1,opt"`
-	Wording        *string `protobuf:"bytes,2,opt"`
-	ExpireTimeMs   *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *SchedulerMsg) GetWording() string {
-	if x != nil && x.Wording != nil {
-		return *x.Wording
-	}
-	return ""
-}
-
-func (x *SchedulerMsg) GetExpireTimeMs() uint64 {
-	if x != nil && x.ExpireTimeMs != nil {
-		return *x.ExpireTimeMs
-	}
-	return 0
+	CreatorHeadUrl []byte               `protobuf:"bytes,1,opt"`
+	Wording        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ExpireTimeMs   proto.Option[uint64] `protobuf:"varint,3,opt"`
 }
 
 type SetAdmin struct {
-	GuildId     *uint64 `protobuf:"varint,1,opt"`
-	ChanId      *uint64 `protobuf:"varint,2,opt"`
-	OperatorId  *uint64 `protobuf:"varint,3,opt"`
-	AdminId     *uint64 `protobuf:"varint,4,opt"`
-	AdminTinyid *uint64 `protobuf:"varint,5,opt"`
-	OperateType *uint32 `protobuf:"varint,6,opt"`
-}
-
-func (x *SetAdmin) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *SetAdmin) GetChanId() uint64 {
-	if x != nil && x.ChanId != nil {
-		return *x.ChanId
-	}
-	return 0
-}
-
-func (x *SetAdmin) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
-}
-
-func (x *SetAdmin) GetAdminId() uint64 {
-	if x != nil && x.AdminId != nil {
-		return *x.AdminId
-	}
-	return 0
-}
-
-func (x *SetAdmin) GetAdminTinyid() uint64 {
-	if x != nil && x.AdminTinyid != nil {
-		return *x.AdminTinyid
-	}
-	return 0
-}
-
-func (x *SetAdmin) GetOperateType() uint32 {
-	if x != nil && x.OperateType != nil {
-		return *x.OperateType
-	}
-	return 0
+	GuildId     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChanId      proto.Option[uint64] `protobuf:"varint,2,opt"`
+	OperatorId  proto.Option[uint64] `protobuf:"varint,3,opt"`
+	AdminId     proto.Option[uint64] `protobuf:"varint,4,opt"`
+	AdminTinyid proto.Option[uint64] `protobuf:"varint,5,opt"`
+	OperateType proto.Option[uint32] `protobuf:"varint,6,opt"`
 }
 
 type SetMsgRecvType struct {
-	GuildId       *uint64 `protobuf:"varint,1,opt"`
-	ChanId        *uint64 `protobuf:"varint,2,opt"`
-	OperatorId    *uint64 `protobuf:"varint,3,opt"`
-	MsgNotifyType *uint32 `protobuf:"varint,4,opt"`
-}
-
-func (x *SetMsgRecvType) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *SetMsgRecvType) GetChanId() uint64 {
-	if x != nil && x.ChanId != nil {
-		return *x.ChanId
-	}
-	return 0
-}
-
-func (x *SetMsgRecvType) GetOperatorId() uint64 {
-	if x != nil && x.OperatorId != nil {
-		return *x.OperatorId
-	}
-	return 0
-}
-
-func (x *SetMsgRecvType) GetMsgNotifyType() uint32 {
-	if x != nil && x.MsgNotifyType != nil {
-		return *x.MsgNotifyType
-	}
-	return 0
+	GuildId       proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChanId        proto.Option[uint64] `protobuf:"varint,2,opt"`
+	OperatorId    proto.Option[uint64] `protobuf:"varint,3,opt"`
+	MsgNotifyType proto.Option[uint32] `protobuf:"varint,4,opt"`
 }
 
 type SetMute struct {
-	Action *uint32 `protobuf:"varint,1,opt"`
-	TinyID *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *SetMute) GetAction() uint32 {
-	if x != nil && x.Action != nil {
-		return *x.Action
-	}
-	return 0
-}
-
-func (x *SetMute) GetTinyID() uint64 {
-	if x != nil && x.TinyID != nil {
-		return *x.TinyID
-	}
-	return 0
+	Action proto.Option[uint32] `protobuf:"varint,1,opt"`
+	TinyID proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type SetTop struct {
-	Action *uint32 `protobuf:"varint,1,opt"`
-}
-
-func (x *SetTop) GetAction() uint32 {
-	if x != nil && x.Action != nil {
-		return *x.Action
-	}
-	return 0
+	Action proto.Option[uint32] `protobuf:"varint,1,opt"`
 }
 
 type SwitchDetail struct {
-	GuildId   *uint64 `protobuf:"varint,1,opt"`
-	ChannelId *uint64 `protobuf:"varint,2,opt"`
-	Platform  *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *SwitchDetail) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *SwitchDetail) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *SwitchDetail) GetPlatform() uint32 {
-	if x != nil && x.Platform != nil {
-		return *x.Platform
-	}
-	return 0
+	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Platform  proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type SwitchLiveRoom struct {
-	GuildId   *uint64 `protobuf:"varint,1,opt"`
-	ChannelId *uint64 `protobuf:"varint,2,opt"`
+	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
 	// optional uint64 roomId = 3;
 	// optional uint64 tinyid = 4;
 	UserInfo *SwitchLiveRoomUserInfo `protobuf:"bytes,3,opt"`
-	Action   *uint32                 `protobuf:"varint,4,opt"` // JOIN = 1 QUIT = 2
-}
-
-func (x *SwitchLiveRoom) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *SwitchLiveRoom) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *SwitchLiveRoom) GetAction() uint32 {
-	if x != nil && x.Action != nil {
-		return *x.Action
-	}
-	return 0
+	Action   proto.Option[uint32]    `protobuf:"varint,4,opt"` // JOIN = 1 QUIT = 2
 }
 
 type SwitchLiveRoomUserInfo struct {
-	TinyId   *uint64 `protobuf:"varint,1,opt"`
-	Nickname *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *SwitchLiveRoomUserInfo) GetTinyId() uint64 {
-	if x != nil && x.TinyId != nil {
-		return *x.TinyId
-	}
-	return 0
-}
-
-func (x *SwitchLiveRoomUserInfo) GetNickname() string {
-	if x != nil && x.Nickname != nil {
-		return *x.Nickname
-	}
-	return ""
+	TinyId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Nickname proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type SwitchVoiceChannel struct {
-	MemberId    *uint64       `protobuf:"varint,1,opt"`
-	EnterDetail *SwitchDetail `protobuf:"bytes,2,opt"`
-	LeaveDetail *SwitchDetail `protobuf:"bytes,3,opt"`
-}
-
-func (x *SwitchVoiceChannel) GetMemberId() uint64 {
-	if x != nil && x.MemberId != nil {
-		return *x.MemberId
-	}
-	return 0
+	MemberId    proto.Option[uint64] `protobuf:"varint,1,opt"`
+	EnterDetail *SwitchDetail        `protobuf:"bytes,2,opt"`
+	LeaveDetail *SwitchDetail        `protobuf:"bytes,3,opt"`
 }
 
 type UpdateCategory struct {
@@ -1242,111 +322,27 @@ type UpdateCategory struct {
 }
 
 type UpdateMsg struct {
-	MsgSeq             *uint64 `protobuf:"varint,1,opt"`
-	OrigMsgUncountable *bool   `protobuf:"varint,2,opt"`
-	EventType          *uint64 `protobuf:"varint,3,opt"`
-	EventVersion       *uint64 `protobuf:"varint,4,opt"`
-	OperatorTinyid     *uint64 `protobuf:"varint,5,opt"`
-	OperatorRole       *uint64 `protobuf:"varint,6,opt"`
-	Reason             *uint64 `protobuf:"varint,7,opt"`
-	Timestamp          *uint64 `protobuf:"varint,8,opt"`
-}
-
-func (x *UpdateMsg) GetMsgSeq() uint64 {
-	if x != nil && x.MsgSeq != nil {
-		return *x.MsgSeq
-	}
-	return 0
-}
-
-func (x *UpdateMsg) GetOrigMsgUncountable() bool {
-	if x != nil && x.OrigMsgUncountable != nil {
-		return *x.OrigMsgUncountable
-	}
-	return false
-}
-
-func (x *UpdateMsg) GetEventType() uint64 {
-	if x != nil && x.EventType != nil {
-		return *x.EventType
-	}
-	return 0
-}
-
-func (x *UpdateMsg) GetEventVersion() uint64 {
-	if x != nil && x.EventVersion != nil {
-		return *x.EventVersion
-	}
-	return 0
-}
-
-func (x *UpdateMsg) GetOperatorTinyid() uint64 {
-	if x != nil && x.OperatorTinyid != nil {
-		return *x.OperatorTinyid
-	}
-	return 0
-}
-
-func (x *UpdateMsg) GetOperatorRole() uint64 {
-	if x != nil && x.OperatorRole != nil {
-		return *x.OperatorRole
-	}
-	return 0
-}
-
-func (x *UpdateMsg) GetReason() uint64 {
-	if x != nil && x.Reason != nil {
-		return *x.Reason
-	}
-	return 0
-}
-
-func (x *UpdateMsg) GetTimestamp() uint64 {
-	if x != nil && x.Timestamp != nil {
-		return *x.Timestamp
-	}
-	return 0
+	MsgSeq             proto.Option[uint64] `protobuf:"varint,1,opt"`
+	OrigMsgUncountable proto.Option[bool]   `protobuf:"varint,2,opt"`
+	EventType          proto.Option[uint64] `protobuf:"varint,3,opt"`
+	EventVersion       proto.Option[uint64] `protobuf:"varint,4,opt"`
+	OperatorTinyid     proto.Option[uint64] `protobuf:"varint,5,opt"`
+	OperatorRole       proto.Option[uint64] `protobuf:"varint,6,opt"`
+	Reason             proto.Option[uint64] `protobuf:"varint,7,opt"`
+	Timestamp          proto.Option[uint64] `protobuf:"varint,8,opt"`
 }
 
 type UpdateVoiceBlockList struct {
-	Action       *uint32 `protobuf:"varint,1,opt"`
-	ObjectTinyid *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *UpdateVoiceBlockList) GetAction() uint32 {
-	if x != nil && x.Action != nil {
-		return *x.Action
-	}
-	return 0
-}
-
-func (x *UpdateVoiceBlockList) GetObjectTinyid() uint64 {
-	if x != nil && x.ObjectTinyid != nil {
-		return *x.ObjectTinyid
-	}
-	return 0
+	Action       proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ObjectTinyid proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type VoiceChannelInfo struct {
-	MemberMaxNum *uint32 `protobuf:"varint,1,opt"`
-}
-
-func (x *VoiceChannelInfo) GetMemberMaxNum() uint32 {
-	if x != nil && x.MemberMaxNum != nil {
-		return *x.MemberMaxNum
-	}
-	return 0
+	MemberMaxNum proto.Option[uint32] `protobuf:"varint,1,opt"`
 }
 
 type VoiceChannelInfoFilter struct {
-	MemberMaxNum *uint32 `protobuf:"varint,1,opt"`
-}
-
-func (x *VoiceChannelInfoFilter) GetMemberMaxNum() uint32 {
-	if x != nil && x.MemberMaxNum != nil {
-		return *x.MemberMaxNum
-	}
-	return 0
+	MemberMaxNum proto.Option[uint32] `protobuf:"varint,1,opt"`
 }
 
 type CommGrayTips_TemplParam struct {

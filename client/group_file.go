@@ -84,8 +84,8 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 		return nil, e
 	}
 	fs = &GroupFileSystem{
-		FileCount:  rsp.(*oidb.D6D8RspBody).FileCountRsp.GetAllFileCount(),
-		LimitCount: rsp.(*oidb.D6D8RspBody).FileCountRsp.GetLimitCount(),
+		FileCount:  rsp.(*oidb.D6D8RspBody).FileCountRsp.AllFileCount.Unwrap(),
+		LimitCount: rsp.(*oidb.D6D8RspBody).FileCountRsp.LimitCount.Unwrap(),
 		GroupCode:  groupCode,
 		client:     c,
 	}
@@ -93,8 +93,8 @@ func (c *QQClient) GetGroupFileSystem(groupCode int64) (fs *GroupFileSystem, err
 	if err != nil {
 		return nil, err
 	}
-	fs.TotalSpace = rsp.(*oidb.D6D8RspBody).GroupSpaceRsp.GetTotalSpace()
-	fs.UsedSpace = rsp.(*oidb.D6D8RspBody).GroupSpaceRsp.GetUsedSpace()
+	fs.TotalSpace = rsp.(*oidb.D6D8RspBody).GroupSpaceRsp.TotalSpace.Unwrap()
+	fs.UsedSpace = rsp.(*oidb.D6D8RspBody).GroupSpaceRsp.UsedSpace.Unwrap()
 	return fs, nil
 }
 
@@ -129,34 +129,34 @@ func (fs *GroupFileSystem) GetFilesByFolder(folderID string) ([]*GroupFile, []*G
 			if item.FileInfo != nil {
 				files = append(files, &GroupFile{
 					GroupCode:     fs.GroupCode,
-					FileId:        item.FileInfo.GetFileId(),
-					FileName:      item.FileInfo.GetFileName(),
-					BusId:         int32(item.FileInfo.GetBusId()),
-					FileSize:      int64(item.FileInfo.GetFileSize()),
-					UploadTime:    int64(item.FileInfo.GetUploadTime()),
-					DeadTime:      int64(item.FileInfo.GetDeadTime()),
-					ModifyTime:    int64(item.FileInfo.GetModifyTime()),
-					DownloadTimes: int64(item.FileInfo.GetDownloadTimes()),
-					Uploader:      int64(item.FileInfo.GetUploaderUin()),
-					UploaderName:  item.FileInfo.GetUploaderName(),
+					FileId:        item.FileInfo.FileId.Unwrap(),
+					FileName:      item.FileInfo.FileName.Unwrap(),
+					BusId:         int32(item.FileInfo.BusId.Unwrap()),
+					FileSize:      int64(item.FileInfo.FileSize.Unwrap()),
+					UploadTime:    int64(item.FileInfo.UploadTime.Unwrap()),
+					DeadTime:      int64(item.FileInfo.DeadTime.Unwrap()),
+					ModifyTime:    int64(item.FileInfo.ModifyTime.Unwrap()),
+					DownloadTimes: int64(item.FileInfo.DownloadTimes.Unwrap()),
+					Uploader:      int64(item.FileInfo.UploaderUin.Unwrap()),
+					UploaderName:  item.FileInfo.UploaderName.Unwrap(),
 				})
 			}
 			if item.FolderInfo != nil {
 				folders = append(folders, &GroupFolder{
 					GroupCode:      fs.GroupCode,
-					FolderId:       item.FolderInfo.GetFolderId(),
-					FolderName:     item.FolderInfo.GetFolderName(),
-					CreateTime:     int64(item.FolderInfo.GetCreateTime()),
-					Creator:        int64(item.FolderInfo.GetCreateUin()),
-					CreatorName:    item.FolderInfo.GetCreatorName(),
-					TotalFileCount: item.FolderInfo.GetTotalFileCount(),
+					FolderId:       item.FolderInfo.FolderId.Unwrap(),
+					FolderName:     item.FolderInfo.FolderName.Unwrap(),
+					CreateTime:     int64(item.FolderInfo.CreateTime.Unwrap()),
+					Creator:        int64(item.FolderInfo.CreateUin.Unwrap()),
+					CreatorName:    item.FolderInfo.CreatorName.Unwrap(),
+					TotalFileCount: item.FolderInfo.TotalFileCount.Unwrap(),
 				})
 			}
 		}
-		if rsp.FileListInfoRsp.GetIsEnd() {
+		if rsp.FileListInfoRsp.IsEnd.Unwrap() {
 			break
 		}
-		startIndex = rsp.FileListInfoRsp.GetNextIndex()
+		startIndex = rsp.FileListInfoRsp.NextIndex.Unwrap()
 	}
 	return files, folders, nil
 }
@@ -182,8 +182,8 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		return errors.Wrap(err, "query upload failed")
 	}
 	rsp := i.(*oidb.UploadFileRspBody)
-	if rsp.GetBoolFileExist() {
-		_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.GetFileId(), rsp.GetBusId(), rand.Int31())
+	if rsp.BoolFileExist.Unwrap() {
+		_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId.Unwrap(), rsp.BusId.Unwrap(), rand.Int31())
 		return fs.client.sendPacket(pkt)
 	}
 	if len(rsp.UploadIpLanV4) == 0 {
@@ -195,15 +195,15 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		Entry: &exciting.GroupFileUploadEntry{
 			BusiBuff: &exciting.ExcitingBusiInfo{
 				BusId:       rsp.BusId,
-				SenderUin:   &fs.client.Uin,
-				ReceiverUin: &fs.GroupCode,
-				GroupCode:   &fs.GroupCode,
+				SenderUin:   proto.Some(fs.client.Uin),
+				ReceiverUin: proto.Some(fs.GroupCode),
+				GroupCode:   proto.Some(fs.GroupCode),
 			},
 			FileEntry: &exciting.ExcitingFileEntry{
-				FileSize:  &size,
+				FileSize:  proto.Some(size),
 				Md5:       md5Hash,
 				Sha1:      sha1Hash,
-				FileId:    []byte(rsp.GetFileId()),
+				FileId:    []byte(rsp.FileId.Unwrap()),
 				UploadKey: rsp.CheckKey,
 			},
 			ClientInfo: &exciting.ExcitingClientInfo{
@@ -213,12 +213,12 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 				ClientVer:    proto.String("9e9c09dc"),
 				Unknown:      proto.Int32(4),
 			},
-			FileNameInfo: &exciting.ExcitingFileNameInfo{FileName: &name},
+			FileNameInfo: &exciting.ExcitingFileNameInfo{FileName: proto.Some(name)},
 			Host: &exciting.ExcitingHostConfig{Hosts: []*exciting.ExcitingHostInfo{
 				{
 					Url: &exciting.ExcitingUrlInfo{
 						Unknown: proto.Int32(1),
-						Host:    &rsp.UploadIpLanV4[0],
+						Host:    proto.Some(rsp.UploadIpLanV4[0]),
 					},
 					Port: rsp.UploadPort,
 				},
@@ -236,7 +236,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 	if _, err = fs.client.highwaySession.UploadExciting(input); err != nil {
 		return errors.Wrap(err, "upload failed")
 	}
-	_, pkt := client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.GetFileId(), rsp.GetBusId(), rand.Int31())
+	_, pkt := client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId.Unwrap(), rsp.BusId.Unwrap(), rand.Int31())
 	return client.sendPacket(pkt)
 }
 
@@ -277,14 +277,14 @@ func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32
 
 func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string, groupCode, fileSize int64, md5, sha1 []byte) (uint16, []byte) {
 	body := &oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
-		GroupCode:          &groupCode,
+		GroupCode:          proto.Some(groupCode),
 		AppId:              proto.Int32(3),
 		BusId:              proto.Int32(102),
 		Entrance:           proto.Int32(5),
-		ParentFolderId:     &parentFolderID,
-		FileName:           &fileName,
+		ParentFolderId:     proto.Some(parentFolderID),
+		FileName:           proto.Some(fileName),
 		LocalPath:          proto.String("/storage/emulated/0/Pictures/files/s/" + fileName),
-		Int64FileSize:      &fileSize,
+		Int64FileSize:      proto.Some(fileSize),
 		Sha:                sha1,
 		Md5:                md5,
 		SupportMultiUpload: proto.Bool(true),
@@ -298,7 +298,7 @@ func (c *QQClient) buildGroupFileFeedsRequest(groupCode int64, fileID string, bu
 		GroupCode: proto.Uint64(uint64(groupCode)),
 		AppId:     proto.Uint32(3),
 		FeedsInfoList: []*oidb.GroupFileFeedsInfo{{
-			FileId:    &fileID,
+			FileId:    proto.Some(fileID),
 			FeedFlag:  proto.Uint32(1),
 			BusId:     proto.Uint32(uint32(busId)),
 			MsgRandom: proto.Uint32(uint32(msgRand)),
@@ -312,14 +312,14 @@ func (c *QQClient) buildGroupFileListRequestPacket(groupCode int64, folderID str
 	body := &oidb.D6D8ReqBody{FileListInfoReq: &oidb.GetFileListReqBody{
 		GroupCode:    proto.Uint64(uint64(groupCode)),
 		AppId:        proto.Uint32(3),
-		FolderId:     &folderID,
+		FolderId:     proto.Some(folderID),
 		FileCount:    proto.Uint32(20),
 		AllFileCount: proto.Uint32(0),
 		ReqFrom:      proto.Uint32(3),
 		SortBy:       proto.Uint32(1),
 		FilterCode:   proto.Uint32(0),
 		Uin:          proto.Uint64(0),
-		StartIndex:   &startIndex,
+		StartIndex:   proto.Some(startIndex),
 		Context:      EmptyBytes,
 	}}
 	payload := c.packOIDBPackageProto(1752, 1, body)
@@ -351,8 +351,8 @@ func (c *QQClient) buildGroupFileCreateFolderPacket(groupCode int64, parentFolde
 	payload := c.packOIDBPackageProto(1751, 0, &oidb.D6D7ReqBody{CreateFolderReq: &oidb.CreateFolderReqBody{
 		GroupCode:      proto.Uint64(uint64(groupCode)),
 		AppId:          proto.Uint32(3),
-		ParentFolderId: &parentFolder,
-		FolderName:     &name,
+		ParentFolderId: proto.Some(parentFolder),
+		FolderName:     proto.Some(name),
 	}})
 	return c.uniPacket("OidbSvc.0x6d7_0", payload)
 }
@@ -380,10 +380,10 @@ func (c *QQClient) buildGroupFileDeleteFolderPacket(groupCode int64, folderId st
 func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId string, busId int32) (uint16, []byte) {
 	body := &oidb.D6D6ReqBody{
 		DownloadFileReq: &oidb.DownloadFileReqBody{
-			GroupCode: &groupCode,
+			GroupCode: proto.Some(groupCode),
 			AppId:     proto.Int32(3),
-			BusId:     &busId,
-			FileId:    &fileId,
+			BusId:     proto.Some(busId),
+			FileId:    proto.Some(fileId),
 		},
 	}
 	payload := c.packOIDBPackageProto(1750, 2, body)
@@ -392,11 +392,11 @@ func (c *QQClient) buildGroupFileDownloadReqPacket(groupCode int64, fileId strin
 
 func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId, fileId string, busId int32) (uint16, []byte) {
 	body := &oidb.D6D6ReqBody{DeleteFileReq: &oidb.DeleteFileReqBody{
-		GroupCode:      &groupCode,
+		GroupCode:      proto.Some(groupCode),
 		AppId:          proto.Int32(3),
-		BusId:          &busId,
-		ParentFolderId: &parentFolderId,
-		FileId:         &fileId,
+		BusId:          proto.Some(busId),
+		ParentFolderId: proto.Some(parentFolderId),
+		FileId:         proto.Some(fileId),
 	}}
 	payload := c.packOIDBPackageProto(1750, 3, body)
 	return c.uniPacket("OidbSvc.0x6d6_3", payload)
@@ -419,9 +419,9 @@ func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 		return nil, err
 	}
 	if rsp.DownloadFileRsp.DownloadUrl == nil {
-		return nil, errors.New(rsp.DownloadFileRsp.GetClientWording())
+		return nil, errors.New(rsp.DownloadFileRsp.ClientWording.Unwrap())
 	}
-	ip := rsp.DownloadFileRsp.GetDownloadIp()
+	ip := rsp.DownloadFileRsp.DownloadIp.Unwrap()
 	url := hex.EncodeToString(rsp.DownloadFileRsp.DownloadUrl)
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
@@ -432,7 +432,7 @@ func decodeOIDB6d63Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	if err != nil {
 		return nil, err
 	}
-	return rsp.DeleteFileRsp.GetClientWording(), nil
+	return rsp.DeleteFileRsp.ClientWording.Unwrap(), nil
 }
 
 func decodeOIDB6d60Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
@@ -450,13 +450,13 @@ func decodeOIDB6d7Response(_ *QQClient, _ *network.IncomingPacketInfo, payload [
 	if err != nil {
 		return nil, err
 	}
-	if retCode := rsp.CreateFolderRsp.GetRetCode(); retCode != 0 {
+	if retCode := rsp.CreateFolderRsp.RetCode.Unwrap(); retCode != 0 {
 		return nil, errors.Errorf("create folder error: %v", retCode)
 	}
-	if retCode := rsp.RenameFolderRsp.GetRetCode(); retCode != 0 {
+	if retCode := rsp.RenameFolderRsp.RetCode.Unwrap(); retCode != 0 {
 		return nil, errors.Errorf("rename folder error: %v", retCode)
 	}
-	if retCode := rsp.DeleteFolderRsp.GetRetCode(); retCode != 0 {
+	if retCode := rsp.DeleteFolderRsp.RetCode.Unwrap(); retCode != 0 {
 		return nil, errors.Errorf("delete folder error: %v", retCode)
 	}
 	return nil, nil

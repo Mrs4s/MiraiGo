@@ -37,7 +37,7 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 			Type:        proto.Uint32(2),
 			SendUin:     proto.Uint64(uint64(c.Uin)),
 			ReqType:     proto.String("webview"),
-			OriginalUrl: &url,
+			OriginalUrl: proto.Some(url),
 			IsArk:       proto.Bool(false),
 			IsFinish:    proto.Bool(false),
 			SrcUrls:     []string{url},
@@ -57,10 +57,10 @@ func decodeUrlCheckResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	if rsp.CheckUrlRsp == nil || len(rsp.CheckUrlRsp.Results) == 0 {
 		return nil, errors.New("response is empty")
 	}
-	if rsp.CheckUrlRsp.Results[0].JumpUrl != nil {
+	if rsp.CheckUrlRsp.Results[0].JumpUrl.IsSome() {
 		return Danger, nil
 	}
-	if rsp.CheckUrlRsp.Results[0].GetUmrtype() == 2 {
+	if rsp.CheckUrlRsp.Results[0].Umrtype.Unwrap() == 2 {
 		return Safe, nil
 	}
 	return Unknown, nil

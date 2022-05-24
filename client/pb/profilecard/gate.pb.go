@@ -3,108 +3,42 @@
 
 package profilecard
 
-type GateCommTaskInfo struct {
-	Appid    *int32 `protobuf:"varint,1,opt"`
-	TaskData []byte `protobuf:"bytes,2,opt"`
-}
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
 
-func (x *GateCommTaskInfo) GetAppid() int32 {
-	if x != nil && x.Appid != nil {
-		return *x.Appid
-	}
-	return 0
+type GateCommTaskInfo struct {
+	Appid    proto.Option[int32] `protobuf:"varint,1,opt"`
+	TaskData []byte              `protobuf:"bytes,2,opt"`
 }
 
 type GateGetGiftListReq struct {
-	Uin *int32 `protobuf:"varint,1,opt"`
-}
-
-func (x *GateGetGiftListReq) GetUin() int32 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
+	Uin proto.Option[int32] `protobuf:"varint,1,opt"`
 }
 
 type GateGetGiftListRsp struct {
-	GiftUrl   []string `protobuf:"bytes,1,rep"`
-	CustomUrl *string  `protobuf:"bytes,2,opt"`
-	Desc      *string  `protobuf:"bytes,3,opt"`
-	IsOn      *bool    `protobuf:"varint,4,opt"`
-}
-
-func (x *GateGetGiftListRsp) GetCustomUrl() string {
-	if x != nil && x.CustomUrl != nil {
-		return *x.CustomUrl
-	}
-	return ""
-}
-
-func (x *GateGetGiftListRsp) GetDesc() string {
-	if x != nil && x.Desc != nil {
-		return *x.Desc
-	}
-	return ""
-}
-
-func (x *GateGetGiftListRsp) GetIsOn() bool {
-	if x != nil && x.IsOn != nil {
-		return *x.IsOn
-	}
-	return false
+	GiftUrl   []string             `protobuf:"bytes,1,rep"`
+	CustomUrl proto.Option[string] `protobuf:"bytes,2,opt"`
+	Desc      proto.Option[string] `protobuf:"bytes,3,opt"`
+	IsOn      proto.Option[bool]   `protobuf:"varint,4,opt"`
 }
 
 type GateGetVipCareReq struct {
-	Uin *int64 `protobuf:"varint,1,opt"`
-}
-
-func (x *GateGetVipCareReq) GetUin() int64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
+	Uin proto.Option[int64] `protobuf:"varint,1,opt"`
 }
 
 type GateGetVipCareRsp struct {
-	Buss   *int32 `protobuf:"varint,1,opt"`
-	Notice *int32 `protobuf:"varint,2,opt"`
-}
-
-func (x *GateGetVipCareRsp) GetBuss() int32 {
-	if x != nil && x.Buss != nil {
-		return *x.Buss
-	}
-	return 0
-}
-
-func (x *GateGetVipCareRsp) GetNotice() int32 {
-	if x != nil && x.Notice != nil {
-		return *x.Notice
-	}
-	return 0
+	Buss   proto.Option[int32] `protobuf:"varint,1,opt"`
+	Notice proto.Option[int32] `protobuf:"varint,2,opt"`
 }
 
 type GateOidbFlagInfo struct {
-	Fieled     *int32 `protobuf:"varint,1,opt"`
-	ByetsValue []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *GateOidbFlagInfo) GetFieled() int32 {
-	if x != nil && x.Fieled != nil {
-		return *x.Fieled
-	}
-	return 0
+	Fieled     proto.Option[int32] `protobuf:"varint,1,opt"`
+	ByetsValue []byte              `protobuf:"bytes,2,opt"`
 }
 
 type GatePrivilegeBaseInfoReq struct {
-	UReqUin *int64 `protobuf:"varint,1,opt"`
-}
-
-func (x *GatePrivilegeBaseInfoReq) GetUReqUin() int64 {
-	if x != nil && x.UReqUin != nil {
-		return *x.UReqUin
-	}
-	return 0
+	UReqUin proto.Option[int64] `protobuf:"varint,1,opt"`
 }
 
 type GatePrivilegeBaseInfoRsp struct {
@@ -112,72 +46,23 @@ type GatePrivilegeBaseInfoRsp struct {
 	JumpUrl    []byte               `protobuf:"bytes,2,opt"`
 	VOpenPriv  []*GatePrivilegeInfo `protobuf:"bytes,3,rep"`
 	VClosePriv []*GatePrivilegeInfo `protobuf:"bytes,4,rep"`
-	UIsGrayUsr *int32               `protobuf:"varint,5,opt"`
-}
-
-func (x *GatePrivilegeBaseInfoRsp) GetUIsGrayUsr() int32 {
-	if x != nil && x.UIsGrayUsr != nil {
-		return *x.UIsGrayUsr
-	}
-	return 0
+	UIsGrayUsr proto.Option[int32]  `protobuf:"varint,5,opt"`
 }
 
 type GatePrivilegeInfo struct {
-	IType         *int32 `protobuf:"varint,1,opt"`
-	ISort         *int32 `protobuf:"varint,2,opt"`
-	IFeeType      *int32 `protobuf:"varint,3,opt"`
-	ILevel        *int32 `protobuf:"varint,4,opt"`
-	IFlag         *int32 `protobuf:"varint,5,opt"`
-	IconUrl       []byte `protobuf:"bytes,6,opt"`
-	DeluxeIconUrl []byte `protobuf:"bytes,7,opt"`
-	JumpUrl       []byte `protobuf:"bytes,8,opt"`
-	IIsBig        *int32 `protobuf:"varint,9,opt"`
-}
-
-func (x *GatePrivilegeInfo) GetIType() int32 {
-	if x != nil && x.IType != nil {
-		return *x.IType
-	}
-	return 0
-}
-
-func (x *GatePrivilegeInfo) GetISort() int32 {
-	if x != nil && x.ISort != nil {
-		return *x.ISort
-	}
-	return 0
-}
-
-func (x *GatePrivilegeInfo) GetIFeeType() int32 {
-	if x != nil && x.IFeeType != nil {
-		return *x.IFeeType
-	}
-	return 0
-}
-
-func (x *GatePrivilegeInfo) GetILevel() int32 {
-	if x != nil && x.ILevel != nil {
-		return *x.ILevel
-	}
-	return 0
-}
-
-func (x *GatePrivilegeInfo) GetIFlag() int32 {
-	if x != nil && x.IFlag != nil {
-		return *x.IFlag
-	}
-	return 0
-}
-
-func (x *GatePrivilegeInfo) GetIIsBig() int32 {
-	if x != nil && x.IIsBig != nil {
-		return *x.IIsBig
-	}
-	return 0
+	IType         proto.Option[int32] `protobuf:"varint,1,opt"`
+	ISort         proto.Option[int32] `protobuf:"varint,2,opt"`
+	IFeeType      proto.Option[int32] `protobuf:"varint,3,opt"`
+	ILevel        proto.Option[int32] `protobuf:"varint,4,opt"`
+	IFlag         proto.Option[int32] `protobuf:"varint,5,opt"`
+	IconUrl       []byte              `protobuf:"bytes,6,opt"`
+	DeluxeIconUrl []byte              `protobuf:"bytes,7,opt"`
+	JumpUrl       []byte              `protobuf:"bytes,8,opt"`
+	IIsBig        proto.Option[int32] `protobuf:"varint,9,opt"`
 }
 
 type GateVaProfileGateReq struct {
-	UCmd           *int32                    `protobuf:"varint,1,opt"`
+	UCmd           proto.Option[int32]       `protobuf:"varint,1,opt"`
 	StPrivilegeReq *GatePrivilegeBaseInfoReq `protobuf:"bytes,2,opt"`
 	StGiftReq      *GateGetGiftListReq       `protobuf:"bytes,3,opt"`
 	TaskItem       []*GateCommTaskInfo       `protobuf:"bytes,4,rep"`
@@ -185,50 +70,15 @@ type GateVaProfileGateReq struct {
 	StVipCare      *GateGetVipCareReq        `protobuf:"bytes,6,opt"`
 }
 
-func (x *GateVaProfileGateReq) GetUCmd() int32 {
-	if x != nil && x.UCmd != nil {
-		return *x.UCmd
-	}
-	return 0
-}
-
 type GateQidInfoItem struct {
-	Qid     *string `protobuf:"bytes,1,opt"`
-	Url     *string `protobuf:"bytes,2,opt"`
-	Color   *string `protobuf:"bytes,3,opt"`
-	LogoUrl *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *GateQidInfoItem) GetQid() string {
-	if x != nil && x.Qid != nil {
-		return *x.Qid
-	}
-	return ""
-}
-
-func (x *GateQidInfoItem) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
-}
-
-func (x *GateQidInfoItem) GetColor() string {
-	if x != nil && x.Color != nil {
-		return *x.Color
-	}
-	return ""
-}
-
-func (x *GateQidInfoItem) GetLogoUrl() string {
-	if x != nil && x.LogoUrl != nil {
-		return *x.LogoUrl
-	}
-	return ""
+	Qid     proto.Option[string] `protobuf:"bytes,1,opt"`
+	Url     proto.Option[string] `protobuf:"bytes,2,opt"`
+	Color   proto.Option[string] `protobuf:"bytes,3,opt"`
+	LogoUrl proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type GateVaProfileGateRsp struct {
-	IRetCode       *int32                    `protobuf:"varint,1,opt"`
+	IRetCode       proto.Option[int32]       `protobuf:"varint,1,opt"`
 	SRetMsg        []byte                    `protobuf:"bytes,2,opt"`
 	StPrivilegeRsp *GatePrivilegeBaseInfoRsp `protobuf:"bytes,3,opt"`
 	StGiftRsp      *GateGetGiftListRsp       `protobuf:"bytes,4,opt"`
@@ -236,11 +86,4 @@ type GateVaProfileGateRsp struct {
 	OidbFlag       []*GateOidbFlagInfo       `protobuf:"bytes,6,rep"`
 	StVipCare      *GateGetVipCareRsp        `protobuf:"bytes,7,opt"`
 	QidInfo        *GateQidInfoItem          `protobuf:"bytes,9,opt"`
-}
-
-func (x *GateVaProfileGateRsp) GetIRetCode() int32 {
-	if x != nil && x.IRetCode != nil {
-		return *x.IRetCode
-	}
-	return 0
 }

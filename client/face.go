@@ -32,7 +32,7 @@ func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
 		Comm: &faceroam.PlatInfo{
 			Implat: proto.Int64(109),
 			Osver:  proto.String(string(c.deviceInfo.Version.Release)),
-			Mqqver: &c.version.SortVersionName,
+			Mqqver: proto.Some(c.version.SortVersionName),
 		},
 		Uin:         proto.Uint64(uint64(c.Uin)),
 		SubCmd:      proto.Uint32(1),
@@ -53,7 +53,7 @@ func decodeFaceroamResponse(c *QQClient, _ *network.IncomingPacketInfo, payload 
 	for i := len(rsp.RspUserInfo.Filename) - 1; i >= 0; i-- {
 		res[len(rsp.RspUserInfo.Filename)-1-i] = &CustomFace{
 			ResId: rsp.RspUserInfo.Filename[i],
-			Url:   fmt.Sprintf("https://p.qpic.cn/%s/%d/%s/0", rsp.RspUserInfo.GetBid(), c.Uin, rsp.RspUserInfo.Filename[i]),
+			Url:   fmt.Sprintf("https://p.qpic.cn/%s/%d/%s/0", rsp.RspUserInfo.Bid.Unwrap(), c.Uin, rsp.RspUserInfo.Filename[i]),
 		}
 	}
 	return res, nil

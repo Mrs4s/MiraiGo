@@ -3,390 +3,100 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type ContentMetaData struct {
 	Count     *RichTextContentCount `protobuf:"bytes,1,opt"`
-	ContentID *int64                `protobuf:"varint,2,opt"`
-}
-
-func (x *ContentMetaData) GetContentID() int64 {
-	if x != nil && x.ContentID != nil {
-		return *x.ContentID
-	}
-	return 0
+	ContentID proto.Option[int64]   `protobuf:"varint,2,opt"`
 }
 
 type FeedMetaData struct {
-	Content          *ContentMetaData `protobuf:"bytes,1,opt"`
-	LastModifiedTime *uint64          `protobuf:"varint,2,opt"`
-}
-
-func (x *FeedMetaData) GetLastModifiedTime() uint64 {
-	if x != nil && x.LastModifiedTime != nil {
-		return *x.LastModifiedTime
-	}
-	return 0
+	Content          *ContentMetaData     `protobuf:"bytes,1,opt"`
+	LastModifiedTime proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type FeedRedTouchTransInfo struct {
-	FeedId         *string `protobuf:"bytes,1,opt"`
-	Author         *string `protobuf:"bytes,2,opt"`
-	CreateTs       *int64  `protobuf:"varint,3,opt"`
-	MsgType        *int32  `protobuf:"varint,4,opt"`
-	PageType       *int32  `protobuf:"varint,5,opt"`
-	RedType        *int32  `protobuf:"varint,6,opt"`
-	InsertPageType *int32  `protobuf:"varint,7,opt"`
-}
-
-func (x *FeedRedTouchTransInfo) GetFeedId() string {
-	if x != nil && x.FeedId != nil {
-		return *x.FeedId
-	}
-	return ""
-}
-
-func (x *FeedRedTouchTransInfo) GetAuthor() string {
-	if x != nil && x.Author != nil {
-		return *x.Author
-	}
-	return ""
-}
-
-func (x *FeedRedTouchTransInfo) GetCreateTs() int64 {
-	if x != nil && x.CreateTs != nil {
-		return *x.CreateTs
-	}
-	return 0
-}
-
-func (x *FeedRedTouchTransInfo) GetMsgType() int32 {
-	if x != nil && x.MsgType != nil {
-		return *x.MsgType
-	}
-	return 0
-}
-
-func (x *FeedRedTouchTransInfo) GetPageType() int32 {
-	if x != nil && x.PageType != nil {
-		return *x.PageType
-	}
-	return 0
-}
-
-func (x *FeedRedTouchTransInfo) GetRedType() int32 {
-	if x != nil && x.RedType != nil {
-		return *x.RedType
-	}
-	return 0
-}
-
-func (x *FeedRedTouchTransInfo) GetInsertPageType() int32 {
-	if x != nil && x.InsertPageType != nil {
-		return *x.InsertPageType
-	}
-	return 0
+	FeedId         proto.Option[string] `protobuf:"bytes,1,opt"`
+	Author         proto.Option[string] `protobuf:"bytes,2,opt"`
+	CreateTs       proto.Option[int64]  `protobuf:"varint,3,opt"`
+	MsgType        proto.Option[int32]  `protobuf:"varint,4,opt"`
+	PageType       proto.Option[int32]  `protobuf:"varint,5,opt"`
+	RedType        proto.Option[int32]  `protobuf:"varint,6,opt"`
+	InsertPageType proto.Option[int32]  `protobuf:"varint,7,opt"`
 }
 
 type NoticeOperation struct {
-	Type   *uint32 `protobuf:"varint,1,opt"`
-	Schema *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *NoticeOperation) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *NoticeOperation) GetSchema() string {
-	if x != nil && x.Schema != nil {
-		return *x.Schema
-	}
-	return ""
+	Type   proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Schema proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type RichTextContentCount struct {
-	TextWord *uint64 `protobuf:"varint,1,opt"`
-	At       *uint64 `protobuf:"varint,2,opt"`
-	Url      *uint64 `protobuf:"varint,3,opt"`
-	Emoji    *uint64 `protobuf:"varint,4,opt"`
-	Image    *uint64 `protobuf:"varint,5,opt"`
-	Video    *uint64 `protobuf:"varint,6,opt"`
-}
-
-func (x *RichTextContentCount) GetTextWord() uint64 {
-	if x != nil && x.TextWord != nil {
-		return *x.TextWord
-	}
-	return 0
-}
-
-func (x *RichTextContentCount) GetAt() uint64 {
-	if x != nil && x.At != nil {
-		return *x.At
-	}
-	return 0
-}
-
-func (x *RichTextContentCount) GetUrl() uint64 {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return 0
-}
-
-func (x *RichTextContentCount) GetEmoji() uint64 {
-	if x != nil && x.Emoji != nil {
-		return *x.Emoji
-	}
-	return 0
-}
-
-func (x *RichTextContentCount) GetImage() uint64 {
-	if x != nil && x.Image != nil {
-		return *x.Image
-	}
-	return 0
-}
-
-func (x *RichTextContentCount) GetVideo() uint64 {
-	if x != nil && x.Video != nil {
-		return *x.Video
-	}
-	return 0
+	TextWord proto.Option[uint64] `protobuf:"varint,1,opt"`
+	At       proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Url      proto.Option[uint64] `protobuf:"varint,3,opt"`
+	Emoji    proto.Option[uint64] `protobuf:"varint,4,opt"`
+	Image    proto.Option[uint64] `protobuf:"varint,5,opt"`
+	Video    proto.Option[uint64] `protobuf:"varint,6,opt"`
 }
 
 type StAnimation struct {
-	Width        *uint32 `protobuf:"varint,1,opt"`
-	Height       *uint32 `protobuf:"varint,2,opt"`
-	AnimationUrl *string `protobuf:"bytes,3,opt"`
-	BusiData     []byte  `protobuf:"bytes,4,opt"`
-}
-
-func (x *StAnimation) GetWidth() uint32 {
-	if x != nil && x.Width != nil {
-		return *x.Width
-	}
-	return 0
-}
-
-func (x *StAnimation) GetHeight() uint32 {
-	if x != nil && x.Height != nil {
-		return *x.Height
-	}
-	return 0
-}
-
-func (x *StAnimation) GetAnimationUrl() string {
-	if x != nil && x.AnimationUrl != nil {
-		return *x.AnimationUrl
-	}
-	return ""
+	Width        proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Height       proto.Option[uint32] `protobuf:"varint,2,opt"`
+	AnimationUrl proto.Option[string] `protobuf:"bytes,3,opt"`
+	BusiData     []byte               `protobuf:"bytes,4,opt"`
 }
 
 type StBusiReportInfo struct {
-	RecomReport *StRecomReportInfo `protobuf:"bytes,1,opt"`
-	TraceID     *string            `protobuf:"bytes,2,opt"`
-}
-
-func (x *StBusiReportInfo) GetTraceID() string {
-	if x != nil && x.TraceID != nil {
-		return *x.TraceID
-	}
-	return ""
+	RecomReport *StRecomReportInfo   `protobuf:"bytes,1,opt"`
+	TraceID     proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type StChannelShareInfo struct {
-	FeedID           *string             `protobuf:"bytes,1,opt"`
-	PosterID         *string             `protobuf:"bytes,2,opt"`
-	FeedPublishAt    *uint64             `protobuf:"varint,3,opt"`
-	ChannelSign      *StChannelSign      `protobuf:"bytes,4,opt"`
-	UpdateDurationMs *uint64             `protobuf:"varint,5,opt"`
-	Sign             *StChannelShareSign `protobuf:"bytes,6,opt"`
-}
-
-func (x *StChannelShareInfo) GetFeedID() string {
-	if x != nil && x.FeedID != nil {
-		return *x.FeedID
-	}
-	return ""
-}
-
-func (x *StChannelShareInfo) GetPosterID() string {
-	if x != nil && x.PosterID != nil {
-		return *x.PosterID
-	}
-	return ""
-}
-
-func (x *StChannelShareInfo) GetFeedPublishAt() uint64 {
-	if x != nil && x.FeedPublishAt != nil {
-		return *x.FeedPublishAt
-	}
-	return 0
-}
-
-func (x *StChannelShareInfo) GetUpdateDurationMs() uint64 {
-	if x != nil && x.UpdateDurationMs != nil {
-		return *x.UpdateDurationMs
-	}
-	return 0
+	FeedID           proto.Option[string] `protobuf:"bytes,1,opt"`
+	PosterID         proto.Option[string] `protobuf:"bytes,2,opt"`
+	FeedPublishAt    proto.Option[uint64] `protobuf:"varint,3,opt"`
+	ChannelSign      *StChannelSign       `protobuf:"bytes,4,opt"`
+	UpdateDurationMs proto.Option[uint64] `protobuf:"varint,5,opt"`
+	Sign             *StChannelShareSign  `protobuf:"bytes,6,opt"`
 }
 
 type StChannelShareSign struct {
-	CreateAt *uint64 `protobuf:"varint,1,opt"`
-	Token    *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StChannelShareSign) GetCreateAt() uint64 {
-	if x != nil && x.CreateAt != nil {
-		return *x.CreateAt
-	}
-	return 0
-}
-
-func (x *StChannelShareSign) GetToken() string {
-	if x != nil && x.Token != nil {
-		return *x.Token
-	}
-	return ""
+	CreateAt proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Token    proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type StCircleRankItem struct {
-	RankNo     *int32  `protobuf:"varint,1,opt"`
-	CircleName *string `protobuf:"bytes,2,opt"`
-	FuelValue  *int64  `protobuf:"varint,3,opt"`
-	FeedNum    *int64  `protobuf:"varint,4,opt"`
-	CircleID   *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *StCircleRankItem) GetRankNo() int32 {
-	if x != nil && x.RankNo != nil {
-		return *x.RankNo
-	}
-	return 0
-}
-
-func (x *StCircleRankItem) GetCircleName() string {
-	if x != nil && x.CircleName != nil {
-		return *x.CircleName
-	}
-	return ""
-}
-
-func (x *StCircleRankItem) GetFuelValue() int64 {
-	if x != nil && x.FuelValue != nil {
-		return *x.FuelValue
-	}
-	return 0
-}
-
-func (x *StCircleRankItem) GetFeedNum() int64 {
-	if x != nil && x.FeedNum != nil {
-		return *x.FeedNum
-	}
-	return 0
-}
-
-func (x *StCircleRankItem) GetCircleID() string {
-	if x != nil && x.CircleID != nil {
-		return *x.CircleID
-	}
-	return ""
+	RankNo     proto.Option[int32]  `protobuf:"varint,1,opt"`
+	CircleName proto.Option[string] `protobuf:"bytes,2,opt"`
+	FuelValue  proto.Option[int64]  `protobuf:"varint,3,opt"`
+	FeedNum    proto.Option[int64]  `protobuf:"varint,4,opt"`
+	CircleID   proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type StClientInfo struct {
-	Feedclientkey *string        `protobuf:"bytes,1,opt"`
-	ClientMap     []*CommonEntry `protobuf:"bytes,2,rep"`
-}
-
-func (x *StClientInfo) GetFeedclientkey() string {
-	if x != nil && x.Feedclientkey != nil {
-		return *x.Feedclientkey
-	}
-	return ""
+	Feedclientkey proto.Option[string] `protobuf:"bytes,1,opt"`
+	ClientMap     []*CommonEntry       `protobuf:"bytes,2,rep"`
 }
 
 type StComment struct {
-	Id           *string        `protobuf:"bytes,1,opt"`
-	PostUser     *StUser        `protobuf:"bytes,2,opt"`
-	CreateTime   *uint64        `protobuf:"varint,3,opt"`
-	Content      *string        `protobuf:"bytes,4,opt"`
-	ReplyCount   *uint32        `protobuf:"varint,5,opt"`
-	VecReply     []*StReply     `protobuf:"bytes,6,rep"`
-	BusiData     []byte         `protobuf:"bytes,7,opt"`
-	LikeInfo     *StLike        `protobuf:"bytes,8,opt"`
-	TypeFlag     *uint32        `protobuf:"varint,9,opt"`
-	AtUinList    []string       `protobuf:"bytes,10,rep"`
-	TypeFlag2    *uint32        `protobuf:"varint,11,opt"`
-	CreateTimeNs *uint64        `protobuf:"varint,12,opt"`
-	StoreExtInfo []*CommonEntry `protobuf:"bytes,13,rep"`
-	ThirdId      *string        `protobuf:"bytes,14,opt"`
-	SourceType   *uint32        `protobuf:"varint,15,opt"`
-	RichContents *StRichText    `protobuf:"bytes,16,opt"`
-}
-
-func (x *StComment) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StComment) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *StComment) GetContent() string {
-	if x != nil && x.Content != nil {
-		return *x.Content
-	}
-	return ""
-}
-
-func (x *StComment) GetReplyCount() uint32 {
-	if x != nil && x.ReplyCount != nil {
-		return *x.ReplyCount
-	}
-	return 0
-}
-
-func (x *StComment) GetTypeFlag() uint32 {
-	if x != nil && x.TypeFlag != nil {
-		return *x.TypeFlag
-	}
-	return 0
-}
-
-func (x *StComment) GetTypeFlag2() uint32 {
-	if x != nil && x.TypeFlag2 != nil {
-		return *x.TypeFlag2
-	}
-	return 0
-}
-
-func (x *StComment) GetCreateTimeNs() uint64 {
-	if x != nil && x.CreateTimeNs != nil {
-		return *x.CreateTimeNs
-	}
-	return 0
-}
-
-func (x *StComment) GetThirdId() string {
-	if x != nil && x.ThirdId != nil {
-		return *x.ThirdId
-	}
-	return ""
-}
-
-func (x *StComment) GetSourceType() uint32 {
-	if x != nil && x.SourceType != nil {
-		return *x.SourceType
-	}
-	return 0
+	Id           proto.Option[string] `protobuf:"bytes,1,opt"`
+	PostUser     *StUser              `protobuf:"bytes,2,opt"`
+	CreateTime   proto.Option[uint64] `protobuf:"varint,3,opt"`
+	Content      proto.Option[string] `protobuf:"bytes,4,opt"`
+	ReplyCount   proto.Option[uint32] `protobuf:"varint,5,opt"`
+	VecReply     []*StReply           `protobuf:"bytes,6,rep"`
+	BusiData     []byte               `protobuf:"bytes,7,opt"`
+	LikeInfo     *StLike              `protobuf:"bytes,8,opt"`
+	TypeFlag     proto.Option[uint32] `protobuf:"varint,9,opt"`
+	AtUinList    []string             `protobuf:"bytes,10,rep"`
+	TypeFlag2    proto.Option[uint32] `protobuf:"varint,11,opt"`
+	CreateTimeNs proto.Option[uint64] `protobuf:"varint,12,opt"`
+	StoreExtInfo []*CommonEntry       `protobuf:"bytes,13,rep"`
+	ThirdId      proto.Option[string] `protobuf:"bytes,14,opt"`
+	SourceType   proto.Option[uint32] `protobuf:"varint,15,opt"`
+	RichContents *StRichText          `protobuf:"bytes,16,opt"`
 }
 
 type StDebugInfo struct {
@@ -394,24 +104,10 @@ type StDebugInfo struct {
 }
 
 type StDittoFeed struct {
-	DittoId        *uint32 `protobuf:"varint,1,opt"`
-	DittoPatternId *uint32 `protobuf:"varint,2,opt"`
-	DittoData      []byte  `protobuf:"bytes,3,opt"`
-	DittoDataNew   []byte  `protobuf:"bytes,4,opt"`
-}
-
-func (x *StDittoFeed) GetDittoId() uint32 {
-	if x != nil && x.DittoId != nil {
-		return *x.DittoId
-	}
-	return 0
-}
-
-func (x *StDittoFeed) GetDittoPatternId() uint32 {
-	if x != nil && x.DittoPatternId != nil {
-		return *x.DittoPatternId
-	}
-	return 0
+	DittoId        proto.Option[uint32] `protobuf:"varint,1,opt"`
+	DittoPatternId proto.Option[uint32] `protobuf:"varint,2,opt"`
+	DittoData      []byte               `protobuf:"bytes,3,opt"`
+	DittoDataNew   []byte               `protobuf:"bytes,4,opt"`
 }
 
 type StExifInfo struct {
@@ -419,43 +115,22 @@ type StExifInfo struct {
 }
 
 type StExternalMedalWallInfo struct {
-	NeedRedPoint     *bool          `protobuf:"varint,1,opt"`
-	MedalInfos       []*StMedalInfo `protobuf:"bytes,2,rep"`
-	MedalWallJumpUrl *string        `protobuf:"bytes,3,opt"`
-	NeedShowEntrance *bool          `protobuf:"varint,4,opt"`
-}
-
-func (x *StExternalMedalWallInfo) GetNeedRedPoint() bool {
-	if x != nil && x.NeedRedPoint != nil {
-		return *x.NeedRedPoint
-	}
-	return false
-}
-
-func (x *StExternalMedalWallInfo) GetMedalWallJumpUrl() string {
-	if x != nil && x.MedalWallJumpUrl != nil {
-		return *x.MedalWallJumpUrl
-	}
-	return ""
-}
-
-func (x *StExternalMedalWallInfo) GetNeedShowEntrance() bool {
-	if x != nil && x.NeedShowEntrance != nil {
-		return *x.NeedShowEntrance
-	}
-	return false
+	NeedRedPoint     proto.Option[bool]   `protobuf:"varint,1,opt"`
+	MedalInfos       []*StMedalInfo       `protobuf:"bytes,2,rep"`
+	MedalWallJumpUrl proto.Option[string] `protobuf:"bytes,3,opt"`
+	NeedShowEntrance proto.Option[bool]   `protobuf:"varint,4,opt"`
 }
 
 type StFeed struct {
-	Id              *string                `protobuf:"bytes,1,opt"`
+	Id              proto.Option[string]   `protobuf:"bytes,1,opt"`
 	Title           *StRichText            `protobuf:"bytes,2,opt"`
 	Subtitle        *StRichText            `protobuf:"bytes,3,opt"`
 	Poster          *StUser                `protobuf:"bytes,4,opt"`
 	Videos          []*StVideo             `protobuf:"bytes,5,rep"`
 	Contents        *StRichText            `protobuf:"bytes,6,opt"`
-	CreateTime      *uint64                `protobuf:"varint,7,opt"`
+	CreateTime      proto.Option[uint64]   `protobuf:"varint,7,opt"`
 	EmotionReaction *StEmotionReactionInfo `protobuf:"bytes,8,opt"`
-	CommentCount    *uint32                `protobuf:"varint,9,opt"`
+	CommentCount    proto.Option[uint32]   `protobuf:"varint,9,opt"`
 	VecComment      []*StComment           `protobuf:"bytes,10,rep"`
 	Share           *StShare               `protobuf:"bytes,11,opt"`
 	VisitorInfo     *StVisitor             `protobuf:"bytes,12,opt"`
@@ -466,607 +141,138 @@ type StFeed struct {
 	OpMask          []uint32               `protobuf:"varint,17,rep"`
 	Opinfo          *StOpinfo              `protobuf:"bytes,18,opt"`
 	ExtInfo         []*CommonEntry         `protobuf:"bytes,19,rep"`
-	PatternInfo     *string                `protobuf:"bytes,20,opt"`
+	PatternInfo     proto.Option[string]   `protobuf:"bytes,20,opt"`
 	ChannelInfo     *StChannelInfo         `protobuf:"bytes,21,opt"`
-	CreateTimeNs    *uint64                `protobuf:"varint,22,opt"`
+	CreateTimeNs    proto.Option[uint64]   `protobuf:"varint,22,opt"`
 	Summary         *StFeedSummary         `protobuf:"bytes,23,opt"`
 	RecomInfo       *StRecomInfo           `protobuf:"bytes,24,opt"`
 	Meta            *FeedMetaData          `protobuf:"bytes,25,opt"`
 }
 
-func (x *StFeed) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StFeed) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *StFeed) GetCommentCount() uint32 {
-	if x != nil && x.CommentCount != nil {
-		return *x.CommentCount
-	}
-	return 0
-}
-
-func (x *StFeed) GetPatternInfo() string {
-	if x != nil && x.PatternInfo != nil {
-		return *x.PatternInfo
-	}
-	return ""
-}
-
-func (x *StFeed) GetCreateTimeNs() uint64 {
-	if x != nil && x.CreateTimeNs != nil {
-		return *x.CreateTimeNs
-	}
-	return 0
-}
-
 type StFeedAbstract struct {
-	Id         *string      `protobuf:"bytes,1,opt"`
-	Title      *string      `protobuf:"bytes,2,opt"`
-	Poster     *StUser      `protobuf:"bytes,3,opt"`
-	Pic        *StImage     `protobuf:"bytes,4,opt"`
-	Type       *uint32      `protobuf:"varint,5,opt"`
-	CreateTime *uint64      `protobuf:"varint,6,opt"`
-	Video      *StVideo     `protobuf:"bytes,7,opt"`
-	FuelNum    *uint32      `protobuf:"varint,8,opt"`
-	Content    *string      `protobuf:"bytes,9,opt"`
-	Images     []*StImage   `protobuf:"bytes,10,rep"`
-	CountInfo  *StFeedCount `protobuf:"bytes,11,opt"`
-}
-
-func (x *StFeedAbstract) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StFeedAbstract) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *StFeedAbstract) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StFeedAbstract) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *StFeedAbstract) GetFuelNum() uint32 {
-	if x != nil && x.FuelNum != nil {
-		return *x.FuelNum
-	}
-	return 0
-}
-
-func (x *StFeedAbstract) GetContent() string {
-	if x != nil && x.Content != nil {
-		return *x.Content
-	}
-	return ""
+	Id         proto.Option[string] `protobuf:"bytes,1,opt"`
+	Title      proto.Option[string] `protobuf:"bytes,2,opt"`
+	Poster     *StUser              `protobuf:"bytes,3,opt"`
+	Pic        *StImage             `protobuf:"bytes,4,opt"`
+	Type       proto.Option[uint32] `protobuf:"varint,5,opt"`
+	CreateTime proto.Option[uint64] `protobuf:"varint,6,opt"`
+	Video      *StVideo             `protobuf:"bytes,7,opt"`
+	FuelNum    proto.Option[uint32] `protobuf:"varint,8,opt"`
+	Content    proto.Option[string] `protobuf:"bytes,9,opt"`
+	Images     []*StImage           `protobuf:"bytes,10,rep"`
+	CountInfo  *StFeedCount         `protobuf:"bytes,11,opt"`
 }
 
 type StFeedCount struct {
-	Liked   *int64 `protobuf:"varint,1,opt"`
-	Push    *int64 `protobuf:"varint,2,opt"`
-	Comment *int64 `protobuf:"varint,3,opt"`
-	Visitor *int64 `protobuf:"varint,4,opt"`
-}
-
-func (x *StFeedCount) GetLiked() int64 {
-	if x != nil && x.Liked != nil {
-		return *x.Liked
-	}
-	return 0
-}
-
-func (x *StFeedCount) GetPush() int64 {
-	if x != nil && x.Push != nil {
-		return *x.Push
-	}
-	return 0
-}
-
-func (x *StFeedCount) GetComment() int64 {
-	if x != nil && x.Comment != nil {
-		return *x.Comment
-	}
-	return 0
-}
-
-func (x *StFeedCount) GetVisitor() int64 {
-	if x != nil && x.Visitor != nil {
-		return *x.Visitor
-	}
-	return 0
+	Liked   proto.Option[int64] `protobuf:"varint,1,opt"`
+	Push    proto.Option[int64] `protobuf:"varint,2,opt"`
+	Comment proto.Option[int64] `protobuf:"varint,3,opt"`
+	Visitor proto.Option[int64] `protobuf:"varint,4,opt"`
 }
 
 type StFeedSummary struct {
-	LayoutType *uint32 `protobuf:"varint,1,opt"`
-}
-
-func (x *StFeedSummary) GetLayoutType() uint32 {
-	if x != nil && x.LayoutType != nil {
-		return *x.LayoutType
-	}
-	return 0
+	LayoutType proto.Option[uint32] `protobuf:"varint,1,opt"`
 }
 
 type StFollowRecomInfo struct {
-	FollowText     *string         `protobuf:"bytes,1,opt"`
-	FollowUsers    []*StFollowUser `protobuf:"bytes,4,rep"`
-	CommFriendText *string         `protobuf:"bytes,6,opt"`
-	CommGroupText  *string         `protobuf:"bytes,7,opt"`
-}
-
-func (x *StFollowRecomInfo) GetFollowText() string {
-	if x != nil && x.FollowText != nil {
-		return *x.FollowText
-	}
-	return ""
-}
-
-func (x *StFollowRecomInfo) GetCommFriendText() string {
-	if x != nil && x.CommFriendText != nil {
-		return *x.CommFriendText
-	}
-	return ""
-}
-
-func (x *StFollowRecomInfo) GetCommGroupText() string {
-	if x != nil && x.CommGroupText != nil {
-		return *x.CommGroupText
-	}
-	return ""
+	FollowText     proto.Option[string] `protobuf:"bytes,1,opt"`
+	FollowUsers    []*StFollowUser      `protobuf:"bytes,4,rep"`
+	CommFriendText proto.Option[string] `protobuf:"bytes,6,opt"`
+	CommGroupText  proto.Option[string] `protobuf:"bytes,7,opt"`
 }
 
 type StFollowUser struct {
-	Uid  *uint64 `protobuf:"varint,1,opt"`
-	Nick *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StFollowUser) GetUid() uint64 {
-	if x != nil && x.Uid != nil {
-		return *x.Uid
-	}
-	return 0
-}
-
-func (x *StFollowUser) GetNick() string {
-	if x != nil && x.Nick != nil {
-		return *x.Nick
-	}
-	return ""
+	Uid  proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Nick proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type StGPSV2 struct {
-	Lat   *int64 `protobuf:"varint,1,opt"`
-	Lon   *int64 `protobuf:"varint,2,opt"`
-	EType *int64 `protobuf:"varint,3,opt"`
-	Alt   *int64 `protobuf:"varint,4,opt"`
-}
-
-func (x *StGPSV2) GetLat() int64 {
-	if x != nil && x.Lat != nil {
-		return *x.Lat
-	}
-	return 0
-}
-
-func (x *StGPSV2) GetLon() int64 {
-	if x != nil && x.Lon != nil {
-		return *x.Lon
-	}
-	return 0
-}
-
-func (x *StGPSV2) GetEType() int64 {
-	if x != nil && x.EType != nil {
-		return *x.EType
-	}
-	return 0
-}
-
-func (x *StGPSV2) GetAlt() int64 {
-	if x != nil && x.Alt != nil {
-		return *x.Alt
-	}
-	return 0
+	Lat   proto.Option[int64] `protobuf:"varint,1,opt"`
+	Lon   proto.Option[int64] `protobuf:"varint,2,opt"`
+	EType proto.Option[int64] `protobuf:"varint,3,opt"`
+	Alt   proto.Option[int64] `protobuf:"varint,4,opt"`
 }
 
 type StGuidePublishBubble struct {
-	Id              *string  `protobuf:"bytes,1,opt"`
-	BackgroundImage *StImage `protobuf:"bytes,2,opt"`
-	JumpUrl         *string  `protobuf:"bytes,3,opt"`
-}
-
-func (x *StGuidePublishBubble) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StGuidePublishBubble) GetJumpUrl() string {
-	if x != nil && x.JumpUrl != nil {
-		return *x.JumpUrl
-	}
-	return ""
+	Id              proto.Option[string] `protobuf:"bytes,1,opt"`
+	BackgroundImage *StImage             `protobuf:"bytes,2,opt"`
+	JumpUrl         proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type StIconInfo struct {
-	IconUrl40  *string `protobuf:"bytes,1,opt"`
-	IconUrl100 *string `protobuf:"bytes,2,opt"`
-	IconUrl140 *string `protobuf:"bytes,3,opt"`
-	IconUrl640 *string `protobuf:"bytes,4,opt"`
-	IconUrl    *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *StIconInfo) GetIconUrl40() string {
-	if x != nil && x.IconUrl40 != nil {
-		return *x.IconUrl40
-	}
-	return ""
-}
-
-func (x *StIconInfo) GetIconUrl100() string {
-	if x != nil && x.IconUrl100 != nil {
-		return *x.IconUrl100
-	}
-	return ""
-}
-
-func (x *StIconInfo) GetIconUrl140() string {
-	if x != nil && x.IconUrl140 != nil {
-		return *x.IconUrl140
-	}
-	return ""
-}
-
-func (x *StIconInfo) GetIconUrl640() string {
-	if x != nil && x.IconUrl640 != nil {
-		return *x.IconUrl640
-	}
-	return ""
-}
-
-func (x *StIconInfo) GetIconUrl() string {
-	if x != nil && x.IconUrl != nil {
-		return *x.IconUrl
-	}
-	return ""
+	IconUrl40  proto.Option[string] `protobuf:"bytes,1,opt"`
+	IconUrl100 proto.Option[string] `protobuf:"bytes,2,opt"`
+	IconUrl140 proto.Option[string] `protobuf:"bytes,3,opt"`
+	IconUrl640 proto.Option[string] `protobuf:"bytes,4,opt"`
+	IconUrl    proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type StImage struct {
-	Width        *uint32       `protobuf:"varint,1,opt"`
-	Height       *uint32       `protobuf:"varint,2,opt"`
-	PicUrl       *string       `protobuf:"bytes,3,opt"`
-	VecImageUrl  []*StImageUrl `protobuf:"bytes,4,rep"`
-	PicId        *string       `protobuf:"bytes,5,opt"`
-	BusiData     []byte        `protobuf:"bytes,6,opt"`
-	ImageMD5     *string       `protobuf:"bytes,7,opt"`
-	LayerPicUrl  *string       `protobuf:"bytes,8,opt"`
-	PatternId    *string       `protobuf:"bytes,9,opt"`
-	DisplayIndex *uint32       `protobuf:"varint,10,opt"`
-}
-
-func (x *StImage) GetWidth() uint32 {
-	if x != nil && x.Width != nil {
-		return *x.Width
-	}
-	return 0
-}
-
-func (x *StImage) GetHeight() uint32 {
-	if x != nil && x.Height != nil {
-		return *x.Height
-	}
-	return 0
-}
-
-func (x *StImage) GetPicUrl() string {
-	if x != nil && x.PicUrl != nil {
-		return *x.PicUrl
-	}
-	return ""
-}
-
-func (x *StImage) GetPicId() string {
-	if x != nil && x.PicId != nil {
-		return *x.PicId
-	}
-	return ""
-}
-
-func (x *StImage) GetImageMD5() string {
-	if x != nil && x.ImageMD5 != nil {
-		return *x.ImageMD5
-	}
-	return ""
-}
-
-func (x *StImage) GetLayerPicUrl() string {
-	if x != nil && x.LayerPicUrl != nil {
-		return *x.LayerPicUrl
-	}
-	return ""
-}
-
-func (x *StImage) GetPatternId() string {
-	if x != nil && x.PatternId != nil {
-		return *x.PatternId
-	}
-	return ""
-}
-
-func (x *StImage) GetDisplayIndex() uint32 {
-	if x != nil && x.DisplayIndex != nil {
-		return *x.DisplayIndex
-	}
-	return 0
+	Width        proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Height       proto.Option[uint32] `protobuf:"varint,2,opt"`
+	PicUrl       proto.Option[string] `protobuf:"bytes,3,opt"`
+	VecImageUrl  []*StImageUrl        `protobuf:"bytes,4,rep"`
+	PicId        proto.Option[string] `protobuf:"bytes,5,opt"`
+	BusiData     []byte               `protobuf:"bytes,6,opt"`
+	ImageMD5     proto.Option[string] `protobuf:"bytes,7,opt"`
+	LayerPicUrl  proto.Option[string] `protobuf:"bytes,8,opt"`
+	PatternId    proto.Option[string] `protobuf:"bytes,9,opt"`
+	DisplayIndex proto.Option[uint32] `protobuf:"varint,10,opt"`
 }
 
 type StImageUrl struct {
-	LevelType *uint32 `protobuf:"varint,1,opt"`
-	Url       *string `protobuf:"bytes,2,opt"`
-	Width     *uint32 `protobuf:"varint,3,opt"`
-	Height    *uint32 `protobuf:"varint,4,opt"`
-	BusiData  []byte  `protobuf:"bytes,5,opt"`
-}
-
-func (x *StImageUrl) GetLevelType() uint32 {
-	if x != nil && x.LevelType != nil {
-		return *x.LevelType
-	}
-	return 0
-}
-
-func (x *StImageUrl) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
-}
-
-func (x *StImageUrl) GetWidth() uint32 {
-	if x != nil && x.Width != nil {
-		return *x.Width
-	}
-	return 0
-}
-
-func (x *StImageUrl) GetHeight() uint32 {
-	if x != nil && x.Height != nil {
-		return *x.Height
-	}
-	return 0
+	LevelType proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Url       proto.Option[string] `protobuf:"bytes,2,opt"`
+	Width     proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Height    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	BusiData  []byte               `protobuf:"bytes,5,opt"`
 }
 
 type StLightInteractInfo struct {
-	User     *StUser         `protobuf:"bytes,1,opt"`
-	Relation *StRelationInfo `protobuf:"bytes,2,opt"`
-	Count    *uint32         `protobuf:"varint,3,opt"`
-	BusiData []byte          `protobuf:"bytes,4,opt"`
-}
-
-func (x *StLightInteractInfo) GetCount() uint32 {
-	if x != nil && x.Count != nil {
-		return *x.Count
-	}
-	return 0
+	User     *StUser              `protobuf:"bytes,1,opt"`
+	Relation *StRelationInfo      `protobuf:"bytes,2,opt"`
+	Count    proto.Option[uint32] `protobuf:"varint,3,opt"`
+	BusiData []byte               `protobuf:"bytes,4,opt"`
 }
 
 type StLike struct {
-	Id            *string   `protobuf:"bytes,1,opt"`
-	Count         *uint32   `protobuf:"varint,2,opt"`
-	Status        *uint32   `protobuf:"varint,3,opt"`
-	VecUser       []*StUser `protobuf:"bytes,4,rep"`
-	BusiData      []byte    `protobuf:"bytes,5,opt"`
-	PostUser      *StUser   `protobuf:"bytes,6,opt"`
-	HasLikedCount *uint32   `protobuf:"varint,7,opt"`
-	OwnerStatus   *uint32   `protobuf:"varint,8,opt"`
-	JumpUrl       *string   `protobuf:"bytes,9,opt"`
-}
-
-func (x *StLike) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StLike) GetCount() uint32 {
-	if x != nil && x.Count != nil {
-		return *x.Count
-	}
-	return 0
-}
-
-func (x *StLike) GetStatus() uint32 {
-	if x != nil && x.Status != nil {
-		return *x.Status
-	}
-	return 0
-}
-
-func (x *StLike) GetHasLikedCount() uint32 {
-	if x != nil && x.HasLikedCount != nil {
-		return *x.HasLikedCount
-	}
-	return 0
-}
-
-func (x *StLike) GetOwnerStatus() uint32 {
-	if x != nil && x.OwnerStatus != nil {
-		return *x.OwnerStatus
-	}
-	return 0
-}
-
-func (x *StLike) GetJumpUrl() string {
-	if x != nil && x.JumpUrl != nil {
-		return *x.JumpUrl
-	}
-	return ""
+	Id            proto.Option[string] `protobuf:"bytes,1,opt"`
+	Count         proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Status        proto.Option[uint32] `protobuf:"varint,3,opt"`
+	VecUser       []*StUser            `protobuf:"bytes,4,rep"`
+	BusiData      []byte               `protobuf:"bytes,5,opt"`
+	PostUser      *StUser              `protobuf:"bytes,6,opt"`
+	HasLikedCount proto.Option[uint32] `protobuf:"varint,7,opt"`
+	OwnerStatus   proto.Option[uint32] `protobuf:"varint,8,opt"`
+	JumpUrl       proto.Option[string] `protobuf:"bytes,9,opt"`
 }
 
 type StLiteBanner struct {
-	Icon       *StImage       `protobuf:"bytes,1,opt"`
-	Title      *string        `protobuf:"bytes,2,opt"`
-	JumpUrl    *string        `protobuf:"bytes,3,opt"`
-	ActivityID *string        `protobuf:"bytes,4,opt"`
-	JsonStyle  *string        `protobuf:"bytes,5,opt"`
-	ExtInfo    []*CommonEntry `protobuf:"bytes,6,rep"`
-}
-
-func (x *StLiteBanner) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *StLiteBanner) GetJumpUrl() string {
-	if x != nil && x.JumpUrl != nil {
-		return *x.JumpUrl
-	}
-	return ""
-}
-
-func (x *StLiteBanner) GetActivityID() string {
-	if x != nil && x.ActivityID != nil {
-		return *x.ActivityID
-	}
-	return ""
-}
-
-func (x *StLiteBanner) GetJsonStyle() string {
-	if x != nil && x.JsonStyle != nil {
-		return *x.JsonStyle
-	}
-	return ""
+	Icon       *StImage             `protobuf:"bytes,1,opt"`
+	Title      proto.Option[string] `protobuf:"bytes,2,opt"`
+	JumpUrl    proto.Option[string] `protobuf:"bytes,3,opt"`
+	ActivityID proto.Option[string] `protobuf:"bytes,4,opt"`
+	JsonStyle  proto.Option[string] `protobuf:"bytes,5,opt"`
+	ExtInfo    []*CommonEntry       `protobuf:"bytes,6,rep"`
 }
 
 type StMaterialDataNew struct {
-	MaterialType *string             `protobuf:"bytes,1,opt"`
-	MaterialList []*StSingleMaterial `protobuf:"bytes,2,rep"`
-}
-
-func (x *StMaterialDataNew) GetMaterialType() string {
-	if x != nil && x.MaterialType != nil {
-		return *x.MaterialType
-	}
-	return ""
+	MaterialType proto.Option[string] `protobuf:"bytes,1,opt"`
+	MaterialList []*StSingleMaterial  `protobuf:"bytes,2,rep"`
 }
 
 type StMedalInfo struct {
-	Type          *int32  `protobuf:"varint,1,opt"`
-	MedalName     *string `protobuf:"bytes,2,opt"`
-	MedalID       *string `protobuf:"bytes,3,opt"`
-	Rank          *int32  `protobuf:"varint,4,opt"`
-	IsHighLight   *bool   `protobuf:"varint,5,opt"`
-	IsNew         *bool   `protobuf:"varint,6,opt"`
-	JumpUrl       *string `protobuf:"bytes,7,opt"`
-	IconUrl       *string `protobuf:"bytes,8,opt"`
-	BackgroundUrl *string `protobuf:"bytes,9,opt"`
-	Describe      *string `protobuf:"bytes,10,opt"`
-	ReportValue   *int32  `protobuf:"varint,11,opt"`
-}
-
-func (x *StMedalInfo) GetType() int32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StMedalInfo) GetMedalName() string {
-	if x != nil && x.MedalName != nil {
-		return *x.MedalName
-	}
-	return ""
-}
-
-func (x *StMedalInfo) GetMedalID() string {
-	if x != nil && x.MedalID != nil {
-		return *x.MedalID
-	}
-	return ""
-}
-
-func (x *StMedalInfo) GetRank() int32 {
-	if x != nil && x.Rank != nil {
-		return *x.Rank
-	}
-	return 0
-}
-
-func (x *StMedalInfo) GetIsHighLight() bool {
-	if x != nil && x.IsHighLight != nil {
-		return *x.IsHighLight
-	}
-	return false
-}
-
-func (x *StMedalInfo) GetIsNew() bool {
-	if x != nil && x.IsNew != nil {
-		return *x.IsNew
-	}
-	return false
-}
-
-func (x *StMedalInfo) GetJumpUrl() string {
-	if x != nil && x.JumpUrl != nil {
-		return *x.JumpUrl
-	}
-	return ""
-}
-
-func (x *StMedalInfo) GetIconUrl() string {
-	if x != nil && x.IconUrl != nil {
-		return *x.IconUrl
-	}
-	return ""
-}
-
-func (x *StMedalInfo) GetBackgroundUrl() string {
-	if x != nil && x.BackgroundUrl != nil {
-		return *x.BackgroundUrl
-	}
-	return ""
-}
-
-func (x *StMedalInfo) GetDescribe() string {
-	if x != nil && x.Describe != nil {
-		return *x.Describe
-	}
-	return ""
-}
-
-func (x *StMedalInfo) GetReportValue() int32 {
-	if x != nil && x.ReportValue != nil {
-		return *x.ReportValue
-	}
-	return 0
+	Type          proto.Option[int32]  `protobuf:"varint,1,opt"`
+	MedalName     proto.Option[string] `protobuf:"bytes,2,opt"`
+	MedalID       proto.Option[string] `protobuf:"bytes,3,opt"`
+	Rank          proto.Option[int32]  `protobuf:"varint,4,opt"`
+	IsHighLight   proto.Option[bool]   `protobuf:"varint,5,opt"`
+	IsNew         proto.Option[bool]   `protobuf:"varint,6,opt"`
+	JumpUrl       proto.Option[string] `protobuf:"bytes,7,opt"`
+	IconUrl       proto.Option[string] `protobuf:"bytes,8,opt"`
+	BackgroundUrl proto.Option[string] `protobuf:"bytes,9,opt"`
+	Describe      proto.Option[string] `protobuf:"bytes,10,opt"`
+	ReportValue   proto.Option[int32]  `protobuf:"varint,11,opt"`
 }
 
 type StNotice struct {
@@ -1076,15 +282,8 @@ type StNotice struct {
 }
 
 type StNoticePattonInfo struct {
-	PattonType *uint32         `protobuf:"varint,1,opt"`
-	PlainTxt   *StPlainTxtInfo `protobuf:"bytes,2,opt"`
-}
-
-func (x *StNoticePattonInfo) GetPattonType() uint32 {
-	if x != nil && x.PattonType != nil {
-		return *x.PattonType
-	}
-	return 0
+	PattonType proto.Option[uint32] `protobuf:"varint,1,opt"`
+	PlainTxt   *StPlainTxtInfo      `protobuf:"bytes,2,opt"`
 }
 
 type StNoticeTxtInfo struct {
@@ -1102,328 +301,69 @@ type StPlainTxtInfo struct {
 }
 
 type StPoiInfoV2 struct {
-	PoiId        *string  `protobuf:"bytes,1,opt"`
-	Name         *string  `protobuf:"bytes,2,opt"`
-	PoiType      *int32   `protobuf:"varint,3,opt"`
-	TypeName     *string  `protobuf:"bytes,4,opt"`
-	Address      *string  `protobuf:"bytes,5,opt"`
-	DistrictCode *int32   `protobuf:"varint,6,opt"`
-	Gps          *StGPSV2 `protobuf:"bytes,7,opt"`
-	Distance     *int32   `protobuf:"varint,8,opt"`
-	HotValue     *int32   `protobuf:"varint,9,opt"`
-	Phone        *string  `protobuf:"bytes,10,opt"`
-	Country      *string  `protobuf:"bytes,11,opt"`
-	Province     *string  `protobuf:"bytes,12,opt"`
-	City         *string  `protobuf:"bytes,13,opt"`
-	PoiNum       *int32   `protobuf:"varint,14,opt"`
-	PoiOrderType *int32   `protobuf:"varint,15,opt"`
-	DefaultName  *string  `protobuf:"bytes,16,opt"`
-	District     *string  `protobuf:"bytes,17,opt"`
-	DianPingId   *string  `protobuf:"bytes,18,opt"`
-	DistanceText *string  `protobuf:"bytes,19,opt"`
-	DisplayName  *string  `protobuf:"bytes,20,opt"`
-}
-
-func (x *StPoiInfoV2) GetPoiId() string {
-	if x != nil && x.PoiId != nil {
-		return *x.PoiId
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetPoiType() int32 {
-	if x != nil && x.PoiType != nil {
-		return *x.PoiType
-	}
-	return 0
-}
-
-func (x *StPoiInfoV2) GetTypeName() string {
-	if x != nil && x.TypeName != nil {
-		return *x.TypeName
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetAddress() string {
-	if x != nil && x.Address != nil {
-		return *x.Address
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetDistrictCode() int32 {
-	if x != nil && x.DistrictCode != nil {
-		return *x.DistrictCode
-	}
-	return 0
-}
-
-func (x *StPoiInfoV2) GetDistance() int32 {
-	if x != nil && x.Distance != nil {
-		return *x.Distance
-	}
-	return 0
-}
-
-func (x *StPoiInfoV2) GetHotValue() int32 {
-	if x != nil && x.HotValue != nil {
-		return *x.HotValue
-	}
-	return 0
-}
-
-func (x *StPoiInfoV2) GetPhone() string {
-	if x != nil && x.Phone != nil {
-		return *x.Phone
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetCountry() string {
-	if x != nil && x.Country != nil {
-		return *x.Country
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetProvince() string {
-	if x != nil && x.Province != nil {
-		return *x.Province
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetCity() string {
-	if x != nil && x.City != nil {
-		return *x.City
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetPoiNum() int32 {
-	if x != nil && x.PoiNum != nil {
-		return *x.PoiNum
-	}
-	return 0
-}
-
-func (x *StPoiInfoV2) GetPoiOrderType() int32 {
-	if x != nil && x.PoiOrderType != nil {
-		return *x.PoiOrderType
-	}
-	return 0
-}
-
-func (x *StPoiInfoV2) GetDefaultName() string {
-	if x != nil && x.DefaultName != nil {
-		return *x.DefaultName
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetDistrict() string {
-	if x != nil && x.District != nil {
-		return *x.District
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetDianPingId() string {
-	if x != nil && x.DianPingId != nil {
-		return *x.DianPingId
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetDistanceText() string {
-	if x != nil && x.DistanceText != nil {
-		return *x.DistanceText
-	}
-	return ""
-}
-
-func (x *StPoiInfoV2) GetDisplayName() string {
-	if x != nil && x.DisplayName != nil {
-		return *x.DisplayName
-	}
-	return ""
+	PoiId        proto.Option[string] `protobuf:"bytes,1,opt"`
+	Name         proto.Option[string] `protobuf:"bytes,2,opt"`
+	PoiType      proto.Option[int32]  `protobuf:"varint,3,opt"`
+	TypeName     proto.Option[string] `protobuf:"bytes,4,opt"`
+	Address      proto.Option[string] `protobuf:"bytes,5,opt"`
+	DistrictCode proto.Option[int32]  `protobuf:"varint,6,opt"`
+	Gps          *StGPSV2             `protobuf:"bytes,7,opt"`
+	Distance     proto.Option[int32]  `protobuf:"varint,8,opt"`
+	HotValue     proto.Option[int32]  `protobuf:"varint,9,opt"`
+	Phone        proto.Option[string] `protobuf:"bytes,10,opt"`
+	Country      proto.Option[string] `protobuf:"bytes,11,opt"`
+	Province     proto.Option[string] `protobuf:"bytes,12,opt"`
+	City         proto.Option[string] `protobuf:"bytes,13,opt"`
+	PoiNum       proto.Option[int32]  `protobuf:"varint,14,opt"`
+	PoiOrderType proto.Option[int32]  `protobuf:"varint,15,opt"`
+	DefaultName  proto.Option[string] `protobuf:"bytes,16,opt"`
+	District     proto.Option[string] `protobuf:"bytes,17,opt"`
+	DianPingId   proto.Option[string] `protobuf:"bytes,18,opt"`
+	DistanceText proto.Option[string] `protobuf:"bytes,19,opt"`
+	DisplayName  proto.Option[string] `protobuf:"bytes,20,opt"`
 }
 
 type StPrePullCacheFeed struct {
-	Id             *string       `protobuf:"bytes,1,opt"`
-	Poster         *StUser       `protobuf:"bytes,2,opt"`
-	CreateTime     *uint64       `protobuf:"varint,3,opt"`
-	BusiTranparent []*BytesEntry `protobuf:"bytes,4,rep"`
-}
-
-func (x *StPrePullCacheFeed) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StPrePullCacheFeed) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
+	Id             proto.Option[string] `protobuf:"bytes,1,opt"`
+	Poster         *StUser              `protobuf:"bytes,2,opt"`
+	CreateTime     proto.Option[uint64] `protobuf:"varint,3,opt"`
+	BusiTranparent []*BytesEntry        `protobuf:"bytes,4,rep"`
 }
 
 type StProxyInfo struct {
-	CmdId       *int32  `protobuf:"varint,1,opt"`
-	SubCmdId    *int32  `protobuf:"varint,2,opt"`
-	AppProtocol *string `protobuf:"bytes,3,opt"`
-	ReqBody     []byte  `protobuf:"bytes,4,opt"`
-}
-
-func (x *StProxyInfo) GetCmdId() int32 {
-	if x != nil && x.CmdId != nil {
-		return *x.CmdId
-	}
-	return 0
-}
-
-func (x *StProxyInfo) GetSubCmdId() int32 {
-	if x != nil && x.SubCmdId != nil {
-		return *x.SubCmdId
-	}
-	return 0
-}
-
-func (x *StProxyInfo) GetAppProtocol() string {
-	if x != nil && x.AppProtocol != nil {
-		return *x.AppProtocol
-	}
-	return ""
+	CmdId       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	SubCmdId    proto.Option[int32]  `protobuf:"varint,2,opt"`
+	AppProtocol proto.Option[string] `protobuf:"bytes,3,opt"`
+	ReqBody     []byte               `protobuf:"bytes,4,opt"`
 }
 
 type StRankingItem struct {
-	User        *StUser         `protobuf:"bytes,1,opt"`
-	Relation    *StRelationInfo `protobuf:"bytes,2,opt"`
-	Score       *int64          `protobuf:"varint,3,opt"`
-	Grade       *int32          `protobuf:"varint,4,opt"`
-	BusiData    []byte          `protobuf:"bytes,5,opt"`
-	RankNo      *int32          `protobuf:"varint,6,opt"`
-	InTopicList *int32          `protobuf:"varint,7,opt"`
-}
-
-func (x *StRankingItem) GetScore() int64 {
-	if x != nil && x.Score != nil {
-		return *x.Score
-	}
-	return 0
-}
-
-func (x *StRankingItem) GetGrade() int32 {
-	if x != nil && x.Grade != nil {
-		return *x.Grade
-	}
-	return 0
-}
-
-func (x *StRankingItem) GetRankNo() int32 {
-	if x != nil && x.RankNo != nil {
-		return *x.RankNo
-	}
-	return 0
-}
-
-func (x *StRankingItem) GetInTopicList() int32 {
-	if x != nil && x.InTopicList != nil {
-		return *x.InTopicList
-	}
-	return 0
+	User        *StUser             `protobuf:"bytes,1,opt"`
+	Relation    *StRelationInfo     `protobuf:"bytes,2,opt"`
+	Score       proto.Option[int64] `protobuf:"varint,3,opt"`
+	Grade       proto.Option[int32] `protobuf:"varint,4,opt"`
+	BusiData    []byte              `protobuf:"bytes,5,opt"`
+	RankNo      proto.Option[int32] `protobuf:"varint,6,opt"`
+	InTopicList proto.Option[int32] `protobuf:"varint,7,opt"`
 }
 
 type StRecomForward struct {
-	Id         *string `protobuf:"bytes,1,opt"`
-	Title      *string `protobuf:"bytes,2,opt"`
-	Subtitle   *string `protobuf:"bytes,3,opt"`
-	Poster     *StUser `protobuf:"bytes,4,opt"`
-	CreateTime *uint64 `protobuf:"varint,5,opt"`
-	Type       *uint32 `protobuf:"varint,6,opt"`
-	BusiData   []byte  `protobuf:"bytes,7,opt"`
-}
-
-func (x *StRecomForward) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StRecomForward) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *StRecomForward) GetSubtitle() string {
-	if x != nil && x.Subtitle != nil {
-		return *x.Subtitle
-	}
-	return ""
-}
-
-func (x *StRecomForward) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *StRecomForward) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
+	Id         proto.Option[string] `protobuf:"bytes,1,opt"`
+	Title      proto.Option[string] `protobuf:"bytes,2,opt"`
+	Subtitle   proto.Option[string] `protobuf:"bytes,3,opt"`
+	Poster     *StUser              `protobuf:"bytes,4,opt"`
+	CreateTime proto.Option[uint64] `protobuf:"varint,5,opt"`
+	Type       proto.Option[uint32] `protobuf:"varint,6,opt"`
+	BusiData   []byte               `protobuf:"bytes,7,opt"`
 }
 
 type StRecomInfo struct {
-	RecomReason     *string `protobuf:"bytes,1,opt"`
-	RecomAttachInfo []byte  `protobuf:"bytes,2,opt"`
-	RecomTrace      *string `protobuf:"bytes,3,opt"`
-	ClientSealData  []byte  `protobuf:"bytes,4,opt"`
-	IconUrl         *string `protobuf:"bytes,5,opt"`
-	RecomReasonType *int32  `protobuf:"varint,6,opt"`
-}
-
-func (x *StRecomInfo) GetRecomReason() string {
-	if x != nil && x.RecomReason != nil {
-		return *x.RecomReason
-	}
-	return ""
-}
-
-func (x *StRecomInfo) GetRecomTrace() string {
-	if x != nil && x.RecomTrace != nil {
-		return *x.RecomTrace
-	}
-	return ""
-}
-
-func (x *StRecomInfo) GetIconUrl() string {
-	if x != nil && x.IconUrl != nil {
-		return *x.IconUrl
-	}
-	return ""
-}
-
-func (x *StRecomInfo) GetRecomReasonType() int32 {
-	if x != nil && x.RecomReasonType != nil {
-		return *x.RecomReasonType
-	}
-	return 0
+	RecomReason     proto.Option[string] `protobuf:"bytes,1,opt"`
+	RecomAttachInfo []byte               `protobuf:"bytes,2,opt"`
+	RecomTrace      proto.Option[string] `protobuf:"bytes,3,opt"`
+	ClientSealData  []byte               `protobuf:"bytes,4,opt"`
+	IconUrl         proto.Option[string] `protobuf:"bytes,5,opt"`
+	RecomReasonType proto.Option[int32]  `protobuf:"varint,6,opt"`
 }
 
 type StRecomReportInfo struct {
@@ -1431,181 +371,41 @@ type StRecomReportInfo struct {
 }
 
 type StRelationInfo struct {
-	Id            *string `protobuf:"bytes,1,opt"`
-	Relation      *uint32 `protobuf:"varint,2,opt"`
-	BusiData      []byte  `protobuf:"bytes,3,opt"`
-	RelationState *uint32 `protobuf:"varint,4,opt"`
-	Score         *uint32 `protobuf:"varint,5,opt"`
-	IsBlock       *bool   `protobuf:"varint,6,opt"`
-	IsBlocked     *bool   `protobuf:"varint,7,opt"`
-	IsFriend      *bool   `protobuf:"varint,8,opt"`
-	IsUncare      *bool   `protobuf:"varint,9,opt"`
-	ImBitMap      *uint64 `protobuf:"varint,10,opt"`
-}
-
-func (x *StRelationInfo) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StRelationInfo) GetRelation() uint32 {
-	if x != nil && x.Relation != nil {
-		return *x.Relation
-	}
-	return 0
-}
-
-func (x *StRelationInfo) GetRelationState() uint32 {
-	if x != nil && x.RelationState != nil {
-		return *x.RelationState
-	}
-	return 0
-}
-
-func (x *StRelationInfo) GetScore() uint32 {
-	if x != nil && x.Score != nil {
-		return *x.Score
-	}
-	return 0
-}
-
-func (x *StRelationInfo) GetIsBlock() bool {
-	if x != nil && x.IsBlock != nil {
-		return *x.IsBlock
-	}
-	return false
-}
-
-func (x *StRelationInfo) GetIsBlocked() bool {
-	if x != nil && x.IsBlocked != nil {
-		return *x.IsBlocked
-	}
-	return false
-}
-
-func (x *StRelationInfo) GetIsFriend() bool {
-	if x != nil && x.IsFriend != nil {
-		return *x.IsFriend
-	}
-	return false
-}
-
-func (x *StRelationInfo) GetIsUncare() bool {
-	if x != nil && x.IsUncare != nil {
-		return *x.IsUncare
-	}
-	return false
-}
-
-func (x *StRelationInfo) GetImBitMap() uint64 {
-	if x != nil && x.ImBitMap != nil {
-		return *x.ImBitMap
-	}
-	return 0
+	Id            proto.Option[string] `protobuf:"bytes,1,opt"`
+	Relation      proto.Option[uint32] `protobuf:"varint,2,opt"`
+	BusiData      []byte               `protobuf:"bytes,3,opt"`
+	RelationState proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Score         proto.Option[uint32] `protobuf:"varint,5,opt"`
+	IsBlock       proto.Option[bool]   `protobuf:"varint,6,opt"`
+	IsBlocked     proto.Option[bool]   `protobuf:"varint,7,opt"`
+	IsFriend      proto.Option[bool]   `protobuf:"varint,8,opt"`
+	IsUncare      proto.Option[bool]   `protobuf:"varint,9,opt"`
+	ImBitMap      proto.Option[uint64] `protobuf:"varint,10,opt"`
 }
 
 type StReply struct {
-	Id            *string        `protobuf:"bytes,1,opt"`
-	PostUser      *StUser        `protobuf:"bytes,2,opt"`
-	CreateTime    *uint64        `protobuf:"varint,3,opt"`
-	Content       *string        `protobuf:"bytes,4,opt"`
-	TargetUser    *StUser        `protobuf:"bytes,5,opt"`
-	BusiData      []byte         `protobuf:"bytes,6,opt"`
-	LikeInfo      *StLike        `protobuf:"bytes,7,opt"`
-	TypeFlag      *uint32        `protobuf:"varint,8,opt"`
-	Modifyflag    *uint32        `protobuf:"varint,9,opt"`
-	AtUinList     []string       `protobuf:"bytes,10,rep"`
-	TypeFlag2     *uint32        `protobuf:"varint,11,opt"`
-	CreateTimeNs  *uint64        `protobuf:"varint,12,opt"`
-	StoreExtInfo  []*CommonEntry `protobuf:"bytes,13,rep"`
-	ThirdId       *string        `protobuf:"bytes,14,opt"`
-	TargetReplyID *string        `protobuf:"bytes,15,opt"`
-	SourceType    *uint32        `protobuf:"varint,16,opt"`
-	RichContents  *StRichText    `protobuf:"bytes,17,opt"`
-}
-
-func (x *StReply) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StReply) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *StReply) GetContent() string {
-	if x != nil && x.Content != nil {
-		return *x.Content
-	}
-	return ""
-}
-
-func (x *StReply) GetTypeFlag() uint32 {
-	if x != nil && x.TypeFlag != nil {
-		return *x.TypeFlag
-	}
-	return 0
-}
-
-func (x *StReply) GetModifyflag() uint32 {
-	if x != nil && x.Modifyflag != nil {
-		return *x.Modifyflag
-	}
-	return 0
-}
-
-func (x *StReply) GetTypeFlag2() uint32 {
-	if x != nil && x.TypeFlag2 != nil {
-		return *x.TypeFlag2
-	}
-	return 0
-}
-
-func (x *StReply) GetCreateTimeNs() uint64 {
-	if x != nil && x.CreateTimeNs != nil {
-		return *x.CreateTimeNs
-	}
-	return 0
-}
-
-func (x *StReply) GetThirdId() string {
-	if x != nil && x.ThirdId != nil {
-		return *x.ThirdId
-	}
-	return ""
-}
-
-func (x *StReply) GetTargetReplyID() string {
-	if x != nil && x.TargetReplyID != nil {
-		return *x.TargetReplyID
-	}
-	return ""
-}
-
-func (x *StReply) GetSourceType() uint32 {
-	if x != nil && x.SourceType != nil {
-		return *x.SourceType
-	}
-	return 0
+	Id            proto.Option[string] `protobuf:"bytes,1,opt"`
+	PostUser      *StUser              `protobuf:"bytes,2,opt"`
+	CreateTime    proto.Option[uint64] `protobuf:"varint,3,opt"`
+	Content       proto.Option[string] `protobuf:"bytes,4,opt"`
+	TargetUser    *StUser              `protobuf:"bytes,5,opt"`
+	BusiData      []byte               `protobuf:"bytes,6,opt"`
+	LikeInfo      *StLike              `protobuf:"bytes,7,opt"`
+	TypeFlag      proto.Option[uint32] `protobuf:"varint,8,opt"`
+	Modifyflag    proto.Option[uint32] `protobuf:"varint,9,opt"`
+	AtUinList     []string             `protobuf:"bytes,10,rep"`
+	TypeFlag2     proto.Option[uint32] `protobuf:"varint,11,opt"`
+	CreateTimeNs  proto.Option[uint64] `protobuf:"varint,12,opt"`
+	StoreExtInfo  []*CommonEntry       `protobuf:"bytes,13,rep"`
+	ThirdId       proto.Option[string] `protobuf:"bytes,14,opt"`
+	TargetReplyID proto.Option[string] `protobuf:"bytes,15,opt"`
+	SourceType    proto.Option[uint32] `protobuf:"varint,16,opt"`
+	RichContents  *StRichText          `protobuf:"bytes,17,opt"`
 }
 
 type StReportInfo struct {
-	Id         *string `protobuf:"bytes,1,opt"`
-	BusiReport []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *StReportInfo) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
+	Id         proto.Option[string] `protobuf:"bytes,1,opt"`
+	BusiReport []byte               `protobuf:"bytes,2,opt"`
 }
 
 type StRichText struct {
@@ -1613,71 +413,22 @@ type StRichText struct {
 }
 
 type StRichTextAtContent struct {
-	Type        *uint32                        `protobuf:"varint,1,opt"`
+	Type        proto.Option[uint32]           `protobuf:"varint,1,opt"`
 	GuildInfo   *GuildChannelBaseGuildInfo     `protobuf:"bytes,2,opt"`
 	RoleGroupId *GuildChannelBaseRoleGroupInfo `protobuf:"bytes,3,opt"`
 	User        *StUser                        `protobuf:"bytes,4,opt"`
 }
 
-func (x *StRichTextAtContent) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
 type GuildChannelBaseGuildInfo struct {
-	GuildId  *uint64 `protobuf:"varint,1,opt"`
-	Name     *string `protobuf:"bytes,2,opt"`
-	JoinTime *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *GuildChannelBaseGuildInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *GuildChannelBaseGuildInfo) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *GuildChannelBaseGuildInfo) GetJoinTime() uint64 {
-	if x != nil && x.JoinTime != nil {
-		return *x.JoinTime
-	}
-	return 0
+	GuildId  proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Name     proto.Option[string] `protobuf:"bytes,2,opt"`
+	JoinTime proto.Option[uint64] `protobuf:"varint,3,opt"`
 }
 
 type GuildChannelBaseRoleGroupInfo struct {
-	RoleId *uint64 `protobuf:"varint,1,opt"`
-	Name   *string `protobuf:"bytes,2,opt"`
-	Color  *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *GuildChannelBaseRoleGroupInfo) GetRoleId() uint64 {
-	if x != nil && x.RoleId != nil {
-		return *x.RoleId
-	}
-	return 0
-}
-
-func (x *GuildChannelBaseRoleGroupInfo) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *GuildChannelBaseRoleGroupInfo) GetColor() uint32 {
-	if x != nil && x.Color != nil {
-		return *x.Color
-	}
-	return 0
+	RoleId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Name   proto.Option[string] `protobuf:"bytes,2,opt"`
+	Color  proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type StRichTextChannelContent struct {
@@ -1685,8 +436,8 @@ type StRichTextChannelContent struct {
 }
 
 type StRichTextContent struct {
-	Type           *uint32                   `protobuf:"varint,1,opt"`
-	PatternId      *string                   `protobuf:"bytes,2,opt"`
+	Type           proto.Option[uint32]      `protobuf:"varint,1,opt"`
+	PatternId      proto.Option[string]      `protobuf:"bytes,2,opt"`
 	TextContent    *StRichTextTextContent    `protobuf:"bytes,3,opt"`
 	AtContent      *StRichTextAtContent      `protobuf:"bytes,4,opt"`
 	UrlContent     *StRichTextURLContent     `protobuf:"bytes,5,opt"`
@@ -1694,207 +445,46 @@ type StRichTextContent struct {
 	ChannelContent *StRichTextChannelContent `protobuf:"bytes,7,opt"`
 }
 
-func (x *StRichTextContent) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StRichTextContent) GetPatternId() string {
-	if x != nil && x.PatternId != nil {
-		return *x.PatternId
-	}
-	return ""
-}
-
 type StRichTextEmojiContent struct {
-	Id   *string `protobuf:"bytes,1,opt"`
-	Type *string `protobuf:"bytes,2,opt"`
-	Name *string `protobuf:"bytes,3,opt"`
-	Url  *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *StRichTextEmojiContent) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StRichTextEmojiContent) GetType() string {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return ""
-}
-
-func (x *StRichTextEmojiContent) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *StRichTextEmojiContent) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
+	Id   proto.Option[string] `protobuf:"bytes,1,opt"`
+	Type proto.Option[string] `protobuf:"bytes,2,opt"`
+	Name proto.Option[string] `protobuf:"bytes,3,opt"`
+	Url  proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type StRichTextTextContent struct {
-	Text *string `protobuf:"bytes,1,opt"`
-}
-
-func (x *StRichTextTextContent) GetText() string {
-	if x != nil && x.Text != nil {
-		return *x.Text
-	}
-	return ""
+	Text proto.Option[string] `protobuf:"bytes,1,opt"`
 }
 
 type StRichTextURLContent struct {
-	Url         *string `protobuf:"bytes,1,opt"`
-	DisplayText *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StRichTextURLContent) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
-}
-
-func (x *StRichTextURLContent) GetDisplayText() string {
-	if x != nil && x.DisplayText != nil {
-		return *x.DisplayText
-	}
-	return ""
+	Url         proto.Option[string] `protobuf:"bytes,1,opt"`
+	DisplayText proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type StSameTopicGuideInfo struct {
-	IsSameTopicGuide *uint32 `protobuf:"varint,1,opt"`
-	StayShowTime     *int64  `protobuf:"varint,2,opt"`
-	HashTag          *string `protobuf:"bytes,3,opt"`
-	Words            *string `protobuf:"bytes,4,opt"`
-	JumpUrl          *string `protobuf:"bytes,5,opt"`
-	ReportExt        *string `protobuf:"bytes,6,opt"`
-}
-
-func (x *StSameTopicGuideInfo) GetIsSameTopicGuide() uint32 {
-	if x != nil && x.IsSameTopicGuide != nil {
-		return *x.IsSameTopicGuide
-	}
-	return 0
-}
-
-func (x *StSameTopicGuideInfo) GetStayShowTime() int64 {
-	if x != nil && x.StayShowTime != nil {
-		return *x.StayShowTime
-	}
-	return 0
-}
-
-func (x *StSameTopicGuideInfo) GetHashTag() string {
-	if x != nil && x.HashTag != nil {
-		return *x.HashTag
-	}
-	return ""
-}
-
-func (x *StSameTopicGuideInfo) GetWords() string {
-	if x != nil && x.Words != nil {
-		return *x.Words
-	}
-	return ""
-}
-
-func (x *StSameTopicGuideInfo) GetJumpUrl() string {
-	if x != nil && x.JumpUrl != nil {
-		return *x.JumpUrl
-	}
-	return ""
-}
-
-func (x *StSameTopicGuideInfo) GetReportExt() string {
-	if x != nil && x.ReportExt != nil {
-		return *x.ReportExt
-	}
-	return ""
+	IsSameTopicGuide proto.Option[uint32] `protobuf:"varint,1,opt"`
+	StayShowTime     proto.Option[int64]  `protobuf:"varint,2,opt"`
+	HashTag          proto.Option[string] `protobuf:"bytes,3,opt"`
+	Words            proto.Option[string] `protobuf:"bytes,4,opt"`
+	JumpUrl          proto.Option[string] `protobuf:"bytes,5,opt"`
+	ReportExt        proto.Option[string] `protobuf:"bytes,6,opt"`
 }
 
 type StShare struct {
-	Title            *string             `protobuf:"bytes,1,opt"`
-	Desc             *string             `protobuf:"bytes,2,opt"`
-	Type             *uint32             `protobuf:"varint,3,opt"`
-	Url              *string             `protobuf:"bytes,4,opt"`
-	Author           *StUser             `protobuf:"bytes,5,opt"`
-	Poster           *StUser             `protobuf:"bytes,6,opt"`
-	Videos           []*StVideo          `protobuf:"bytes,7,rep"`
-	Shorturl         *string             `protobuf:"bytes,8,opt"`
-	ShareCardInfo    *string             `protobuf:"bytes,9,opt"`
-	ShareQzoneInfo   *StShareQzoneInfo   `protobuf:"bytes,10,opt"`
-	Images           []*StImage          `protobuf:"bytes,11,rep"`
-	PublishTotalUser *uint32             `protobuf:"varint,12,opt"`
-	SharedCount      *uint32             `protobuf:"varint,13,opt"`
-	ChannelShareInfo *StChannelShareInfo `protobuf:"bytes,14,opt"`
-}
-
-func (x *StShare) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *StShare) GetDesc() string {
-	if x != nil && x.Desc != nil {
-		return *x.Desc
-	}
-	return ""
-}
-
-func (x *StShare) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StShare) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
-}
-
-func (x *StShare) GetShorturl() string {
-	if x != nil && x.Shorturl != nil {
-		return *x.Shorturl
-	}
-	return ""
-}
-
-func (x *StShare) GetShareCardInfo() string {
-	if x != nil && x.ShareCardInfo != nil {
-		return *x.ShareCardInfo
-	}
-	return ""
-}
-
-func (x *StShare) GetPublishTotalUser() uint32 {
-	if x != nil && x.PublishTotalUser != nil {
-		return *x.PublishTotalUser
-	}
-	return 0
-}
-
-func (x *StShare) GetSharedCount() uint32 {
-	if x != nil && x.SharedCount != nil {
-		return *x.SharedCount
-	}
-	return 0
+	Title            proto.Option[string] `protobuf:"bytes,1,opt"`
+	Desc             proto.Option[string] `protobuf:"bytes,2,opt"`
+	Type             proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Url              proto.Option[string] `protobuf:"bytes,4,opt"`
+	Author           *StUser              `protobuf:"bytes,5,opt"`
+	Poster           *StUser              `protobuf:"bytes,6,opt"`
+	Videos           []*StVideo           `protobuf:"bytes,7,rep"`
+	Shorturl         proto.Option[string] `protobuf:"bytes,8,opt"`
+	ShareCardInfo    proto.Option[string] `protobuf:"bytes,9,opt"`
+	ShareQzoneInfo   *StShareQzoneInfo    `protobuf:"bytes,10,opt"`
+	Images           []*StImage           `protobuf:"bytes,11,rep"`
+	PublishTotalUser proto.Option[uint32] `protobuf:"varint,12,opt"`
+	SharedCount      proto.Option[uint32] `protobuf:"varint,13,opt"`
+	ChannelShareInfo *StChannelShareInfo  `protobuf:"bytes,14,opt"`
 }
 
 type StShareQzoneInfo struct {
@@ -1902,532 +492,105 @@ type StShareQzoneInfo struct {
 }
 
 type StSingleMaterial struct {
-	MaterialId *string `protobuf:"bytes,1,opt"`
-}
-
-func (x *StSingleMaterial) GetMaterialId() string {
-	if x != nil && x.MaterialId != nil {
-		return *x.MaterialId
-	}
-	return ""
+	MaterialId proto.Option[string] `protobuf:"bytes,1,opt"`
 }
 
 type StSingleRecomReportInfo struct {
-	ReportID   *string `protobuf:"bytes,1,opt"`
-	ReportData []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *StSingleRecomReportInfo) GetReportID() string {
-	if x != nil && x.ReportID != nil {
-		return *x.ReportID
-	}
-	return ""
+	ReportID   proto.Option[string] `protobuf:"bytes,1,opt"`
+	ReportData []byte               `protobuf:"bytes,2,opt"`
 }
 
 type StTagInfo struct {
-	TagId           *string           `protobuf:"bytes,1,opt"`
-	TagName         *string           `protobuf:"bytes,2,opt"`
-	TagDec          *string           `protobuf:"bytes,3,opt"`
-	UserList        []*StUser         `protobuf:"bytes,4,rep"`
-	FeedList        []*StFeedAbstract `protobuf:"bytes,5,rep"`
-	TagTotalUser    *uint32           `protobuf:"varint,6,opt"`
-	TagTotalFeed    *uint32           `protobuf:"varint,7,opt"`
-	TagWording      *string           `protobuf:"bytes,8,opt"`
-	TagType         *uint32           `protobuf:"varint,9,opt"`
-	FollowState     *uint32           `protobuf:"varint,10,opt"`
-	ShareInfo       *StShare          `protobuf:"bytes,11,opt"`
-	IsTop           *uint32           `protobuf:"varint,12,opt"`
-	IsSelected      *uint32           `protobuf:"varint,13,opt"`
-	UserViewHistory *int64            `protobuf:"varint,14,opt"`
-	Medal           *StTagMedalInfo   `protobuf:"bytes,15,opt"`
-	Status          *uint32           `protobuf:"varint,16,opt"`
-	OptInfo         *StTagOperateInfo `protobuf:"bytes,17,opt"`
-	TagBaseStatus   *uint32           `protobuf:"varint,18,opt"`
-	IsRecommend     *int32            `protobuf:"varint,19,opt"`
-	TagViewHistory  *int64            `protobuf:"varint,20,opt"`
-	OperateIconUrl  *string           `protobuf:"bytes,21,opt"`
-	TagReport       *string           `protobuf:"bytes,99,opt"`
-	TagIconUrl      *string           `protobuf:"bytes,100,opt"`
-}
-
-func (x *StTagInfo) GetTagId() string {
-	if x != nil && x.TagId != nil {
-		return *x.TagId
-	}
-	return ""
-}
-
-func (x *StTagInfo) GetTagName() string {
-	if x != nil && x.TagName != nil {
-		return *x.TagName
-	}
-	return ""
-}
-
-func (x *StTagInfo) GetTagDec() string {
-	if x != nil && x.TagDec != nil {
-		return *x.TagDec
-	}
-	return ""
-}
-
-func (x *StTagInfo) GetTagTotalUser() uint32 {
-	if x != nil && x.TagTotalUser != nil {
-		return *x.TagTotalUser
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetTagTotalFeed() uint32 {
-	if x != nil && x.TagTotalFeed != nil {
-		return *x.TagTotalFeed
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetTagWording() string {
-	if x != nil && x.TagWording != nil {
-		return *x.TagWording
-	}
-	return ""
-}
-
-func (x *StTagInfo) GetTagType() uint32 {
-	if x != nil && x.TagType != nil {
-		return *x.TagType
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetFollowState() uint32 {
-	if x != nil && x.FollowState != nil {
-		return *x.FollowState
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetIsTop() uint32 {
-	if x != nil && x.IsTop != nil {
-		return *x.IsTop
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetIsSelected() uint32 {
-	if x != nil && x.IsSelected != nil {
-		return *x.IsSelected
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetUserViewHistory() int64 {
-	if x != nil && x.UserViewHistory != nil {
-		return *x.UserViewHistory
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetStatus() uint32 {
-	if x != nil && x.Status != nil {
-		return *x.Status
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetTagBaseStatus() uint32 {
-	if x != nil && x.TagBaseStatus != nil {
-		return *x.TagBaseStatus
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetIsRecommend() int32 {
-	if x != nil && x.IsRecommend != nil {
-		return *x.IsRecommend
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetTagViewHistory() int64 {
-	if x != nil && x.TagViewHistory != nil {
-		return *x.TagViewHistory
-	}
-	return 0
-}
-
-func (x *StTagInfo) GetOperateIconUrl() string {
-	if x != nil && x.OperateIconUrl != nil {
-		return *x.OperateIconUrl
-	}
-	return ""
-}
-
-func (x *StTagInfo) GetTagReport() string {
-	if x != nil && x.TagReport != nil {
-		return *x.TagReport
-	}
-	return ""
-}
-
-func (x *StTagInfo) GetTagIconUrl() string {
-	if x != nil && x.TagIconUrl != nil {
-		return *x.TagIconUrl
-	}
-	return ""
+	TagId           proto.Option[string] `protobuf:"bytes,1,opt"`
+	TagName         proto.Option[string] `protobuf:"bytes,2,opt"`
+	TagDec          proto.Option[string] `protobuf:"bytes,3,opt"`
+	UserList        []*StUser            `protobuf:"bytes,4,rep"`
+	FeedList        []*StFeedAbstract    `protobuf:"bytes,5,rep"`
+	TagTotalUser    proto.Option[uint32] `protobuf:"varint,6,opt"`
+	TagTotalFeed    proto.Option[uint32] `protobuf:"varint,7,opt"`
+	TagWording      proto.Option[string] `protobuf:"bytes,8,opt"`
+	TagType         proto.Option[uint32] `protobuf:"varint,9,opt"`
+	FollowState     proto.Option[uint32] `protobuf:"varint,10,opt"`
+	ShareInfo       *StShare             `protobuf:"bytes,11,opt"`
+	IsTop           proto.Option[uint32] `protobuf:"varint,12,opt"`
+	IsSelected      proto.Option[uint32] `protobuf:"varint,13,opt"`
+	UserViewHistory proto.Option[int64]  `protobuf:"varint,14,opt"`
+	Medal           *StTagMedalInfo      `protobuf:"bytes,15,opt"`
+	Status          proto.Option[uint32] `protobuf:"varint,16,opt"`
+	OptInfo         *StTagOperateInfo    `protobuf:"bytes,17,opt"`
+	TagBaseStatus   proto.Option[uint32] `protobuf:"varint,18,opt"`
+	IsRecommend     proto.Option[int32]  `protobuf:"varint,19,opt"`
+	TagViewHistory  proto.Option[int64]  `protobuf:"varint,20,opt"`
+	OperateIconUrl  proto.Option[string] `protobuf:"bytes,21,opt"`
+	TagReport       proto.Option[string] `protobuf:"bytes,99,opt"`
+	TagIconUrl      proto.Option[string] `protobuf:"bytes,100,opt"`
 }
 
 type StTagMedalInfo struct {
-	TagID   *string `protobuf:"bytes,1,opt"`
-	TagName *string `protobuf:"bytes,2,opt"`
-	Rank    *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *StTagMedalInfo) GetTagID() string {
-	if x != nil && x.TagID != nil {
-		return *x.TagID
-	}
-	return ""
-}
-
-func (x *StTagMedalInfo) GetTagName() string {
-	if x != nil && x.TagName != nil {
-		return *x.TagName
-	}
-	return ""
-}
-
-func (x *StTagMedalInfo) GetRank() uint64 {
-	if x != nil && x.Rank != nil {
-		return *x.Rank
-	}
-	return 0
+	TagID   proto.Option[string] `protobuf:"bytes,1,opt"`
+	TagName proto.Option[string] `protobuf:"bytes,2,opt"`
+	Rank    proto.Option[uint64] `protobuf:"varint,3,opt"`
 }
 
 type StTagOperateInfo struct {
-	CreateUser        *string `protobuf:"bytes,1,opt"`
-	CoverURL          *string `protobuf:"bytes,2,opt"`
-	Desc              *string `protobuf:"bytes,3,opt"`
-	BackgroundURL     *string `protobuf:"bytes,4,opt"`
-	BannerURL         *string `protobuf:"bytes,5,opt"`
-	BannerSkipLink    *string `protobuf:"bytes,6,opt"`
-	ActivityStartTime *int64  `protobuf:"varint,7,opt"`
-	ActivityEndTime   *int64  `protobuf:"varint,8,opt"`
-	RecommendReason   *string `protobuf:"bytes,9,opt"`
-	IsWhite           *int32  `protobuf:"varint,10,opt"`
-	BeWhiteStartTime  *int64  `protobuf:"varint,11,opt"`
-	BeWhiteEndTime    *int64  `protobuf:"varint,12,opt"`
-	PublishSchema     *string `protobuf:"bytes,13,opt"`
-}
-
-func (x *StTagOperateInfo) GetCreateUser() string {
-	if x != nil && x.CreateUser != nil {
-		return *x.CreateUser
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetCoverURL() string {
-	if x != nil && x.CoverURL != nil {
-		return *x.CoverURL
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetDesc() string {
-	if x != nil && x.Desc != nil {
-		return *x.Desc
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetBackgroundURL() string {
-	if x != nil && x.BackgroundURL != nil {
-		return *x.BackgroundURL
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetBannerURL() string {
-	if x != nil && x.BannerURL != nil {
-		return *x.BannerURL
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetBannerSkipLink() string {
-	if x != nil && x.BannerSkipLink != nil {
-		return *x.BannerSkipLink
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetActivityStartTime() int64 {
-	if x != nil && x.ActivityStartTime != nil {
-		return *x.ActivityStartTime
-	}
-	return 0
-}
-
-func (x *StTagOperateInfo) GetActivityEndTime() int64 {
-	if x != nil && x.ActivityEndTime != nil {
-		return *x.ActivityEndTime
-	}
-	return 0
-}
-
-func (x *StTagOperateInfo) GetRecommendReason() string {
-	if x != nil && x.RecommendReason != nil {
-		return *x.RecommendReason
-	}
-	return ""
-}
-
-func (x *StTagOperateInfo) GetIsWhite() int32 {
-	if x != nil && x.IsWhite != nil {
-		return *x.IsWhite
-	}
-	return 0
-}
-
-func (x *StTagOperateInfo) GetBeWhiteStartTime() int64 {
-	if x != nil && x.BeWhiteStartTime != nil {
-		return *x.BeWhiteStartTime
-	}
-	return 0
-}
-
-func (x *StTagOperateInfo) GetBeWhiteEndTime() int64 {
-	if x != nil && x.BeWhiteEndTime != nil {
-		return *x.BeWhiteEndTime
-	}
-	return 0
-}
-
-func (x *StTagOperateInfo) GetPublishSchema() string {
-	if x != nil && x.PublishSchema != nil {
-		return *x.PublishSchema
-	}
-	return ""
+	CreateUser        proto.Option[string] `protobuf:"bytes,1,opt"`
+	CoverURL          proto.Option[string] `protobuf:"bytes,2,opt"`
+	Desc              proto.Option[string] `protobuf:"bytes,3,opt"`
+	BackgroundURL     proto.Option[string] `protobuf:"bytes,4,opt"`
+	BannerURL         proto.Option[string] `protobuf:"bytes,5,opt"`
+	BannerSkipLink    proto.Option[string] `protobuf:"bytes,6,opt"`
+	ActivityStartTime proto.Option[int64]  `protobuf:"varint,7,opt"`
+	ActivityEndTime   proto.Option[int64]  `protobuf:"varint,8,opt"`
+	RecommendReason   proto.Option[string] `protobuf:"bytes,9,opt"`
+	IsWhite           proto.Option[int32]  `protobuf:"varint,10,opt"`
+	BeWhiteStartTime  proto.Option[int64]  `protobuf:"varint,11,opt"`
+	BeWhiteEndTime    proto.Option[int64]  `protobuf:"varint,12,opt"`
+	PublishSchema     proto.Option[string] `protobuf:"bytes,13,opt"`
 }
 
 type StUnifiedTag struct {
-	UnifiedType *string `protobuf:"bytes,1,opt"`
-	UnifiedId   *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StUnifiedTag) GetUnifiedType() string {
-	if x != nil && x.UnifiedType != nil {
-		return *x.UnifiedType
-	}
-	return ""
-}
-
-func (x *StUnifiedTag) GetUnifiedId() string {
-	if x != nil && x.UnifiedId != nil {
-		return *x.UnifiedId
-	}
-	return ""
+	UnifiedType proto.Option[string] `protobuf:"bytes,1,opt"`
+	UnifiedId   proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type StUser struct {
-	Id                *string                          `protobuf:"bytes,1,opt"`
-	Nick              *string                          `protobuf:"bytes,2,opt"`
+	Id                proto.Option[string]             `protobuf:"bytes,1,opt"`
+	Nick              proto.Option[string]             `protobuf:"bytes,2,opt"`
 	Icon              *StIconInfo                      `protobuf:"bytes,3,opt"`
-	Desc              *string                          `protobuf:"bytes,4,opt"`
-	FollowState       *uint32                          `protobuf:"varint,5,opt"`
-	Type              *uint32                          `protobuf:"varint,6,opt"`
-	Sex               *uint32                          `protobuf:"varint,7,opt"`
-	Birthday          *uint64                          `protobuf:"varint,8,opt"`
-	School            *string                          `protobuf:"bytes,9,opt"`
-	Location          *string                          `protobuf:"bytes,11,opt"`
+	Desc              proto.Option[string]             `protobuf:"bytes,4,opt"`
+	FollowState       proto.Option[uint32]             `protobuf:"varint,5,opt"`
+	Type              proto.Option[uint32]             `protobuf:"varint,6,opt"`
+	Sex               proto.Option[uint32]             `protobuf:"varint,7,opt"`
+	Birthday          proto.Option[uint64]             `protobuf:"varint,8,opt"`
+	School            proto.Option[string]             `protobuf:"bytes,9,opt"`
+	Location          proto.Option[string]             `protobuf:"bytes,11,opt"`
 	BusiData          []byte                           `protobuf:"bytes,12,opt"`
-	FrdState          *uint32                          `protobuf:"varint,13,opt"`
-	RelationState     *uint32                          `protobuf:"varint,14,opt"`
-	BlackState        *uint32                          `protobuf:"varint,15,opt"`
+	FrdState          proto.Option[uint32]             `protobuf:"varint,13,opt"`
+	RelationState     proto.Option[uint32]             `protobuf:"varint,14,opt"`
+	BlackState        proto.Option[uint32]             `protobuf:"varint,15,opt"`
 	Medal             *StTagMedalInfo                  `protobuf:"bytes,16,opt"`
-	Constellation     *int32                           `protobuf:"varint,17,opt"`
-	JumpUrl           *string                          `protobuf:"bytes,18,opt"`
-	LocationCode      *string                          `protobuf:"bytes,19,opt"`
-	ThirdId           *string                          `protobuf:"bytes,20,opt"`
-	Company           *string                          `protobuf:"bytes,21,opt"`
-	CertificationDesc *string                          `protobuf:"bytes,22,opt"`
-	DescType          *uint32                          `protobuf:"varint,23,opt"`
+	Constellation     proto.Option[int32]              `protobuf:"varint,17,opt"`
+	JumpUrl           proto.Option[string]             `protobuf:"bytes,18,opt"`
+	LocationCode      proto.Option[string]             `protobuf:"bytes,19,opt"`
+	ThirdId           proto.Option[string]             `protobuf:"bytes,20,opt"`
+	Company           proto.Option[string]             `protobuf:"bytes,21,opt"`
+	CertificationDesc proto.Option[string]             `protobuf:"bytes,22,opt"`
+	DescType          proto.Option[uint32]             `protobuf:"varint,23,opt"`
 	ChannelUserInfo   *GuildChannelBaseChannelUserInfo `protobuf:"bytes,24,opt"`
-	LoginId           *string                          `protobuf:"bytes,25,opt"`
-}
-
-func (x *StUser) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StUser) GetNick() string {
-	if x != nil && x.Nick != nil {
-		return *x.Nick
-	}
-	return ""
-}
-
-func (x *StUser) GetDesc() string {
-	if x != nil && x.Desc != nil {
-		return *x.Desc
-	}
-	return ""
-}
-
-func (x *StUser) GetFollowState() uint32 {
-	if x != nil && x.FollowState != nil {
-		return *x.FollowState
-	}
-	return 0
-}
-
-func (x *StUser) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StUser) GetSex() uint32 {
-	if x != nil && x.Sex != nil {
-		return *x.Sex
-	}
-	return 0
-}
-
-func (x *StUser) GetBirthday() uint64 {
-	if x != nil && x.Birthday != nil {
-		return *x.Birthday
-	}
-	return 0
-}
-
-func (x *StUser) GetSchool() string {
-	if x != nil && x.School != nil {
-		return *x.School
-	}
-	return ""
-}
-
-func (x *StUser) GetLocation() string {
-	if x != nil && x.Location != nil {
-		return *x.Location
-	}
-	return ""
-}
-
-func (x *StUser) GetFrdState() uint32 {
-	if x != nil && x.FrdState != nil {
-		return *x.FrdState
-	}
-	return 0
-}
-
-func (x *StUser) GetRelationState() uint32 {
-	if x != nil && x.RelationState != nil {
-		return *x.RelationState
-	}
-	return 0
-}
-
-func (x *StUser) GetBlackState() uint32 {
-	if x != nil && x.BlackState != nil {
-		return *x.BlackState
-	}
-	return 0
-}
-
-func (x *StUser) GetConstellation() int32 {
-	if x != nil && x.Constellation != nil {
-		return *x.Constellation
-	}
-	return 0
-}
-
-func (x *StUser) GetJumpUrl() string {
-	if x != nil && x.JumpUrl != nil {
-		return *x.JumpUrl
-	}
-	return ""
-}
-
-func (x *StUser) GetLocationCode() string {
-	if x != nil && x.LocationCode != nil {
-		return *x.LocationCode
-	}
-	return ""
-}
-
-func (x *StUser) GetThirdId() string {
-	if x != nil && x.ThirdId != nil {
-		return *x.ThirdId
-	}
-	return ""
-}
-
-func (x *StUser) GetCompany() string {
-	if x != nil && x.Company != nil {
-		return *x.Company
-	}
-	return ""
-}
-
-func (x *StUser) GetCertificationDesc() string {
-	if x != nil && x.CertificationDesc != nil {
-		return *x.CertificationDesc
-	}
-	return ""
-}
-
-func (x *StUser) GetDescType() uint32 {
-	if x != nil && x.DescType != nil {
-		return *x.DescType
-	}
-	return 0
-}
-
-func (x *StUser) GetLoginId() string {
-	if x != nil && x.LoginId != nil {
-		return *x.LoginId
-	}
-	return ""
+	LoginId           proto.Option[string]             `protobuf:"bytes,25,opt"`
 }
 
 type GuildChannelBaseChannelUserInfo struct {
-	ClientIdentity *ClientIdentity `protobuf:"bytes,1,opt"`
-	MemberType     *uint32         `protobuf:"varint,2,opt"`
+	ClientIdentity *ClientIdentity      `protobuf:"bytes,1,opt"`
+	MemberType     proto.Option[uint32] `protobuf:"varint,2,opt"`
 	// optional ChannelUserPermission permission = 3;
 	RoleGroups []*GuildChannelBaseRoleGroupInfo `protobuf:"bytes,4,rep"`
 }
 
-func (x *GuildChannelBaseChannelUserInfo) GetMemberType() uint32 {
-	if x != nil && x.MemberType != nil {
-		return *x.MemberType
-	}
-	return 0
-}
-
 type StUserGroupInfo struct {
-	Id       *string   `protobuf:"bytes,1,opt"`
-	Name     *string   `protobuf:"bytes,2,opt"`
-	UserList []*StUser `protobuf:"bytes,3,rep"`
-}
-
-func (x *StUserGroupInfo) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StUserGroupInfo) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
+	Id       proto.Option[string] `protobuf:"bytes,1,opt"`
+	Name     proto.Option[string] `protobuf:"bytes,2,opt"`
+	UserList []*StUser            `protobuf:"bytes,3,rep"`
 }
 
 type StUserRecomInfo struct {
@@ -2437,233 +600,44 @@ type StUserRecomInfo struct {
 }
 
 type StVideo struct {
-	FileId            *string       `protobuf:"bytes,1,opt"`
-	FileSize          *uint32       `protobuf:"varint,2,opt"`
-	Duration          *uint32       `protobuf:"varint,3,opt"`
-	Width             *uint32       `protobuf:"varint,4,opt"`
-	Height            *uint32       `protobuf:"varint,5,opt"`
-	PlayUrl           *string       `protobuf:"bytes,6,opt"`
-	TransStatus       *uint32       `protobuf:"varint,7,opt"`
-	VideoPrior        *uint32       `protobuf:"varint,8,opt"`
-	VideoRate         *uint32       `protobuf:"varint,9,opt"`
-	VecVideoUrl       []*StVideoUrl `protobuf:"bytes,10,rep"`
-	BusiData          []byte        `protobuf:"bytes,11,opt"`
-	ApprovalStatus    *uint32       `protobuf:"varint,12,opt"`
-	VideoSource       *uint32       `protobuf:"varint,13,opt"`
-	MediaQualityRank  *uint32       `protobuf:"varint,14,opt"`
-	MediaQualityScore *float32      `protobuf:"fixed32,15,opt"`
-	VideoMD5          *string       `protobuf:"bytes,16,opt"`
-	IsQuic            *uint32       `protobuf:"varint,17,opt"`
-	Orientation       *uint32       `protobuf:"varint,18,opt"`
-	Cover             *StImage      `protobuf:"bytes,19,opt"`
-	PatternId         *string       `protobuf:"bytes,20,opt"`
-	DisplayIndex      *uint32       `protobuf:"varint,21,opt"`
-}
-
-func (x *StVideo) GetFileId() string {
-	if x != nil && x.FileId != nil {
-		return *x.FileId
-	}
-	return ""
-}
-
-func (x *StVideo) GetFileSize() uint32 {
-	if x != nil && x.FileSize != nil {
-		return *x.FileSize
-	}
-	return 0
-}
-
-func (x *StVideo) GetDuration() uint32 {
-	if x != nil && x.Duration != nil {
-		return *x.Duration
-	}
-	return 0
-}
-
-func (x *StVideo) GetWidth() uint32 {
-	if x != nil && x.Width != nil {
-		return *x.Width
-	}
-	return 0
-}
-
-func (x *StVideo) GetHeight() uint32 {
-	if x != nil && x.Height != nil {
-		return *x.Height
-	}
-	return 0
-}
-
-func (x *StVideo) GetPlayUrl() string {
-	if x != nil && x.PlayUrl != nil {
-		return *x.PlayUrl
-	}
-	return ""
-}
-
-func (x *StVideo) GetTransStatus() uint32 {
-	if x != nil && x.TransStatus != nil {
-		return *x.TransStatus
-	}
-	return 0
-}
-
-func (x *StVideo) GetVideoPrior() uint32 {
-	if x != nil && x.VideoPrior != nil {
-		return *x.VideoPrior
-	}
-	return 0
-}
-
-func (x *StVideo) GetVideoRate() uint32 {
-	if x != nil && x.VideoRate != nil {
-		return *x.VideoRate
-	}
-	return 0
-}
-
-func (x *StVideo) GetApprovalStatus() uint32 {
-	if x != nil && x.ApprovalStatus != nil {
-		return *x.ApprovalStatus
-	}
-	return 0
-}
-
-func (x *StVideo) GetVideoSource() uint32 {
-	if x != nil && x.VideoSource != nil {
-		return *x.VideoSource
-	}
-	return 0
-}
-
-func (x *StVideo) GetMediaQualityRank() uint32 {
-	if x != nil && x.MediaQualityRank != nil {
-		return *x.MediaQualityRank
-	}
-	return 0
-}
-
-func (x *StVideo) GetMediaQualityScore() float32 {
-	if x != nil && x.MediaQualityScore != nil {
-		return *x.MediaQualityScore
-	}
-	return 0
-}
-
-func (x *StVideo) GetVideoMD5() string {
-	if x != nil && x.VideoMD5 != nil {
-		return *x.VideoMD5
-	}
-	return ""
-}
-
-func (x *StVideo) GetIsQuic() uint32 {
-	if x != nil && x.IsQuic != nil {
-		return *x.IsQuic
-	}
-	return 0
-}
-
-func (x *StVideo) GetOrientation() uint32 {
-	if x != nil && x.Orientation != nil {
-		return *x.Orientation
-	}
-	return 0
-}
-
-func (x *StVideo) GetPatternId() string {
-	if x != nil && x.PatternId != nil {
-		return *x.PatternId
-	}
-	return ""
-}
-
-func (x *StVideo) GetDisplayIndex() uint32 {
-	if x != nil && x.DisplayIndex != nil {
-		return *x.DisplayIndex
-	}
-	return 0
+	FileId            proto.Option[string]  `protobuf:"bytes,1,opt"`
+	FileSize          proto.Option[uint32]  `protobuf:"varint,2,opt"`
+	Duration          proto.Option[uint32]  `protobuf:"varint,3,opt"`
+	Width             proto.Option[uint32]  `protobuf:"varint,4,opt"`
+	Height            proto.Option[uint32]  `protobuf:"varint,5,opt"`
+	PlayUrl           proto.Option[string]  `protobuf:"bytes,6,opt"`
+	TransStatus       proto.Option[uint32]  `protobuf:"varint,7,opt"`
+	VideoPrior        proto.Option[uint32]  `protobuf:"varint,8,opt"`
+	VideoRate         proto.Option[uint32]  `protobuf:"varint,9,opt"`
+	VecVideoUrl       []*StVideoUrl         `protobuf:"bytes,10,rep"`
+	BusiData          []byte                `protobuf:"bytes,11,opt"`
+	ApprovalStatus    proto.Option[uint32]  `protobuf:"varint,12,opt"`
+	VideoSource       proto.Option[uint32]  `protobuf:"varint,13,opt"`
+	MediaQualityRank  proto.Option[uint32]  `protobuf:"varint,14,opt"`
+	MediaQualityScore proto.Option[float32] `protobuf:"fixed32,15,opt"`
+	VideoMD5          proto.Option[string]  `protobuf:"bytes,16,opt"`
+	IsQuic            proto.Option[uint32]  `protobuf:"varint,17,opt"`
+	Orientation       proto.Option[uint32]  `protobuf:"varint,18,opt"`
+	Cover             *StImage              `protobuf:"bytes,19,opt"`
+	PatternId         proto.Option[string]  `protobuf:"bytes,20,opt"`
+	DisplayIndex      proto.Option[uint32]  `protobuf:"varint,21,opt"`
 }
 
 type StVideoUrl struct {
-	LevelType    *uint32 `protobuf:"varint,1,opt"`
-	PlayUrl      *string `protobuf:"bytes,2,opt"`
-	VideoPrior   *uint32 `protobuf:"varint,3,opt"`
-	VideoRate    *uint32 `protobuf:"varint,4,opt"`
-	TransStatus  *uint32 `protobuf:"varint,5,opt"`
-	BusiData     []byte  `protobuf:"bytes,6,opt"`
-	HasWatermark *bool   `protobuf:"varint,7,opt"`
-}
-
-func (x *StVideoUrl) GetLevelType() uint32 {
-	if x != nil && x.LevelType != nil {
-		return *x.LevelType
-	}
-	return 0
-}
-
-func (x *StVideoUrl) GetPlayUrl() string {
-	if x != nil && x.PlayUrl != nil {
-		return *x.PlayUrl
-	}
-	return ""
-}
-
-func (x *StVideoUrl) GetVideoPrior() uint32 {
-	if x != nil && x.VideoPrior != nil {
-		return *x.VideoPrior
-	}
-	return 0
-}
-
-func (x *StVideoUrl) GetVideoRate() uint32 {
-	if x != nil && x.VideoRate != nil {
-		return *x.VideoRate
-	}
-	return 0
-}
-
-func (x *StVideoUrl) GetTransStatus() uint32 {
-	if x != nil && x.TransStatus != nil {
-		return *x.TransStatus
-	}
-	return 0
-}
-
-func (x *StVideoUrl) GetHasWatermark() bool {
-	if x != nil && x.HasWatermark != nil {
-		return *x.HasWatermark
-	}
-	return false
+	LevelType    proto.Option[uint32] `protobuf:"varint,1,opt"`
+	PlayUrl      proto.Option[string] `protobuf:"bytes,2,opt"`
+	VideoPrior   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	VideoRate    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	TransStatus  proto.Option[uint32] `protobuf:"varint,5,opt"`
+	BusiData     []byte               `protobuf:"bytes,6,opt"`
+	HasWatermark proto.Option[bool]   `protobuf:"varint,7,opt"`
 }
 
 type StVisitor struct {
-	ViewCount  *uint32 `protobuf:"varint,1,opt"`
-	BusiData   []byte  `protobuf:"bytes,2,opt"`
-	RecomCount *uint32 `protobuf:"varint,3,opt"`
-	ViewDesc   *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *StVisitor) GetViewCount() uint32 {
-	if x != nil && x.ViewCount != nil {
-		return *x.ViewCount
-	}
-	return 0
-}
-
-func (x *StVisitor) GetRecomCount() uint32 {
-	if x != nil && x.RecomCount != nil {
-		return *x.RecomCount
-	}
-	return 0
-}
-
-func (x *StVisitor) GetViewDesc() string {
-	if x != nil && x.ViewDesc != nil {
-		return *x.ViewDesc
-	}
-	return ""
+	ViewCount  proto.Option[uint32] `protobuf:"varint,1,opt"`
+	BusiData   []byte               `protobuf:"bytes,2,opt"`
+	RecomCount proto.Option[uint32] `protobuf:"varint,3,opt"`
+	ViewDesc   proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type StWearingMedal struct {
@@ -2671,28 +645,7 @@ type StWearingMedal struct {
 }
 
 type StWearingMedalInfo struct {
-	Type      *int32  `protobuf:"varint,1,opt"`
-	MedalName *string `protobuf:"bytes,2,opt"`
-	MedalID   *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *StWearingMedalInfo) GetType() int32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StWearingMedalInfo) GetMedalName() string {
-	if x != nil && x.MedalName != nil {
-		return *x.MedalName
-	}
-	return ""
-}
-
-func (x *StWearingMedalInfo) GetMedalID() string {
-	if x != nil && x.MedalID != nil {
-		return *x.MedalID
-	}
-	return ""
+	Type      proto.Option[int32]  `protobuf:"varint,1,opt"`
+	MedalName proto.Option[string] `protobuf:"bytes,2,opt"`
+	MedalID   proto.Option[string] `protobuf:"bytes,3,opt"`
 }

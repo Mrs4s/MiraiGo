@@ -347,15 +347,15 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 				c.highwaySession.SigSession = rsp.RspBody.SigSession
 				c.highwaySession.SessionKey = rsp.RspBody.SessionKey
 				for _, srv := range rsp.RspBody.Addrs {
-					if srv.GetServiceType() == 10 {
+					if srv.ServiceType.Unwrap() == 10 {
 						for _, addr := range srv.Addrs {
-							c.highwaySession.AppendAddr(addr.GetIp(), addr.GetPort())
+							c.highwaySession.AppendAddr(addr.Ip.Unwrap(), addr.Port.Unwrap())
 						}
 					}
 					/*
-						if srv.GetServiceType() == 21 {
+						if srv.ServiceType.Unwrap() == 21 {
 							for _, addr := range srv.Addrs {
-								c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+								c.otherSrvAddrs = append(c.otherSrvAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.Ip.Unwrap()), addr.Port.Unwrap()))
 							}
 						}
 
@@ -445,11 +445,11 @@ func decodeSummaryCardResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 	}
 	for _, buf := range services {
 		comm, payload := readService(buf)
-		if comm.GetService() == 16 {
+		if comm.Service.Unwrap() == 16 {
 			rsp := profilecard.GateVaProfileGateRsp{}
 			_ = proto.Unmarshal(payload, &rsp)
 			if rsp.QidInfo != nil {
-				info.Qid = rsp.QidInfo.GetQid()
+				info.Qid = rsp.QidInfo.Qid.Unwrap()
 			}
 		}
 	}
@@ -602,19 +602,19 @@ func decodeOffPicUpResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 			Message:    string(rsp.FailMsg),
 		}, nil
 	}
-	if rsp.GetSubcmd() != 1 || len(rsp.TryupImgRsp) == 0 {
+	if rsp.Subcmd.Unwrap() != 1 || len(rsp.TryupImgRsp) == 0 {
 		return &imageUploadResponse{
 			ResultCode: -2,
 		}, nil
 	}
 	imgRsp := rsp.TryupImgRsp[0]
-	if imgRsp.GetResult() != 0 {
+	if imgRsp.Result.Unwrap() != 0 {
 		return &imageUploadResponse{
-			ResultCode: int32(*imgRsp.Result),
+			ResultCode: int32(imgRsp.Result.Unwrap()),
 			Message:    string(imgRsp.FailMsg),
 		}, nil
 	}
-	if imgRsp.GetFileExit() {
+	if imgRsp.FileExit.Unwrap() {
 		return &imageUploadResponse{
 			IsExists:   true,
 			ResourceId: string(imgRsp.UpResid),
@@ -636,18 +636,18 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	data := binary.NewReader(info.MsgData)
-	idStr := strconv.FormatInt(info.GetMsgUid(), 10)
+	idStr := strconv.FormatInt(info.MsgUid.Unwrap(), 10)
 	if _, ok := c.transCache.Get(idStr); ok {
 		return nil, nil
 	}
 	c.transCache.Add(idStr, unit{}, time.Second*15)
-	if info.GetMsgType() == 34 {
+	if info.MsgType.Unwrap() == 34 {
 		data.ReadInt32()
 		data.ReadByte()
 		target := int64(uint32(data.ReadInt32()))
 		typ := int32(data.ReadByte())
 		operator := int64(uint32(data.ReadInt32()))
-		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
+		if g := c.FindGroupByUin(info.FromUin.Unwrap()); g != nil {
 			groupLeaveLock.Lock()
 			defer groupLeaveLock.Unlock()
 			switch typ {
@@ -698,7 +698,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 			}
 		}
 	}
-	if info.GetMsgType() == 44 {
+	if info.MsgType.Unwrap() == 44 {
 		data.ReadBytes(5)
 		var4 := int32(data.ReadByte())
 		var5 := int64(0)
@@ -706,7 +706,7 @@ func decodeOnlinePushTransPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 		if var4 != 0 && var4 != 1 {
 			var5 = int64(uint32(data.ReadInt32()))
 		}
-		if g := c.FindGroupByUin(info.GetFromUin()); g != nil {
+		if g := c.FindGroupByUin(info.FromUin.Unwrap()); g != nil {
 			if var5 == 0 && data.Len() == 1 {
 				newPermission := Member
 				if data.ReadByte() == 1 {
@@ -806,8 +806,8 @@ func decodeAppInfoResponse(_ *QQClient, _ *incomingPacketInfo, payload []byte) (
 	if err := proto.Unmarshal(payload, &pkg); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if pkg.GetRetCode() != 0 {
-		return nil, errors.New(pkg.GetErrMsg())
+	if pkg.RetCode.Unwrap() != 0 {
+		return nil, errors.New(pkg.ErrMsg.Unwrap())
 	}
 	if err := proto.Unmarshal(pkg.BusiBuff, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

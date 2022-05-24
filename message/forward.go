@@ -124,19 +124,19 @@ func (f *ForwardMessage) PackForwardMessage(seq int32, random int32, groupCode i
 	for _, node := range f.Nodes {
 		ml = append(ml, &msg.Message{
 			Head: &msg.MessageHead{
-				FromUin: &node.SenderId,
-				MsgSeq:  &seq,
-				MsgTime: &node.Time,
+				FromUin: proto.Some(node.SenderId),
+				MsgSeq:  proto.Some(seq),
+				MsgTime: proto.Some(node.Time),
 				MsgUid:  proto.Int64(0x0100_0000_0000_0000 | (int64(random) & 0xFFFFFFFF)),
 				MutiltransHead: &msg.MutilTransHead{
 					MsgId: proto.Int32(1),
 				},
 				MsgType: proto.Int32(82),
 				GroupInfo: &msg.GroupInfo{
-					GroupCode: &groupCode,
+					GroupCode: proto.Some(groupCode),
 					GroupRank: []byte{},
 					GroupName: []byte{},
-					GroupCard: &node.SenderName,
+					GroupCard: proto.Some(node.SenderName),
 				},
 			},
 			Body: &msg.MessageBody{

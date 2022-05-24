@@ -149,9 +149,9 @@ func (l *forwardMsgLinker) link(name string) *message.ForwardMessage {
 	}
 	nodes := make([]*message.ForwardNode, 0, len(item.Buffer.Msg))
 	for _, m := range item.Buffer.Msg {
-		name := m.Head.GetFromNick()
-		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-			name = m.Head.GroupInfo.GetGroupCard()
+		name := m.Head.FromNick.Unwrap()
+		if m.Head.MsgType.Unwrap() == 82 && m.Head.GroupInfo != nil {
+			name = m.Head.GroupInfo.GroupCard.Unwrap()
 		}
 
 		msgElems := message.ParseMessageElems(m.Body.RichText.Elems)
@@ -164,10 +164,10 @@ func (l *forwardMsgLinker) link(name string) *message.ForwardMessage {
 		}
 
 		nodes = append(nodes, &message.ForwardNode{
-			GroupId:    m.Head.GroupInfo.GetGroupCode(),
-			SenderId:   m.Head.GetFromUin(),
+			GroupId:    m.Head.GroupInfo.GroupCode.Unwrap(),
+			SenderId:   m.Head.FromUin.Unwrap(),
 			SenderName: name,
-			Time:       m.Head.GetMsgTime(),
+			Time:       m.Head.MsgTime.Unwrap(),
 			Message:    msgElems,
 		})
 	}
@@ -183,7 +183,7 @@ func (c *QQClient) GetForwardMessage(resID string) *message.ForwardMessage {
 		items: make(map[string]*msg.PbMultiMsgItem),
 	}
 	for _, item := range m.Items {
-		linker.items[item.GetFileName()] = item
+		linker.items[item.FileName.Unwrap()] = item
 	}
 	return linker.link("MultiMsg")
 }
@@ -200,9 +200,9 @@ func (c *QQClient) DownloadForwardMessage(resId string) *message.ForwardElement 
 	var pv bytes.Buffer
 	for i := 0; i < int(math.Min(4, float64(len(multiMsg.Msg)))); i++ {
 		m := multiMsg.Msg[i]
-		sender := m.Head.GetFromNick()
-		if m.Head.GetMsgType() == 82 && m.Head.GroupInfo != nil {
-			sender = m.Head.GroupInfo.GetGroupCard()
+		sender := m.Head.FromNick.Unwrap()
+		if m.Head.MsgType.Unwrap() == 82 && m.Head.GroupInfo != nil {
+			sender = m.Head.GroupInfo.GroupCard.Unwrap()
 		}
 		brief := message.ToReadableString(message.ParseMessageElems(multiMsg.Msg[i].Body.RichText.Elems))
 		fmt.Fprintf(&pv, `<title size="26" color="#777777">%s: %s</title>`, sender, brief)

@@ -141,17 +141,15 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 
 // RegPrxySvc.getOffMsg
 func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
+	t := c.stat.LastMessageTime.Load()
+	if t == 0 {
+		t = 1
+	}
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional: 0x101C2 | 32,
 		C2CMsg: &jce.SvcReqGetMsgV2{
-			Uin: c.Uin,
-			DateTime: func() int32 {
-				t := c.stat.LastMessageTime.Load()
-				if t == 0 {
-					return 1
-				}
-				return int32(t)
-			}(),
+			Uin:              c.Uin,
+			DateTime:         int32(t),
 			RecivePic:        1,
 			Ability:          15,
 			Channel:          4,
@@ -171,7 +169,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 	}
 	flag := msg.SyncFlag_START
 	msgReq, _ := proto.Marshal(&msg.GetMessageRequest{
-		SyncFlag:           &flag,
+		SyncFlag:           proto.Some(int32(flag)),
 		SyncCookie:         c.sig.SyncCookie,
 		RambleFlag:         proto.Int32(0),
 		ContextFlag:        proto.Int32(1),
@@ -207,18 +205,16 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 			},
 		},
 	})
+	t := c.stat.LastMessageTime.Load()
+	if t == 0 {
+		t = 1
+	}
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional:   128 | 64 | 256 | 2 | 8192 | 16384 | 65536,
 		DisGroupMsgFilter: 1,
 		C2CMsg: &jce.SvcReqGetMsgV2{
-			Uin: c.Uin,
-			DateTime: func() int32 {
-				t := c.stat.LastMessageTime.Load()
-				if t == 0 {
-					return 1
-				}
-				return int32(t)
-			}(),
+			Uin:              c.Uin,
+			DateTime:         int32(t),
 			RecivePic:        1,
 			Ability:          15,
 			Channel:          4,
@@ -236,7 +232,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 	}
 	flag := msg.SyncFlag_START
 	msgReq := &msg.GetMessageRequest{
-		SyncFlag:           &flag,
+		SyncFlag:           proto.Some(int32(flag)),
 		SyncCookie:         c.sig.SyncCookie,
 		RambleFlag:         proto.Int32(0),
 		ContextFlag:        proto.Int32(1),
@@ -318,34 +314,30 @@ func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload [
 	allowedClients, _ := c.GetAllowedClients()
 	c.OnlineClients = []*OtherClientInfo{}
 	for _, i := range rsp.OnlineInfos {
+		name, kind := i.SubPlatform, i.SubPlatform
+		for _, ac := range allowedClients {
+			if ac.AppId == int64(i.InstanceId) {
+				name = ac.DeviceName
+			}
+		}
+		switch i.UClientType {
+		case 65793:
+			kind = "Windows"
+		case 65805, 68104:
+			kind = "aPad"
+		case 66818, 66831, 81154:
+			kind = "Mac"
+		case 68361, 72194:
+			kind = "iPad"
+		case 75023, 78082, 78096:
+			kind = "Watch"
+		case 77313:
+			kind = "Windows TIM"
+		}
 		c.OnlineClients = append(c.OnlineClients, &OtherClientInfo{
-			AppId: int64(i.InstanceId),
-			DeviceName: func() string {
-				for _, ac := range allowedClients {
-					if ac.AppId == int64(i.InstanceId) {
-						return ac.DeviceName
-					}
-				}
-				return i.SubPlatform
-			}(),
-			DeviceKind: func() string {
-				switch i.UClientType {
-				case 65793:
-					return "Windows"
-				case 65805, 68104:
-					return "aPad"
-				case 66818, 66831, 81154:
-					return "Mac"
-				case 68361, 72194:
-					return "iPad"
-				case 75023, 78082, 78096:
-					return "Watch"
-				case 77313:
-					return "Windows TIM"
-				default:
-					return i.SubPlatform
-				}
-			}(),
+			AppId:      int64(i.InstanceId),
+			DeviceName: name,
+			DeviceKind: kind,
 		})
 	}
 	return nil, nil
@@ -358,11 +350,11 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 		return nil, err
 	}
 	ret := &sessionSyncEvent{
-		IsEnd:    (rsp.GetFlag() & 2) == 2,
+		IsEnd:    (rsp.Flag.Unwrap() & 2) == 2,
 		GroupNum: -1,
 	}
 	if rsp.Info != nil {
-		ret.GroupNum = int32(rsp.Info.GetGroupNum())
+		ret.GroupNum = int32(rsp.Info.GroupNum.Unwrap())
 	}
 	if len(rsp.GroupMsg) > 0 {
 		for _, gm := range rsp.GroupMsg {
@@ -372,7 +364,7 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 			}
 			var latest []*message.GroupMessage
 			for _, m := range gmRsp.Msg {
-				if m.Head.GetFromUin() != 0 {
+				if m.Head.FromUin.Unwrap() != 0 {
 					pm := c.parseGroupMessage(m)
 					if pm != nil {
 						latest = append(latest, pm)
@@ -380,8 +372,8 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 				}
 			}
 			ret.GroupSessions = append(ret.GroupSessions, &GroupSessionInfo{
-				GroupCode:      int64(gmRsp.GetGroupCode()),
-				UnreadCount:    uint32(gmRsp.GetReturnEndSeq() - gm.GetMemberSeq()),
+				GroupCode:      int64(gmRsp.GroupCode.Unwrap()),
+				UnreadCount:    uint32(gmRsp.ReturnEndSeq.Unwrap() - gm.MemberSeq.Unwrap()),
 				LatestMessages: latest,
 			})
 		}
@@ -401,7 +393,7 @@ func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload 
 	if err := proto.Unmarshal(payload, &m); err != nil {
 		return nil, err
 	}
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.PushToken, info.SequenceId, nil))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.Svrip.Unwrap(), m.PushToken, info.SequenceId, nil))
 	c.commMsgProcessor(m.Msg, info)
 	return nil, nil
 }
@@ -412,7 +404,7 @@ func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.GrpReadReport) > 0 {
-		return rsp.GrpReadReport[0].GetResult() == 0, nil
+		return rsp.GrpReadReport[0].Result.Unwrap() == 0, nil
 	}
 	return nil, nil
 }

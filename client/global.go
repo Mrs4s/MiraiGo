@@ -176,12 +176,12 @@ func qualityTest(addr string) (int64, error) {
 }
 
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
-	friend := c.FindFriend(msg.Head.GetFromUin())
+	friend := c.FindFriend(msg.Head.FromUin.Unwrap())
 	var sender *message.Sender
 	if friend == nil {
 		sender = &message.Sender{
-			Uin:      msg.Head.GetFromUin(),
-			Nickname: msg.Head.GetFromNick(),
+			Uin:      msg.Head.FromUin.Unwrap(),
+			Nickname: msg.Head.FromNick.Unwrap(),
 		}
 	} else {
 		sender = &message.Sender{
@@ -191,18 +191,18 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		}
 	}
 	ret := &message.PrivateMessage{
-		Id:     msg.Head.GetMsgSeq(),
-		Target: msg.Head.GetToUin(),
-		Time:   msg.Head.GetMsgTime(),
+		Id:     msg.Head.MsgSeq.Unwrap(),
+		Target: msg.Head.ToUin.Unwrap(),
+		Time:   msg.Head.MsgTime.Unwrap(),
 		Sender: sender,
 		Self:   c.Uin,
 		Elements: func() []message.IMessageElement {
 			if msg.Body.RichText.Ptt != nil {
 				return []message.IMessageElement{
 					&message.VoiceElement{
-						Name: msg.Body.RichText.Ptt.GetFileName(),
+						Name: msg.Body.RichText.Ptt.FileName.Unwrap(),
 						Md5:  msg.Body.RichText.Ptt.FileMd5,
-						Size: msg.Body.RichText.Ptt.GetFileSize(),
+						Size: msg.Body.RichText.Ptt.FileSize.Unwrap(),
 						Url:  string(msg.Body.RichText.Ptt.DownPara),
 					},
 				}
@@ -211,7 +211,7 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 		}(),
 	}
 	if msg.Body.RichText.Attr != nil {
-		ret.InternalId = msg.Body.RichText.Attr.GetRandom()
+		ret.InternalId = msg.Body.RichText.Attr.Random.Unwrap()
 	}
 	return ret
 }
@@ -219,23 +219,23 @@ func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage
 func (c *QQClient) parseTempMessage(msg *msg.Message) *message.TempMessage {
 	var groupCode int64
 	var groupName string
-	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GetGroupUin())
+	group := c.FindGroupByUin(msg.Head.C2CTmpMsgHead.GroupUin.Unwrap())
 	sender := &message.Sender{
-		Uin:      msg.Head.GetFromUin(),
+		Uin:      msg.Head.FromUin.Unwrap(),
 		Nickname: "Unknown",
 		IsFriend: false,
 	}
 	if group != nil {
 		groupCode = group.Code
 		groupName = group.Name
-		mem := group.FindMember(msg.Head.GetFromUin())
+		mem := group.FindMember(msg.Head.FromUin.Unwrap())
 		if mem != nil {
 			sender.Nickname = mem.Nickname
 			sender.CardName = mem.CardName
 		}
 	}
 	return &message.TempMessage{
-		Id:        msg.Head.GetMsgSeq(),
+		Id:        msg.Head.MsgSeq.Unwrap(),
 		GroupCode: groupCode,
 		GroupName: groupName,
 		Self:      c.Uin,
@@ -278,7 +278,7 @@ func (b *messageBuilder) build() *msg.Message {
 	b.lock.Lock()
 	defer b.lock.Unlock()
 	sort.Slice(b.slices, func(i, j int) bool {
-		return b.slices[i].Content.GetPkgIndex() < b.slices[j].Content.GetPkgIndex()
+		return b.slices[i].Content.PkgIndex.Unwrap() < b.slices[j].Content.PkgIndex.Unwrap()
 	})
 	base := b.slices[0]
 	for _, m := range b.slices[1:] {

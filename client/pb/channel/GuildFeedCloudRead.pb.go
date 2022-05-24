@@ -3,140 +3,53 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type GetNoticesReq struct {
-	ExtInfo    *StCommonExt `protobuf:"bytes,1,opt"`
-	PageNum    *uint32      `protobuf:"varint,2,opt"`
-	AttachInfo *string      `protobuf:"bytes,3,opt"`
-}
-
-func (x *GetNoticesReq) GetPageNum() uint32 {
-	if x != nil && x.PageNum != nil {
-		return *x.PageNum
-	}
-	return 0
-}
-
-func (x *GetNoticesReq) GetAttachInfo() string {
-	if x != nil && x.AttachInfo != nil {
-		return *x.AttachInfo
-	}
-	return ""
+	ExtInfo    *StCommonExt         `protobuf:"bytes,1,opt"`
+	PageNum    proto.Option[uint32] `protobuf:"varint,2,opt"`
+	AttachInfo proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type GetNoticesRsp struct {
-	ExtInfo    *StCommonExt `protobuf:"bytes,1,opt"`
-	Notices    []*StNotice  `protobuf:"bytes,2,rep"`
-	TotalNum   *uint32      `protobuf:"varint,3,opt"`
-	IsFinish   *bool        `protobuf:"varint,4,opt"`
-	AttachInfo *string      `protobuf:"bytes,5,opt"`
-}
-
-func (x *GetNoticesRsp) GetTotalNum() uint32 {
-	if x != nil && x.TotalNum != nil {
-		return *x.TotalNum
-	}
-	return 0
-}
-
-func (x *GetNoticesRsp) GetIsFinish() bool {
-	if x != nil && x.IsFinish != nil {
-		return *x.IsFinish
-	}
-	return false
-}
-
-func (x *GetNoticesRsp) GetAttachInfo() string {
-	if x != nil && x.AttachInfo != nil {
-		return *x.AttachInfo
-	}
-	return ""
+	ExtInfo    *StCommonExt         `protobuf:"bytes,1,opt"`
+	Notices    []*StNotice          `protobuf:"bytes,2,rep"`
+	TotalNum   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	IsFinish   proto.Option[bool]   `protobuf:"varint,4,opt"`
+	AttachInfo proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type NeedInsertCommentInfo struct {
-	CommentID *string `protobuf:"bytes,1,opt"`
-}
-
-func (x *NeedInsertCommentInfo) GetCommentID() string {
-	if x != nil && x.CommentID != nil {
-		return *x.CommentID
-	}
-	return ""
+	CommentID proto.Option[string] `protobuf:"bytes,1,opt"`
 }
 
 type RefreshToast struct {
-	Text *string `protobuf:"bytes,1,opt"`
-}
-
-func (x *RefreshToast) GetText() string {
-	if x != nil && x.Text != nil {
-		return *x.Text
-	}
-	return ""
+	Text proto.Option[string] `protobuf:"bytes,1,opt"`
 }
 
 type StGetChannelFeedsReq struct {
-	ExtInfo       *StCommonExt   `protobuf:"bytes,1,opt"`
-	Count         *uint32        `protobuf:"varint,2,opt"`
-	From          *uint32        `protobuf:"varint,3,opt"`
-	ChannelSign   *StChannelSign `protobuf:"bytes,4,opt"`
-	FeedAttchInfo *string        `protobuf:"bytes,5,opt"`
-}
-
-func (x *StGetChannelFeedsReq) GetCount() uint32 {
-	if x != nil && x.Count != nil {
-		return *x.Count
-	}
-	return 0
-}
-
-func (x *StGetChannelFeedsReq) GetFrom() uint32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StGetChannelFeedsReq) GetFeedAttchInfo() string {
-	if x != nil && x.FeedAttchInfo != nil {
-		return *x.FeedAttchInfo
-	}
-	return ""
+	ExtInfo       *StCommonExt         `protobuf:"bytes,1,opt"`
+	Count         proto.Option[uint32] `protobuf:"varint,2,opt"`
+	From          proto.Option[uint32] `protobuf:"varint,3,opt"`
+	ChannelSign   *StChannelSign       `protobuf:"bytes,4,opt"`
+	FeedAttchInfo proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type StGetChannelFeedsRsp struct {
-	ExtInfo       *StCommonExt  `protobuf:"bytes,1,opt"`
-	VecFeed       []*StFeed     `protobuf:"bytes,2,rep"`
-	IsFinish      *uint32       `protobuf:"varint,3,opt"`
-	User          *StUser       `protobuf:"bytes,4,opt"`
-	FeedAttchInfo *string       `protobuf:"bytes,5,opt"`
-	RefreshToast  *RefreshToast `protobuf:"bytes,6,opt"`
-}
-
-func (x *StGetChannelFeedsRsp) GetIsFinish() uint32 {
-	if x != nil && x.IsFinish != nil {
-		return *x.IsFinish
-	}
-	return 0
-}
-
-func (x *StGetChannelFeedsRsp) GetFeedAttchInfo() string {
-	if x != nil && x.FeedAttchInfo != nil {
-		return *x.FeedAttchInfo
-	}
-	return ""
+	ExtInfo       *StCommonExt         `protobuf:"bytes,1,opt"`
+	VecFeed       []*StFeed            `protobuf:"bytes,2,rep"`
+	IsFinish      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	User          *StUser              `protobuf:"bytes,4,opt"`
+	FeedAttchInfo proto.Option[string] `protobuf:"bytes,5,opt"`
+	RefreshToast  *RefreshToast        `protobuf:"bytes,6,opt"`
 }
 
 type StGetChannelShareFeedReq struct {
-	ExtInfo          *StCommonExt        `protobuf:"bytes,1,opt"`
-	From             *uint32             `protobuf:"varint,2,opt"`
-	ChannelShareInfo *StChannelShareInfo `protobuf:"bytes,3,opt"`
-}
-
-func (x *StGetChannelShareFeedReq) GetFrom() uint32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
+	ExtInfo          *StCommonExt         `protobuf:"bytes,1,opt"`
+	From             proto.Option[uint32] `protobuf:"varint,2,opt"`
+	ChannelShareInfo *StChannelShareInfo  `protobuf:"bytes,3,opt"`
 }
 
 type StGetChannelShareFeedRsp struct {
@@ -145,129 +58,31 @@ type StGetChannelShareFeedRsp struct {
 }
 
 type StGetFeedCommentsReq struct {
-	ExtInfo     *StCommonExt `protobuf:"bytes,1,opt"`
-	UserId      *string      `protobuf:"bytes,2,opt"`
-	FeedId      *string      `protobuf:"bytes,3,opt"`
-	ListNum     *uint32      `protobuf:"varint,4,opt"`
-	From        *uint32      `protobuf:"varint,5,opt"`
-	AttchInfo   *string      `protobuf:"bytes,6,opt"`
-	EntrySchema *string      `protobuf:"bytes,7,opt"`
-}
-
-func (x *StGetFeedCommentsReq) GetUserId() string {
-	if x != nil && x.UserId != nil {
-		return *x.UserId
-	}
-	return ""
-}
-
-func (x *StGetFeedCommentsReq) GetFeedId() string {
-	if x != nil && x.FeedId != nil {
-		return *x.FeedId
-	}
-	return ""
-}
-
-func (x *StGetFeedCommentsReq) GetListNum() uint32 {
-	if x != nil && x.ListNum != nil {
-		return *x.ListNum
-	}
-	return 0
-}
-
-func (x *StGetFeedCommentsReq) GetFrom() uint32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StGetFeedCommentsReq) GetAttchInfo() string {
-	if x != nil && x.AttchInfo != nil {
-		return *x.AttchInfo
-	}
-	return ""
-}
-
-func (x *StGetFeedCommentsReq) GetEntrySchema() string {
-	if x != nil && x.EntrySchema != nil {
-		return *x.EntrySchema
-	}
-	return ""
+	ExtInfo     *StCommonExt         `protobuf:"bytes,1,opt"`
+	UserId      proto.Option[string] `protobuf:"bytes,2,opt"`
+	FeedId      proto.Option[string] `protobuf:"bytes,3,opt"`
+	ListNum     proto.Option[uint32] `protobuf:"varint,4,opt"`
+	From        proto.Option[uint32] `protobuf:"varint,5,opt"`
+	AttchInfo   proto.Option[string] `protobuf:"bytes,6,opt"`
+	EntrySchema proto.Option[string] `protobuf:"bytes,7,opt"`
 }
 
 type StGetFeedCommentsRsp struct {
-	ExtInfo    *StCommonExt `protobuf:"bytes,1,opt"`
-	VecComment []*StComment `protobuf:"bytes,2,rep"`
-	TotalNum   *uint32      `protobuf:"varint,3,opt"`
-	IsFinish   *uint32      `protobuf:"varint,4,opt"`
-	AttchInfo  *string      `protobuf:"bytes,5,opt"`
-}
-
-func (x *StGetFeedCommentsRsp) GetTotalNum() uint32 {
-	if x != nil && x.TotalNum != nil {
-		return *x.TotalNum
-	}
-	return 0
-}
-
-func (x *StGetFeedCommentsRsp) GetIsFinish() uint32 {
-	if x != nil && x.IsFinish != nil {
-		return *x.IsFinish
-	}
-	return 0
-}
-
-func (x *StGetFeedCommentsRsp) GetAttchInfo() string {
-	if x != nil && x.AttchInfo != nil {
-		return *x.AttchInfo
-	}
-	return ""
+	ExtInfo    *StCommonExt         `protobuf:"bytes,1,opt"`
+	VecComment []*StComment         `protobuf:"bytes,2,rep"`
+	TotalNum   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	IsFinish   proto.Option[uint32] `protobuf:"varint,4,opt"`
+	AttchInfo  proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type StGetFeedDetailReq struct {
-	ExtInfo     *StCommonExt   `protobuf:"bytes,1,opt"`
-	From        *uint32        `protobuf:"varint,2,opt"`
-	UserId      *string        `protobuf:"bytes,3,opt"`
-	FeedId      *string        `protobuf:"bytes,4,opt"`
-	CreateTime  *uint64        `protobuf:"varint,5,opt"`
-	DetailType  *uint32        `protobuf:"varint,6,opt"`
-	ChannelSign *StChannelSign `protobuf:"bytes,7,opt"`
-}
-
-func (x *StGetFeedDetailReq) GetFrom() uint32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StGetFeedDetailReq) GetUserId() string {
-	if x != nil && x.UserId != nil {
-		return *x.UserId
-	}
-	return ""
-}
-
-func (x *StGetFeedDetailReq) GetFeedId() string {
-	if x != nil && x.FeedId != nil {
-		return *x.FeedId
-	}
-	return ""
-}
-
-func (x *StGetFeedDetailReq) GetCreateTime() uint64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *StGetFeedDetailReq) GetDetailType() uint32 {
-	if x != nil && x.DetailType != nil {
-		return *x.DetailType
-	}
-	return 0
+	ExtInfo     *StCommonExt         `protobuf:"bytes,1,opt"`
+	From        proto.Option[uint32] `protobuf:"varint,2,opt"`
+	UserId      proto.Option[string] `protobuf:"bytes,3,opt"`
+	FeedId      proto.Option[string] `protobuf:"bytes,4,opt"`
+	CreateTime  proto.Option[uint64] `protobuf:"varint,5,opt"`
+	DetailType  proto.Option[uint32] `protobuf:"varint,6,opt"`
+	ChannelSign *StChannelSign       `protobuf:"bytes,7,opt"`
 }
 
 type StGetFeedDetailRsp struct {

@@ -3,177 +3,55 @@
 
 package oidb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type D8FCReqBody struct {
-	GroupCode      *int64            `protobuf:"varint,1,opt"`
-	ShowFlag       *int32            `protobuf:"varint,2,opt"`
-	MemLevelInfo   []*D8FCMemberInfo `protobuf:"bytes,3,rep"`
-	LevelName      []*D8FCLevelName  `protobuf:"bytes,4,rep"`
-	UpdateTime     *int32            `protobuf:"varint,5,opt"`
-	OfficeMode     *int32            `protobuf:"varint,6,opt"`
-	GroupOpenAppid *int32            `protobuf:"varint,7,opt"`
-	MsgClientInfo  *D8FCClientInfo   `protobuf:"bytes,8,opt"`
-	AuthKey        []byte            `protobuf:"bytes,9,opt"`
-}
-
-func (x *D8FCReqBody) GetGroupCode() int64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *D8FCReqBody) GetShowFlag() int32 {
-	if x != nil && x.ShowFlag != nil {
-		return *x.ShowFlag
-	}
-	return 0
-}
-
-func (x *D8FCReqBody) GetUpdateTime() int32 {
-	if x != nil && x.UpdateTime != nil {
-		return *x.UpdateTime
-	}
-	return 0
-}
-
-func (x *D8FCReqBody) GetOfficeMode() int32 {
-	if x != nil && x.OfficeMode != nil {
-		return *x.OfficeMode
-	}
-	return 0
-}
-
-func (x *D8FCReqBody) GetGroupOpenAppid() int32 {
-	if x != nil && x.GroupOpenAppid != nil {
-		return *x.GroupOpenAppid
-	}
-	return 0
+	GroupCode      proto.Option[int64] `protobuf:"varint,1,opt"`
+	ShowFlag       proto.Option[int32] `protobuf:"varint,2,opt"`
+	MemLevelInfo   []*D8FCMemberInfo   `protobuf:"bytes,3,rep"`
+	LevelName      []*D8FCLevelName    `protobuf:"bytes,4,rep"`
+	UpdateTime     proto.Option[int32] `protobuf:"varint,5,opt"`
+	OfficeMode     proto.Option[int32] `protobuf:"varint,6,opt"`
+	GroupOpenAppid proto.Option[int32] `protobuf:"varint,7,opt"`
+	MsgClientInfo  *D8FCClientInfo     `protobuf:"bytes,8,opt"`
+	AuthKey        []byte              `protobuf:"bytes,9,opt"`
 }
 
 type D8FCMemberInfo struct {
-	Uin                    *int64              `protobuf:"varint,1,opt"`
-	Point                  *int32              `protobuf:"varint,2,opt"`
-	ActiveDay              *int32              `protobuf:"varint,3,opt"`
-	Level                  *int32              `protobuf:"varint,4,opt"`
+	Uin                    proto.Option[int64] `protobuf:"varint,1,opt"`
+	Point                  proto.Option[int32] `protobuf:"varint,2,opt"`
+	ActiveDay              proto.Option[int32] `protobuf:"varint,3,opt"`
+	Level                  proto.Option[int32] `protobuf:"varint,4,opt"`
 	SpecialTitle           []byte              `protobuf:"bytes,5,opt"`
-	SpecialTitleExpireTime *int32              `protobuf:"varint,6,opt"`
+	SpecialTitleExpireTime proto.Option[int32] `protobuf:"varint,6,opt"`
 	UinName                []byte              `protobuf:"bytes,7,opt"`
 	MemberCardName         []byte              `protobuf:"bytes,8,opt"`
 	Phone                  []byte              `protobuf:"bytes,9,opt"`
 	Email                  []byte              `protobuf:"bytes,10,opt"`
 	Remark                 []byte              `protobuf:"bytes,11,opt"`
-	Gender                 *int32              `protobuf:"varint,12,opt"`
+	Gender                 proto.Option[int32] `protobuf:"varint,12,opt"`
 	Job                    []byte              `protobuf:"bytes,13,opt"`
-	TribeLevel             *int32              `protobuf:"varint,14,opt"`
-	TribePoint             *int32              `protobuf:"varint,15,opt"`
+	TribeLevel             proto.Option[int32] `protobuf:"varint,14,opt"`
+	TribePoint             proto.Option[int32] `protobuf:"varint,15,opt"`
 	RichCardName           []*D8FCCardNameElem `protobuf:"bytes,16,rep"`
 	CommRichCardName       []byte              `protobuf:"bytes,17,opt"`
 }
 
-func (x *D8FCMemberInfo) GetUin() int64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetPoint() int32 {
-	if x != nil && x.Point != nil {
-		return *x.Point
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetActiveDay() int32 {
-	if x != nil && x.ActiveDay != nil {
-		return *x.ActiveDay
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetLevel() int32 {
-	if x != nil && x.Level != nil {
-		return *x.Level
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetSpecialTitleExpireTime() int32 {
-	if x != nil && x.SpecialTitleExpireTime != nil {
-		return *x.SpecialTitleExpireTime
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetGender() int32 {
-	if x != nil && x.Gender != nil {
-		return *x.Gender
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetTribeLevel() int32 {
-	if x != nil && x.TribeLevel != nil {
-		return *x.TribeLevel
-	}
-	return 0
-}
-
-func (x *D8FCMemberInfo) GetTribePoint() int32 {
-	if x != nil && x.TribePoint != nil {
-		return *x.TribePoint
-	}
-	return 0
-}
-
 type D8FCCardNameElem struct {
-	EnumCardType *int32 `protobuf:"varint,1,opt"`
-	Value        []byte `protobuf:"bytes,2,opt"`
-}
-
-func (x *D8FCCardNameElem) GetEnumCardType() int32 {
-	if x != nil && x.EnumCardType != nil {
-		return *x.EnumCardType
-	}
-	return 0
+	EnumCardType proto.Option[int32] `protobuf:"varint,1,opt"`
+	Value        []byte              `protobuf:"bytes,2,opt"`
 }
 
 type D8FCLevelName struct {
-	Level *int32  `protobuf:"varint,1,opt"`
-	Name  *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *D8FCLevelName) GetLevel() int32 {
-	if x != nil && x.Level != nil {
-		return *x.Level
-	}
-	return 0
-}
-
-func (x *D8FCLevelName) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
+	Level proto.Option[int32]  `protobuf:"varint,1,opt"`
+	Name  proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type D8FCClientInfo struct {
-	Implat       *int32  `protobuf:"varint,1,opt"`
-	IngClientver *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *D8FCClientInfo) GetImplat() int32 {
-	if x != nil && x.Implat != nil {
-		return *x.Implat
-	}
-	return 0
-}
-
-func (x *D8FCClientInfo) GetIngClientver() string {
-	if x != nil && x.IngClientver != nil {
-		return *x.IngClientver
-	}
-	return ""
+	Implat       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	IngClientver proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type D8FCCommCardNameBuf struct {

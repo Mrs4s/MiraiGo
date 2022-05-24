@@ -140,7 +140,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 	search, _ := proto.Marshal(&profilecard.AccountSearch{
 		Start:     proto.Int32(0),
 		End:       proto.Uint32(4),
-		Keyword:   &keyword,
+		Keyword:   proto.Some(keyword),
 		Highlight: []string{keyword},
 		UserLocation: &profilecard.Location{
 			Latitude:  proto.Float64(0),
@@ -208,9 +208,9 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 		var ret []GroupSearchInfo
 		for _, g := range searchRsp.List {
 			ret = append(ret, GroupSearchInfo{
-				Code: int64(g.GetCode()),
-				Name: g.GetName(),
-				Memo: g.GetBrief(),
+				Code: int64(g.Code.Unwrap()),
+				Name: g.Name.Unwrap(),
+				Memo: g.Brief.Unwrap(),
 			})
 		}
 		return ret, nil
@@ -233,16 +233,16 @@ func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 		return nil, errors.New("group info not found")
 	}
 	return &GroupInfo{
-		Uin:             int64(*info.GroupInfo.GroupUin),
-		Code:            int64(*info.GroupCode),
+		Uin:             int64(info.GroupInfo.GroupUin.Unwrap()),
+		Code:            int64(info.GroupCode.Unwrap()),
 		Name:            string(info.GroupInfo.GroupName),
-		GroupCreateTime: *info.GroupInfo.GroupCreateTime,
-		GroupLevel:      *info.GroupInfo.GroupLevel,
-		OwnerUin:        int64(*info.GroupInfo.GroupOwner),
-		MemberCount:     uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount:  uint16(*info.GroupInfo.GroupMemberMaxNum),
+		GroupCreateTime: info.GroupInfo.GroupCreateTime.Unwrap(),
+		GroupLevel:      info.GroupInfo.GroupLevel.Unwrap(),
+		OwnerUin:        int64(info.GroupInfo.GroupOwner.Unwrap()),
+		MemberCount:     uint16(info.GroupInfo.GroupMemberNum.Unwrap()),
+		MaxMemberCount:  uint16(info.GroupInfo.GroupMemberMaxNum.Unwrap()),
 		Members:         []*GroupMemberInfo{},
-		LastMsgSeq:      int64(info.GroupInfo.GetGroupCurMsgSeq()),
+		LastMsgSeq:      int64(info.GroupInfo.GroupCurMsgSeq.Unwrap()),
 		client:          c,
 	}, nil
 }

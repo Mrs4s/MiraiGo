@@ -3,8 +3,8 @@ module github.com/Mrs4s/MiraiGo
 go 1.18
 
 require (
-	github.com/RomiChan/protobuf v0.0.0-20220318113238-d8a99598f896
-	github.com/RomiChan/syncx v0.0.0-20220320130821-c88644afda9c
+	github.com/RomiChan/protobuf v0.1.1-0.20220523101132-5546fc25db37
+	github.com/RomiChan/syncx v0.0.0-20220404072119-d7ea0ae15a4c
 	github.com/fumiama/imgsz v0.0.2
 	github.com/pierrec/lz4/v4 v4.1.11
 	github.com/pkg/errors v0.9.1
