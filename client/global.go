@@ -119,11 +119,11 @@ func getSSOAddress() ([]netip.AddrPort, error) {
 	protocol := SystemDeviceInfo.Protocol.Version()
 	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")
 	payload := jce.NewJceWriter(). // see ServerConfig.d
-					WriteInt64(0, 1).WriteInt64(0, 2).WriteByte(1, 3).
-					WriteString("00000", 4).WriteInt32(100, 5).
-					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
-					WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
-					WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).Bytes()
+		WriteInt64(0, 1).WriteInt64(0, 2).WriteByte(1, 3).
+		WriteString("00000", 4).WriteInt32(100, 5).
+		WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
+		WriteInt64(0, 8).WriteInt64(0, 9).WriteInt64(0, 10).
+		WriteInt64(0, 11).WriteByte(0, 12).WriteInt64(0, 13).Bytes()
 	buf := &jce.RequestDataVersion3{
 		Map: map[string][]byte{"HttpServerListReq": packUniRequestData(payload)},
 	}

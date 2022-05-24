@@ -1,0 +1,165 @@
+syntax = "proto2";
+
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/oidb";
+
+// DEB7 prefix
+message DEB7ReqBody {
+  optional StSignInStatusReq signInStatusReq = 1;
+  optional StSignInWriteReq signInWriteReq = 2;
+}
+
+message DEB7Ret {
+  optional uint32 code = 1;
+  optional string msg = 2;
+}
+
+message DEB7RspBody {
+  optional StSignInStatusRsp signInStatusRsp = 1;
+  optional StSignInWriteRsp signInWriteRsp = 2;
+}
+
+message SignInStatusBase {
+  optional uint32 status = 1;
+  optional int64 currentTimeStamp = 2;
+}
+
+message SignInStatusDoneInfo {
+  optional string leftTitleWrod = 1;
+  optional string rightDescWord = 2;
+  repeated string belowPortraitWords = 3;
+  optional string recordUrl = 4;
+}
+
+message SignInStatusGroupScore {
+  optional string groupScoreWord = 1;
+  optional string scoreUrl = 2;
+}
+
+message SignInStatusNotInfo {
+  optional string buttonWord = 1;
+  optional string signDescWordLeft = 2;
+  optional string signDescWordRight = 3;
+}
+
+message SignInStatusYesterdayFirst {
+  optional string yesterdayFirstUid = 1;
+  optional string yesterdayWord = 2;
+  optional string yesterdayNick = 3;
+}
+
+message StDaySignedInfo {
+  optional string uid = 1;
+  optional string uidGroupNick = 2;
+  optional int64 signedTimeStamp = 3;
+  optional int32 signInRank = 4;
+}
+
+message StDaySignedListReq {
+  optional string dayYmd = 1;
+  optional string uid = 2;
+  optional string groupId = 3;
+  optional int32 offset = 4;
+  optional int32 limit = 5;
+}
+
+message StDaySignedListRsp {
+  optional DEB7Ret ret = 1;
+  repeated StDaySignedPage page = 2;
+}
+
+message StDaySignedPage {
+  repeated StDaySignedInfo infos = 1;
+  optional int32 offset = 2;
+  optional int32 total = 3;
+}
+
+message StKingSignedInfo {
+  optional string uid = 1;
+  optional string groupNick = 2;
+  optional int64 signedTimeStamp = 3;
+  optional int32 signedCount = 4;
+}
+
+message StKingSignedListReq {
+  optional string uid = 1;
+  optional string groupId = 2;
+}
+
+message StKingSignedListRsp {
+  optional DEB7Ret ret = 1;
+  optional StKingSignedInfo yesterdayFirst = 2;
+  repeated StKingSignedInfo topSignedTotal = 3;
+  repeated StKingSignedInfo topSignedContinue = 4;
+}
+
+message StSignInRecordDaySigned {
+  optional float daySignedRatio = 1;
+  optional int32 dayTotalSignedUid = 2;
+  optional StDaySignedPage daySignedPage = 3;
+  optional string daySignedUrl = 4;
+}
+
+message StSignInRecordKing {
+  optional StKingSignedInfo yesterdayFirst = 1;
+  repeated StKingSignedInfo topSignedTotal = 2;
+  repeated StKingSignedInfo topSignedContinue = 3;
+  optional string kingUrl = 4;
+}
+
+message StSignInRecordReq {
+  optional string dayYmd = 1;
+  optional string uid = 2;
+  optional string groupId = 3;
+}
+
+message StSignInRecordRsp {
+  optional DEB7Ret ret = 1;
+  optional SignInStatusBase base = 2;
+  optional StSignInRecordUser userRecord = 3;
+  optional StSignInRecordDaySigned daySigned = 4;
+  optional StSignInRecordKing kingRecord = 5;
+  optional StViewGroupLevel level = 6;
+}
+
+message StSignInRecordUser {
+  optional int32 totalSignedDays = 2;
+  optional int64 earliestSignedTimeStamp = 3;
+  optional int64 continueSignedDays = 4;
+  repeated string historySignedDays = 5;
+  optional string groupName = 6;
+}
+
+message StSignInStatusReq {
+  optional string uid = 1;
+  optional string groupId = 2;
+  optional uint32 scene = 3;
+  optional string clientVersion = 4;
+}
+
+message StSignInStatusRsp {
+  optional DEB7Ret ret = 1;
+  optional SignInStatusBase base = 2;
+  optional SignInStatusYesterdayFirst yesterday = 3;
+  optional SignInStatusNotInfo notInfo = 4;
+  optional SignInStatusDoneInfo doneInfo = 5;
+  optional SignInStatusGroupScore groupScore = 6;
+  optional string mantleUrl = 7;
+  optional string backgroundUrl = 8;
+}
+
+message StSignInWriteReq {
+  optional string uid = 1;
+  optional string groupId = 2;
+  optional string clientVersion = 3;
+}
+
+message StSignInWriteRsp {
+  optional DEB7Ret ret = 1;
+  optional SignInStatusDoneInfo doneInfo = 2;
+  optional SignInStatusGroupScore groupScore = 3;
+}
+
+message StViewGroupLevel {
+  optional string title = 1;
+  optional string url = 2;
+}
