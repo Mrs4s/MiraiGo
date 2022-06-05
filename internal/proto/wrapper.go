@@ -1,11 +1,33 @@
 package proto
 
-import "github.com/RomiChan/protobuf/proto"
+import (
+	"reflect"
+
+	"github.com/RomiChan/protobuf/proto"
+)
+
+// TODO: move to a new package
+const debug = false
 
 type Message = any
 
 func Marshal(m Message) ([]byte, error) {
-	return proto.Marshal(m)
+	b, err := proto.Marshal(m)
+	if err != nil {
+		return b, err
+	}
+	if debug {
+		t := reflect.TypeOf(m).Elem()
+		n := reflect.New(t)
+		err = Unmarshal(b, n.Interface())
+		if err != nil {
+			panic(err)
+		}
+		if reflect.DeepEqual(m, n) {
+			panic("not equal")
+		}
+	}
+	return b, err
 }
 
 func Unmarshal(b []byte, m Message) error {
