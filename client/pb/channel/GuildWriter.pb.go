@@ -3,44 +3,20 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type StAlterFeedReq struct {
-	ExtInfo          *StCommonExt     `protobuf:"bytes,1,opt"`
-	Feed             *StFeed          `protobuf:"bytes,2,opt"`
-	BusiReqData      []byte           `protobuf:"bytes,3,opt"`
-	MBitmap          *uint64          `protobuf:"varint,4,opt"`
-	From             *int32           `protobuf:"varint,5,opt"`
-	Src              *int32           `protobuf:"varint,6,opt"`
-	AlterFeedExtInfo []*CommonEntry   `protobuf:"bytes,7,rep"`
-	JsonFeed         *string          `protobuf:"bytes,8,opt"`
-	ClientContent    *StClientContent `protobuf:"bytes,9,opt"`
-}
-
-func (x *StAlterFeedReq) GetMBitmap() uint64 {
-	if x != nil && x.MBitmap != nil {
-		return *x.MBitmap
-	}
-	return 0
-}
-
-func (x *StAlterFeedReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StAlterFeedReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
-}
-
-func (x *StAlterFeedReq) GetJsonFeed() string {
-	if x != nil && x.JsonFeed != nil {
-		return *x.JsonFeed
-	}
-	return ""
+	ExtInfo          *StCommonExt         `protobuf:"bytes,1,opt"`
+	Feed             *StFeed              `protobuf:"bytes,2,opt"`
+	BusiReqData      []byte               `protobuf:"bytes,3,opt"`
+	MBitmap          proto.Option[uint64] `protobuf:"varint,4,opt"`
+	From             proto.Option[int32]  `protobuf:"varint,5,opt"`
+	Src              proto.Option[int32]  `protobuf:"varint,6,opt"`
+	AlterFeedExtInfo []*CommonEntry       `protobuf:"bytes,7,rep"`
+	JsonFeed         proto.Option[string] `protobuf:"bytes,8,opt"`
+	ClientContent    *StClientContent     `protobuf:"bytes,9,opt"`
 }
 
 type StAlterFeedRsp struct {
@@ -55,86 +31,23 @@ type StClientContent struct {
 }
 
 type StClientImageContent struct {
-	TaskId *string `protobuf:"bytes,1,opt"`
-	PicId  *string `protobuf:"bytes,2,opt"`
-	Url    *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *StClientImageContent) GetTaskId() string {
-	if x != nil && x.TaskId != nil {
-		return *x.TaskId
-	}
-	return ""
-}
-
-func (x *StClientImageContent) GetPicId() string {
-	if x != nil && x.PicId != nil {
-		return *x.PicId
-	}
-	return ""
-}
-
-func (x *StClientImageContent) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
+	TaskId proto.Option[string] `protobuf:"bytes,1,opt"`
+	PicId  proto.Option[string] `protobuf:"bytes,2,opt"`
+	Url    proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type StClientVideoContent struct {
-	TaskId   *string `protobuf:"bytes,1,opt"`
-	VideoId  *string `protobuf:"bytes,2,opt"`
-	VideoUrl *string `protobuf:"bytes,3,opt"`
-	CoverUrl *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *StClientVideoContent) GetTaskId() string {
-	if x != nil && x.TaskId != nil {
-		return *x.TaskId
-	}
-	return ""
-}
-
-func (x *StClientVideoContent) GetVideoId() string {
-	if x != nil && x.VideoId != nil {
-		return *x.VideoId
-	}
-	return ""
-}
-
-func (x *StClientVideoContent) GetVideoUrl() string {
-	if x != nil && x.VideoUrl != nil {
-		return *x.VideoUrl
-	}
-	return ""
-}
-
-func (x *StClientVideoContent) GetCoverUrl() string {
-	if x != nil && x.CoverUrl != nil {
-		return *x.CoverUrl
-	}
-	return ""
+	TaskId   proto.Option[string] `protobuf:"bytes,1,opt"`
+	VideoId  proto.Option[string] `protobuf:"bytes,2,opt"`
+	VideoUrl proto.Option[string] `protobuf:"bytes,3,opt"`
+	CoverUrl proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type StDelFeedReq struct {
-	ExtInfo *StCommonExt `protobuf:"bytes,1,opt"`
-	Feed    *StFeed      `protobuf:"bytes,2,opt"`
-	From    *int32       `protobuf:"varint,3,opt"`
-	Src     *int32       `protobuf:"varint,4,opt"`
-}
-
-func (x *StDelFeedReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StDelFeedReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
+	ExtInfo *StCommonExt        `protobuf:"bytes,1,opt"`
+	Feed    *StFeed             `protobuf:"bytes,2,opt"`
+	From    proto.Option[int32] `protobuf:"varint,3,opt"`
+	Src     proto.Option[int32] `protobuf:"varint,4,opt"`
 }
 
 type StDelFeedRsp struct {
@@ -142,34 +55,13 @@ type StDelFeedRsp struct {
 }
 
 type StDoCommentReq struct {
-	ExtInfo     *StCommonExt `protobuf:"bytes,1,opt"`
-	CommentType *uint32      `protobuf:"varint,2,opt"`
-	Comment     *StComment   `protobuf:"bytes,3,opt"`
-	Feed        *StFeed      `protobuf:"bytes,4,opt"`
-	From        *int32       `protobuf:"varint,5,opt"`
-	BusiReqData []byte       `protobuf:"bytes,6,opt"`
-	Src         *int32       `protobuf:"varint,7,opt"`
-}
-
-func (x *StDoCommentReq) GetCommentType() uint32 {
-	if x != nil && x.CommentType != nil {
-		return *x.CommentType
-	}
-	return 0
-}
-
-func (x *StDoCommentReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StDoCommentReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
+	ExtInfo     *StCommonExt         `protobuf:"bytes,1,opt"`
+	CommentType proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Comment     *StComment           `protobuf:"bytes,3,opt"`
+	Feed        *StFeed              `protobuf:"bytes,4,opt"`
+	From        proto.Option[int32]  `protobuf:"varint,5,opt"`
+	BusiReqData []byte               `protobuf:"bytes,6,opt"`
+	Src         proto.Option[int32]  `protobuf:"varint,7,opt"`
 }
 
 type StDoCommentRsp struct {
@@ -180,36 +72,15 @@ type StDoCommentRsp struct {
 
 type StDoLikeReq struct {
 	ExtInfo         *StCommonExt           `protobuf:"bytes,1,opt"`
-	LikeType        *uint32                `protobuf:"varint,2,opt"`
+	LikeType        proto.Option[uint32]   `protobuf:"varint,2,opt"`
 	Like            *StLike                `protobuf:"bytes,3,opt"`
 	Feed            *StFeed                `protobuf:"bytes,4,opt"`
 	BusiReqData     []byte                 `protobuf:"bytes,5,opt"`
 	Comment         *StComment             `protobuf:"bytes,6,opt"`
 	Reply           *StReply               `protobuf:"bytes,7,opt"`
-	From            *int32                 `protobuf:"varint,8,opt"`
-	Src             *int32                 `protobuf:"varint,9,opt"`
+	From            proto.Option[int32]    `protobuf:"varint,8,opt"`
+	Src             proto.Option[int32]    `protobuf:"varint,9,opt"`
 	EmotionReaction *StEmotionReactionInfo `protobuf:"bytes,10,opt"`
-}
-
-func (x *StDoLikeReq) GetLikeType() uint32 {
-	if x != nil && x.LikeType != nil {
-		return *x.LikeType
-	}
-	return 0
-}
-
-func (x *StDoLikeReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StDoLikeReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
 }
 
 type StDoLikeRsp struct {
@@ -220,35 +91,14 @@ type StDoLikeRsp struct {
 }
 
 type StDoReplyReq struct {
-	ExtInfo     *StCommonExt `protobuf:"bytes,1,opt"`
-	ReplyType   *uint32      `protobuf:"varint,2,opt"`
-	Reply       *StReply     `protobuf:"bytes,3,opt"`
-	Comment     *StComment   `protobuf:"bytes,4,opt"`
-	Feed        *StFeed      `protobuf:"bytes,5,opt"`
-	From        *int32       `protobuf:"varint,6,opt"`
-	BusiReqData []byte       `protobuf:"bytes,7,opt"`
-	Src         *int32       `protobuf:"varint,8,opt"`
-}
-
-func (x *StDoReplyReq) GetReplyType() uint32 {
-	if x != nil && x.ReplyType != nil {
-		return *x.ReplyType
-	}
-	return 0
-}
-
-func (x *StDoReplyReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StDoReplyReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
+	ExtInfo     *StCommonExt         `protobuf:"bytes,1,opt"`
+	ReplyType   proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Reply       *StReply             `protobuf:"bytes,3,opt"`
+	Comment     *StComment           `protobuf:"bytes,4,opt"`
+	Feed        *StFeed              `protobuf:"bytes,5,opt"`
+	From        proto.Option[int32]  `protobuf:"varint,6,opt"`
+	BusiReqData []byte               `protobuf:"bytes,7,opt"`
+	Src         proto.Option[int32]  `protobuf:"varint,8,opt"`
 }
 
 type StDoReplyRsp struct {
@@ -258,19 +108,12 @@ type StDoReplyRsp struct {
 }
 
 type StDoSecurityReq struct {
-	ExtInfo *StCommonExt `protobuf:"bytes,1,opt"`
-	Feed    *StFeed      `protobuf:"bytes,2,opt"`
-	Comment *StComment   `protobuf:"bytes,3,opt"`
-	Reply   *StReply     `protobuf:"bytes,4,opt"`
-	Poster  *StUser      `protobuf:"bytes,5,opt"`
-	SecType *int32       `protobuf:"varint,6,opt"`
-}
-
-func (x *StDoSecurityReq) GetSecType() int32 {
-	if x != nil && x.SecType != nil {
-		return *x.SecType
-	}
-	return 0
+	ExtInfo *StCommonExt        `protobuf:"bytes,1,opt"`
+	Feed    *StFeed             `protobuf:"bytes,2,opt"`
+	Comment *StComment          `protobuf:"bytes,3,opt"`
+	Reply   *StReply            `protobuf:"bytes,4,opt"`
+	Poster  *StUser             `protobuf:"bytes,5,opt"`
+	SecType proto.Option[int32] `protobuf:"varint,6,opt"`
 }
 
 type StDoSecurityRsp struct {
@@ -278,33 +121,12 @@ type StDoSecurityRsp struct {
 }
 
 type StModifyFeedReq struct {
-	ExtInfo           *StCommonExt   `protobuf:"bytes,1,opt"`
-	Feed              *StFeed        `protobuf:"bytes,2,opt"`
-	MBitmap           *uint64        `protobuf:"varint,3,opt"`
-	From              *int32         `protobuf:"varint,4,opt"`
-	Src               *int32         `protobuf:"varint,5,opt"`
-	ModifyFeedExtInfo []*CommonEntry `protobuf:"bytes,6,rep"`
-}
-
-func (x *StModifyFeedReq) GetMBitmap() uint64 {
-	if x != nil && x.MBitmap != nil {
-		return *x.MBitmap
-	}
-	return 0
-}
-
-func (x *StModifyFeedReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StModifyFeedReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
+	ExtInfo           *StCommonExt         `protobuf:"bytes,1,opt"`
+	Feed              *StFeed              `protobuf:"bytes,2,opt"`
+	MBitmap           proto.Option[uint64] `protobuf:"varint,3,opt"`
+	From              proto.Option[int32]  `protobuf:"varint,4,opt"`
+	Src               proto.Option[int32]  `protobuf:"varint,5,opt"`
+	ModifyFeedExtInfo []*CommonEntry       `protobuf:"bytes,6,rep"`
 }
 
 type StModifyFeedRsp struct {
@@ -314,35 +136,14 @@ type StModifyFeedRsp struct {
 }
 
 type StPublishFeedReq struct {
-	ExtInfo          *StCommonExt     `protobuf:"bytes,1,opt"`
-	Feed             *StFeed          `protobuf:"bytes,2,opt"`
-	BusiReqData      []byte           `protobuf:"bytes,3,opt"`
-	From             *int32           `protobuf:"varint,4,opt"`
-	Src              *int32           `protobuf:"varint,5,opt"`
-	StoreFeedExtInfo []*CommonEntry   `protobuf:"bytes,6,rep"`
-	JsonFeed         *string          `protobuf:"bytes,7,opt"`
-	ClientContent    *StClientContent `protobuf:"bytes,8,opt"`
-}
-
-func (x *StPublishFeedReq) GetFrom() int32 {
-	if x != nil && x.From != nil {
-		return *x.From
-	}
-	return 0
-}
-
-func (x *StPublishFeedReq) GetSrc() int32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
-}
-
-func (x *StPublishFeedReq) GetJsonFeed() string {
-	if x != nil && x.JsonFeed != nil {
-		return *x.JsonFeed
-	}
-	return ""
+	ExtInfo          *StCommonExt         `protobuf:"bytes,1,opt"`
+	Feed             *StFeed              `protobuf:"bytes,2,opt"`
+	BusiReqData      []byte               `protobuf:"bytes,3,opt"`
+	From             proto.Option[int32]  `protobuf:"varint,4,opt"`
+	Src              proto.Option[int32]  `protobuf:"varint,5,opt"`
+	StoreFeedExtInfo []*CommonEntry       `protobuf:"bytes,6,rep"`
+	JsonFeed         proto.Option[string] `protobuf:"bytes,7,opt"`
+	ClientContent    *StClientContent     `protobuf:"bytes,8,opt"`
 }
 
 type StPublishFeedRsp struct {

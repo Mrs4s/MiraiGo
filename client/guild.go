@@ -197,9 +197,9 @@ func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) 
 	// todo: 解析个性档案
 	return &GuildUserProfile{
 		TinyId:    tinyId,
-		Nickname:  body.Profile.GetNickname(),
-		AvatarUrl: body.Profile.GetAvatarUrl(),
-		JoinTime:  body.Profile.GetJoinTime(),
+		Nickname:  body.Profile.Nickname.Unwrap(),
+		AvatarUrl: body.Profile.AvatarUrl.Unwrap(),
+		JoinTime:  body.Profile.JoinTime.Unwrap(),
 	}, nil
 }
 
@@ -237,31 +237,31 @@ func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, s
 	for _, memberWithRole := range body.MemberWithRoles {
 		for _, mem := range memberWithRole.Members {
 			ret = append(ret, &GuildMemberInfo{
-				TinyId:        mem.GetTinyId(),
-				Title:         mem.GetTitle(),
-				Nickname:      mem.GetNickname(),
-				LastSpeakTime: mem.GetLastSpeakTime(),
-				Role:          memberWithRole.GetRoleId(),
-				RoleName:      memberWithRole.GetRoleName(),
+				TinyId:        mem.TinyId.Unwrap(),
+				Title:         mem.Title.Unwrap(),
+				Nickname:      mem.Nickname.Unwrap(),
+				LastSpeakTime: mem.LastSpeakTime.Unwrap(),
+				Role:          memberWithRole.RoleId.Unwrap(),
+				RoleName:      memberWithRole.RoleName.Unwrap(),
 			})
 		}
 	}
 	for _, mem := range body.Members {
 		ret = append(ret, &GuildMemberInfo{
-			TinyId:        mem.GetTinyId(),
-			Title:         mem.GetTitle(),
-			Nickname:      mem.GetNickname(),
-			LastSpeakTime: mem.GetLastSpeakTime(),
+			TinyId:        mem.TinyId.Unwrap(),
+			Title:         mem.Title.Unwrap(),
+			Nickname:      mem.Nickname.Unwrap(),
+			LastSpeakTime: mem.LastSpeakTime.Unwrap(),
 			Role:          1,
 			RoleName:      "普通成员",
 		})
 	}
 	return &FetchGuildMemberListWithRoleResult{
 		Members:        ret,
-		NextIndex:      body.GetNextIndex(),
-		NextRoleId:     body.GetNextRoleIdIndex(),
-		NextQueryParam: body.GetNextQueryParam(),
-		Finished:       body.NextIndex == nil,
+		NextIndex:      body.NextIndex.Unwrap(),
+		NextRoleId:     body.NextRoleIdIndex.Unwrap(),
+		NextQueryParam: body.NextQueryParam.Unwrap(),
+		Finished:       body.NextIndex.IsNone(),
 	}, nil
 }
 
@@ -295,9 +295,9 @@ func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*Gui
 	// todo: 解析个性档案
 	return &GuildUserProfile{
 		TinyId:    tinyId,
-		Nickname:  body.Profile.GetNickname(),
-		AvatarUrl: body.Profile.GetAvatarUrl(),
-		JoinTime:  body.Profile.GetJoinTime(),
+		Nickname:  body.Profile.Nickname.Unwrap(),
+		AvatarUrl: body.Profile.AvatarUrl.Unwrap(),
+		JoinTime:  body.Profile.JoinTime.Unwrap(),
 		Roles:     roles,
 	}, nil
 }
@@ -316,14 +316,14 @@ func (s *GuildService) GetGuildRoles(guildId uint64) ([]*GuildRole, error) {
 	roles := make([]*GuildRole, 0, len(body.Roles))
 	for _, role := range body.Roles {
 		roles = append(roles, &GuildRole{
-			RoleId:      role.GetRoleId(),
-			RoleName:    role.GetName(),
-			ArgbColor:   role.GetArgbColor(),
-			Independent: role.GetIndependent() == 1,
-			Num:         role.GetNum(),
-			Owned:       role.GetOwned() == 1,
-			Disabled:    role.GetDisabled() == 1,
-			MaxNum:      role.GetMaxNum(),
+			RoleId:      role.RoleId.Unwrap(),
+			RoleName:    role.Name.Unwrap(),
+			ArgbColor:   role.ArgbColor.Unwrap(),
+			Independent: role.Independent.Unwrap() == 1,
+			Num:         role.Num.Unwrap(),
+			Owned:       role.Owned.Unwrap() == 1,
+			Disabled:    role.Disabled.Unwrap() == 1,
+			MaxNum:      role.MaxNum.Unwrap(),
 		})
 	}
 	return roles, nil
@@ -353,7 +353,7 @@ func (s *GuildService) CreateGuildRole(guildId uint64, name string, color uint32
 	if err = unpackOIDBPackage(rsp, body); err != nil {
 		return 0, errors.Wrap(err, "decode packet error")
 	}
-	return body.GetRoleId(), nil
+	return body.RoleId.Unwrap(), nil
 }
 
 func (s *GuildService) DeleteGuildRole(guildId uint64, roleId uint64) error {
@@ -437,14 +437,14 @@ func (s *GuildService) FetchGuestGuild(guildId uint64) (*GuildMeta, error) {
 		return nil, errors.Wrap(err, "decode packet error")
 	}
 	return &GuildMeta{
-		GuildName:      body.Rsp.Meta.GetName(),
-		GuildProfile:   body.Rsp.Meta.GetProfile(),
-		MaxMemberCount: body.Rsp.Meta.GetMaxMemberCount(),
-		MemberCount:    body.Rsp.Meta.GetMemberCount(),
-		CreateTime:     body.Rsp.Meta.GetCreateTime(),
-		MaxRobotCount:  body.Rsp.Meta.GetRobotMaxNum(),
-		MaxAdminCount:  body.Rsp.Meta.GetAdminMaxNum(),
-		OwnerId:        body.Rsp.Meta.GetOwnerId(),
+		GuildName:      body.Rsp.Meta.Name.Unwrap(),
+		GuildProfile:   body.Rsp.Meta.Profile.Unwrap(),
+		MaxMemberCount: body.Rsp.Meta.MaxMemberCount.Unwrap(),
+		MemberCount:    body.Rsp.Meta.MemberCount.Unwrap(),
+		CreateTime:     body.Rsp.Meta.CreateTime.Unwrap(),
+		MaxRobotCount:  body.Rsp.Meta.RobotMaxNum.Unwrap(),
+		MaxAdminCount:  body.Rsp.Meta.AdminMaxNum.Unwrap(),
+		OwnerId:        body.Rsp.Meta.OwnerId.Unwrap(),
 	}, nil
 }
 
@@ -500,8 +500,8 @@ func (s *GuildService) GetTopicChannelFeeds(guildId, channelId uint64) ([]*topic
 		Count: proto.Uint32(12),
 		From:  proto.Uint32(0),
 		ChannelSign: &channel.StChannelSign{
-			GuildId:   &guildId,
-			ChannelId: &channelId,
+			GuildId:   proto.Some(guildId),
+			ChannelId: proto.Some(channelId),
 		},
 		FeedAttchInfo: proto.String(""), // isLoadMore
 	})
@@ -609,7 +609,7 @@ func (s *GuildService) PostTopicChannelFeed(guildId, channelId uint64, feed *top
 	if err = proto.Unmarshal(pkg.BusiBuff, body); err != nil {
 		return errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	if body.Feed != nil && body.Feed.Id != nil {
+	if body.Feed != nil && body.Feed.Id.IsNone() {
 		return nil
 	}
 	return errors.New("post feed error")
@@ -641,9 +641,9 @@ func (s *GuildService) fetchMemberRoles(guildId uint64, tinyId uint64) ([]*Guild
 	roles := make([]*GuildRole, 0, len(p1.Roles))
 	for _, role := range p1.Roles {
 		roles = append(roles, &GuildRole{
-			RoleId:    role.GetRoleId(),
-			RoleName:  role.GetName(),
-			ArgbColor: role.GetArgbColor(),
+			RoleId:    role.RoleId.Unwrap(),
+			RoleName:  role.Name.Unwrap(),
+			ArgbColor: role.ArgbColor.Unwrap(),
 		})
 	}
 	return roles, nil
@@ -676,32 +676,32 @@ func (s *GuildService) fetchChannelListState(guildId uint64, channels []*Channel
 
 func convertChannelInfo(info *channel.GuildChannelInfo) *ChannelInfo {
 	meta := &ChannelMeta{
-		CreatorUin:      info.GetCreatorUin(),
-		CreatorTinyId:   info.GetCreatorTinyId(),
-		CreateTime:      info.GetCreateTime(),
-		GuildId:         info.GetGuildId(),
-		VisibleType:     info.GetVisibleType(),
-		CurrentSlowMode: info.GetCurrentSlowModeKey(),
-		TalkPermission:  info.GetTalkPermission(),
+		CreatorUin:      info.CreatorUin.Unwrap(),
+		CreatorTinyId:   info.CreatorTinyId.Unwrap(),
+		CreateTime:      info.CreateTime.Unwrap(),
+		GuildId:         info.GuildId.Unwrap(),
+		VisibleType:     info.VisibleType.Unwrap(),
+		CurrentSlowMode: info.CurrentSlowModeKey.Unwrap(),
+		TalkPermission:  info.TalkPermission.Unwrap(),
 	}
 	if info.TopMsg != nil {
-		meta.TopMessageSeq = info.TopMsg.GetTopMsgSeq()
-		meta.TopMessageTime = info.TopMsg.GetTopMsgTime()
-		meta.TopMessageOperatorId = info.TopMsg.GetTopMsgOperatorTinyId()
+		meta.TopMessageSeq = info.TopMsg.TopMsgSeq.Unwrap()
+		meta.TopMessageTime = info.TopMsg.TopMsgTime.Unwrap()
+		meta.TopMessageOperatorId = info.TopMsg.TopMsgOperatorTinyId.Unwrap()
 	}
 	for _, slow := range info.SlowModeInfos {
 		meta.SlowModes = append(meta.SlowModes, &ChannelSlowModeInfo{
-			SlowModeKey:    slow.GetSlowModeKey(),
-			SpeakFrequency: slow.GetSpeakFrequency(),
-			SlowModeCircle: slow.GetSlowModeCircle(),
-			SlowModeText:   slow.GetSlowModeText(),
+			SlowModeKey:    slow.SlowModeKey.Unwrap(),
+			SpeakFrequency: slow.SpeakFrequency.Unwrap(),
+			SlowModeCircle: slow.SlowModeCircle.Unwrap(),
+			SlowModeText:   slow.SlowModeText.Unwrap(),
 		})
 	}
 	return &ChannelInfo{
-		ChannelId:   info.GetChannelId(),
-		ChannelName: info.GetChannelName(),
-		NotifyType:  uint32(info.GetFinalNotifyType()),
-		ChannelType: ChannelType(info.GetChannelType()),
+		ChannelId:   info.ChannelId.Unwrap(),
+		ChannelName: info.ChannelName.Unwrap(),
+		NotifyType:  uint32(info.FinalNotifyType.Unwrap()),
+		ChannelType: ChannelType(info.ChannelType.Unwrap()),
 		Meta:        meta,
 		fetchTime:   time.Now().Unix(),
 	}
@@ -717,8 +717,8 @@ func (c *QQClient) syncChannelFirstView() {
 	if err = proto.Unmarshal(rsp, firstViewRsp); err != nil {
 		return
 	}
-	c.GuildService.TinyId = firstViewRsp.GetSelfTinyid()
-	c.GuildService.GuildCount = firstViewRsp.GetGuildCount()
+	c.GuildService.TinyId = firstViewRsp.SelfTinyid.Unwrap()
+	c.GuildService.GuildCount = firstViewRsp.GuildCount.Unwrap()
 	if self, err := c.GuildService.GetUserProfile(c.GuildService.TinyId); err == nil {
 		c.GuildService.Nickname = self.Nickname
 		c.GuildService.AvatarUrl = self.AvatarUrl
@@ -746,11 +746,11 @@ func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payloa
 		c.GuildService.Guilds = []*GuildInfo{}
 		for _, guild := range firstViewMsg.GuildNodes {
 			info := &GuildInfo{
-				GuildId:   guild.GetGuildId(),
-				GuildCode: guild.GetGuildCode(),
+				GuildId:   guild.GuildId.Unwrap(),
+				GuildCode: guild.GuildCode.Unwrap(),
 				GuildName: utils.B2S(guild.GuildName),
-				CoverUrl:  fmt.Sprintf("https://groupprocover-76483.picgzc.qpic.cn/%v", guild.GetGuildId()),
-				AvatarUrl: fmt.Sprintf("https://groupprohead-76292.picgzc.qpic.cn/%v", guild.GetGuildId()),
+				CoverUrl:  fmt.Sprintf("https://groupprocover-76483.picgzc.qpic.cn/%v", guild.GuildId.Unwrap()),
+				AvatarUrl: fmt.Sprintf("https://groupprohead-76292.picgzc.qpic.cn/%v", guild.GuildId.Unwrap()),
 			}
 			channels, err := c.GuildService.FetchChannelList(info.GuildId)
 			if err != nil {
@@ -759,13 +759,13 @@ func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payloa
 					meta := new(channel.ChannelMsgMeta)
 					_ = proto.Unmarshal(node.Meta, meta)
 					info.Channels = append(info.Channels, &ChannelInfo{
-						ChannelId:   node.GetChannelId(),
+						ChannelId:   node.ChannelId.Unwrap(),
 						ChannelName: utils.B2S(node.ChannelName),
-						Time:        node.GetTime(),
-						EventTime:   node.GetEventTime(),
-						NotifyType:  node.GetNotifyType(),
-						ChannelType: ChannelType(node.GetChannelType()),
-						AtAllSeq:    meta.GetAtAllSeq(),
+						Time:        node.Time.Unwrap(),
+						EventTime:   node.EventTime.Unwrap(),
+						NotifyType:  node.NotifyType.Unwrap(),
+						ChannelType: ChannelType(node.ChannelType.Unwrap()),
+						AtAllSeq:    meta.AtAllSeq.Unwrap(),
 					})
 				}
 			} else {

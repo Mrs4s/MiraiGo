@@ -191,15 +191,15 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 	for _, m := range s27.ModInfos {
 		if m.ModGroupProfile != nil {
 			for _, info := range m.ModGroupProfile.GroupProfileInfos {
-				if info.GetField() == 1 {
-					if g := c.FindGroup(int64(m.ModGroupProfile.GetGroupCode())); g != nil {
+				if info.Field.Unwrap() == 1 {
+					if g := c.FindGroup(int64(m.ModGroupProfile.GroupCode.Unwrap())); g != nil {
 						old := g.Name
 						g.Name = string(info.Value)
 						c.GroupNameUpdatedEvent.dispatch(c, &GroupNameUpdatedEvent{
 							Group:       g,
 							OldName:     old,
 							NewName:     g.Name,
-							OperatorUin: int64(m.ModGroupProfile.GetCmdUin()),
+							OperatorUin: int64(m.ModGroupProfile.CmdUin.Unwrap()),
 						})
 					}
 				}

@@ -3,332 +3,77 @@
 
 package oidb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type GroupFileFeedsInfo struct {
-	BusId     *uint32 `protobuf:"varint,1,opt"`
-	FileId    *string `protobuf:"bytes,2,opt"`
-	MsgRandom *uint32 `protobuf:"varint,3,opt"`
-	Ext       []byte  `protobuf:"bytes,4,opt"`
-	FeedFlag  *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *GroupFileFeedsInfo) GetBusId() uint32 {
-	if x != nil && x.BusId != nil {
-		return *x.BusId
-	}
-	return 0
-}
-
-func (x *GroupFileFeedsInfo) GetFileId() string {
-	if x != nil && x.FileId != nil {
-		return *x.FileId
-	}
-	return ""
-}
-
-func (x *GroupFileFeedsInfo) GetMsgRandom() uint32 {
-	if x != nil && x.MsgRandom != nil {
-		return *x.MsgRandom
-	}
-	return 0
-}
-
-func (x *GroupFileFeedsInfo) GetFeedFlag() uint32 {
-	if x != nil && x.FeedFlag != nil {
-		return *x.FeedFlag
-	}
-	return 0
+	BusId     proto.Option[uint32] `protobuf:"varint,1,opt"`
+	FileId    proto.Option[string] `protobuf:"bytes,2,opt"`
+	MsgRandom proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Ext       []byte               `protobuf:"bytes,4,opt"`
+	FeedFlag  proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type CopyFromReqBody struct {
-	GroupCode       *uint64 `protobuf:"varint,1,opt"`
-	AppId           *uint32 `protobuf:"varint,2,opt"`
-	SrcBusId        *uint32 `protobuf:"varint,3,opt"`
-	SrcParentFolder []byte  `protobuf:"bytes,4,opt"`
-	SrcFilePath     []byte  `protobuf:"bytes,5,opt"`
-	DstBusId        *uint32 `protobuf:"varint,6,opt"`
-	DstFolderId     []byte  `protobuf:"bytes,7,opt"`
-	FileSize        *uint64 `protobuf:"varint,8,opt"`
-	LocalPath       *string `protobuf:"bytes,9,opt"`
-	FileName        *string `protobuf:"bytes,10,opt"`
-	SrcUin          *uint64 `protobuf:"varint,11,opt"`
-	Md5             []byte  `protobuf:"bytes,12,opt"`
-}
-
-func (x *CopyFromReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *CopyFromReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *CopyFromReqBody) GetSrcBusId() uint32 {
-	if x != nil && x.SrcBusId != nil {
-		return *x.SrcBusId
-	}
-	return 0
-}
-
-func (x *CopyFromReqBody) GetDstBusId() uint32 {
-	if x != nil && x.DstBusId != nil {
-		return *x.DstBusId
-	}
-	return 0
-}
-
-func (x *CopyFromReqBody) GetFileSize() uint64 {
-	if x != nil && x.FileSize != nil {
-		return *x.FileSize
-	}
-	return 0
-}
-
-func (x *CopyFromReqBody) GetLocalPath() string {
-	if x != nil && x.LocalPath != nil {
-		return *x.LocalPath
-	}
-	return ""
-}
-
-func (x *CopyFromReqBody) GetFileName() string {
-	if x != nil && x.FileName != nil {
-		return *x.FileName
-	}
-	return ""
-}
-
-func (x *CopyFromReqBody) GetSrcUin() uint64 {
-	if x != nil && x.SrcUin != nil {
-		return *x.SrcUin
-	}
-	return 0
+	GroupCode       proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId           proto.Option[uint32] `protobuf:"varint,2,opt"`
+	SrcBusId        proto.Option[uint32] `protobuf:"varint,3,opt"`
+	SrcParentFolder []byte               `protobuf:"bytes,4,opt"`
+	SrcFilePath     []byte               `protobuf:"bytes,5,opt"`
+	DstBusId        proto.Option[uint32] `protobuf:"varint,6,opt"`
+	DstFolderId     []byte               `protobuf:"bytes,7,opt"`
+	FileSize        proto.Option[uint64] `protobuf:"varint,8,opt"`
+	LocalPath       proto.Option[string] `protobuf:"bytes,9,opt"`
+	FileName        proto.Option[string] `protobuf:"bytes,10,opt"`
+	SrcUin          proto.Option[uint64] `protobuf:"varint,11,opt"`
+	Md5             []byte               `protobuf:"bytes,12,opt"`
 }
 
 type CopyFromRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"`
-	SaveFilePath  []byte  `protobuf:"bytes,4,opt"`
-	BusId         *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *CopyFromRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *CopyFromRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *CopyFromRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
-}
-
-func (x *CopyFromRspBody) GetBusId() uint32 {
-	if x != nil && x.BusId != nil {
-		return *x.BusId
-	}
-	return 0
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
+	SaveFilePath  []byte               `protobuf:"bytes,4,opt"`
+	BusId         proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type CopyToReqBody struct {
-	GroupCode             *uint64 `protobuf:"varint,1,opt"`
-	AppId                 *uint32 `protobuf:"varint,2,opt"`
-	SrcBusId              *uint32 `protobuf:"varint,3,opt"`
-	SrcFileId             *string `protobuf:"bytes,4,opt"`
-	DstBusId              *uint32 `protobuf:"varint,5,opt"`
-	DstUin                *uint64 `protobuf:"varint,6,opt"`
-	NewFileName           *string `protobuf:"bytes,40,opt"`
-	TimCloudPdirKey       []byte  `protobuf:"bytes,100,opt"`
-	TimCloudPpdirKey      []byte  `protobuf:"bytes,101,opt"`
-	TimCloudExtensionInfo []byte  `protobuf:"bytes,102,opt"`
-	TimFileExistOption    *uint32 `protobuf:"varint,103,opt"`
-}
-
-func (x *CopyToReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *CopyToReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *CopyToReqBody) GetSrcBusId() uint32 {
-	if x != nil && x.SrcBusId != nil {
-		return *x.SrcBusId
-	}
-	return 0
-}
-
-func (x *CopyToReqBody) GetSrcFileId() string {
-	if x != nil && x.SrcFileId != nil {
-		return *x.SrcFileId
-	}
-	return ""
-}
-
-func (x *CopyToReqBody) GetDstBusId() uint32 {
-	if x != nil && x.DstBusId != nil {
-		return *x.DstBusId
-	}
-	return 0
-}
-
-func (x *CopyToReqBody) GetDstUin() uint64 {
-	if x != nil && x.DstUin != nil {
-		return *x.DstUin
-	}
-	return 0
-}
-
-func (x *CopyToReqBody) GetNewFileName() string {
-	if x != nil && x.NewFileName != nil {
-		return *x.NewFileName
-	}
-	return ""
-}
-
-func (x *CopyToReqBody) GetTimFileExistOption() uint32 {
-	if x != nil && x.TimFileExistOption != nil {
-		return *x.TimFileExistOption
-	}
-	return 0
+	GroupCode             proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId                 proto.Option[uint32] `protobuf:"varint,2,opt"`
+	SrcBusId              proto.Option[uint32] `protobuf:"varint,3,opt"`
+	SrcFileId             proto.Option[string] `protobuf:"bytes,4,opt"`
+	DstBusId              proto.Option[uint32] `protobuf:"varint,5,opt"`
+	DstUin                proto.Option[uint64] `protobuf:"varint,6,opt"`
+	NewFileName           proto.Option[string] `protobuf:"bytes,40,opt"`
+	TimCloudPdirKey       []byte               `protobuf:"bytes,100,opt"`
+	TimCloudPpdirKey      []byte               `protobuf:"bytes,101,opt"`
+	TimCloudExtensionInfo []byte               `protobuf:"bytes,102,opt"`
+	TimFileExistOption    proto.Option[uint32] `protobuf:"varint,103,opt"`
 }
 
 type CopyToRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"`
-	SaveFilePath  *string `protobuf:"bytes,4,opt"`
-	BusId         *uint32 `protobuf:"varint,5,opt"`
-	FileName      *string `protobuf:"bytes,40,opt"`
-}
-
-func (x *CopyToRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *CopyToRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *CopyToRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
-}
-
-func (x *CopyToRspBody) GetSaveFilePath() string {
-	if x != nil && x.SaveFilePath != nil {
-		return *x.SaveFilePath
-	}
-	return ""
-}
-
-func (x *CopyToRspBody) GetBusId() uint32 {
-	if x != nil && x.BusId != nil {
-		return *x.BusId
-	}
-	return 0
-}
-
-func (x *CopyToRspBody) GetFileName() string {
-	if x != nil && x.FileName != nil {
-		return *x.FileName
-	}
-	return ""
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
+	SaveFilePath  proto.Option[string] `protobuf:"bytes,4,opt"`
+	BusId         proto.Option[uint32] `protobuf:"varint,5,opt"`
+	FileName      proto.Option[string] `protobuf:"bytes,40,opt"`
 }
 
 type FeedsReqBody struct {
-	GroupCode     *uint64               `protobuf:"varint,1,opt"`
-	AppId         *uint32               `protobuf:"varint,2,opt"`
+	GroupCode     proto.Option[uint64]  `protobuf:"varint,1,opt"`
+	AppId         proto.Option[uint32]  `protobuf:"varint,2,opt"`
 	FeedsInfoList []*GroupFileFeedsInfo `protobuf:"bytes,3,rep"`
-	MultiSendSeq  *uint32               `protobuf:"varint,4,opt"`
-}
-
-func (x *FeedsReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *FeedsReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *FeedsReqBody) GetMultiSendSeq() uint32 {
-	if x != nil && x.MultiSendSeq != nil {
-		return *x.MultiSendSeq
-	}
-	return 0
+	MultiSendSeq  proto.Option[uint32]  `protobuf:"varint,4,opt"`
 }
 
 type FeedsRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"`
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
 	//repeated C8639group_file_common.FeedsResult feedsResultList = 4;
-	SvrbusyWaitTime *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *FeedsRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *FeedsRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *FeedsRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
-}
-
-func (x *FeedsRspBody) GetSvrbusyWaitTime() uint32 {
-	if x != nil && x.SvrbusyWaitTime != nil {
-		return *x.SvrbusyWaitTime
-	}
-	return 0
+	SvrbusyWaitTime proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type D6D9ReqBody struct {
@@ -346,79 +91,16 @@ type D6D9RspBody struct {
 }
 
 type TransFileReqBody struct {
-	GroupCode *uint64 `protobuf:"varint,1,opt"`
-	AppId     *uint32 `protobuf:"varint,2,opt"`
-	BusId     *uint32 `protobuf:"varint,3,opt"`
-	FileId    *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *TransFileReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *TransFileReqBody) GetAppId() uint32 {
-	if x != nil && x.AppId != nil {
-		return *x.AppId
-	}
-	return 0
-}
-
-func (x *TransFileReqBody) GetBusId() uint32 {
-	if x != nil && x.BusId != nil {
-		return *x.BusId
-	}
-	return 0
-}
-
-func (x *TransFileReqBody) GetFileId() string {
-	if x != nil && x.FileId != nil {
-		return *x.FileId
-	}
-	return ""
+	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
+	AppId     proto.Option[uint32] `protobuf:"varint,2,opt"`
+	BusId     proto.Option[uint32] `protobuf:"varint,3,opt"`
+	FileId    proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type TransFileRspBody struct {
-	RetCode       *int32  `protobuf:"varint,1,opt"`
-	RetMsg        *string `protobuf:"bytes,2,opt"`
-	ClientWording *string `protobuf:"bytes,3,opt"`
-	SaveBusId     *uint32 `protobuf:"varint,4,opt"`
-	SaveFilePath  *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *TransFileRspBody) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *TransFileRspBody) GetRetMsg() string {
-	if x != nil && x.RetMsg != nil {
-		return *x.RetMsg
-	}
-	return ""
-}
-
-func (x *TransFileRspBody) GetClientWording() string {
-	if x != nil && x.ClientWording != nil {
-		return *x.ClientWording
-	}
-	return ""
-}
-
-func (x *TransFileRspBody) GetSaveBusId() uint32 {
-	if x != nil && x.SaveBusId != nil {
-		return *x.SaveBusId
-	}
-	return 0
-}
-
-func (x *TransFileRspBody) GetSaveFilePath() string {
-	if x != nil && x.SaveFilePath != nil {
-		return *x.SaveFilePath
-	}
-	return ""
+	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
+	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
+	SaveBusId     proto.Option[uint32] `protobuf:"varint,4,opt"`
+	SaveFilePath  proto.Option[string] `protobuf:"bytes,5,opt"`
 }

@@ -3,51 +3,20 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 // see sub_37628C
 type ChannelOidb0Xf5BRsp struct {
-	GuildId         *uint64                  `protobuf:"varint,1,opt"`
+	GuildId         proto.Option[uint64]     `protobuf:"varint,1,opt"`
 	Bots            []*GuildMemberInfo       `protobuf:"bytes,4,rep"`
 	Members         []*GuildMemberInfo       `protobuf:"bytes,5,rep"`
-	NextIndex       *uint32                  `protobuf:"varint,10,opt"`
-	Finished        *uint32                  `protobuf:"varint,9,opt"`
-	NextQueryParam  *string                  `protobuf:"bytes,24,opt"`
+	NextIndex       proto.Option[uint32]     `protobuf:"varint,10,opt"`
+	Finished        proto.Option[uint32]     `protobuf:"varint,9,opt"`
+	NextQueryParam  proto.Option[string]     `protobuf:"bytes,24,opt"`
 	MemberWithRoles []*GuildGroupMembersInfo `protobuf:"bytes,25,rep"`
-	NextRoleIdIndex *uint64                  `protobuf:"varint,26,opt"`
-}
-
-func (x *ChannelOidb0Xf5BRsp) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ChannelOidb0Xf5BRsp) GetNextIndex() uint32 {
-	if x != nil && x.NextIndex != nil {
-		return *x.NextIndex
-	}
-	return 0
-}
-
-func (x *ChannelOidb0Xf5BRsp) GetFinished() uint32 {
-	if x != nil && x.Finished != nil {
-		return *x.Finished
-	}
-	return 0
-}
-
-func (x *ChannelOidb0Xf5BRsp) GetNextQueryParam() string {
-	if x != nil && x.NextQueryParam != nil {
-		return *x.NextQueryParam
-	}
-	return ""
-}
-
-func (x *ChannelOidb0Xf5BRsp) GetNextRoleIdIndex() uint64 {
-	if x != nil && x.NextRoleIdIndex != nil {
-		return *x.NextRoleIdIndex
-	}
-	return 0
+	NextRoleIdIndex proto.Option[uint64]     `protobuf:"varint,26,opt"`
 }
 
 type ChannelOidb0Xf88Rsp struct {
@@ -75,527 +44,114 @@ type ChannelOidb0X1017Rsp struct {
 }
 
 type P10X1017 struct {
-	TinyId *uint64          `protobuf:"varint,1,opt"`
-	Roles  []*GuildUserRole `protobuf:"bytes,3,rep"`
-}
-
-func (x *P10X1017) GetTinyId() uint64 {
-	if x != nil && x.TinyId != nil {
-		return *x.TinyId
-	}
-	return 0
+	TinyId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Roles  []*GuildUserRole     `protobuf:"bytes,3,rep"`
 }
 
 type ChannelOidb0X1019Rsp struct {
-	GuildId *uint64      `protobuf:"varint,1,opt"`
-	Roles   []*GuildRole `protobuf:"bytes,2,rep"`
-}
-
-func (x *ChannelOidb0X1019Rsp) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	GuildId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Roles   []*GuildRole         `protobuf:"bytes,2,rep"`
 }
 
 type ChannelOidb0X1016Rsp struct {
-	RoleId *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *ChannelOidb0X1016Rsp) GetRoleId() uint64 {
-	if x != nil && x.RoleId != nil {
-		return *x.RoleId
-	}
-	return 0
+	RoleId proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type GuildMetaRsp struct {
-	GuildId *uint64    `protobuf:"varint,3,opt"`
-	Meta    *GuildMeta `protobuf:"bytes,4,opt"`
-}
-
-func (x *GuildMetaRsp) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	GuildId proto.Option[uint64] `protobuf:"varint,3,opt"`
+	Meta    *GuildMeta           `protobuf:"bytes,4,opt"`
 }
 
 type ChannelListRsp struct {
-	GuildId  *uint64             `protobuf:"varint,1,opt"`
-	Channels []*GuildChannelInfo `protobuf:"bytes,2,rep"` // 5: Category infos
-}
-
-func (x *ChannelListRsp) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	GuildId  proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Channels []*GuildChannelInfo  `protobuf:"bytes,2,rep"` // 5: Category infos
 }
 
 type GuildGroupMembersInfo struct {
-	RoleId   *uint64            `protobuf:"varint,1,opt"`
-	Members  []*GuildMemberInfo `protobuf:"bytes,2,rep"`
-	RoleName *string            `protobuf:"bytes,3,opt"`
-	Color    *uint32            `protobuf:"varint,4,opt"`
-}
-
-func (x *GuildGroupMembersInfo) GetRoleId() uint64 {
-	if x != nil && x.RoleId != nil {
-		return *x.RoleId
-	}
-	return 0
-}
-
-func (x *GuildGroupMembersInfo) GetRoleName() string {
-	if x != nil && x.RoleName != nil {
-		return *x.RoleName
-	}
-	return ""
-}
-
-func (x *GuildGroupMembersInfo) GetColor() uint32 {
-	if x != nil && x.Color != nil {
-		return *x.Color
-	}
-	return 0
+	RoleId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Members  []*GuildMemberInfo   `protobuf:"bytes,2,rep"`
+	RoleName proto.Option[string] `protobuf:"bytes,3,opt"`
+	Color    proto.Option[uint32] `protobuf:"varint,4,opt"`
 }
 
 // see sub_374334
 type GuildMemberInfo struct {
-	Title         *string `protobuf:"bytes,2,opt"`
-	Nickname      *string `protobuf:"bytes,3,opt"`
-	LastSpeakTime *int64  `protobuf:"varint,4,opt"` // uncertainty
-	Role          *int32  `protobuf:"varint,5,opt"` // uncertainty
-	TinyId        *uint64 `protobuf:"varint,8,opt"`
-}
-
-func (x *GuildMemberInfo) GetTitle() string {
-	if x != nil && x.Title != nil {
-		return *x.Title
-	}
-	return ""
-}
-
-func (x *GuildMemberInfo) GetNickname() string {
-	if x != nil && x.Nickname != nil {
-		return *x.Nickname
-	}
-	return ""
-}
-
-func (x *GuildMemberInfo) GetLastSpeakTime() int64 {
-	if x != nil && x.LastSpeakTime != nil {
-		return *x.LastSpeakTime
-	}
-	return 0
-}
-
-func (x *GuildMemberInfo) GetRole() int32 {
-	if x != nil && x.Role != nil {
-		return *x.Role
-	}
-	return 0
-}
-
-func (x *GuildMemberInfo) GetTinyId() uint64 {
-	if x != nil && x.TinyId != nil {
-		return *x.TinyId
-	}
-	return 0
+	Title         proto.Option[string] `protobuf:"bytes,2,opt"`
+	Nickname      proto.Option[string] `protobuf:"bytes,3,opt"`
+	LastSpeakTime proto.Option[int64]  `protobuf:"varint,4,opt"` // uncertainty
+	Role          proto.Option[int32]  `protobuf:"varint,5,opt"` // uncertainty
+	TinyId        proto.Option[uint64] `protobuf:"varint,8,opt"`
 }
 
 // 频道系统用户资料
 type GuildUserProfile struct {
-	TinyId    *uint64 `protobuf:"varint,2,opt"`
-	Nickname  *string `protobuf:"bytes,3,opt"`
-	AvatarUrl *string `protobuf:"bytes,6,opt"`
+	TinyId    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Nickname  proto.Option[string] `protobuf:"bytes,3,opt"`
+	AvatarUrl proto.Option[string] `protobuf:"bytes,6,opt"`
 	// 15: avatar url info
-	JoinTime *int64 `protobuf:"varint,16,opt"` // uncertainty
-}
-
-func (x *GuildUserProfile) GetTinyId() uint64 {
-	if x != nil && x.TinyId != nil {
-		return *x.TinyId
-	}
-	return 0
-}
-
-func (x *GuildUserProfile) GetNickname() string {
-	if x != nil && x.Nickname != nil {
-		return *x.Nickname
-	}
-	return ""
-}
-
-func (x *GuildUserProfile) GetAvatarUrl() string {
-	if x != nil && x.AvatarUrl != nil {
-		return *x.AvatarUrl
-	}
-	return ""
-}
-
-func (x *GuildUserProfile) GetJoinTime() int64 {
-	if x != nil && x.JoinTime != nil {
-		return *x.JoinTime
-	}
-	return 0
+	JoinTime proto.Option[int64] `protobuf:"varint,16,opt"` // uncertainty
 }
 
 type GuildRole struct {
-	RoleId      *uint64 `protobuf:"varint,1,opt"`
-	Name        *string `protobuf:"bytes,2,opt"`
-	ArgbColor   *uint32 `protobuf:"varint,3,opt"`
-	Independent *int32  `protobuf:"varint,4,opt"`
-	Num         *int32  `protobuf:"varint,5,opt"`
-	Owned       *int32  `protobuf:"varint,6,opt"` // 是否拥有 存疑
-	Disabled    *int32  `protobuf:"varint,7,opt"` // 权限不足或不显示
-	MaxNum      *int32  `protobuf:"varint,8,opt"` // 9: ?
-}
-
-func (x *GuildRole) GetRoleId() uint64 {
-	if x != nil && x.RoleId != nil {
-		return *x.RoleId
-	}
-	return 0
-}
-
-func (x *GuildRole) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *GuildRole) GetArgbColor() uint32 {
-	if x != nil && x.ArgbColor != nil {
-		return *x.ArgbColor
-	}
-	return 0
-}
-
-func (x *GuildRole) GetIndependent() int32 {
-	if x != nil && x.Independent != nil {
-		return *x.Independent
-	}
-	return 0
-}
-
-func (x *GuildRole) GetNum() int32 {
-	if x != nil && x.Num != nil {
-		return *x.Num
-	}
-	return 0
-}
-
-func (x *GuildRole) GetOwned() int32 {
-	if x != nil && x.Owned != nil {
-		return *x.Owned
-	}
-	return 0
-}
-
-func (x *GuildRole) GetDisabled() int32 {
-	if x != nil && x.Disabled != nil {
-		return *x.Disabled
-	}
-	return 0
-}
-
-func (x *GuildRole) GetMaxNum() int32 {
-	if x != nil && x.MaxNum != nil {
-		return *x.MaxNum
-	}
-	return 0
+	RoleId      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Name        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ArgbColor   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Independent proto.Option[int32]  `protobuf:"varint,4,opt"`
+	Num         proto.Option[int32]  `protobuf:"varint,5,opt"`
+	Owned       proto.Option[int32]  `protobuf:"varint,6,opt"` // 是否拥有 存疑
+	Disabled    proto.Option[int32]  `protobuf:"varint,7,opt"` // 权限不足或不显示
+	MaxNum      proto.Option[int32]  `protobuf:"varint,8,opt"` // 9: ?
 }
 
 type GuildUserRole struct {
-	RoleId      *uint64 `protobuf:"varint,1,opt"`
-	Name        *string `protobuf:"bytes,2,opt"`
-	ArgbColor   *uint32 `protobuf:"varint,3,opt"`
-	Independent *int32  `protobuf:"varint,4,opt"`
-}
-
-func (x *GuildUserRole) GetRoleId() uint64 {
-	if x != nil && x.RoleId != nil {
-		return *x.RoleId
-	}
-	return 0
-}
-
-func (x *GuildUserRole) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *GuildUserRole) GetArgbColor() uint32 {
-	if x != nil && x.ArgbColor != nil {
-		return *x.ArgbColor
-	}
-	return 0
-}
-
-func (x *GuildUserRole) GetIndependent() int32 {
-	if x != nil && x.Independent != nil {
-		return *x.Independent
-	}
-	return 0
+	RoleId      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Name        proto.Option[string] `protobuf:"bytes,2,opt"`
+	ArgbColor   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Independent proto.Option[int32]  `protobuf:"varint,4,opt"`
 }
 
 type GuildMeta struct {
-	GuildCode      *uint64 `protobuf:"varint,2,opt"`
-	CreateTime     *int64  `protobuf:"varint,4,opt"`
-	MaxMemberCount *int64  `protobuf:"varint,5,opt"`
-	MemberCount    *int64  `protobuf:"varint,6,opt"`
-	Name           *string `protobuf:"bytes,8,opt"`
-	RobotMaxNum    *int32  `protobuf:"varint,11,opt"`
-	AdminMaxNum    *int32  `protobuf:"varint,12,opt"`
-	Profile        *string `protobuf:"bytes,13,opt"`
-	AvatarSeq      *int64  `protobuf:"varint,14,opt"`
-	OwnerId        *uint64 `protobuf:"varint,18,opt"`
-	CoverSeq       *int64  `protobuf:"varint,19,opt"`
-	ClientId       *int32  `protobuf:"varint,20,opt"`
-}
-
-func (x *GuildMeta) GetGuildCode() uint64 {
-	if x != nil && x.GuildCode != nil {
-		return *x.GuildCode
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetCreateTime() int64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetMaxMemberCount() int64 {
-	if x != nil && x.MaxMemberCount != nil {
-		return *x.MaxMemberCount
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetMemberCount() int64 {
-	if x != nil && x.MemberCount != nil {
-		return *x.MemberCount
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *GuildMeta) GetRobotMaxNum() int32 {
-	if x != nil && x.RobotMaxNum != nil {
-		return *x.RobotMaxNum
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetAdminMaxNum() int32 {
-	if x != nil && x.AdminMaxNum != nil {
-		return *x.AdminMaxNum
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetProfile() string {
-	if x != nil && x.Profile != nil {
-		return *x.Profile
-	}
-	return ""
-}
-
-func (x *GuildMeta) GetAvatarSeq() int64 {
-	if x != nil && x.AvatarSeq != nil {
-		return *x.AvatarSeq
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetOwnerId() uint64 {
-	if x != nil && x.OwnerId != nil {
-		return *x.OwnerId
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetCoverSeq() int64 {
-	if x != nil && x.CoverSeq != nil {
-		return *x.CoverSeq
-	}
-	return 0
-}
-
-func (x *GuildMeta) GetClientId() int32 {
-	if x != nil && x.ClientId != nil {
-		return *x.ClientId
-	}
-	return 0
+	GuildCode      proto.Option[uint64] `protobuf:"varint,2,opt"`
+	CreateTime     proto.Option[int64]  `protobuf:"varint,4,opt"`
+	MaxMemberCount proto.Option[int64]  `protobuf:"varint,5,opt"`
+	MemberCount    proto.Option[int64]  `protobuf:"varint,6,opt"`
+	Name           proto.Option[string] `protobuf:"bytes,8,opt"`
+	RobotMaxNum    proto.Option[int32]  `protobuf:"varint,11,opt"`
+	AdminMaxNum    proto.Option[int32]  `protobuf:"varint,12,opt"`
+	Profile        proto.Option[string] `protobuf:"bytes,13,opt"`
+	AvatarSeq      proto.Option[int64]  `protobuf:"varint,14,opt"`
+	OwnerId        proto.Option[uint64] `protobuf:"varint,18,opt"`
+	CoverSeq       proto.Option[int64]  `protobuf:"varint,19,opt"`
+	ClientId       proto.Option[int32]  `protobuf:"varint,20,opt"`
 }
 
 type GuildChannelInfo struct {
-	ChannelId       *uint64 `protobuf:"varint,1,opt"`
-	ChannelName     *string `protobuf:"bytes,2,opt"`
-	CreatorUin      *int64  `protobuf:"varint,3,opt"`
-	CreateTime      *int64  `protobuf:"varint,4,opt"`
-	GuildId         *uint64 `protobuf:"varint,5,opt"`
-	FinalNotifyType *int32  `protobuf:"varint,6,opt"`
-	ChannelType     *int32  `protobuf:"varint,7,opt"`
-	TalkPermission  *int32  `protobuf:"varint,8,opt"`
+	ChannelId       proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelName     proto.Option[string] `protobuf:"bytes,2,opt"`
+	CreatorUin      proto.Option[int64]  `protobuf:"varint,3,opt"`
+	CreateTime      proto.Option[int64]  `protobuf:"varint,4,opt"`
+	GuildId         proto.Option[uint64] `protobuf:"varint,5,opt"`
+	FinalNotifyType proto.Option[int32]  `protobuf:"varint,6,opt"`
+	ChannelType     proto.Option[int32]  `protobuf:"varint,7,opt"`
+	TalkPermission  proto.Option[int32]  `protobuf:"varint,8,opt"`
 	// 11 - 14 : MsgInfo
-	CreatorTinyId *uint64 `protobuf:"varint,15,opt"`
+	CreatorTinyId proto.Option[uint64] `protobuf:"varint,15,opt"`
 	// 16: Member info ?
-	VisibleType        *int32                      `protobuf:"varint,22,opt"`
+	VisibleType        proto.Option[int32]         `protobuf:"varint,22,opt"`
 	TopMsg             *GuildChannelTopMsgInfo     `protobuf:"bytes,28,opt"`
-	CurrentSlowModeKey *int32                      `protobuf:"varint,31,opt"`
+	CurrentSlowModeKey proto.Option[int32]         `protobuf:"varint,31,opt"`
 	SlowModeInfos      []*GuildChannelSlowModeInfo `protobuf:"bytes,32,rep"`
 }
 
-func (x *GuildChannelInfo) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetChannelName() string {
-	if x != nil && x.ChannelName != nil {
-		return *x.ChannelName
-	}
-	return ""
-}
-
-func (x *GuildChannelInfo) GetCreatorUin() int64 {
-	if x != nil && x.CreatorUin != nil {
-		return *x.CreatorUin
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetCreateTime() int64 {
-	if x != nil && x.CreateTime != nil {
-		return *x.CreateTime
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetFinalNotifyType() int32 {
-	if x != nil && x.FinalNotifyType != nil {
-		return *x.FinalNotifyType
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetChannelType() int32 {
-	if x != nil && x.ChannelType != nil {
-		return *x.ChannelType
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetTalkPermission() int32 {
-	if x != nil && x.TalkPermission != nil {
-		return *x.TalkPermission
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetCreatorTinyId() uint64 {
-	if x != nil && x.CreatorTinyId != nil {
-		return *x.CreatorTinyId
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetVisibleType() int32 {
-	if x != nil && x.VisibleType != nil {
-		return *x.VisibleType
-	}
-	return 0
-}
-
-func (x *GuildChannelInfo) GetCurrentSlowModeKey() int32 {
-	if x != nil && x.CurrentSlowModeKey != nil {
-		return *x.CurrentSlowModeKey
-	}
-	return 0
-}
-
 type GuildChannelSlowModeInfo struct {
-	SlowModeKey    *int32  `protobuf:"varint,1,opt"`
-	SpeakFrequency *int32  `protobuf:"varint,2,opt"`
-	SlowModeCircle *int32  `protobuf:"varint,3,opt"`
-	SlowModeText   *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *GuildChannelSlowModeInfo) GetSlowModeKey() int32 {
-	if x != nil && x.SlowModeKey != nil {
-		return *x.SlowModeKey
-	}
-	return 0
-}
-
-func (x *GuildChannelSlowModeInfo) GetSpeakFrequency() int32 {
-	if x != nil && x.SpeakFrequency != nil {
-		return *x.SpeakFrequency
-	}
-	return 0
-}
-
-func (x *GuildChannelSlowModeInfo) GetSlowModeCircle() int32 {
-	if x != nil && x.SlowModeCircle != nil {
-		return *x.SlowModeCircle
-	}
-	return 0
-}
-
-func (x *GuildChannelSlowModeInfo) GetSlowModeText() string {
-	if x != nil && x.SlowModeText != nil {
-		return *x.SlowModeText
-	}
-	return ""
+	SlowModeKey    proto.Option[int32]  `protobuf:"varint,1,opt"`
+	SpeakFrequency proto.Option[int32]  `protobuf:"varint,2,opt"`
+	SlowModeCircle proto.Option[int32]  `protobuf:"varint,3,opt"`
+	SlowModeText   proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type GuildChannelTopMsgInfo struct {
-	TopMsgSeq            *uint64 `protobuf:"varint,1,opt"`
-	TopMsgTime           *int64  `protobuf:"varint,2,opt"`
-	TopMsgOperatorTinyId *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *GuildChannelTopMsgInfo) GetTopMsgSeq() uint64 {
-	if x != nil && x.TopMsgSeq != nil {
-		return *x.TopMsgSeq
-	}
-	return 0
-}
-
-func (x *GuildChannelTopMsgInfo) GetTopMsgTime() int64 {
-	if x != nil && x.TopMsgTime != nil {
-		return *x.TopMsgTime
-	}
-	return 0
-}
-
-func (x *GuildChannelTopMsgInfo) GetTopMsgOperatorTinyId() uint64 {
-	if x != nil && x.TopMsgOperatorTinyId != nil {
-		return *x.TopMsgOperatorTinyId
-	}
-	return 0
+	TopMsgSeq            proto.Option[uint64] `protobuf:"varint,1,opt"`
+	TopMsgTime           proto.Option[int64]  `protobuf:"varint,2,opt"`
+	TopMsgOperatorTinyId proto.Option[uint64] `protobuf:"varint,3,opt"`
 }

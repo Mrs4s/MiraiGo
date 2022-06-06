@@ -3,6 +3,10 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type BatchGetMsgRspCountReq struct {
 	GuildMsgList []*GuildMsg `protobuf:"bytes,1,rep"`
 }
@@ -12,94 +16,31 @@ type BatchGetMsgRspCountRsp struct {
 }
 
 type SvrChannelMsg struct {
-	ChannelId *uint64  `protobuf:"varint,1,opt"`
-	Id        []*MsgId `protobuf:"bytes,2,rep"`
-}
-
-func (x *SvrChannelMsg) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
+	ChannelId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Id        []*MsgId             `protobuf:"bytes,2,rep"`
 }
 
 type ChannelMsgInfo struct {
-	ChannelId *uint64        `protobuf:"varint,1,opt"`
-	RespData  []*MsgRespData `protobuf:"bytes,2,rep"`
-}
-
-func (x *ChannelMsgInfo) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
+	ChannelId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	RespData  []*MsgRespData       `protobuf:"bytes,2,rep"`
 }
 
 type EmojiReaction struct {
-	EmojiId        *string `protobuf:"bytes,1,opt"`
-	EmojiType      *uint64 `protobuf:"varint,2,opt"`
-	Cnt            *uint64 `protobuf:"varint,3,opt"`
-	IsClicked      *bool   `protobuf:"varint,4,opt"`
-	IsDefaultEmoji *bool   `protobuf:"varint,10001,opt"`
-}
-
-func (x *EmojiReaction) GetEmojiId() string {
-	if x != nil && x.EmojiId != nil {
-		return *x.EmojiId
-	}
-	return ""
-}
-
-func (x *EmojiReaction) GetEmojiType() uint64 {
-	if x != nil && x.EmojiType != nil {
-		return *x.EmojiType
-	}
-	return 0
-}
-
-func (x *EmojiReaction) GetCnt() uint64 {
-	if x != nil && x.Cnt != nil {
-		return *x.Cnt
-	}
-	return 0
-}
-
-func (x *EmojiReaction) GetIsClicked() bool {
-	if x != nil && x.IsClicked != nil {
-		return *x.IsClicked
-	}
-	return false
-}
-
-func (x *EmojiReaction) GetIsDefaultEmoji() bool {
-	if x != nil && x.IsDefaultEmoji != nil {
-		return *x.IsDefaultEmoji
-	}
-	return false
+	EmojiId        proto.Option[string] `protobuf:"bytes,1,opt"`
+	EmojiType      proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Cnt            proto.Option[uint64] `protobuf:"varint,3,opt"`
+	IsClicked      proto.Option[bool]   `protobuf:"varint,4,opt"`
+	IsDefaultEmoji proto.Option[bool]   `protobuf:"varint,10001,opt"`
 }
 
 type GuildMsg struct {
-	GuildId        *uint64          `protobuf:"varint,1,opt"`
-	ChannelMsgList []*SvrChannelMsg `protobuf:"bytes,2,rep"`
-}
-
-func (x *GuildMsg) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	GuildId        proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelMsgList []*SvrChannelMsg     `protobuf:"bytes,2,rep"`
 }
 
 type GuildMsgInfo struct {
-	GuildId            *uint64           `protobuf:"varint,1,opt"`
-	ChannelMsgInfoList []*ChannelMsgInfo `protobuf:"bytes,2,rep"`
-}
-
-func (x *GuildMsgInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
+	GuildId            proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelMsgInfoList []*ChannelMsgInfo    `protobuf:"bytes,2,rep"`
 }
 
 type MsgCnt struct {
@@ -108,22 +49,8 @@ type MsgCnt struct {
 }
 
 type MsgId struct {
-	Version *uint64 `protobuf:"varint,1,opt"`
-	Seq     *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *MsgId) GetVersion() uint64 {
-	if x != nil && x.Version != nil {
-		return *x.Version
-	}
-	return 0
-}
-
-func (x *MsgId) GetSeq() uint64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
+	Version proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Seq     proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type MsgRespData struct {

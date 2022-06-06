@@ -14,8 +14,8 @@ import (
 func (c *QQClient) RecallGroupMessage(groupCode int64, msgID, msgInternalId int32) error {
 	if m, _ := c.GetGroupMessages(groupCode, int64(msgID), int64(msgID)); len(m) > 0 {
 		content := m[0].OriginalObject.Content
-		if content.GetPkgNum() > 1 {
-			if m, err := c.GetGroupMessages(groupCode, int64(msgID-content.GetPkgIndex()-1), int64(msgID+(content.GetPkgNum()-content.GetPkgIndex()+1))); err == nil {
+		if content.PkgNum.Unwrap() > 1 {
+			if m, err := c.GetGroupMessages(groupCode, int64(msgID-content.PkgIndex.Unwrap()-1), int64(msgID+(content.PkgNum.Unwrap()-content.PkgIndex.Unwrap()+1))); err == nil {
 				if flag, _ := c.internalGroupRecall(groupCode, msgInternalId, m); flag {
 					return nil
 				}
@@ -49,11 +49,11 @@ func (c *QQClient) buildGroupRecallPacket(groupCode int64, msgSeq, msgRan int32)
 		GroupWithDraw: []*msg.GroupMsgWithDrawReq{
 			{
 				SubCmd:    proto.Int32(1),
-				GroupCode: &groupCode,
+				GroupCode: proto.Some(groupCode),
 				MsgList: []*msg.GroupMsgInfo{
 					{
-						MsgSeq:    &msgSeq,
-						MsgRandom: &msgRan,
+						MsgSeq:    proto.Some(msgSeq),
+						MsgRandom: proto.Some(msgRan),
 						MsgType:   proto.Int32(0),
 					},
 				},
@@ -70,15 +70,15 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 		{
 			MsgInfo: []*msg.C2CMsgInfo{
 				{
-					FromUin:   &c.Uin,
-					ToUin:     &uin,
-					MsgTime:   &ts,
+					FromUin:   proto.Some(c.Uin),
+					ToUin:     proto.Some(uin),
+					MsgTime:   proto.Some(ts),
 					MsgUid:    proto.Int64(0x0100_0000_0000_0000 | (int64(random) & 0xFFFFFFFF)),
-					MsgSeq:    &msgSeq,
-					MsgRandom: &random,
+					MsgSeq:    proto.Some(msgSeq),
+					MsgRandom: proto.Some(random),
 					RoutingHead: &msg.RoutingHead{
 						C2C: &msg.C2C{
-							ToUin: &uin,
+							ToUin: proto.Some(uin),
 						},
 					},
 				},
@@ -98,13 +98,13 @@ func decodeMsgWithDrawResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.C2CWithDraw) > 0 {
-		if rsp.C2CWithDraw[0].GetErrMsg() != "" && rsp.C2CWithDraw[0].GetErrMsg() != "Success" {
-			return nil, errors.Errorf("recall error: %v msg: %v", rsp.C2CWithDraw[0].GetResult(), rsp.C2CWithDraw[0].GetErrMsg())
+		if rsp.C2CWithDraw[0].ErrMsg.Unwrap() != "" && rsp.C2CWithDraw[0].ErrMsg.Unwrap() != "Success" {
+			return nil, errors.Errorf("recall error: %v msg: %v", rsp.C2CWithDraw[0].Result.Unwrap(), rsp.C2CWithDraw[0].ErrMsg.Unwrap())
 		}
 	}
 	if len(rsp.GroupWithDraw) > 0 {
-		if rsp.GroupWithDraw[0].GetErrMsg() != "" && rsp.GroupWithDraw[0].GetErrMsg() != "Success" {
-			return nil, errors.Errorf("recall error: %v msg: %v", rsp.GroupWithDraw[0].GetResult(), rsp.GroupWithDraw[0].GetErrMsg())
+		if rsp.GroupWithDraw[0].ErrMsg.Unwrap() != "" && rsp.GroupWithDraw[0].ErrMsg.Unwrap() != "Success" {
+			return nil, errors.Errorf("recall error: %v msg: %v", rsp.GroupWithDraw[0].Result.Unwrap(), rsp.GroupWithDraw[0].ErrMsg.Unwrap())
 		}
 	}
 	return nil, nil

@@ -115,76 +115,76 @@ func (f *Feed) ToSendingPayload(selfUin int64) string {
 
 func DecodeFeed(p *channel.StFeed) *Feed {
 	f := &Feed{
-		Id:         p.GetId(),
-		Title:      p.Title.Contents[0].TextContent.GetText(),
+		Id:         p.Id.Unwrap(),
+		Title:      p.Title.Contents[0].TextContent.Text.Unwrap(),
 		SubTitle:   "",
-		CreateTime: int64(p.GetCreateTime()),
-		GuildId:    p.ChannelInfo.Sign.GetGuildId(),
-		ChannelId:  p.ChannelInfo.Sign.GetChannelId(),
+		CreateTime: int64(p.CreateTime.Unwrap()),
+		GuildId:    p.ChannelInfo.Sign.GuildId.Unwrap(),
+		ChannelId:  p.ChannelInfo.Sign.ChannelId.Unwrap(),
 	}
 	if p.Subtitle != nil && len(p.Subtitle.Contents) > 0 {
-		f.SubTitle = p.Subtitle.Contents[0].TextContent.GetText()
+		f.SubTitle = p.Subtitle.Contents[0].TextContent.Text.Unwrap()
 	}
 	if p.Poster != nil {
-		tinyId, _ := strconv.ParseUint(p.Poster.GetId(), 10, 64)
+		tinyId, _ := strconv.ParseUint(p.Poster.Id.Unwrap(), 10, 64)
 		f.Poster = &FeedPoster{
 			TinyId:    tinyId,
-			TinyIdStr: p.Poster.GetId(),
-			Nickname:  p.Poster.GetNick(),
+			TinyIdStr: p.Poster.Id.Unwrap(),
+			Nickname:  p.Poster.Nick.Unwrap(),
 		}
 		if p.Poster.Icon != nil {
-			f.Poster.IconUrl = p.Poster.Icon.GetIconUrl()
+			f.Poster.IconUrl = p.Poster.Icon.IconUrl.Unwrap()
 		}
 	}
 	for _, video := range p.Videos {
 		f.Videos = append(f.Videos, &FeedVideoInfo{
-			FileId:    video.GetFileId(),
-			PatternId: video.GetPatternId(),
-			Url:       video.GetPlayUrl(),
-			Width:     video.GetWidth(),
-			Height:    video.GetHeight(),
+			FileId:    video.FileId.Unwrap(),
+			PatternId: video.PatternId.Unwrap(),
+			Url:       video.PlayUrl.Unwrap(),
+			Width:     video.Width.Unwrap(),
+			Height:    video.Height.Unwrap(),
 		})
 	}
 	for _, image := range p.Images {
 		f.Images = append(f.Images, &FeedImageInfo{
-			FileId:    image.GetPicId(),
-			PatternId: image.GetPatternId(),
-			Url:       image.GetPicUrl(),
-			Width:     image.GetWidth(),
-			Height:    image.GetHeight(),
+			FileId:    image.PicId.Unwrap(),
+			PatternId: image.PatternId.Unwrap(),
+			Url:       image.PicUrl.Unwrap(),
+			Width:     image.Width.Unwrap(),
+			Height:    image.Height.Unwrap(),
 		})
 	}
 	for _, c := range p.Contents.Contents {
 		if c.TextContent != nil {
-			f.Contents = append(f.Contents, &TextElement{Content: c.TextContent.GetText()})
+			f.Contents = append(f.Contents, &TextElement{Content: c.TextContent.Text.Unwrap()})
 		}
 		if c.EmojiContent != nil {
-			id, _ := strconv.ParseInt(c.EmojiContent.GetId(), 10, 64)
+			id, _ := strconv.ParseInt(c.EmojiContent.Id.Unwrap(), 10, 64)
 			f.Contents = append(f.Contents, &EmojiElement{
 				Index: int32(id),
-				Id:    c.EmojiContent.GetId(),
+				Id:    c.EmojiContent.Id.Unwrap(),
 				Name:  message.FaceNameById(int(id)),
 			})
 		}
 		if c.ChannelContent != nil && c.ChannelContent.ChannelInfo != nil {
 			f.Contents = append(f.Contents, &ChannelQuoteElement{
-				GuildId:     c.ChannelContent.ChannelInfo.Sign.GetGuildId(),
-				ChannelId:   c.ChannelContent.ChannelInfo.Sign.GetChannelId(),
-				DisplayText: c.ChannelContent.ChannelInfo.GetName(),
+				GuildId:     c.ChannelContent.ChannelInfo.Sign.GuildId.Unwrap(),
+				ChannelId:   c.ChannelContent.ChannelInfo.Sign.ChannelId.Unwrap(),
+				DisplayText: c.ChannelContent.ChannelInfo.Name.Unwrap(),
 			})
 		}
 		if c.AtContent != nil && c.AtContent.User != nil {
-			tinyId, _ := strconv.ParseUint(c.AtContent.User.GetId(), 10, 64)
+			tinyId, _ := strconv.ParseUint(c.AtContent.User.Id.Unwrap(), 10, 64)
 			f.Contents = append(f.Contents, &AtElement{
-				Id:       c.AtContent.User.GetId(),
+				Id:       c.AtContent.User.Id.Unwrap(),
 				TinyId:   tinyId,
-				Nickname: c.AtContent.User.GetNick(),
+				Nickname: c.AtContent.User.Nick.Unwrap(),
 			})
 		}
 		if c.UrlContent != nil {
 			f.Contents = append(f.Contents, &UrlQuoteElement{
-				Url:         c.UrlContent.GetUrl(),
-				DisplayText: c.UrlContent.GetDisplayText(),
+				Url:         c.UrlContent.Url.Unwrap(),
+				DisplayText: c.UrlContent.DisplayText.Unwrap(),
 			})
 		}
 	}

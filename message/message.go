@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -243,8 +244,8 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 			r = append(r, &msg.Elem{
 				SrcMsg: &msg.SourceMsg{
 					OrigSeqs:  []int32{reply.ReplySeq},
-					SenderUin: &reply.Sender,
-					Time:      &reply.Time,
+					SenderUin: proto.Some(reply.Sender),
+					Time:      proto.Some(reply.Time),
 					Flag:      proto.Int32(1),
 					Elems:     ToSrcProtoElems(reply.Elements),
 					RichMsg:   []byte{},
@@ -278,7 +279,7 @@ func ToProtoElems(elems []IMessageElement, generalFlags bool) (r []*msg.Elem) {
 					r = append(r, &msg.Elem{
 						GeneralFlags: &msg.GeneralFlags{
 							LongTextFlag:  proto.Int32(1),
-							LongTextResid: &e.ResId,
+							LongTextResid: proto.Some(e.ResId),
 							PbReserve:     []byte{0x78, 0x00, 0xF8, 0x01, 0x00, 0xC8, 0x02, 0x00},
 						},
 					})
@@ -321,15 +322,15 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
 			r := &ReplyElement{
 				ReplySeq: elem.SrcMsg.OrigSeqs[0],
-				Time:     elem.SrcMsg.GetTime(),
-				Sender:   elem.SrcMsg.GetSenderUin(),
-				GroupID:  elem.SrcMsg.GetToUin(),
+				Time:     elem.SrcMsg.Time.Unwrap(),
+				Sender:   elem.SrcMsg.SenderUin.Unwrap(),
+				GroupID:  elem.SrcMsg.ToUin.Unwrap(),
 				Elements: ParseMessageElems(elem.SrcMsg.Elems),
 			}
 			res = append(res, r)
 		}
 		if elem.TransElemInfo != nil {
-			if elem.TransElemInfo.GetElemType() == 24 { // QFile
+			if elem.TransElemInfo.ElemType.Unwrap() == 24 { // QFile
 				i3 := len(elem.TransElemInfo.ElemValue)
 				r := binary.NewReader(elem.TransElemInfo.ElemValue)
 				if i3 > 3 {
@@ -367,8 +368,8 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				&ShortVideoElement{
 					Name:      string(elem.VideoFile.FileName),
 					Uuid:      elem.VideoFile.FileUuid,
-					Size:      elem.VideoFile.GetFileSize(),
-					ThumbSize: elem.VideoFile.GetThumbFileSize(),
+					Size:      elem.VideoFile.FileSize.Unwrap(),
+					ThumbSize: elem.VideoFile.ThumbFileSize.Unwrap(),
 					Md5:       elem.VideoFile.FileMd5,
 					ThumbMd5:  elem.VideoFile.ThumbFileMd5,
 				},
@@ -380,20 +381,20 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				att6 := binary.NewReader(elem.Text.Attr6Buf)
 				att6.ReadBytes(7)
 				target := int64(uint32(att6.ReadInt32()))
-				at := NewAt(target, elem.Text.GetStr())
+				at := NewAt(target, elem.Text.Str.Unwrap())
 				at.SubType = AtTypeGroupMember
 				res = append(res, at)
 			case len(elem.Text.PbReserve) > 0:
 				resv := new(msg.TextResvAttr)
 				_ = proto.Unmarshal(elem.Text.PbReserve, resv)
-				if resv.GetAtType() == 2 {
-					at := NewAt(int64(resv.GetAtMemberTinyid()), elem.Text.GetStr())
+				if resv.AtType.Unwrap() == 2 {
+					at := NewAt(int64(resv.AtMemberTinyid.Unwrap()), elem.Text.Str.Unwrap())
 					at.SubType = AtTypeGuildMember
 					res = append(res, at)
 					break
 				}
-				if resv.GetAtType() == 4 {
-					at := NewAt(int64(resv.AtChannelInfo.GetChannelId()), elem.Text.GetStr())
+				if resv.AtType.Unwrap() == 4 {
+					at := NewAt(int64(resv.AtChannelInfo.ChannelId.Unwrap()), elem.Text.Str.Unwrap())
 					at.SubType = AtTypeGuildChannel
 					res = append(res, at)
 					break
@@ -402,10 +403,10 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			default:
 				res = append(res, NewText(func() string {
 					// 这么处理应该没问题
-					if strings.Contains(elem.Text.GetStr(), "\r") && !strings.Contains(elem.Text.GetStr(), "\r\n") {
-						return strings.ReplaceAll(elem.Text.GetStr(), "\r", "\r\n")
+					if strings.Contains(elem.Text.Str.Unwrap(), "\r") && !strings.Contains(elem.Text.Str.Unwrap(), "\r\n") {
+						return strings.ReplaceAll(elem.Text.Str.Unwrap(), "\r", "\r\n")
 					}
-					return elem.Text.GetStr()
+					return elem.Text.Str.Unwrap()
 				}()))
 			}
 		}
@@ -418,18 +419,18 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				content = string(binary.ZlibUncompress(elem.RichMsg.Template1[1:]))
 			}
 			if content != "" {
-				if elem.RichMsg.GetServiceId() == 35 {
+				if elem.RichMsg.ServiceId.Unwrap() == 35 {
 					elem := forwardMsgFromXML(content)
 					if elem != nil {
 						res = append(res, elem)
 						continue
 					}
 				}
-				if elem.RichMsg.GetServiceId() == 33 {
+				if elem.RichMsg.ServiceId.Unwrap() == 33 {
 					continue // 前面一个 elem 已经解析到链接
 				}
 				if isOk := strings.Contains(content, "<?xml"); isOk {
-					res = append(res, NewRichXml(content, int64(elem.RichMsg.GetServiceId())))
+					res = append(res, NewRichXml(content, int64(elem.RichMsg.ServiceId.Unwrap())))
 					continue
 				} else if json.Valid(utils.S2B(content)) {
 					res = append(res, NewRichJson(content))
@@ -443,68 +444,64 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				continue
 			}
 			var url string
-			if elem.CustomFace.GetOrigUrl() == "" {
-				url = "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + strings.ReplaceAll(binary.CalculateImageResourceId(elem.CustomFace.Md5)[1:37], "-", "") + "/0?term=2"
+			if elem.CustomFace.OrigUrl.Unwrap() == "" {
+				url = fmt.Sprintf("https://gchat.qpic.cn/gchatpic_new/0/0-0-%X/0?term=2", elem.CustomFace.Md5)
 			} else {
-				url = "https://gchat.qpic.cn" + elem.CustomFace.GetOrigUrl()
+				url = "https://gchat.qpic.cn" + elem.CustomFace.OrigUrl.Unwrap()
 			}
-			if strings.Contains(elem.CustomFace.GetOrigUrl(), "qmeet") {
+			if strings.Contains(elem.CustomFace.OrigUrl.Unwrap(), "qmeet") {
 				res = append(res, &GuildImageElement{
-					FileId:   int64(elem.CustomFace.GetFileId()),
-					FilePath: elem.CustomFace.GetFilePath(),
-					Size:     elem.CustomFace.GetSize(),
-					Width:    elem.CustomFace.GetWidth(),
-					Height:   elem.CustomFace.GetHeight(),
+					FileId:   int64(elem.CustomFace.FileId.Unwrap()),
+					FilePath: elem.CustomFace.FilePath.Unwrap(),
+					Size:     elem.CustomFace.Size.Unwrap(),
+					Width:    elem.CustomFace.Width.Unwrap(),
+					Height:   elem.CustomFace.Height.Unwrap(),
 					Url:      url,
 					Md5:      elem.CustomFace.Md5,
 				})
 				continue
 			}
+			bizType := UnknownBizType
+			if len(elem.CustomFace.PbReserve) != 0 {
+				attr := new(msg.ResvAttr)
+				if proto.Unmarshal(elem.CustomFace.PbReserve, attr) == nil {
+					bizType = ImageBizType(attr.ImageBizType.Unwrap())
+				}
+			}
 			res = append(res, &GroupImageElement{
-				FileId:  int64(elem.CustomFace.GetFileId()),
-				ImageId: elem.CustomFace.GetFilePath(),
-				Size:    elem.CustomFace.GetSize(),
-				Width:   elem.CustomFace.GetWidth(),
-				Height:  elem.CustomFace.GetHeight(),
-				Url:     url,
-				ImageBizType: func() ImageBizType {
-					if len(elem.CustomFace.PbReserve) == 0 {
-						return UnknownBizType
-					}
-					attr := new(msg.ResvAttr)
-					if proto.Unmarshal(elem.CustomFace.PbReserve, attr) != nil {
-						return UnknownBizType
-					}
-					return ImageBizType(attr.GetImageBizType())
-				}(),
-				Md5: elem.CustomFace.Md5,
+				FileId:       int64(elem.CustomFace.FileId.Unwrap()),
+				ImageId:      elem.CustomFace.FilePath.Unwrap(),
+				Size:         elem.CustomFace.Size.Unwrap(),
+				Width:        elem.CustomFace.Width.Unwrap(),
+				Height:       elem.CustomFace.Height.Unwrap(),
+				Url:          url,
+				ImageBizType: bizType,
+				Md5:          elem.CustomFace.Md5,
 			})
 		}
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
 				Name:       utils.B2S(elem.MarketFace.FaceName),
 				FaceId:     elem.MarketFace.FaceId,
-				TabId:      int32(elem.MarketFace.GetTabId()),
-				ItemType:   int32(elem.MarketFace.GetItemType()),
-				SubType:    int32(elem.MarketFace.GetSubType()),
-				MediaType:  int32(elem.MarketFace.GetMediaType()),
+				TabId:      int32(elem.MarketFace.TabId.Unwrap()),
+				ItemType:   int32(elem.MarketFace.ItemType.Unwrap()),
+				SubType:    int32(elem.MarketFace.SubType.Unwrap()),
+				MediaType:  int32(elem.MarketFace.MediaType.Unwrap()),
 				EncryptKey: elem.MarketFace.Key,
 				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
 			}
 			if face.Name == "[骰子]" || face.Name == "[随机骰子]" {
+				_, v, _ := strings.Cut(face.MagicValue, "=")
+				t, _ := strconv.ParseInt(v, 10, 32)
 				return []IMessageElement{
 					&DiceElement{
 						MarketFaceElement: face,
-						Value: func() int32 {
-							v := strings.SplitN(face.MagicValue, "=", 2)[1]
-							t, _ := strconv.ParseInt(v, 10, 32)
-							return int32(t) + 1
-						}(),
+						Value:             int32(t) + 1,
 					},
 				}
 			}
 			if face.Name == "[猜拳]" {
-				v := strings.SplitN(face.MagicValue, "=", 2)[1]
+				_, v, _ := strings.Cut(face.MagicValue, "=")
 				t, _ := strconv.ParseInt(v, 10, 32)
 				return []IMessageElement{
 					&FingerGuessingElement{
@@ -518,13 +515,13 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.NotOnlineImage != nil {
 			var img string
-			if elem.NotOnlineImage.GetOrigUrl() != "" {
-				img = "https://c2cpicdw.qpic.cn" + elem.NotOnlineImage.GetOrigUrl()
+			if elem.NotOnlineImage.OrigUrl.Unwrap() != "" {
+				img = "https://c2cpicdw.qpic.cn" + elem.NotOnlineImage.OrigUrl.Unwrap()
 			} else {
 				img = "https://c2cpicdw.qpic.cn/offpic_new/0"
-				downloadPath := elem.NotOnlineImage.GetResId()
-				if elem.NotOnlineImage.GetDownloadPath() != "" {
-					downloadPath = elem.NotOnlineImage.GetDownloadPath()
+				downloadPath := elem.NotOnlineImage.ResId.Unwrap()
+				if elem.NotOnlineImage.DownloadPath.Unwrap() != "" {
+					downloadPath = elem.NotOnlineImage.DownloadPath.Unwrap()
 				}
 				if !strings.HasPrefix(downloadPath, "/") {
 					img += "/"
@@ -532,39 +529,39 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				img += downloadPath + "/0?term=3"
 			}
 			res = append(res, &FriendImageElement{
-				ImageId: elem.NotOnlineImage.GetFilePath(),
-				Size:    elem.NotOnlineImage.GetFileLen(),
+				ImageId: elem.NotOnlineImage.FilePath.Unwrap(),
+				Size:    elem.NotOnlineImage.FileLen.Unwrap(),
 				Url:     img,
 				Md5:     elem.NotOnlineImage.PicMd5,
 			})
 		}
 		if elem.QQWalletMsg != nil && elem.QQWalletMsg.AioBody != nil {
 			// /com/tencent/mobileqq/data/MessageForQQWalletMsg.java#L366
-			msgType := elem.QQWalletMsg.AioBody.GetMsgType()
-			if msgType <= 1000 && elem.QQWalletMsg.AioBody.RedType != nil {
+			msgType := elem.QQWalletMsg.AioBody.MsgType.Unwrap()
+			if msgType <= 1000 && elem.QQWalletMsg.AioBody.RedType.IsSome() {
 				return []IMessageElement{
 					&RedBagElement{
 						MsgType: RedBagMessageType(msgType),
-						Title:   elem.QQWalletMsg.AioBody.Receiver.GetTitle(),
+						Title:   elem.QQWalletMsg.AioBody.Receiver.Title.Unwrap(),
 					},
 				}
 			}
 		}
 		if elem.Face != nil {
-			res = append(res, NewFace(elem.Face.GetIndex()))
+			res = append(res, NewFace(elem.Face.Index.Unwrap()))
 		}
 		if elem.CommonElem != nil {
-			switch elem.CommonElem.GetServiceType() {
+			switch elem.CommonElem.ServiceType.Unwrap() {
 			case 3:
 				flash := &msg.MsgElemInfoServtype3{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, flash)
 				if flash.FlashTroopPic != nil {
 					res = append(res, &GroupImageElement{
-						FileId:  int64(flash.FlashTroopPic.GetFileId()),
-						ImageId: flash.FlashTroopPic.GetFilePath(),
-						Size:    flash.FlashTroopPic.GetSize(),
-						Width:   flash.FlashTroopPic.GetWidth(),
-						Height:  flash.FlashTroopPic.GetHeight(),
+						FileId:  int64(flash.FlashTroopPic.FileId.Unwrap()),
+						ImageId: flash.FlashTroopPic.FilePath.Unwrap(),
+						Size:    flash.FlashTroopPic.Size.Unwrap(),
+						Width:   flash.FlashTroopPic.Width.Unwrap(),
+						Height:  flash.FlashTroopPic.Height.Unwrap(),
 						Md5:     flash.FlashTroopPic.Md5,
 						Flash:   true,
 					})
@@ -572,8 +569,8 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				}
 				if flash.FlashC2CPic != nil {
 					res = append(res, &FriendImageElement{
-						ImageId: flash.FlashC2CPic.GetFilePath(),
-						Size:    flash.FlashC2CPic.GetFileLen(),
+						ImageId: flash.FlashC2CPic.FilePath.Unwrap(),
+						Size:    flash.FlashC2CPic.FileLen.Unwrap(),
 						Md5:     flash.FlashC2CPic.PicMd5,
 						Flash:   true,
 					})
@@ -582,12 +579,12 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			case 33:
 				newSysFaceMsg := &msg.MsgElemInfoServtype33{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, newSysFaceMsg)
-				res = append(res, NewFace(int32(newSysFaceMsg.GetIndex())))
+				res = append(res, NewFace(int32(newSysFaceMsg.Index.Unwrap())))
 			case 37:
 				animatedStickerMsg := &msg.MsgElemInfoServtype37{}
 				_ = proto.Unmarshal(elem.CommonElem.PbElem, animatedStickerMsg)
 				sticker := &AnimatedSticker{
-					ID:   int32(animatedStickerMsg.GetQsid()),
+					ID:   int32(animatedStickerMsg.Qsid.Unwrap()),
 					Name: strings.TrimPrefix(string(animatedStickerMsg.Text), "/"),
 				}
 				return []IMessageElement{sticker} // sticker 永远为单独消息

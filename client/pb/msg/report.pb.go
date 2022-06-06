@@ -3,6 +3,10 @@
 
 package msg
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type PbMsgReadedReportReq struct {
 	GrpReadReport []*PbGroupReadedReportReq   `protobuf:"bytes,1,rep"`
 	DisReadReport []*PbDiscussReadedReportReq `protobuf:"bytes,2,rep"`
@@ -16,41 +20,13 @@ type PbMsgReadedReportResp struct {
 }
 
 type PbGroupReadedReportReq struct {
-	GroupCode   *uint64 `protobuf:"varint,1,opt"`
-	LastReadSeq *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *PbGroupReadedReportReq) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *PbGroupReadedReportReq) GetLastReadSeq() uint64 {
-	if x != nil && x.LastReadSeq != nil {
-		return *x.LastReadSeq
-	}
-	return 0
+	GroupCode   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	LastReadSeq proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type PbDiscussReadedReportReq struct {
-	ConfUin     *uint64 `protobuf:"varint,1,opt"`
-	LastReadSeq *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *PbDiscussReadedReportReq) GetConfUin() uint64 {
-	if x != nil && x.ConfUin != nil {
-		return *x.ConfUin
-	}
-	return 0
-}
-
-func (x *PbDiscussReadedReportReq) GetLastReadSeq() uint64 {
-	if x != nil && x.LastReadSeq != nil {
-		return *x.LastReadSeq
-	}
-	return 0
+	ConfUin     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	LastReadSeq proto.Option[uint64] `protobuf:"varint,2,opt"`
 }
 
 type PbC2CReadedReportReq struct {
@@ -59,167 +35,34 @@ type PbC2CReadedReportReq struct {
 }
 
 type UinPairReadInfo struct {
-	PeerUin      *uint64 `protobuf:"varint,1,opt"`
-	LastReadTime *uint32 `protobuf:"varint,2,opt"`
-	CrmSig       []byte  `protobuf:"bytes,3,opt"`
-	PeerType     *uint32 `protobuf:"varint,4,opt"`
-	ChatType     *uint32 `protobuf:"varint,5,opt"`
-	Cpid         *uint64 `protobuf:"varint,6,opt"`
-	AioType      *uint32 `protobuf:"varint,7,opt"`
-	ToTinyId     *uint64 `protobuf:"varint,9,opt"`
-}
-
-func (x *UinPairReadInfo) GetPeerUin() uint64 {
-	if x != nil && x.PeerUin != nil {
-		return *x.PeerUin
-	}
-	return 0
-}
-
-func (x *UinPairReadInfo) GetLastReadTime() uint32 {
-	if x != nil && x.LastReadTime != nil {
-		return *x.LastReadTime
-	}
-	return 0
-}
-
-func (x *UinPairReadInfo) GetPeerType() uint32 {
-	if x != nil && x.PeerType != nil {
-		return *x.PeerType
-	}
-	return 0
-}
-
-func (x *UinPairReadInfo) GetChatType() uint32 {
-	if x != nil && x.ChatType != nil {
-		return *x.ChatType
-	}
-	return 0
-}
-
-func (x *UinPairReadInfo) GetCpid() uint64 {
-	if x != nil && x.Cpid != nil {
-		return *x.Cpid
-	}
-	return 0
-}
-
-func (x *UinPairReadInfo) GetAioType() uint32 {
-	if x != nil && x.AioType != nil {
-		return *x.AioType
-	}
-	return 0
-}
-
-func (x *UinPairReadInfo) GetToTinyId() uint64 {
-	if x != nil && x.ToTinyId != nil {
-		return *x.ToTinyId
-	}
-	return 0
+	PeerUin      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	LastReadTime proto.Option[uint32] `protobuf:"varint,2,opt"`
+	CrmSig       []byte               `protobuf:"bytes,3,opt"`
+	PeerType     proto.Option[uint32] `protobuf:"varint,4,opt"`
+	ChatType     proto.Option[uint32] `protobuf:"varint,5,opt"`
+	Cpid         proto.Option[uint64] `protobuf:"varint,6,opt"`
+	AioType      proto.Option[uint32] `protobuf:"varint,7,opt"`
+	ToTinyId     proto.Option[uint64] `protobuf:"varint,9,opt"`
 }
 
 type PbGroupReadedReportResp struct {
-	Result      *uint32 `protobuf:"varint,1,opt"`
-	Errmsg      *string `protobuf:"bytes,2,opt"`
-	GroupCode   *uint64 `protobuf:"varint,3,opt"`
-	MemberSeq   *uint64 `protobuf:"varint,4,opt"`
-	GroupMsgSeq *uint64 `protobuf:"varint,5,opt"`
-}
-
-func (x *PbGroupReadedReportResp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *PbGroupReadedReportResp) GetErrmsg() string {
-	if x != nil && x.Errmsg != nil {
-		return *x.Errmsg
-	}
-	return ""
-}
-
-func (x *PbGroupReadedReportResp) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *PbGroupReadedReportResp) GetMemberSeq() uint64 {
-	if x != nil && x.MemberSeq != nil {
-		return *x.MemberSeq
-	}
-	return 0
-}
-
-func (x *PbGroupReadedReportResp) GetGroupMsgSeq() uint64 {
-	if x != nil && x.GroupMsgSeq != nil {
-		return *x.GroupMsgSeq
-	}
-	return 0
+	Result      proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Errmsg      proto.Option[string] `protobuf:"bytes,2,opt"`
+	GroupCode   proto.Option[uint64] `protobuf:"varint,3,opt"`
+	MemberSeq   proto.Option[uint64] `protobuf:"varint,4,opt"`
+	GroupMsgSeq proto.Option[uint64] `protobuf:"varint,5,opt"`
 }
 
 type PbDiscussReadedReportResp struct {
-	Result    *uint32 `protobuf:"varint,1,opt"`
-	Errmsg    *string `protobuf:"bytes,2,opt"`
-	ConfUin   *uint64 `protobuf:"varint,3,opt"`
-	MemberSeq *uint64 `protobuf:"varint,4,opt"`
-	ConfSeq   *uint64 `protobuf:"varint,5,opt"`
-}
-
-func (x *PbDiscussReadedReportResp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *PbDiscussReadedReportResp) GetErrmsg() string {
-	if x != nil && x.Errmsg != nil {
-		return *x.Errmsg
-	}
-	return ""
-}
-
-func (x *PbDiscussReadedReportResp) GetConfUin() uint64 {
-	if x != nil && x.ConfUin != nil {
-		return *x.ConfUin
-	}
-	return 0
-}
-
-func (x *PbDiscussReadedReportResp) GetMemberSeq() uint64 {
-	if x != nil && x.MemberSeq != nil {
-		return *x.MemberSeq
-	}
-	return 0
-}
-
-func (x *PbDiscussReadedReportResp) GetConfSeq() uint64 {
-	if x != nil && x.ConfSeq != nil {
-		return *x.ConfSeq
-	}
-	return 0
+	Result    proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Errmsg    proto.Option[string] `protobuf:"bytes,2,opt"`
+	ConfUin   proto.Option[uint64] `protobuf:"varint,3,opt"`
+	MemberSeq proto.Option[uint64] `protobuf:"varint,4,opt"`
+	ConfSeq   proto.Option[uint64] `protobuf:"varint,5,opt"`
 }
 
 type PbC2CReadedReportResp struct {
-	Result     *uint32 `protobuf:"varint,1,opt"`
-	Errmsg     *string `protobuf:"bytes,2,opt"`
-	SyncCookie []byte  `protobuf:"bytes,3,opt"`
-}
-
-func (x *PbC2CReadedReportResp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *PbC2CReadedReportResp) GetErrmsg() string {
-	if x != nil && x.Errmsg != nil {
-		return *x.Errmsg
-	}
-	return ""
+	Result     proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Errmsg     proto.Option[string] `protobuf:"bytes,2,opt"`
+	SyncCookie []byte               `protobuf:"bytes,3,opt"`
 }

@@ -3,65 +3,20 @@
 
 package oidb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type EACReqBody struct {
-	GroupCode *uint64 `protobuf:"varint,1,opt"`
-	Seq       *uint32 `protobuf:"varint,2,opt"`
-	Random    *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *EACReqBody) GetGroupCode() uint64 {
-	if x != nil && x.GroupCode != nil {
-		return *x.GroupCode
-	}
-	return 0
-}
-
-func (x *EACReqBody) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *EACReqBody) GetRandom() uint32 {
-	if x != nil && x.Random != nil {
-		return *x.Random
-	}
-	return 0
+	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Seq       proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Random    proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type EACRspBody struct {
-	Wording    *string `protobuf:"bytes,1,opt"`
-	DigestUin  *uint64 `protobuf:"varint,2,opt"`
-	DigestTime *uint32 `protobuf:"varint,3,opt"`
+	Wording    proto.Option[string] `protobuf:"bytes,1,opt"`
+	DigestUin  proto.Option[uint64] `protobuf:"varint,2,opt"`
+	DigestTime proto.Option[uint32] `protobuf:"varint,3,opt"`
 	//optional DigestMsg msg = 4;
-	ErrorCode *uint32 `protobuf:"varint,10,opt"`
-}
-
-func (x *EACRspBody) GetWording() string {
-	if x != nil && x.Wording != nil {
-		return *x.Wording
-	}
-	return ""
-}
-
-func (x *EACRspBody) GetDigestUin() uint64 {
-	if x != nil && x.DigestUin != nil {
-		return *x.DigestUin
-	}
-	return 0
-}
-
-func (x *EACRspBody) GetDigestTime() uint32 {
-	if x != nil && x.DigestTime != nil {
-		return *x.DigestTime
-	}
-	return 0
-}
-
-func (x *EACRspBody) GetErrorCode() uint32 {
-	if x != nil && x.ErrorCode != nil {
-		return *x.ErrorCode
-	}
-	return 0
+	ErrorCode proto.Option[uint32] `protobuf:"varint,10,opt"`
 }

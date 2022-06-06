@@ -102,12 +102,12 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 		Useful:   proto.Int32(1),
 		// Origin:    1,
 		BizType:   proto.Int32(5),
-		Width:     &e.Width,
-		Height:    &e.Height,
+		Width:     proto.Some(e.Width),
+		Height:    proto.Some(e.Height),
 		FileId:    proto.Int32(int32(e.FileId)),
-		FilePath:  &e.ImageId,
-		ImageType: &e.ImageType,
-		Size:      &e.Size,
+		FilePath:  proto.Some(e.ImageId),
+		ImageType: proto.Some(e.ImageType),
+		Size:      proto.Some(e.Size),
 		Md5:       e.Md5,
 		Flag:      make([]byte, 4),
 		// OldData:  imgOld,
@@ -132,7 +132,7 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 	res := &msg.ResvAttr{}
 	if e.EffectID != 0 { // resolve show pic
 		res.ImageShow = &msg.AnimationImageShow{
-			EffectId:       &e.EffectID,
+			EffectId:       proto.Some(e.EffectID),
 			AnimationParam: []byte("{}"),
 		}
 		cface.Flag = []byte{0x11, 0x00, 0x00, 0x00}
@@ -147,11 +147,11 @@ func (e *GroupImageElement) Pack() (r []*msg.Elem) {
 
 func (e *FriendImageElement) Pack() []*msg.Elem {
 	image := &msg.NotOnlineImage{
-		FilePath:     &e.ImageId,
-		ResId:        &e.ImageId,
-		OldPicMd5:    proto.Bool(false),
+		FilePath:     proto.Some(e.ImageId),
+		ResId:        proto.Some(e.ImageId),
+		OldPicMd5:    proto.Some(false),
 		PicMd5:       e.Md5,
-		DownloadPath: &e.ImageId,
+		DownloadPath: proto.Some(e.ImageId),
 		Original:     proto.Int32(1),
 		PbReserve:    []byte{0x78, 0x02},
 	}
@@ -182,12 +182,12 @@ func (e *GuildImageElement) Pack() (r []*msg.Elem) {
 		FileType:  proto.Int32(66),
 		Useful:    proto.Int32(1),
 		BizType:   proto.Int32(0),
-		Width:     &e.Width,
-		Height:    &e.Height,
+		Width:     proto.Some(e.Width),
+		Height:    proto.Some(e.Height),
 		FileId:    proto.Int32(int32(e.FileId)),
-		FilePath:  &e.FilePath,
-		ImageType: &e.ImageType,
-		Size:      &e.Size,
+		FilePath:  proto.Some(e.FilePath),
+		ImageType: proto.Some(e.ImageType),
+		Size:      proto.Some(e.Size),
 		Md5:       e.Md5,
 		PbReserve: proto.DynamicMessage{
 			1: uint32(0), 2: uint32(0), 6: "", 10: uint32(0), 15: uint32(8),

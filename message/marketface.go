@@ -46,7 +46,7 @@ func (e *MarketFaceElement) Pack() []*msg.Elem {
 			},
 		},
 		{
-			Text: &msg.Text{Str: &e.Name},
+			Text: &msg.Text{Str: proto.Some(e.Name)},
 		},
 	}
 }

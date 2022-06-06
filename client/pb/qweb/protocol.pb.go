@@ -3,185 +3,49 @@
 
 package qweb
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type QWebReq struct {
-	Seq         *int64        `protobuf:"varint,1,opt"`
-	Qua         *string       `protobuf:"bytes,2,opt"`
-	DeviceInfo  *string       `protobuf:"bytes,3,opt"`
-	BusiBuff    []byte        `protobuf:"bytes,4,opt"`
-	TraceId     *string       `protobuf:"bytes,5,opt"`
-	Module      *string       `protobuf:"bytes,6,opt"`
-	Cmdname     *string       `protobuf:"bytes,7,opt"`
-	LoginSig    *StAuthInfo   `protobuf:"bytes,8,opt"`
-	Crypto      *StEncryption `protobuf:"bytes,9,opt"`
-	Extinfo     []*COMMEntry  `protobuf:"bytes,10,rep"`
-	ContentType *uint32       `protobuf:"varint,11,opt"`
-}
-
-func (x *QWebReq) GetSeq() int64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *QWebReq) GetQua() string {
-	if x != nil && x.Qua != nil {
-		return *x.Qua
-	}
-	return ""
-}
-
-func (x *QWebReq) GetDeviceInfo() string {
-	if x != nil && x.DeviceInfo != nil {
-		return *x.DeviceInfo
-	}
-	return ""
-}
-
-func (x *QWebReq) GetTraceId() string {
-	if x != nil && x.TraceId != nil {
-		return *x.TraceId
-	}
-	return ""
-}
-
-func (x *QWebReq) GetModule() string {
-	if x != nil && x.Module != nil {
-		return *x.Module
-	}
-	return ""
-}
-
-func (x *QWebReq) GetCmdname() string {
-	if x != nil && x.Cmdname != nil {
-		return *x.Cmdname
-	}
-	return ""
-}
-
-func (x *QWebReq) GetContentType() uint32 {
-	if x != nil && x.ContentType != nil {
-		return *x.ContentType
-	}
-	return 0
+	Seq         proto.Option[int64]  `protobuf:"varint,1,opt"`
+	Qua         proto.Option[string] `protobuf:"bytes,2,opt"`
+	DeviceInfo  proto.Option[string] `protobuf:"bytes,3,opt"`
+	BusiBuff    []byte               `protobuf:"bytes,4,opt"`
+	TraceId     proto.Option[string] `protobuf:"bytes,5,opt"`
+	Module      proto.Option[string] `protobuf:"bytes,6,opt"`
+	Cmdname     proto.Option[string] `protobuf:"bytes,7,opt"`
+	LoginSig    *StAuthInfo          `protobuf:"bytes,8,opt"`
+	Crypto      *StEncryption        `protobuf:"bytes,9,opt"`
+	Extinfo     []*COMMEntry         `protobuf:"bytes,10,rep"`
+	ContentType proto.Option[uint32] `protobuf:"varint,11,opt"`
 }
 
 type QWebRsp struct {
-	Seq      *int64  `protobuf:"varint,1,opt"`
-	RetCode  *int64  `protobuf:"varint,2,opt"`
-	ErrMsg   *string `protobuf:"bytes,3,opt"`
-	BusiBuff []byte  `protobuf:"bytes,4,opt"`
-	Traceid  *string `protobuf:"bytes,5,opt"`
-}
-
-func (x *QWebRsp) GetSeq() int64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *QWebRsp) GetRetCode() int64 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *QWebRsp) GetErrMsg() string {
-	if x != nil && x.ErrMsg != nil {
-		return *x.ErrMsg
-	}
-	return ""
-}
-
-func (x *QWebRsp) GetTraceid() string {
-	if x != nil && x.Traceid != nil {
-		return *x.Traceid
-	}
-	return ""
+	Seq      proto.Option[int64]  `protobuf:"varint,1,opt"`
+	RetCode  proto.Option[int64]  `protobuf:"varint,2,opt"`
+	ErrMsg   proto.Option[string] `protobuf:"bytes,3,opt"`
+	BusiBuff []byte               `protobuf:"bytes,4,opt"`
+	Traceid  proto.Option[string] `protobuf:"bytes,5,opt"`
 }
 
 type StAuthInfo struct {
-	Uin        *string      `protobuf:"bytes,1,opt"`
-	Sig        []byte       `protobuf:"bytes,2,opt"`
-	Platform   *string      `protobuf:"bytes,3,opt"`
-	Type       *uint32      `protobuf:"varint,4,opt"`
-	Appid      *string      `protobuf:"bytes,5,opt"`
-	Openid     *string      `protobuf:"bytes,6,opt"`
-	Sessionkey []byte       `protobuf:"bytes,7,opt"`
-	Extinfo    []*COMMEntry `protobuf:"bytes,8,rep"`
-}
-
-func (x *StAuthInfo) GetUin() string {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return ""
-}
-
-func (x *StAuthInfo) GetPlatform() string {
-	if x != nil && x.Platform != nil {
-		return *x.Platform
-	}
-	return ""
-}
-
-func (x *StAuthInfo) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *StAuthInfo) GetAppid() string {
-	if x != nil && x.Appid != nil {
-		return *x.Appid
-	}
-	return ""
-}
-
-func (x *StAuthInfo) GetOpenid() string {
-	if x != nil && x.Openid != nil {
-		return *x.Openid
-	}
-	return ""
+	Uin        proto.Option[string] `protobuf:"bytes,1,opt"`
+	Sig        []byte               `protobuf:"bytes,2,opt"`
+	Platform   proto.Option[string] `protobuf:"bytes,3,opt"`
+	Type       proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Appid      proto.Option[string] `protobuf:"bytes,5,opt"`
+	Openid     proto.Option[string] `protobuf:"bytes,6,opt"`
+	Sessionkey []byte               `protobuf:"bytes,7,opt"`
+	Extinfo    []*COMMEntry         `protobuf:"bytes,8,rep"`
 }
 
 type StEncryption struct {
-	Method *uint32 `protobuf:"varint,1,opt"`
-	Iv     *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *StEncryption) GetMethod() uint32 {
-	if x != nil && x.Method != nil {
-		return *x.Method
-	}
-	return 0
-}
-
-func (x *StEncryption) GetIv() string {
-	if x != nil && x.Iv != nil {
-		return *x.Iv
-	}
-	return ""
+	Method proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Iv     proto.Option[string] `protobuf:"bytes,2,opt"`
 }
 
 type COMMEntry struct {
-	Key   *string `protobuf:"bytes,1,opt"`
-	Value *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *COMMEntry) GetKey() string {
-	if x != nil && x.Key != nil {
-		return *x.Key
-	}
-	return ""
-}
-
-func (x *COMMEntry) GetValue() string {
-	if x != nil && x.Value != nil {
-		return *x.Value
-	}
-	return ""
+	Key   proto.Option[string] `protobuf:"bytes,1,opt"`
+	Value proto.Option[string] `protobuf:"bytes,2,opt"`
 }

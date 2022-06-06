@@ -368,20 +368,20 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	rsp := pkt.TryupImgRsp[0]
-	if rsp.GetResult() != 0 {
+	if rsp.Result.Unwrap() != 0 {
 		return &imageUploadResponse{
-			ResultCode: int32(rsp.GetResult()),
+			ResultCode: int32(rsp.Result.Unwrap()),
 			Message:    utils.B2S(rsp.FailMsg),
 		}, nil
 	}
-	if rsp.GetFileExit() {
+	if rsp.FileExit.Unwrap() {
 		if rsp.ImgInfo != nil {
-			return &imageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid()), Width: int32(rsp.ImgInfo.GetFileWidth()), Height: int32(rsp.ImgInfo.GetFileHeight())}, nil
+			return &imageUploadResponse{IsExists: true, FileId: int64(rsp.Fileid.Unwrap()), Width: int32(rsp.ImgInfo.FileWidth.Unwrap()), Height: int32(rsp.ImgInfo.FileHeight.Unwrap())}, nil
 		}
-		return &imageUploadResponse{IsExists: true, FileId: int64(rsp.GetFileid())}, nil
+		return &imageUploadResponse{IsExists: true, FileId: int64(rsp.Fileid.Unwrap())}, nil
 	}
 	return &imageUploadResponse{
-		FileId:     int64(rsp.GetFileid()),
+		FileId:     int64(rsp.Fileid.Unwrap()),
 		UploadKey:  rsp.UpUkey,
 		UploadIp:   rsp.UpIp,
 		UploadPort: rsp.UpPort,

@@ -8,7 +8,7 @@ import (
 func benchEncoderUvarint(b *testing.B, v uint64) {
 	e := encoder{}
 	for i := 0; i < b.N; i++ {
-		e.Reset()
+		e.buf = e.buf[:0]
 		e.uvarint(v)
 	}
 }
@@ -16,7 +16,7 @@ func benchEncoderUvarint(b *testing.B, v uint64) {
 func benchEncoderSvarint(b *testing.B, v int64) {
 	e := encoder{}
 	for i := 0; i < b.N; i++ {
-		e.Reset()
+		e.buf = e.buf[:0]
 		e.svarint(v)
 	}
 }

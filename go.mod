@@ -3,8 +3,8 @@ module github.com/Mrs4s/MiraiGo
 go 1.18
 
 require (
-	github.com/RomiChan/protobuf v0.0.0-20220318113238-d8a99598f896
-	github.com/RomiChan/syncx v0.0.0-20220320130821-c88644afda9c
+	github.com/RomiChan/protobuf v0.1.1-0.20220602121309-9e3b8cbefd7a
+	github.com/RomiChan/syncx v0.0.0-20220404072119-d7ea0ae15a4c
 	github.com/fumiama/imgsz v0.0.2
 	github.com/pierrec/lz4/v4 v4.1.11
 	github.com/pkg/errors v0.9.1
@@ -19,5 +19,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )

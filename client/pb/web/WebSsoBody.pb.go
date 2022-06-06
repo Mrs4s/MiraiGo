@@ -3,47 +3,16 @@
 
 package web
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type STServiceMonitItem struct {
-	Cmd     *string `protobuf:"bytes,1,opt"`
-	Url     *string `protobuf:"bytes,2,opt"`
-	Errcode *int32  `protobuf:"varint,3,opt"`
-	Cost    *uint32 `protobuf:"varint,4,opt"`
-	Src     *uint32 `protobuf:"varint,5,opt"`
-}
-
-func (x *STServiceMonitItem) GetCmd() string {
-	if x != nil && x.Cmd != nil {
-		return *x.Cmd
-	}
-	return ""
-}
-
-func (x *STServiceMonitItem) GetUrl() string {
-	if x != nil && x.Url != nil {
-		return *x.Url
-	}
-	return ""
-}
-
-func (x *STServiceMonitItem) GetErrcode() int32 {
-	if x != nil && x.Errcode != nil {
-		return *x.Errcode
-	}
-	return 0
-}
-
-func (x *STServiceMonitItem) GetCost() uint32 {
-	if x != nil && x.Cost != nil {
-		return *x.Cost
-	}
-	return 0
-}
-
-func (x *STServiceMonitItem) GetSrc() uint32 {
-	if x != nil && x.Src != nil {
-		return *x.Src
-	}
-	return 0
+	Cmd     proto.Option[string] `protobuf:"bytes,1,opt"`
+	Url     proto.Option[string] `protobuf:"bytes,2,opt"`
+	Errcode proto.Option[int32]  `protobuf:"varint,3,opt"`
+	Cost    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Src     proto.Option[uint32] `protobuf:"varint,5,opt"`
 }
 
 type STServiceMonitReq struct {
@@ -51,91 +20,21 @@ type STServiceMonitReq struct {
 }
 
 type WebSsoControlData struct {
-	Frequency   *uint32 `protobuf:"varint,1,opt"`
-	PackageSize *uint32 `protobuf:"varint,2,opt"`
-}
-
-func (x *WebSsoControlData) GetFrequency() uint32 {
-	if x != nil && x.Frequency != nil {
-		return *x.Frequency
-	}
-	return 0
-}
-
-func (x *WebSsoControlData) GetPackageSize() uint32 {
-	if x != nil && x.PackageSize != nil {
-		return *x.PackageSize
-	}
-	return 0
+	Frequency   proto.Option[uint32] `protobuf:"varint,1,opt"`
+	PackageSize proto.Option[uint32] `protobuf:"varint,2,opt"`
 }
 
 type WebSsoRequestBody struct {
-	Version *uint32 `protobuf:"varint,1,opt"`
-	Type    *uint32 `protobuf:"varint,2,opt"`
-	Data    *string `protobuf:"bytes,3,opt"`
-	WebData *string `protobuf:"bytes,4,opt"`
-}
-
-func (x *WebSsoRequestBody) GetVersion() uint32 {
-	if x != nil && x.Version != nil {
-		return *x.Version
-	}
-	return 0
-}
-
-func (x *WebSsoRequestBody) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *WebSsoRequestBody) GetData() string {
-	if x != nil && x.Data != nil {
-		return *x.Data
-	}
-	return ""
-}
-
-func (x *WebSsoRequestBody) GetWebData() string {
-	if x != nil && x.WebData != nil {
-		return *x.WebData
-	}
-	return ""
+	Version proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Type    proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Data    proto.Option[string] `protobuf:"bytes,3,opt"`
+	WebData proto.Option[string] `protobuf:"bytes,4,opt"`
 }
 
 type WebSsoResponseBody struct {
-	Version     *uint32            `protobuf:"varint,1,opt"`
-	Type        *uint32            `protobuf:"varint,2,opt"`
-	Ret         *uint32            `protobuf:"varint,3,opt"`
-	Data        *string            `protobuf:"bytes,4,opt"`
-	ControlData *WebSsoControlData `protobuf:"bytes,5,opt"`
-}
-
-func (x *WebSsoResponseBody) GetVersion() uint32 {
-	if x != nil && x.Version != nil {
-		return *x.Version
-	}
-	return 0
-}
-
-func (x *WebSsoResponseBody) GetType() uint32 {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return 0
-}
-
-func (x *WebSsoResponseBody) GetRet() uint32 {
-	if x != nil && x.Ret != nil {
-		return *x.Ret
-	}
-	return 0
-}
-
-func (x *WebSsoResponseBody) GetData() string {
-	if x != nil && x.Data != nil {
-		return *x.Data
-	}
-	return ""
+	Version     proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Type        proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Ret         proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Data        proto.Option[string] `protobuf:"bytes,4,opt"`
+	ControlData *WebSsoControlData   `protobuf:"bytes,5,opt"`
 }

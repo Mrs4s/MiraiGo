@@ -56,7 +56,7 @@ func (c *QQClient) getQiDianAddressDetailList() ([]*FriendInfo, error) {
 			continue
 		}
 		ret = append(ret, &FriendInfo{
-			Uin:      int64(detail.Qq[0].GetAccount()),
+			Uin:      int64(detail.Qq[0].Account.Unwrap()),
 			Nickname: string(detail.Name),
 		})
 	}
@@ -73,7 +73,7 @@ func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
 		},
 		SubcmdLoginProcessCompleteReqBody: &cmd0x3f6.QDUserLoginProcessCompleteReqBody{
 			Kfext:        proto.Uint64(uint64(c.Uin)),
-			Pubno:        &c.version.AppId,
+			Pubno:        proto.Some(c.version.AppId),
 			Buildno:      proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version.SortVersionName))),
 			TerminalType: proto.Uint32(2),
 			Status:       proto.Uint32(10),
@@ -81,8 +81,8 @@ func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
 			HardwareInfo: proto.String(string(c.deviceInfo.Model)),
 			SoftwareInfo: proto.String(string(c.deviceInfo.Version.Release)),
 			Guid:         c.deviceInfo.Guid,
-			AppName:      &c.version.ApkId,
-			SubAppId:     &c.version.AppId,
+			AppName:      proto.Some(c.version.ApkId),
+			SubAppId:     proto.Some(c.version.AppId),
 		},
 	}
 	payload, _ := proto.Marshal(req)
@@ -114,7 +114,7 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 		HttpconnHead: &msg.HttpConnHead{
 			Uin:          proto.Uint64(uint64(c.Uin)),
 			Command:      proto.Uint32(1791),
-			SubCommand:   &subCmd,
+			SubCommand:   proto.Some(subCmd),
 			Seq:          proto.Uint32(uint32(c.nextHighwayApplySeq())),
 			Version:      proto.Uint32(500), // todo: short version convert
 			Flag:         proto.Uint32(1),
@@ -164,9 +164,9 @@ func decodeLoginExtraResponse(c *QQClient, _ *network.IncomingPacketInfo, payloa
 		return nil, errors.New("login process resp is nil")
 	}
 	c.QiDian = &QiDianAccountInfo{
-		MasterUin:  int64(rsp.SubcmdLoginProcessCompleteRspBody.GetCorpuin()),
-		ExtName:    rsp.SubcmdLoginProcessCompleteRspBody.GetExtuinName(),
-		CreateTime: int64(rsp.SubcmdLoginProcessCompleteRspBody.GetOpenAccountTime()),
+		MasterUin:  int64(rsp.SubcmdLoginProcessCompleteRspBody.Corpuin.Unwrap()),
+		ExtName:    rsp.SubcmdLoginProcessCompleteRspBody.ExtuinName.Unwrap(),
+		CreateTime: int64(rsp.SubcmdLoginProcessCompleteRspBody.OpenAccountTime.Unwrap()),
 	}
 	return nil, nil
 }
@@ -184,9 +184,9 @@ func decodeConnKeyResponse(c *QQClient, _ *network.IncomingPacketInfo, payload [
 		SessionKey: rsp.RspBody.SessionKey,
 	}
 	for _, srv := range rsp.RspBody.Addrs {
-		if srv.GetServiceType() == 1 {
+		if srv.ServiceType.Unwrap() == 1 {
 			for _, addr := range srv.Addrs {
-				c.QiDian.bigDataReqAddrs = append(c.QiDian.bigDataReqAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.GetIp()), addr.GetPort()))
+				c.QiDian.bigDataReqAddrs = append(c.QiDian.bigDataReqAddrs, fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(addr.Ip.Unwrap()), addr.Port.Unwrap()))
 			}
 		}
 	}

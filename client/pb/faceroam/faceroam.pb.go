@@ -3,53 +3,22 @@
 
 package faceroam
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type PlatInfo struct {
-	Implat *int64  `protobuf:"varint,1,opt"`
-	Osver  *string `protobuf:"bytes,2,opt"`
-	Mqqver *string `protobuf:"bytes,3,opt"`
-}
-
-func (x *PlatInfo) GetImplat() int64 {
-	if x != nil && x.Implat != nil {
-		return *x.Implat
-	}
-	return 0
-}
-
-func (x *PlatInfo) GetOsver() string {
-	if x != nil && x.Osver != nil {
-		return *x.Osver
-	}
-	return ""
-}
-
-func (x *PlatInfo) GetMqqver() string {
-	if x != nil && x.Mqqver != nil {
-		return *x.Mqqver
-	}
-	return ""
+	Implat proto.Option[int64]  `protobuf:"varint,1,opt"`
+	Osver  proto.Option[string] `protobuf:"bytes,2,opt"`
+	Mqqver proto.Option[string] `protobuf:"bytes,3,opt"`
 }
 
 type FaceroamReqBody struct {
-	Comm          *PlatInfo      `protobuf:"bytes,1,opt"`
-	Uin           *uint64        `protobuf:"varint,2,opt"`
-	SubCmd        *uint32        `protobuf:"varint,3,opt"`
-	ReqUserInfo   *ReqUserInfo   `protobuf:"bytes,4,opt"`
-	ReqDeleteItem *ReqDeleteItem `protobuf:"bytes,5,opt"`
-}
-
-func (x *FaceroamReqBody) GetUin() uint64 {
-	if x != nil && x.Uin != nil {
-		return *x.Uin
-	}
-	return 0
-}
-
-func (x *FaceroamReqBody) GetSubCmd() uint32 {
-	if x != nil && x.SubCmd != nil {
-		return *x.SubCmd
-	}
-	return 0
+	Comm          *PlatInfo            `protobuf:"bytes,1,opt"`
+	Uin           proto.Option[uint64] `protobuf:"varint,2,opt"`
+	SubCmd        proto.Option[uint32] `protobuf:"varint,3,opt"`
+	ReqUserInfo   *ReqUserInfo         `protobuf:"bytes,4,opt"`
+	ReqDeleteItem *ReqDeleteItem       `protobuf:"bytes,5,opt"`
 }
 
 type ReqDeleteItem struct {
@@ -60,32 +29,11 @@ type ReqUserInfo struct {
 }
 
 type FaceroamRspBody struct {
-	Ret           *int64         `protobuf:"varint,1,opt"`
-	Errmsg        *string        `protobuf:"bytes,2,opt"`
-	SubCmd        *uint32        `protobuf:"varint,3,opt"`
-	RspUserInfo   *RspUserInfo   `protobuf:"bytes,4,opt"`
-	RspDeleteItem *RspDeleteItem `protobuf:"bytes,5,opt"`
-}
-
-func (x *FaceroamRspBody) GetRet() int64 {
-	if x != nil && x.Ret != nil {
-		return *x.Ret
-	}
-	return 0
-}
-
-func (x *FaceroamRspBody) GetErrmsg() string {
-	if x != nil && x.Errmsg != nil {
-		return *x.Errmsg
-	}
-	return ""
-}
-
-func (x *FaceroamRspBody) GetSubCmd() uint32 {
-	if x != nil && x.SubCmd != nil {
-		return *x.SubCmd
-	}
-	return 0
+	Ret           proto.Option[int64]  `protobuf:"varint,1,opt"`
+	Errmsg        proto.Option[string] `protobuf:"bytes,2,opt"`
+	SubCmd        proto.Option[uint32] `protobuf:"varint,3,opt"`
+	RspUserInfo   *RspUserInfo         `protobuf:"bytes,4,opt"`
+	RspDeleteItem *RspDeleteItem       `protobuf:"bytes,5,opt"`
 }
 
 type RspDeleteItem struct {
@@ -94,23 +42,9 @@ type RspDeleteItem struct {
 }
 
 type RspUserInfo struct {
-	Filename    []string `protobuf:"bytes,1,rep"`
-	DeleteFile  []string `protobuf:"bytes,2,rep"`
-	Bid         *string  `protobuf:"bytes,3,opt"`
-	MaxRoamSize *uint32  `protobuf:"varint,4,opt"`
-	EmojiType   []uint32 `protobuf:"varint,5,rep"`
-}
-
-func (x *RspUserInfo) GetBid() string {
-	if x != nil && x.Bid != nil {
-		return *x.Bid
-	}
-	return ""
-}
-
-func (x *RspUserInfo) GetMaxRoamSize() uint32 {
-	if x != nil && x.MaxRoamSize != nil {
-		return *x.MaxRoamSize
-	}
-	return 0
+	Filename    []string             `protobuf:"bytes,1,rep"`
+	DeleteFile  []string             `protobuf:"bytes,2,rep"`
+	Bid         proto.Option[string] `protobuf:"bytes,3,opt"`
+	MaxRoamSize proto.Option[uint32] `protobuf:"varint,4,opt"`
+	EmojiType   []uint32             `protobuf:"varint,5,rep"`
 }

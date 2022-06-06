@@ -89,7 +89,7 @@ func (c *QQClient) UploadVoice(target message.Source, voice io.ReadSeeker) (*mes
 	}
 	ptt := &msg.Ptt{
 		FileType:  proto.Int32(4),
-		SrcUin:    &c.Uin,
+		SrcUin:    proto.Some(c.Uin),
 		FileMd5:   fh,
 		FileName:  proto.String(fmt.Sprintf("%x.amr", fh)),
 		FileSize:  proto.Int32(int32(length)),
