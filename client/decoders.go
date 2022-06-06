@@ -794,14 +794,16 @@ func decodeWordSegmentation(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 }
 
 func decodeSidExpiredPacket(c *QQClient, i *network.IncomingPacketInfo, _ []byte) (any, error) {
-	_, err := c.sendAndWait(c.buildRequestChangeSigPacket(3554528))
-	if err != nil {
-		return nil, errors.Wrap(err, "resign client error")
-	}
-	if err = c.registerClient(); err != nil {
-		return nil, errors.Wrap(err, "register error")
-	}
-	_ = c.sendPacket(c.uniPacketWithSeq(i.SequenceId, "OnlinePush.SidTicketExpired", EmptyBytes))
+	/*
+		_, err := c.sendAndWait(c.buildRequestChangeSigPacket(3554528))
+		if err != nil {
+			return nil, errors.Wrap(err, "resign client error")
+		}
+		if err = c.registerClient(); err != nil {
+			return nil, errors.Wrap(err, "register error")
+		}
+		_ = c.sendPacket(c.uniPacketWithSeq(i.SequenceId, "OnlinePush.SidTicketExpired", EmptyBytes))
+	*/
 	return nil, nil
 }
 
