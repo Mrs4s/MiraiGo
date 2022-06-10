@@ -9,10 +9,10 @@ import (
 
 // SendGroupSign 发送群聊打卡消息
 func (c *QQClient) SendGroupSign(target int64) {
-	_, _ = c.sendAndWait(c.buildGroupSignPacket(target, 1))
+	_, _ = c.sendAndWait(c.buildGroupSignPacket(target))
 }
 
-func (c *QQClient) buildGroupSignPacket(groupId int64, scene uint32) (uint16, []byte) {
+func (c *QQClient) buildGroupSignPacket(groupId int64) (uint16, []byte) {
 	body := &oidb.DEB7ReqBody{
 		SignInWriteReq: &oidb.StSignInWriteReq{
 			Uid:           proto.Some(strconv.Itoa(int(c.Uin))),
