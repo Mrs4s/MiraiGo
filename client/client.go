@@ -778,7 +778,7 @@ func (c *QQClient) quitGroup(groupCode int64) {
 	_, _ = c.sendAndWait(c.buildQuitGroupPacket(groupCode))
 }
 
-func (c *QQClient) kickGroupMember(groupCode, memberUin int64, msg string, block bool) {
+func (c *QQClient) KickGroupMembers(groupCode int64, memberUin []int64, msg string, block bool) {
 	_, _ = c.sendAndWait(c.buildGroupKickPacket(groupCode, memberUin, msg, block))
 }
 

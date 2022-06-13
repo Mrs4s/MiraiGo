@@ -1016,21 +1016,23 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 }
 
 // OidbSvc.0x8a0_0
-func (c *QQClient) buildGroupKickPacket(groupCode, memberUin int64, kickMsg string, block bool) (uint16, []byte) {
+func (c *QQClient) buildGroupKickPacket(groupCode int64, memberUins []int64, kickMsg string, block bool) (uint16, []byte) {
 	flagBlock := 0
 	if block {
 		flagBlock = 1
 	}
+	msgKickList := make([]*oidb.D8A0KickMemberInfo, 0, len(memberUins))
+	for _, memberUin := range memberUins {
+		msgKickList = append(msgKickList, &oidb.D8A0KickMemberInfo{
+			OptUint32Operate:   5,
+			OptUint64MemberUin: memberUin,
+			OptUint32Flag:      int32(flagBlock),
+		})
+	}
 	body := &oidb.D8A0ReqBody{
 		OptUint64GroupCode: groupCode,
-		MsgKickList: []*oidb.D8A0KickMemberInfo{
-			{
-				OptUint32Operate:   5,
-				OptUint64MemberUin: memberUin,
-				OptUint32Flag:      int32(flagBlock),
-			},
-		},
-		KickMsg: []byte(kickMsg),
+		MsgKickList:        msgKickList,
+		KickMsg:            []byte(kickMsg),
 	}
 	b, _ := proto.Marshal(body)
 	payload := c.packOIDBPackage(2208, 0, b)
