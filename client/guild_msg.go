@@ -255,7 +255,7 @@ func decodeGuildImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 			resp.Width = int32(rsp.ImgInfo.FileWidth.Unwrap())
 			resp.Height = int32(rsp.ImgInfo.FileHeight.Unwrap())
 		}
-		return rsp, nil
+		return resp, nil
 	}
 	return &imageUploadResponse{
 		FileId:        int64(rsp.Fileid.Unwrap()),
