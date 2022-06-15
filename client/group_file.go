@@ -227,9 +227,11 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		Unknown3: proto.Int32(0),
 	})
 	client := fs.client
-	input := highway.ExcitingInput{
+	input := highway.Transaction{
 		CommandID: 71,
 		Body:      file,
+		Size:      size,
+		Sum:       md5Hash,
 		Ticket:    fs.client.highwaySession.SigSession,
 		Ext:       ext,
 	}

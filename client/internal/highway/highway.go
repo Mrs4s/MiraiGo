@@ -14,7 +14,6 @@ import (
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
-	"github.com/Mrs4s/MiraiGo/utils"
 )
 
 // see com/tencent/mobileqq/highway/utils/BaseConstants.java#L120-L121
@@ -97,31 +96,17 @@ func (s *Session) Upload(addr Addr, trans Transaction) error {
 	return nil
 }
 
-type ExcitingInput struct {
-	CommandID int32
-	Body      io.ReadSeeker
-	Ticket    []byte
-	Ext       []byte
-}
-
-func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
-	fileMd5, fileLength := utils.ComputeMd5AndLength(input.Body)
-	_, _ = input.Body.Seek(0, io.SeekStart)
+func (s *Session) UploadExciting(trans Transaction) ([]byte, error) {
 	addr := s.SsoAddr[0]
 	url := fmt.Sprintf("http://%v/cgi-bin/httpconn?htcmd=0x6FF0087&Uin=%v", addr, s.Uin)
-	var (
-		rspExt    []byte
-		offset    int64 = 0
-		chunkSize       = 524288
-	)
+	var rspExt []byte
+	var offset int64
+	const chunkSize = 524288
 	chunk := make([]byte, chunkSize)
-	w := binary.SelectWriter()
-	w.Reset()
-	w.Grow(600 * 1024) // 复用,600k 不要放回池中
 	for {
 		chunk = chunk[:chunkSize]
-		rl, err := io.ReadFull(input.Body, chunk)
-		if err == io.EOF {
+		rl, err := io.ReadFull(trans.Body, chunk)
+		if rl == 0 {
 			break
 		}
 		if err == io.ErrUnexpectedEOF {
@@ -129,16 +114,16 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 0, input.CommandID, 0),
+			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 0, trans.CommandID, 0),
 			MsgSeghead: &pb.SegHead{
-				Filesize:      fileLength,
+				Filesize:      trans.Size,
 				Dataoffset:    offset,
 				Datalength:    int32(rl),
-				Serviceticket: input.Ticket,
+				Serviceticket: trans.Ticket,
 				Md5:           ch[:],
-				FileMd5:       fileMd5,
+				FileMd5:       trans.Sum,
 			},
-			ReqExtendinfo: input.Ext,
+			ReqExtendinfo: trans.Ext,
 		})
 		offset += int64(rl)
 		frame := newFrame(head, chunk)
@@ -147,6 +132,7 @@ func (s *Session) UploadExciting(input ExcitingInput) ([]byte, error) {
 		req.Header.Set("Connection", "Keep-Alive")
 		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
 		req.Header.Set("Pragma", "no-cache")
+		req.ContentLength = int64(len(head) + len(chunk) + 10)
 		rsp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, errors.Wrap(err, "request error")
