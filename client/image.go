@@ -48,7 +48,13 @@ func (c *QQClient) UploadImage(target message.Source, img io.ReadSeeker, thread 
 	case message.SourceGroup, message.SourceGuildChannel, message.SourceGuildDirect:
 		return c.uploadGroupOrGuildImage(target, img, thread...)
 	case message.SourcePrivate:
-		return c.uploadPrivateImage(target.PrimaryID, img, 0)
+		img, err := c.uploadPrivateImage(target.PrimaryID, img, 0)
+		// Note: we need this check, we should return untyped nil instead of (*FriendImageElement)(nil)
+		// TODO: change c.uploadPrivateImage signature after delete c.UploadPrivateImage
+		if err != nil {
+			return nil, err
+		}
+		return img, nil
 	default:
 		return nil, errors.New("unsupported target type")
 	}
