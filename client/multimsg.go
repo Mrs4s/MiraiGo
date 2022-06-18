@@ -293,16 +293,16 @@ func (builder *ForwardMessageBuilder) Main(m *message.ForwardMessage) *message.F
 		return nil
 	}
 	content := forwardDisplay(rsp.MsgResid, utils.RandomString(32), m.Preview(), fmt.Sprintf("查看 %d 条转发消息", m.Length()))
+	bodyHash := md5.Sum(body)
+	input := highway.Transaction{
+		CommandID: 27,
+		Ticket:    rsp.MsgSig,
+		Body:      bytes.NewReader(body),
+		Sum:       bodyHash[:],
+		Size:      int64(len(body)),
+	}
 	for i, ip := range rsp.Uint32UpIp {
 		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
-		hash := md5.Sum(body)
-		input := highway.Transaction{
-			CommandID: 27,
-			Ticket:    rsp.MsgSig,
-			Body:      bytes.NewReader(body),
-			Sum:       hash[:],
-			Size:      int64(len(body)),
-		}
 		err := c.highwaySession.Upload(addr, input)
 		if err != nil {
 			continue

@@ -7,7 +7,7 @@ import (
 )
 
 // TODO: move to a new package
-const debug = true
+const debug = false
 
 type Message = any
 
