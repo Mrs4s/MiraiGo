@@ -38,6 +38,10 @@ func Some[T any](val T) proto.Option[T] {
 	return proto.Some(val)
 }
 
+func None[T any]() proto.Option[T] {
+	return proto.None[T]()
+}
+
 // Bool stores v in a new bool value and returns a pointer to it.
 func Bool(v bool) proto.Option[bool] { return proto.Some(v) }
 

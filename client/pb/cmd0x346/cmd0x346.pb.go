@@ -221,6 +221,8 @@ type ApplyUploadReqV3 struct {
 	LocalFilepath string `protobuf:"bytes,70,opt"`
 	DangerLevel   int32  `protobuf:"varint,80,opt"`
 	TotalSpace    int64  `protobuf:"varint,90,opt"`
+	Md5           []byte `protobuf:"bytes,110,opt"`
+	X3Sha         []byte `protobuf:"bytes,120,opt"`
 }
 
 type ApplyUploadRsp struct {
@@ -258,23 +260,24 @@ type ApplyUploadRspV2 struct {
 }
 
 type ApplyUploadRspV3 struct {
-	RetCode           int32    `protobuf:"varint,10,opt"`
-	RetMsg            string   `protobuf:"bytes,20,opt"`
-	TotalSpace        int64    `protobuf:"varint,30,opt"`
-	UsedSpace         int64    `protobuf:"varint,40,opt"`
-	UploadedSize      int64    `protobuf:"varint,50,opt"`
-	UploadIp          string   `protobuf:"bytes,60,opt"`
-	UploadDomain      string   `protobuf:"bytes,70,opt"`
-	UploadPort        int32    `protobuf:"varint,80,opt"`
-	Uuid              []byte   `protobuf:"bytes,90,opt"`
-	UploadKey         []byte   `protobuf:"bytes,100,opt"`
-	BoolFileExist     bool     `protobuf:"varint,110,opt"`
-	PackSize          int32    `protobuf:"varint,120,opt"`
-	UploadIpList      []string `protobuf:"bytes,130,rep"`
-	UploadHttpsPort   int32    `protobuf:"varint,140,opt"`
-	UploadHttpsDomain string   `protobuf:"bytes,150,opt"`
-	UploadDns         string   `protobuf:"bytes,160,opt"`
-	UploadLanip       string   `protobuf:"bytes,170,opt"`
+	RetCode                 int32    `protobuf:"varint,10,opt"`
+	RetMsg                  string   `protobuf:"bytes,20,opt"`
+	TotalSpace              int64    `protobuf:"varint,30,opt"`
+	UsedSpace               int64    `protobuf:"varint,40,opt"`
+	UploadedSize            int64    `protobuf:"varint,50,opt"`
+	UploadIp                string   `protobuf:"bytes,60,opt"`
+	UploadDomain            string   `protobuf:"bytes,70,opt"`
+	UploadPort              int32    `protobuf:"varint,80,opt"`
+	Uuid                    []byte   `protobuf:"bytes,90,opt"`
+	UploadKey               []byte   `protobuf:"bytes,100,opt"`
+	BoolFileExist           bool     `protobuf:"varint,110,opt"`
+	PackSize                int32    `protobuf:"varint,120,opt"`
+	UploadIpList            []string `protobuf:"bytes,130,rep"`
+	UploadHttpsPort         int32    `protobuf:"varint,140,opt"`
+	UploadHttpsDomain       string   `protobuf:"bytes,150,opt"`
+	UploadDns               string   `protobuf:"bytes,160,opt"`
+	UploadLanip             string   `protobuf:"bytes,170,opt"`
+	MediaPlateformUploadKey []byte   `protobuf:"bytes,220,opt"`
 }
 
 type DelMessageReq struct {
@@ -404,30 +407,31 @@ type RenewFileRsp struct {
 }
 
 type C346ReqBody struct {
-	Cmd                  int32                 `protobuf:"varint,1,opt"`
-	Seq                  int32                 `protobuf:"varint,2,opt"`
-	RecvListQueryReq     *RecvListQueryReq     `protobuf:"bytes,3,opt"`
-	SendListQueryReq     *SendListQueryReq     `protobuf:"bytes,4,opt"`
-	RenewFileReq         *RenewFileReq         `protobuf:"bytes,5,opt"`
-	RecallFileReq        *RecallFileReq        `protobuf:"bytes,6,opt"`
-	ApplyUploadReq       *ApplyUploadReq       `protobuf:"bytes,7,opt"`
-	ApplyUploadHitReq    *ApplyUploadHitReq    `protobuf:"bytes,8,opt"`
-	ApplyForwardFileReq  *ApplyForwardFileReq  `protobuf:"bytes,9,opt"`
-	UploadSuccReq        *UploadSuccReq        `protobuf:"bytes,10,opt"`
-	DeleteFileReq        *DeleteFileReq        `protobuf:"bytes,11,opt"`
-	DownloadSuccReq      *DownloadSuccReq      `protobuf:"bytes,12,opt"`
-	ApplyDownloadAbsReq  *ApplyDownloadAbsReq  `protobuf:"bytes,13,opt"`
-	ApplyDownloadReq     *ApplyDownloadReq     `protobuf:"bytes,14,opt"`
-	ApplyListDownloadReq *ApplyListDownloadReq `protobuf:"bytes,15,opt"`
-	FileQueryReq         *FileQueryReq         `protobuf:"bytes,16,opt"`
-	ApplyCopyFromReq     *ApplyCopyFromReq     `protobuf:"bytes,17,opt"`
-	ApplyUploadReqV2     *ApplyUploadReqV2     `protobuf:"bytes,18,opt"`
-	ApplyUploadReqV3     *ApplyUploadReqV3     `protobuf:"bytes,19,opt"`
-	ApplyUploadHitReqV2  *ApplyUploadHitReqV2  `protobuf:"bytes,20,opt"`
-	ApplyUploadHitReqV3  *ApplyUploadHitReqV3  `protobuf:"bytes,21,opt"`
-	BusinessId           int32                 `protobuf:"varint,101,opt"`
-	ClientType           int32                 `protobuf:"varint,102,opt"`
-	ApplyCopyToReq       *ApplyCopyToReq       `protobuf:"bytes,90000,opt"`
+	Cmd                      int32                 `protobuf:"varint,1,opt"`
+	Seq                      int32                 `protobuf:"varint,2,opt"`
+	RecvListQueryReq         *RecvListQueryReq     `protobuf:"bytes,3,opt"`
+	SendListQueryReq         *SendListQueryReq     `protobuf:"bytes,4,opt"`
+	RenewFileReq             *RenewFileReq         `protobuf:"bytes,5,opt"`
+	RecallFileReq            *RecallFileReq        `protobuf:"bytes,6,opt"`
+	ApplyUploadReq           *ApplyUploadReq       `protobuf:"bytes,7,opt"`
+	ApplyUploadHitReq        *ApplyUploadHitReq    `protobuf:"bytes,8,opt"`
+	ApplyForwardFileReq      *ApplyForwardFileReq  `protobuf:"bytes,9,opt"`
+	UploadSuccReq            *UploadSuccReq        `protobuf:"bytes,10,opt"`
+	DeleteFileReq            *DeleteFileReq        `protobuf:"bytes,11,opt"`
+	DownloadSuccReq          *DownloadSuccReq      `protobuf:"bytes,12,opt"`
+	ApplyDownloadAbsReq      *ApplyDownloadAbsReq  `protobuf:"bytes,13,opt"`
+	ApplyDownloadReq         *ApplyDownloadReq     `protobuf:"bytes,14,opt"`
+	ApplyListDownloadReq     *ApplyListDownloadReq `protobuf:"bytes,15,opt"`
+	FileQueryReq             *FileQueryReq         `protobuf:"bytes,16,opt"`
+	ApplyCopyFromReq         *ApplyCopyFromReq     `protobuf:"bytes,17,opt"`
+	ApplyUploadReqV2         *ApplyUploadReqV2     `protobuf:"bytes,18,opt"`
+	ApplyUploadReqV3         *ApplyUploadReqV3     `protobuf:"bytes,19,opt"`
+	ApplyUploadHitReqV2      *ApplyUploadHitReqV2  `protobuf:"bytes,20,opt"`
+	ApplyUploadHitReqV3      *ApplyUploadHitReqV3  `protobuf:"bytes,21,opt"`
+	BusinessId               int32                 `protobuf:"varint,101,opt"`
+	ClientType               int32                 `protobuf:"varint,102,opt"`
+	FlagSupportMediaplatform uint32                `protobuf:"varint,200,opt"`
+	ApplyCopyToReq           *ApplyCopyToReq       `protobuf:"bytes,90000,opt"`
 	//ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
 	ApplyGetTrafficReq *ApplyGetTrafficReq `protobuf:"bytes,90002,opt"`
 	ExtensionReq       *ExtensionReq       `protobuf:"bytes,99999,opt"`

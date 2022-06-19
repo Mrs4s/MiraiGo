@@ -197,6 +197,8 @@ message ApplyUploadReqV3 {
   string localFilepath = 70;
   int32 dangerLevel = 80;
   int64 totalSpace = 90;
+  bytes md5 = 110;
+  bytes _3Sha = 120;
 }
 message ApplyUploadRsp {
   int32 retCode = 10;
@@ -248,6 +250,7 @@ message ApplyUploadRspV3 {
   string uploadHttpsDomain = 150;
   string uploadDns = 160;
   string uploadLanip = 170;
+  bytes mediaPlateformUploadKey = 220;
 }
 message DelMessageReq {
   int64 uinSender = 1;
@@ -382,6 +385,7 @@ message C346ReqBody {
   ApplyUploadHitReqV3 applyUploadHitReqV3 = 21;
   int32 businessId = 101;
   int32 clientType = 102;
+  uint32 flagSupportMediaplatform = 200;
   ApplyCopyToReq applyCopyToReq = 90000;
   //ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
   ApplyGetTrafficReq applyGetTrafficReq = 90002;

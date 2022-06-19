@@ -1,10 +1,8 @@
 package client
 
 import (
-	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"math/rand"
 	"os"
 	"runtime/debug"
@@ -171,75 +169,71 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		return errors.Wrap(err, "open file error")
 	}
 	defer func() { _ = file.Close() }()
-	md5Hash, size := utils.ComputeMd5AndLength(file)
-	_, _ = file.Seek(0, io.SeekStart)
-	sha1H := sha1.New()
-	_, _ = io.Copy(sha1H, file)
-	sha1Hash := sha1H.Sum(nil)
-	_, _ = file.Seek(0, io.SeekStart)
-	i, err := fs.client.sendAndWait(fs.client.buildGroupFileUploadReqPacket(folderId, name, fs.GroupCode, size, md5Hash, sha1Hash))
+	f := &FileResource{
+		FileName: name,
+		Body:     file,
+	}
+	f.init()
+	i, err := fs.client.sendAndWait(fs.client.buildGroupFileUploadReqPacket(folderId, fs.GroupCode, f))
 	if err != nil {
 		return errors.Wrap(err, "query upload failed")
 	}
 	rsp := i.(*oidb.UploadFileRspBody)
-	if rsp.BoolFileExist.Unwrap() {
-		_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId.Unwrap(), rsp.BusId.Unwrap(), rand.Int31())
-		return fs.client.sendPacket(pkt)
-	}
-	if len(rsp.UploadIpLanV4) == 0 {
-		return errors.New("server requires unsupported ftn upload")
-	}
-	ext, _ := proto.Marshal(&exciting.GroupFileUploadExt{
-		Unknown1: proto.Int32(100),
-		Unknown2: proto.Int32(1),
-		Entry: &exciting.GroupFileUploadEntry{
-			BusiBuff: &exciting.ExcitingBusiInfo{
-				BusId:       rsp.BusId,
-				SenderUin:   proto.Some(fs.client.Uin),
-				ReceiverUin: proto.Some(fs.GroupCode),
-				GroupCode:   proto.Some(fs.GroupCode),
-			},
-			FileEntry: &exciting.ExcitingFileEntry{
-				FileSize:  proto.Some(size),
-				Md5:       md5Hash,
-				Sha1:      sha1Hash,
-				FileId:    []byte(rsp.FileId.Unwrap()),
-				UploadKey: rsp.CheckKey,
-			},
-			ClientInfo: &exciting.ExcitingClientInfo{
-				ClientType:   proto.Int32(2),
-				AppId:        proto.String(fmt.Sprint(fs.client.version.AppId)),
-				TerminalType: proto.Int32(2),
-				ClientVer:    proto.String("9e9c09dc"),
-				Unknown:      proto.Int32(4),
-			},
-			FileNameInfo: &exciting.ExcitingFileNameInfo{FileName: proto.Some(name)},
-			Host: &exciting.ExcitingHostConfig{Hosts: []*exciting.ExcitingHostInfo{
-				{
-					Url: &exciting.ExcitingUrlInfo{
-						Unknown: proto.Int32(1),
-						Host:    proto.Some(rsp.UploadIpLanV4[0]),
-					},
-					Port: rsp.UploadPort,
+	if !rsp.BoolFileExist.Unwrap() {
+		if len(rsp.UploadIpLanV4) == 0 {
+			return errors.New("server requires unsupported ftn upload")
+		}
+		ext, _ := proto.Marshal(&exciting.FileUploadExt{
+			Unknown1: proto.Int32(100),
+			Unknown2: proto.Int32(1),
+			Entry: &exciting.FileUploadEntry{
+				BusiBuff: &exciting.ExcitingBusiInfo{
+					BusId:       rsp.BusId,
+					SenderUin:   proto.Some(fs.client.Uin),
+					ReceiverUin: proto.Some(fs.GroupCode),
+					GroupCode:   proto.Some(fs.GroupCode),
 				},
-			}},
-		},
-		Unknown3: proto.Int32(0),
-	})
-	client := fs.client
-	input := highway.Transaction{
-		CommandID: 71,
-		Body:      file,
-		Size:      size,
-		Sum:       md5Hash,
-		Ticket:    fs.client.highwaySession.SigSession,
-		Ext:       ext,
+				FileEntry: &exciting.ExcitingFileEntry{
+					FileSize:  proto.Some(f.size),
+					Md5:       f.md5,
+					Sha1:      f.sha1,
+					FileId:    []byte(rsp.FileId.Unwrap()),
+					UploadKey: rsp.CheckKey,
+				},
+				ClientInfo: &exciting.ExcitingClientInfo{
+					ClientType:   proto.Int32(2),
+					AppId:        proto.String(fmt.Sprint(fs.client.version.AppId)),
+					TerminalType: proto.Int32(2),
+					ClientVer:    proto.String("9e9c09dc"),
+					Unknown:      proto.Int32(4),
+				},
+				FileNameInfo: &exciting.ExcitingFileNameInfo{FileName: proto.Some(name)},
+				Host: &exciting.ExcitingHostConfig{Hosts: []*exciting.ExcitingHostInfo{
+					{
+						Url: &exciting.ExcitingUrlInfo{
+							Unknown: proto.Int32(1),
+							Host:    proto.Some(rsp.UploadIpLanV4[0]),
+						},
+						Port: rsp.UploadPort,
+					},
+				}},
+			},
+			Unknown3: proto.Int32(0),
+		})
+		input := highway.Transaction{
+			CommandID: 71,
+			Body:      file,
+			Size:      f.size,
+			Sum:       f.md5,
+			Ticket:    fs.client.highwaySession.SigSession,
+			Ext:       ext,
+		}
+		if _, err = fs.client.highwaySession.UploadExciting(input); err != nil {
+			return errors.Wrap(err, "upload failed")
+		}
 	}
-	if _, err = fs.client.highwaySession.UploadExciting(input); err != nil {
-		return errors.Wrap(err, "upload failed")
-	}
-	_, pkt := client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId.Unwrap(), rsp.BusId.Unwrap(), rand.Int31())
-	return client.sendPacket(pkt)
+	_, pkt := fs.client.buildGroupFileFeedsRequest(fs.GroupCode, rsp.FileId.Unwrap(), rsp.BusId.Unwrap(), rand.Int31())
+	return fs.client.sendPacket(pkt)
 }
 
 func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {
@@ -277,18 +271,18 @@ func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32
 	return i.(string)
 }
 
-func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID, fileName string, groupCode, fileSize int64, md5, sha1 []byte) (uint16, []byte) {
+func (c *QQClient) buildGroupFileUploadReqPacket(parentFolderID string, groupCode int64, file *FileResource) (uint16, []byte) {
 	body := &oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
 		GroupCode:          proto.Some(groupCode),
 		AppId:              proto.Int32(3),
 		BusId:              proto.Int32(102),
 		Entrance:           proto.Int32(5),
 		ParentFolderId:     proto.Some(parentFolderID),
-		FileName:           proto.Some(fileName),
-		LocalPath:          proto.String("/storage/emulated/0/Pictures/files/s/" + fileName),
-		Int64FileSize:      proto.Some(fileSize),
-		Sha:                sha1,
-		Md5:                md5,
+		FileName:           proto.Some(file.FileName),
+		LocalPath:          proto.String("/storage/emulated/0/Pictures/files/s/" + file.FileName),
+		Int64FileSize:      proto.Some(file.size),
+		Sha:                file.sha1,
+		Md5:                file.md5,
 		SupportMultiUpload: proto.Bool(true),
 	}}
 	payload := c.packOIDBPackageProto(1750, 0, body)

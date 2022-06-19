@@ -7,14 +7,15 @@ import (
 	proto "github.com/RomiChan/protobuf/proto"
 )
 
-type GroupFileUploadExt struct {
-	Unknown1 proto.Option[int32]   `protobuf:"varint,1,opt"`
-	Unknown2 proto.Option[int32]   `protobuf:"varint,2,opt"`
-	Entry    *GroupFileUploadEntry `protobuf:"bytes,100,opt"`
-	Unknown3 proto.Option[int32]   `protobuf:"varint,3,opt"`
+type FileUploadExt struct {
+	Unknown1   proto.Option[int32] `protobuf:"varint,1,opt"`
+	Unknown2   proto.Option[int32] `protobuf:"varint,2,opt"`
+	Unknown3   proto.Option[int32] `protobuf:"varint,3,opt"`
+	Entry      *FileUploadEntry    `protobuf:"bytes,100,opt"`
+	Unknown200 proto.Option[int32] `protobuf:"varint,200,opt"`
 }
 
-type GroupFileUploadEntry struct {
+type FileUploadEntry struct {
 	BusiBuff     *ExcitingBusiInfo     `protobuf:"bytes,100,opt"`
 	FileEntry    *ExcitingFileEntry    `protobuf:"bytes,200,opt"`
 	ClientInfo   *ExcitingClientInfo   `protobuf:"bytes,300,opt"`

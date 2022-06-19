@@ -142,9 +142,8 @@ func (s *Session) UploadExciting(trans Transaction) ([]byte, error) {
 		r := binary.NewReader(body)
 		r.ReadByte()
 		hl := r.ReadInt32()
-		a2 := r.ReadInt32()
+		_ = r.ReadInt32()
 		h := r.ReadBytes(int(hl))
-		r.ReadBytes(int(a2))
 		rspHead := new(pb.RspDataHighwayHead)
 		if err = proto.Unmarshal(h, rspHead); err != nil {
 			return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
