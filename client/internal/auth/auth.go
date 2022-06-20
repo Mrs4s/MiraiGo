@@ -32,16 +32,16 @@ func (i Protocol) Version() *AppVersion {
 	case AndroidPhone: // Dumped by mirai from qq android v8.8.38
 		return &AppVersion{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537100432,
-			SubAppId:        537100432,
-			SortVersionName: "8.8.38",
-			BuildTime:       1634310940,
+			AppId:           537044845,
+			SubAppId:        537044845,
+			SortVersionName: "8.8.95",
+			BuildTime:       1654672174,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2487",
-			SSOVersion:      16,
-			MiscBitmap:      184024956,
+			SdkVersion:      "6.0.0.2512",
+			SSOVersion:      18,
+			MiscBitmap:      150470524,
 			SubSigmap:       0x10400,
-			MainSigMap:      34869472,
+			MainSigMap:      16724722,
 			Protocol:        i,
 		}
 	case AndroidWatch:

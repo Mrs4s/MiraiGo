@@ -788,7 +788,7 @@ func decodeWordSegmentation(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 
 func decodeSidExpiredPacket(c *QQClient, i *network.IncomingPacketInfo, _ []byte) (any, error) {
 	/*
-		_, err := c.sendAndWait(c.buildRequestChangeSigPacket(3554528))
+		_, err := c.sendAndWait(c.buildRequestChangeSigPacket(true))
 		if err != nil {
 			return nil, errors.Wrap(err, "resign client error")
 		}

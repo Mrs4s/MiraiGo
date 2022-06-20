@@ -332,7 +332,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
 		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
 	}
-	_, err = c.sendAndWait(c.buildRequestChangeSigPacket(c.version.MainSigMap))
+	_, err = c.sendAndWait(c.buildRequestChangeSigPacket(true))
 	if err != nil {
 		return err
 	}

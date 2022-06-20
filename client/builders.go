@@ -434,17 +434,27 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	return seq, c.transport.PackPacket(&nreq)
 }
 
-func (c *QQClient) buildRequestChangeSigPacket(mainSigMap uint32) (uint16, []byte) {
+func (c *QQClient) buildRequestChangeSigPacket(changeD2 bool) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
-		w.WriteUInt16(11)
-		w.WriteUInt16(17)
+		if changeD2 {
+			w.WriteUInt16(11)
+		} else {
+			w.WriteUInt16(10)
+		}
+		w.WriteUInt16(19)
 
-		w.Write(tlv.T100(c.version.SSOVersion, 100, mainSigMap))
+		w.Write(tlv.T100(c.version.SSOVersion, 100, c.version.MainSigMap))
 		w.Write(tlv.T10A(c.sig.TGT))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
 		w.Write(tlv.T108(c.sig.Ksid))
-		h := md5.Sum(c.sig.D2Key)
+		var key []byte
+		if changeD2 {
+			h := md5.Sum(c.sig.D2Key)
+			key = h[:]
+		} else {
+			key = c.sig.TGTKey
+		}
 		w.Write(tlv.T144(
 			c.deviceInfo.AndroidId,
 			c.deviceInfo.GenDeviceInfoData(),
@@ -456,9 +466,14 @@ func (c *QQClient) buildRequestChangeSigPacket(mainSigMap uint32) (uint16, []byt
 			c.deviceInfo.Model,
 			c.deviceInfo.Guid,
 			c.deviceInfo.Brand,
-			h[:],
+			key,
 		))
-		w.Write(tlv.T143(c.sig.D2))
+		w.Write(tlv.T112(c.Uin))
+		if changeD2 {
+			w.Write(tlv.T143(c.sig.D2))
+		} else {
+			w.Write(tlv.T145(c.deviceInfo.Guid))
+		}
 		w.Write(tlv.T142(c.version.ApkId))
 		w.Write(tlv.T154(seq))
 		w.Write(tlv.T18(16, uint32(c.Uin)))
@@ -474,7 +489,7 @@ func (c *QQClient) buildRequestChangeSigPacket(mainSigMap uint32) (uint16, []byt
 			"qzone.qq.com", "vip.qq.com", "qun.qq.com", "game.qq.com", "qqweb.qq.com",
 			"office.qq.com", "ti.qq.com", "mail.qq.com", "qzone.com", "mma.qq.com",
 		}))
-		// w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
+		w.Write(tlv.T202(c.deviceInfo.WifiBSSID, c.deviceInfo.WifiSSID))
 	}))
 
 	req2 := network.Request{

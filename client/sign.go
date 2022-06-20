@@ -9,7 +9,8 @@ import (
 
 // SendGroupSign 发送群聊打卡消息
 func (c *QQClient) SendGroupSign(target int64) {
-	_, _ = c.sendAndWait(c.buildGroupSignPacket(target))
+	_, pkt := c.buildGroupSignPacket(target)
+	_ = c.sendPacket(pkt)
 }
 
 func (c *QQClient) buildGroupSignPacket(groupId int64) (uint16, []byte) {
