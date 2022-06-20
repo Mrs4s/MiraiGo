@@ -101,6 +101,7 @@ message RoutingHead {
   optional Grp grp = 2;
   optional GrpTmp grpTmp = 3;
   optional WPATmp wpaTmp = 6;
+  optional Trans0x211 trans_0X211 = 15;
   /*
   Dis dis = 4;
   DisTmp disTmp = 5;
@@ -112,7 +113,6 @@ message RoutingHead {
   TransCmd? transCmd = 12;
   AccostTmp? accostTmp = 13;
   PubGroupTmp? pubGroupTmp = 14;
-  Trans0x211? trans0x211 = 15;
   BusinessWPATmp? businessWpaTmp = 16;
   AuthTmp? authTmp = 17;
   BsnsTmp? bsnsTmp = 18;
@@ -121,6 +121,11 @@ message RoutingHead {
   NearByAssistantTmp? nearbyAssistantTmp = 21;
   CommTmp? commTmp = 22;
   */
+}
+
+message Trans0x211 {
+  optional uint64 toUin = 1;
+  optional uint32 ccCmd = 2;
 }
 
 message WPATmp {

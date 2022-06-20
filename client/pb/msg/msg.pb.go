@@ -108,10 +108,16 @@ type C2CMsgInfo struct {
 }
 
 type RoutingHead struct {
-	C2C    *C2C    `protobuf:"bytes,1,opt"`
-	Grp    *Grp    `protobuf:"bytes,2,opt"`
-	GrpTmp *GrpTmp `protobuf:"bytes,3,opt"`
-	WpaTmp *WPATmp `protobuf:"bytes,6,opt"`
+	C2C         *C2C        `protobuf:"bytes,1,opt"`
+	Grp         *Grp        `protobuf:"bytes,2,opt"`
+	GrpTmp      *GrpTmp     `protobuf:"bytes,3,opt"`
+	WpaTmp      *WPATmp     `protobuf:"bytes,6,opt"`
+	Trans_0X211 *Trans0X211 `protobuf:"bytes,15,opt"`
+}
+
+type Trans0X211 struct {
+	ToUin proto.Option[uint64] `protobuf:"varint,1,opt"`
+	CcCmd proto.Option[uint32] `protobuf:"varint,2,opt"`
 }
 
 type WPATmp struct {

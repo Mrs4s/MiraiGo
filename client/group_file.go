@@ -169,7 +169,7 @@ func (fs *GroupFileSystem) UploadFile(p, name, folderId string) error {
 		SourceType: message.SourceGroup,
 		PrimaryID:  fs.GroupCode,
 	}
-	return fs.client._UploadFile(target, f)
+	return fs.client.UploadFile(target, f)
 }
 
 func (fs *GroupFileSystem) GetDownloadUrl(file *GroupFile) string {

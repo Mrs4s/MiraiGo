@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x346"
 	"github.com/Mrs4s/MiraiGo/client/pb/exciting"
+	"github.com/Mrs4s/MiraiGo/client/pb/msg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -57,7 +59,13 @@ func (f *LocalFile) init() {
 
 var fsWaiter = utils.NewUploadWaiter()
 
-func (c *QQClient) _UploadFile(target message.Source, file *LocalFile) error {
+func (c *QQClient) UploadFile(target message.Source, file *LocalFile) error {
+	switch target.SourceType {
+	case message.SourceGroup, message.SourcePrivate: // ok
+	default:
+		return errors.New("not implemented")
+	}
+
 	file.init()
 	// 同文件等待其他线程上传
 	fkey := string(file.sha1)
@@ -147,7 +155,46 @@ func (c *QQClient) _UploadFile(target message.Source, file *LocalFile) error {
 		_, pkt := c.buildGroupFileFeedsRequest(target.PrimaryID, string(rsp.Uuid), rsp.BusID, rand.Int31())
 		return c.sendPacket(pkt)
 	}
-	return errors.New("not implemented")
+	// 私聊文件
+	_, pkt = c.buildPrivateFileUploadSuccReq(target, rsp)
+	err = c.sendPacket(pkt)
+	if err != nil {
+		return err
+	}
+	uid := target.PrimaryID
+	msgSeq := c.nextFriendSeq()
+	content, _ := proto.Marshal(&msg.SubMsgType0X4Body{
+		NotOnlineFile: &msg.NotOnlineFile{
+			FileType: proto.Int32(0),
+			FileUuid: rsp.Uuid,
+			FileMd5:  file.md5,
+			FileName: []byte(file.FileName),
+			FileSize: proto.Int64(file.size),
+			Subcmd:   proto.Int32(1),
+		},
+	})
+	req := &msg.SendMessageRequest{
+		RoutingHead: &msg.RoutingHead{
+			Trans_0X211: &msg.Trans0X211{
+				ToUin: proto.Uint64(uint64(uid)),
+				CcCmd: proto.Uint32(4),
+			},
+		},
+		ContentHead: &msg.ContentHead{
+			PkgNum:   proto.Int32(1),
+			PkgIndex: proto.Int32(0),
+			DivSeq:   proto.Int32(0),
+		},
+		MsgBody: &msg.MessageBody{
+			MsgContent: content,
+		},
+		MsgSeq:     proto.Some(msgSeq),
+		MsgRand:    proto.Some(int32(rand.Uint32())),
+		SyncCookie: syncCookie(time.Now().Unix()),
+	}
+	payload, _ := proto.Marshal(req)
+	_, p := c.uniPacket("MessageSvc.PbSendMsg", payload)
+	return c.sendPacket(p)
 }
 
 func (c *QQClient) buildPrivateFileUploadReqPacket(target message.Source, file *LocalFile) (uint16, []byte) {
@@ -187,4 +234,20 @@ func decodePrivateFileUploadReq(_ *QQClient, _ *network.IncomingPacketInfo, payl
 		UploadKey: v3.MediaPlateformUploadKey,
 	}
 	return r, nil
+}
+
+func (c *QQClient) buildPrivateFileUploadSuccReq(target message.Source, rsp *fileUploadRsp) (uint16, []byte) {
+	req := &cmd0x346.C346ReqBody{
+		Cmd: 800,
+		Seq: 7,
+		UploadSuccReq: &cmd0x346.UploadSuccReq{
+			SenderUin: c.Uin,
+			RecverUin: target.PrimaryID,
+			Uuid:      rsp.Uuid,
+		},
+		BusinessId: 3,
+		ClientType: 102,
+	}
+	pkt, _ := proto.Marshal(req)
+	return c.uniPacket("OfflineFilleHandleSvr.pb_ftn_CMD_REQ_UPLOAD_SUCC-800", pkt)
 }
