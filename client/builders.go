@@ -269,12 +269,13 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 	seq := c.nextSeq()
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(2) // sub command
-		w.WriteUInt16(4)
+		w.WriteUInt16(5)
 
 		w.Write(tlv.T2(result, sign))
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.sig.T104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T(0x547, c.sig.T547))
 	}))
 
 	req2 := network.Request{
@@ -343,12 +344,13 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	seq := c.nextSeq()
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteUInt16(2)
-		w.WriteUInt16(4)
+		w.WriteUInt16(5)
 
 		w.Write(tlv.T193(ticket))
 		w.Write(tlv.T8(2052))
 		w.Write(tlv.T104(c.sig.T104))
 		w.Write(tlv.T116(c.version.MiscBitmap, c.version.SubSigmap))
+		w.Write(tlv.T(0x547, c.sig.T547))
 	}))
 
 	req2 := network.Request{

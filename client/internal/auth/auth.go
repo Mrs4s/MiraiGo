@@ -32,8 +32,8 @@ func (i Protocol) Version() *AppVersion {
 	case AndroidPhone: // Dumped by mirai from qq android v8.8.38
 		return &AppVersion{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537044845,
-			SubAppId:        537044845,
+			AppId:           537122601,
+			SubAppId:        537122601,
 			SortVersionName: "8.8.95",
 			BuildTime:       1654672174,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
@@ -137,6 +137,7 @@ type SigInfo struct {
 	G        []byte
 	T402     []byte
 	RandSeed []byte // t403
+	T547     []byte
 	// rollbackSig []byte
 	// t149        []byte
 	// t150        []byte

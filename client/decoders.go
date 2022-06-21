@@ -12,6 +12,7 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
+	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb"
 	"github.com/Mrs4s/MiraiGo/client/pb/cmd0x352"
@@ -41,6 +42,11 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 		c.sig.T402 = m[0x402]
 		h := md5.Sum(append(append(c.deviceInfo.Guid, c.sig.Dpwd...), c.sig.T402...))
 		c.sig.G = h[:]
+	}
+	if m.Exists(0x546) {
+		c.debug("pow start")
+		c.sig.T547 = auth.CalcPow(m[0x546])
+		c.debug("pow end")
 	}
 	if t == 0 { // login success
 		// if t150, ok := m[0x150]; ok {
@@ -100,7 +106,8 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 			c.sig.RandSeed = m[0x403]
 			phone := func() string {
 				r := binary.NewReader(m[0x178])
-				return r.ReadStringLimit(int(r.ReadInt32()))
+				r.ReadStringShort()
+				return r.ReadStringShort()
 			}()
 			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
 				return LoginResponse{
