@@ -246,7 +246,7 @@ func (c *QQClient) buildPrivateFileUploadSuccReq(target message.Source, rsp *fil
 			Uuid:      rsp.Uuid,
 		},
 		BusinessId: 3,
-		ClientType: 102,
+		ClientType: 104,
 	}
 	pkt, _ := proto.Marshal(req)
 	return c.uniPacket("OfflineFilleHandleSvr.pb_ftn_CMD_REQ_UPLOAD_SUCC-800", pkt)
