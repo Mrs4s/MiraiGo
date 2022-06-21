@@ -129,3 +129,25 @@ func (c *Codec) Unmarshal(data []byte) (*Message, error) {
 	}
 	return m, nil
 }
+
+type TLV struct {
+	Command uint16
+	List    [][]byte
+}
+
+func (t *TLV) Marshal() []byte {
+	w := binary.SelectWriter()
+	defer binary.PutWriter(w)
+
+	w.WriteUInt16(t.Command)
+	w.WriteUInt16(uint16(len(t.List)))
+	for _, elem := range t.List {
+		w.Write(elem)
+	}
+
+	return append([]byte(nil), w.Bytes()...)
+}
+
+func (t *TLV) Append(b ...[]byte) {
+	t.List = append(t.List, b...)
+}
