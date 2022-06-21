@@ -175,10 +175,6 @@ var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (
 	"SummaryCard.ReqSummaryCard":                   decodeSummaryCardResponse,
 }
 
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
-
 // NewClient create new qq client
 func NewClient(uin int64, password string) *QQClient {
 	return NewClientMd5(uin, md5.Sum([]byte(password)))

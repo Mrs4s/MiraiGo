@@ -65,6 +65,7 @@ var SystemDeviceInfo = &DeviceInfo{
 var EmptyBytes = make([]byte, 0)
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	r := make([]byte, 16)
 	rand.Read(r)
 	t := md5.Sum(r)

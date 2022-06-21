@@ -260,16 +260,19 @@ func (c *QQClient) buildQRCodeLoginPacket(t106, t16a, t318 []byte) (uint16, []by
 
 func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := c.buildOicqRequestPacket(c.Uin, 0x0810, &oicq.TLV{
+	t := &oicq.TLV{
 		Command: 2,
 		List: [][]byte{
 			tlv.T2(result, sign),
 			tlv.T8(2052),
 			tlv.T104(c.sig.T104),
 			tlv.T116(c.version.MiscBitmap, c.version.SubSigmap),
-			tlv.T(0x547, c.sig.T547),
 		},
-	})
+	}
+	if c.sig.T547 != nil {
+		t.Append(tlv.T(0x547, c.sig.T547))
+	}
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
 		EncryptType: network.EncryptTypeEmptyKey,
@@ -332,16 +335,19 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 
 func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := c.buildOicqRequestPacket(c.Uin, 0x0810, &oicq.TLV{
-		Command: 7,
+	t := &oicq.TLV{
+		Command: 2,
 		List: [][]byte{
 			tlv.T193(ticket),
 			tlv.T8(2052),
 			tlv.T104(c.sig.T104),
 			tlv.T116(c.version.MiscBitmap, c.version.SubSigmap),
-			tlv.T(0x547, c.sig.T547),
 		},
-	})
+	}
+	if c.sig.T547 != nil {
+		t.Append(tlv.T(0x547, c.sig.T547))
+	}
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
 		EncryptType: network.EncryptTypeEmptyKey,
