@@ -750,3 +750,11 @@ func (pkt *DelFriendReq) ToBytes() []byte {
 	w.WriteInt32(pkt.Version, 3)
 	return w.Bytes()
 }
+
+func (pkt *VipInfo) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteByte(pkt.Open, 0)
+	w.WriteInt32(pkt.Type, 1)
+	w.WriteInt32(pkt.Level, 2)
+	return w.Bytes()
+}

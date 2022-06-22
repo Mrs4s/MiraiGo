@@ -77,6 +77,7 @@ type (
 		Mobile    string
 		LoginDays int64
 		Qid       string
+		VipLevel  string
 	}
 
 	OtherClientInfo struct {

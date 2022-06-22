@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/md5"
+	"fmt"
 	"net/netip"
 	"strconv"
 	"strings"
@@ -428,16 +429,25 @@ func decodeSummaryCardResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 		return jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard_Old.RespSummaryCard"][1:])
 	}()
 	info := &SummaryCardInfo{
-		Sex:       rsp.ReadByte(1),
-		Age:       rsp.ReadByte(2),
-		Nickname:  rsp.ReadString(3),
-		Level:     rsp.ReadInt32(5),
-		City:      rsp.ReadString(7),
-		Sign:      rsp.ReadString(8),
-		Mobile:    rsp.ReadString(11),
-		Uin:       rsp.ReadInt64(23),
-		LoginDays: rsp.ReadInt64(36),
+		Sex:      rsp.ReadByte(1),
+		Age:      rsp.ReadByte(2),
+		Nickname: rsp.ReadString(3),
+		Level:    rsp.ReadInt32(5),
+		City:     rsp.ReadString(7),
+		Sign:     rsp.ReadString(8),
+		Mobile:   rsp.ReadString(11),
+		Uin:      rsp.ReadInt64(23),
 	}
+	vipInfo := rsp.ReadMapIntVipInfo(29) // 1 -> vip, 3 -> svip
+	if v1, v3 := vipInfo[1], vipInfo[3]; v1 != nil || v3 != nil {
+		if v1.Open != 0 {
+			info.VipLevel = fmt.Sprintf("vip%d", v1.Level)
+		}
+		if v3.Open != 0 {
+			info.VipLevel = fmt.Sprintf("svip%d", v3.Level)
+		}
+	}
+	info.LoginDays = rsp.ReadInt64(36)
 	services := rsp.ReadByteArrArr(46)
 	readService := func(buf []byte) (*profilecard.BusiComm, []byte) {
 		r := binary.NewReader(buf)

@@ -417,6 +417,32 @@ func (r *JceReader) ReadMapStrByte(tag int) map[string][]byte {
 	}
 }
 
+func (r *JceReader) ReadMapIntVipInfo(tag int) map[int]*VipInfo {
+	if !r.skipToTag(tag) {
+		return nil
+	}
+	r.skipHead()
+	hd, _ := r.readHead()
+	switch hd.Type {
+	case 8:
+		s := r.ReadInt32(0)
+		m := make(map[int]*VipInfo, s)
+		for i := 0; i < int(s); i++ {
+			k := r.ReadInt64(0)
+			v := new(VipInfo)
+			r.readHead()
+			v.ReadFrom(r)
+			r.skipToStructEnd()
+			m[int(k)] = v
+		}
+		r.skipToStructEnd()
+		return m
+	default:
+		r.skipToStructEnd()
+		return nil
+	}
+}
+
 func (r *JceReader) ReadMapStrMapStrByte(tag int) map[string]map[string][]byte {
 	if !r.skipToTag(tag) {
 		return nil
