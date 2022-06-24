@@ -104,6 +104,8 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		r, err = c.sendAndWait(c.buildGroupImageStorePacket(target.PrimaryID, fh, int32(length)))
 	case message.SourceGuildChannel, message.SourceGuildDirect:
 		r, err = c.sendAndWait(c.buildGuildImageStorePacket(uint64(target.PrimaryID), uint64(target.SecondaryID), fh, uint64(length)))
+	default:
+		return nil, errors.Errorf("unsupported target type %v", target.SourceType)
 	}
 	if err != nil {
 		return nil, err
