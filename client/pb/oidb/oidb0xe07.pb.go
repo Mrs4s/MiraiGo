@@ -8,6 +8,7 @@ type DE07ReqBody struct {
 	Client     int32       `protobuf:"varint,2,opt"`
 	Entrance   int32       `protobuf:"varint,3,opt"`
 	OcrReqBody *OCRReqBody `protobuf:"bytes,10,opt"`
+	_          [0]func()
 }
 
 type OCRReqBody struct {
@@ -20,6 +21,7 @@ type OCRReqBody struct {
 	AfterCompressWeight   int32  `protobuf:"varint,13,opt"`
 	AfterCompressHeight   int32  `protobuf:"varint,14,opt"`
 	IsCut                 bool   `protobuf:"varint,15,opt"`
+	_                     [0]func()
 }
 
 type DE07RspBody struct {
@@ -27,6 +29,7 @@ type DE07RspBody struct {
 	ErrMsg     string      `protobuf:"bytes,2,opt"`
 	Wording    string      `protobuf:"bytes,3,opt"`
 	OcrRspBody *OCRRspBody `protobuf:"bytes,10,opt"`
+	_          [0]func()
 }
 
 type TextDetection struct {
@@ -34,6 +37,7 @@ type TextDetection struct {
 	Confidence   int32    `protobuf:"varint,2,opt"`
 	Polygon      *Polygon `protobuf:"bytes,3,opt"`
 	AdvancedInfo string   `protobuf:"bytes,4,opt"`
+	_            [0]func()
 }
 
 type Polygon struct {
@@ -43,11 +47,13 @@ type Polygon struct {
 type Coordinate struct {
 	X int32 `protobuf:"varint,1,opt"`
 	Y int32 `protobuf:"varint,2,opt"`
+	_ [0]func()
 }
 
 type Language struct {
 	Language     string `protobuf:"bytes,1,opt"`
 	LanguageDesc string `protobuf:"bytes,2,opt"`
+	_            [0]func()
 }
 
 type OCRRspBody struct {

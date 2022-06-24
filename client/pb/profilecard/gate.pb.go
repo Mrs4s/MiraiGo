@@ -14,6 +14,7 @@ type GateCommTaskInfo struct {
 
 type GateGetGiftListReq struct {
 	Uin proto.Option[int32] `protobuf:"varint,1,opt"`
+	_   [0]func()
 }
 
 type GateGetGiftListRsp struct {
@@ -25,11 +26,13 @@ type GateGetGiftListRsp struct {
 
 type GateGetVipCareReq struct {
 	Uin proto.Option[int64] `protobuf:"varint,1,opt"`
+	_   [0]func()
 }
 
 type GateGetVipCareRsp struct {
 	Buss   proto.Option[int32] `protobuf:"varint,1,opt"`
 	Notice proto.Option[int32] `protobuf:"varint,2,opt"`
+	_      [0]func()
 }
 
 type GateOidbFlagInfo struct {
@@ -39,6 +42,7 @@ type GateOidbFlagInfo struct {
 
 type GatePrivilegeBaseInfoReq struct {
 	UReqUin proto.Option[int64] `protobuf:"varint,1,opt"`
+	_       [0]func()
 }
 
 type GatePrivilegeBaseInfoRsp struct {
@@ -75,6 +79,7 @@ type GateQidInfoItem struct {
 	Url     proto.Option[string] `protobuf:"bytes,2,opt"`
 	Color   proto.Option[string] `protobuf:"bytes,3,opt"`
 	LogoUrl proto.Option[string] `protobuf:"bytes,4,opt"`
+	_       [0]func()
 }
 
 type GateVaProfileGateRsp struct {

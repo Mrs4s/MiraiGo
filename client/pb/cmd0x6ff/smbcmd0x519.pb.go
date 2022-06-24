@@ -21,12 +21,14 @@ type C519CRMMsgHead struct {
 	LaborUin   proto.Option[uint64] `protobuf:"varint,11,opt"`
 	LaborName  proto.Option[string] `protobuf:"bytes,12,opt"`
 	Puin       proto.Option[uint64] `protobuf:"varint,13,opt"`
+	_          [0]func()
 }
 
 type GetNavigationMenuReqBody struct {
 	Puin  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Uin   proto.Option[uint64] `protobuf:"varint,2,opt"`
 	VerNo proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_     [0]func()
 }
 
 type GetNavigationMenuRspBody struct {
@@ -34,6 +36,7 @@ type GetNavigationMenuRspBody struct {
 	IsShow proto.Option[int32]  `protobuf:"varint,2,opt"`
 	UctMsg proto.Option[string] `protobuf:"bytes,3,opt"`
 	VerNo  proto.Option[uint32] `protobuf:"varint,4,opt"`
+	_      [0]func()
 }
 
 type C519ReqBody struct {
@@ -41,11 +44,13 @@ type C519ReqBody struct {
 	CrmCommonHead               *C519CRMMsgHead              `protobuf:"bytes,2,opt"`
 	GetAddressDetailListReqBody *GetAddressDetailListReqBody `protobuf:"bytes,33,opt"`
 	GetNavigationMenuReq        *GetNavigationMenuReqBody    `protobuf:"bytes,35,opt"`
+	_                           [0]func()
 }
 
 type C519RetInfo struct {
 	RetCode  proto.Option[uint32] `protobuf:"varint,1,opt"`
 	ErrorMsg proto.Option[string] `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type C519RspBody struct {
@@ -53,11 +58,13 @@ type C519RspBody struct {
 	CrmCommonHead               *C519CRMMsgHead              `protobuf:"bytes,2,opt"`
 	GetAddressDetailListRspBody *GetAddressDetailListRspBody `protobuf:"bytes,33,opt"`
 	GetNavigationMenuRsp        *GetNavigationMenuRspBody    `protobuf:"bytes,35,opt"`
+	_                           [0]func()
 }
 
 type GetAddressDetailListReqBody struct {
 	Timestamp  proto.Option[uint32] `protobuf:"fixed32,1,opt"`
 	Timestamp2 proto.Option[uint64] `protobuf:"fixed64,2,opt"`
+	_          [0]func()
 }
 
 type GetAddressDetailListRspBody struct {
@@ -108,6 +115,7 @@ type AddressMobileInfo struct {
 type AddressQQinfo struct {
 	Index   proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Account proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_       [0]func()
 }
 
 type NewBizClientRegion struct {
@@ -115,6 +123,7 @@ type NewBizClientRegion struct {
 	ClientProvince proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientCity     proto.Option[string] `protobuf:"bytes,3,opt"`
 	ClientRegion   proto.Option[string] `protobuf:"bytes,4,opt"`
+	_              [0]func()
 }
 
 type NewBizClientRegionCode struct {
@@ -122,4 +131,5 @@ type NewBizClientRegionCode struct {
 	Provinceid proto.Option[uint64] `protobuf:"varint,2,opt"`
 	Cityid     proto.Option[uint64] `protobuf:"varint,3,opt"`
 	Regionid   proto.Option[uint64] `protobuf:"varint,4,opt"`
+	_          [0]func()
 }

@@ -10,11 +10,13 @@ import (
 type ContentMetaData struct {
 	Count     *RichTextContentCount `protobuf:"bytes,1,opt"`
 	ContentID proto.Option[int64]   `protobuf:"varint,2,opt"`
+	_         [0]func()
 }
 
 type FeedMetaData struct {
 	Content          *ContentMetaData     `protobuf:"bytes,1,opt"`
 	LastModifiedTime proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_                [0]func()
 }
 
 type FeedRedTouchTransInfo struct {
@@ -25,11 +27,13 @@ type FeedRedTouchTransInfo struct {
 	PageType       proto.Option[int32]  `protobuf:"varint,5,opt"`
 	RedType        proto.Option[int32]  `protobuf:"varint,6,opt"`
 	InsertPageType proto.Option[int32]  `protobuf:"varint,7,opt"`
+	_              [0]func()
 }
 
 type NoticeOperation struct {
 	Type   proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Schema proto.Option[string] `protobuf:"bytes,2,opt"`
+	_      [0]func()
 }
 
 type RichTextContentCount struct {
@@ -39,6 +43,7 @@ type RichTextContentCount struct {
 	Emoji    proto.Option[uint64] `protobuf:"varint,4,opt"`
 	Image    proto.Option[uint64] `protobuf:"varint,5,opt"`
 	Video    proto.Option[uint64] `protobuf:"varint,6,opt"`
+	_        [0]func()
 }
 
 type StAnimation struct {
@@ -51,6 +56,7 @@ type StAnimation struct {
 type StBusiReportInfo struct {
 	RecomReport *StRecomReportInfo   `protobuf:"bytes,1,opt"`
 	TraceID     proto.Option[string] `protobuf:"bytes,2,opt"`
+	_           [0]func()
 }
 
 type StChannelShareInfo struct {
@@ -60,11 +66,13 @@ type StChannelShareInfo struct {
 	ChannelSign      *StChannelSign       `protobuf:"bytes,4,opt"`
 	UpdateDurationMs proto.Option[uint64] `protobuf:"varint,5,opt"`
 	Sign             *StChannelShareSign  `protobuf:"bytes,6,opt"`
+	_                [0]func()
 }
 
 type StChannelShareSign struct {
 	CreateAt proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Token    proto.Option[string] `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type StCircleRankItem struct {
@@ -73,6 +81,7 @@ type StCircleRankItem struct {
 	FuelValue  proto.Option[int64]  `protobuf:"varint,3,opt"`
 	FeedNum    proto.Option[int64]  `protobuf:"varint,4,opt"`
 	CircleID   proto.Option[string] `protobuf:"bytes,5,opt"`
+	_          [0]func()
 }
 
 type StClientInfo struct {
@@ -168,10 +177,12 @@ type StFeedCount struct {
 	Push    proto.Option[int64] `protobuf:"varint,2,opt"`
 	Comment proto.Option[int64] `protobuf:"varint,3,opt"`
 	Visitor proto.Option[int64] `protobuf:"varint,4,opt"`
+	_       [0]func()
 }
 
 type StFeedSummary struct {
 	LayoutType proto.Option[uint32] `protobuf:"varint,1,opt"`
+	_          [0]func()
 }
 
 type StFollowRecomInfo struct {
@@ -184,6 +195,7 @@ type StFollowRecomInfo struct {
 type StFollowUser struct {
 	Uid  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Nick proto.Option[string] `protobuf:"bytes,2,opt"`
+	_    [0]func()
 }
 
 type StGPSV2 struct {
@@ -191,12 +203,14 @@ type StGPSV2 struct {
 	Lon   proto.Option[int64] `protobuf:"varint,2,opt"`
 	EType proto.Option[int64] `protobuf:"varint,3,opt"`
 	Alt   proto.Option[int64] `protobuf:"varint,4,opt"`
+	_     [0]func()
 }
 
 type StGuidePublishBubble struct {
 	Id              proto.Option[string] `protobuf:"bytes,1,opt"`
 	BackgroundImage *StImage             `protobuf:"bytes,2,opt"`
 	JumpUrl         proto.Option[string] `protobuf:"bytes,3,opt"`
+	_               [0]func()
 }
 
 type StIconInfo struct {
@@ -205,6 +219,7 @@ type StIconInfo struct {
 	IconUrl140 proto.Option[string] `protobuf:"bytes,3,opt"`
 	IconUrl640 proto.Option[string] `protobuf:"bytes,4,opt"`
 	IconUrl    proto.Option[string] `protobuf:"bytes,5,opt"`
+	_          [0]func()
 }
 
 type StImage struct {
@@ -273,22 +288,26 @@ type StMedalInfo struct {
 	BackgroundUrl proto.Option[string] `protobuf:"bytes,9,opt"`
 	Describe      proto.Option[string] `protobuf:"bytes,10,opt"`
 	ReportValue   proto.Option[int32]  `protobuf:"varint,11,opt"`
+	_             [0]func()
 }
 
 type StNotice struct {
 	PsvFeed     *StFeed             `protobuf:"bytes,1,opt"`
 	OrigineFeed *StFeed             `protobuf:"bytes,2,opt"`
 	PattonInfo  *StNoticePattonInfo `protobuf:"bytes,3,opt"`
+	_           [0]func()
 }
 
 type StNoticePattonInfo struct {
 	PattonType proto.Option[uint32] `protobuf:"varint,1,opt"`
 	PlainTxt   *StPlainTxtInfo      `protobuf:"bytes,2,opt"`
+	_          [0]func()
 }
 
 type StNoticeTxtInfo struct {
 	Content            *StRichText `protobuf:"bytes,1,opt"`
 	ContentOfReference *StRichText `protobuf:"bytes,2,opt"`
+	_                  [0]func()
 }
 
 type StOpinfo struct {
@@ -298,6 +317,7 @@ type StOpinfo struct {
 type StPlainTxtInfo struct {
 	TxtInfo   *StNoticeTxtInfo `protobuf:"bytes,1,opt"`
 	Operation *NoticeOperation `protobuf:"bytes,2,opt"`
+	_         [0]func()
 }
 
 type StPoiInfoV2 struct {
@@ -321,6 +341,7 @@ type StPoiInfoV2 struct {
 	DianPingId   proto.Option[string] `protobuf:"bytes,18,opt"`
 	DistanceText proto.Option[string] `protobuf:"bytes,19,opt"`
 	DisplayName  proto.Option[string] `protobuf:"bytes,20,opt"`
+	_            [0]func()
 }
 
 type StPrePullCacheFeed struct {
@@ -417,22 +438,26 @@ type StRichTextAtContent struct {
 	GuildInfo   *GuildChannelBaseGuildInfo     `protobuf:"bytes,2,opt"`
 	RoleGroupId *GuildChannelBaseRoleGroupInfo `protobuf:"bytes,3,opt"`
 	User        *StUser                        `protobuf:"bytes,4,opt"`
+	_           [0]func()
 }
 
 type GuildChannelBaseGuildInfo struct {
 	GuildId  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Name     proto.Option[string] `protobuf:"bytes,2,opt"`
 	JoinTime proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_        [0]func()
 }
 
 type GuildChannelBaseRoleGroupInfo struct {
 	RoleId proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Name   proto.Option[string] `protobuf:"bytes,2,opt"`
 	Color  proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_      [0]func()
 }
 
 type StRichTextChannelContent struct {
 	ChannelInfo *StChannelInfo `protobuf:"bytes,1,opt"`
+	_           [0]func()
 }
 
 type StRichTextContent struct {
@@ -443,6 +468,7 @@ type StRichTextContent struct {
 	UrlContent     *StRichTextURLContent     `protobuf:"bytes,5,opt"`
 	EmojiContent   *StRichTextEmojiContent   `protobuf:"bytes,6,opt"`
 	ChannelContent *StRichTextChannelContent `protobuf:"bytes,7,opt"`
+	_              [0]func()
 }
 
 type StRichTextEmojiContent struct {
@@ -450,15 +476,18 @@ type StRichTextEmojiContent struct {
 	Type proto.Option[string] `protobuf:"bytes,2,opt"`
 	Name proto.Option[string] `protobuf:"bytes,3,opt"`
 	Url  proto.Option[string] `protobuf:"bytes,4,opt"`
+	_    [0]func()
 }
 
 type StRichTextTextContent struct {
 	Text proto.Option[string] `protobuf:"bytes,1,opt"`
+	_    [0]func()
 }
 
 type StRichTextURLContent struct {
 	Url         proto.Option[string] `protobuf:"bytes,1,opt"`
 	DisplayText proto.Option[string] `protobuf:"bytes,2,opt"`
+	_           [0]func()
 }
 
 type StSameTopicGuideInfo struct {
@@ -468,6 +497,7 @@ type StSameTopicGuideInfo struct {
 	Words            proto.Option[string] `protobuf:"bytes,4,opt"`
 	JumpUrl          proto.Option[string] `protobuf:"bytes,5,opt"`
 	ReportExt        proto.Option[string] `protobuf:"bytes,6,opt"`
+	_                [0]func()
 }
 
 type StShare struct {
@@ -493,6 +523,7 @@ type StShareQzoneInfo struct {
 
 type StSingleMaterial struct {
 	MaterialId proto.Option[string] `protobuf:"bytes,1,opt"`
+	_          [0]func()
 }
 
 type StSingleRecomReportInfo struct {
@@ -530,6 +561,7 @@ type StTagMedalInfo struct {
 	TagID   proto.Option[string] `protobuf:"bytes,1,opt"`
 	TagName proto.Option[string] `protobuf:"bytes,2,opt"`
 	Rank    proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_       [0]func()
 }
 
 type StTagOperateInfo struct {
@@ -546,11 +578,13 @@ type StTagOperateInfo struct {
 	BeWhiteStartTime  proto.Option[int64]  `protobuf:"varint,11,opt"`
 	BeWhiteEndTime    proto.Option[int64]  `protobuf:"varint,12,opt"`
 	PublishSchema     proto.Option[string] `protobuf:"bytes,13,opt"`
+	_                 [0]func()
 }
 
 type StUnifiedTag struct {
 	UnifiedType proto.Option[string] `protobuf:"bytes,1,opt"`
 	UnifiedId   proto.Option[string] `protobuf:"bytes,2,opt"`
+	_           [0]func()
 }
 
 type StUser struct {
@@ -648,4 +682,5 @@ type StWearingMedalInfo struct {
 	Type      proto.Option[int32]  `protobuf:"varint,1,opt"`
 	MedalName proto.Option[string] `protobuf:"bytes,2,opt"`
 	MedalID   proto.Option[string] `protobuf:"bytes,3,opt"`
+	_         [0]func()
 }

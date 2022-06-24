@@ -11,12 +11,14 @@ type C3F6ReqBody struct {
 	SubCmd                            proto.Option[uint32]               `protobuf:"varint,1,opt"`
 	CrmCommonHead                     *C3F6CRMMsgHead                    `protobuf:"bytes,2,opt"`
 	SubcmdLoginProcessCompleteReqBody *QDUserLoginProcessCompleteReqBody `protobuf:"bytes,42,opt"`
+	_                                 [0]func()
 }
 
 type C3F6RspBody struct {
 	SubCmd                            proto.Option[uint32]               `protobuf:"varint,1,opt"`
 	CrmCommonHead                     *C3F6CRMMsgHead                    `protobuf:"bytes,2,opt"`
 	SubcmdLoginProcessCompleteRspBody *QDUserLoginProcessCompleteRspBody `protobuf:"bytes,42,opt"`
+	_                                 [0]func()
 }
 
 type QDUserLoginProcessCompleteReqBody struct {
@@ -59,6 +61,7 @@ type QDUserLoginProcessCompleteRspBody struct {
 type RetInfo struct {
 	RetCode  proto.Option[uint32] `protobuf:"varint,1,opt"`
 	ErrorMsg proto.Option[string] `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type C3F6CRMMsgHead struct {
@@ -76,4 +79,5 @@ type C3F6CRMMsgHead struct {
 	Kfaccount  proto.Option[uint64] `protobuf:"varint,12,opt"`
 	TraceId    proto.Option[string] `protobuf:"bytes,13,opt"`
 	AppId      proto.Option[uint32] `protobuf:"varint,14,opt"`
+	_          [0]func()
 }

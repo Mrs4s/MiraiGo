@@ -43,9 +43,11 @@ type StAuthInfo struct {
 type StEncryption struct {
 	Method proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Iv     proto.Option[string] `protobuf:"bytes,2,opt"`
+	_      [0]func()
 }
 
 type COMMEntry struct {
 	Key   proto.Option[string] `protobuf:"bytes,1,opt"`
 	Value proto.Option[string] `protobuf:"bytes,2,opt"`
+	_     [0]func()
 }

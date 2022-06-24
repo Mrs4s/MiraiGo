@@ -7,10 +7,12 @@ type GetAppInfoByIdReq struct {
 	//CommonExt ExtInfo = 1;
 	AppId           string `protobuf:"bytes,2,opt"`
 	NeedVersionInfo int32  `protobuf:"varint,3,opt"`
+	_               [0]func()
 }
 
 type GetAppInfoByIdRsp struct {
 	AppInfo *ApiAppInfo `protobuf:"bytes,2,opt"`
+	_       [0]func()
 }
 
 type ApiAppInfo struct {
@@ -33,6 +35,7 @@ type AppSubPkgInfo struct {
 	DownloadUrl string `protobuf:"bytes,2,opt"`
 	Independent int32  `protobuf:"varint,3,opt"`
 	FileSize    int32  `protobuf:"varint,4,opt"`
+	_           [0]func()
 }
 
 type DomainConfig struct {

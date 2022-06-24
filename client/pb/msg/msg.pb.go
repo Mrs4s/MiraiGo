@@ -50,6 +50,7 @@ type SendMessageRequest struct {
 type SendMessageResponse struct {
 	Result proto.Option[int32]  `protobuf:"varint,1,opt"`
 	ErrMsg proto.Option[string] `protobuf:"bytes,2,opt"`
+	_      [0]func()
 }
 
 type MsgWithDrawReq struct {
@@ -80,17 +81,20 @@ type MsgWithDrawResp struct {
 type C2CMsgWithDrawResp struct {
 	Result proto.Option[int32]  `protobuf:"varint,1,opt"`
 	ErrMsg proto.Option[string] `protobuf:"bytes,2,opt"`
+	_      [0]func()
 }
 
 type GroupMsgWithDrawResp struct {
 	Result proto.Option[int32]  `protobuf:"varint,1,opt"`
 	ErrMsg proto.Option[string] `protobuf:"bytes,2,opt"`
+	_      [0]func()
 }
 
 type GroupMsgInfo struct {
 	MsgSeq    proto.Option[int32] `protobuf:"varint,1,opt"`
 	MsgRandom proto.Option[int32] `protobuf:"varint,2,opt"`
 	MsgType   proto.Option[int32] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type C2CMsgInfo struct {
@@ -105,6 +109,7 @@ type C2CMsgInfo struct {
 	DivSeq      proto.Option[int32] `protobuf:"varint,9,opt"`
 	MsgType     proto.Option[int32] `protobuf:"varint,10,opt"`
 	RoutingHead *RoutingHead        `protobuf:"bytes,20,opt"`
+	_           [0]func()
 }
 
 type RoutingHead struct {
@@ -113,11 +118,13 @@ type RoutingHead struct {
 	GrpTmp      *GrpTmp     `protobuf:"bytes,3,opt"`
 	WpaTmp      *WPATmp     `protobuf:"bytes,6,opt"`
 	Trans_0X211 *Trans0X211 `protobuf:"bytes,15,opt"`
+	_           [0]func()
 }
 
 type Trans0X211 struct {
 	ToUin proto.Option[uint64] `protobuf:"varint,1,opt"`
 	CcCmd proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_     [0]func()
 }
 
 type WPATmp struct {
@@ -127,19 +134,23 @@ type WPATmp struct {
 
 type C2C struct {
 	ToUin proto.Option[int64] `protobuf:"varint,1,opt"`
+	_     [0]func()
 }
 
 type Grp struct {
 	GroupCode proto.Option[int64] `protobuf:"varint,1,opt"`
+	_         [0]func()
 }
 
 type GrpTmp struct {
 	GroupUin proto.Option[int64] `protobuf:"varint,1,opt"`
 	ToUin    proto.Option[int64] `protobuf:"varint,2,opt"`
+	_        [0]func()
 }
 
 type MsgCtrl struct {
 	MsgFlag proto.Option[int32] `protobuf:"varint,1,opt"`
+	_       [0]func()
 }
 
 type GetMessageResponse struct {
@@ -174,6 +185,7 @@ type Message struct {
 	Head    *MessageHead `protobuf:"bytes,1,opt"`
 	Content *ContentHead `protobuf:"bytes,2,opt"`
 	Body    *MessageBody `protobuf:"bytes,3,opt"`
+	_       [0]func()
 }
 
 type MessageBody struct {
@@ -243,6 +255,7 @@ type Elem struct {
 	LightApp *LightAppElem `protobuf:"bytes,51,opt"`
 	//EIMInfo? eimInfo = 52;
 	CommonElem *CommonElem `protobuf:"bytes,53,opt"`
+	_          [0]func()
 }
 
 type MarketFace struct {
@@ -295,6 +308,7 @@ type CommonElem struct {
 
 type QQWalletMsg struct {
 	AioBody *QQWalletAioBody `protobuf:"bytes,1,opt"`
+	_       [0]func()
 }
 
 type QQWalletAioBody struct {
@@ -604,6 +618,7 @@ type ContentHead struct {
 	PkgIndex  proto.Option[int32] `protobuf:"varint,2,opt"`
 	DivSeq    proto.Option[int32] `protobuf:"varint,3,opt"`
 	AutoReply proto.Option[int32] `protobuf:"varint,4,opt"`
+	_         [0]func()
 }
 
 type MessageHead struct {
@@ -635,6 +650,7 @@ type MessageHead struct {
 	MultiCompatibleText        proto.Option[string] `protobuf:"bytes,26,opt"`
 	AuthSex                    proto.Option[int32]  `protobuf:"varint,27,opt"`
 	IsSrcMsg                   proto.Option[bool]   `protobuf:"varint,28,opt"`
+	_                          [0]func()
 }
 
 type GroupInfo struct {
@@ -659,6 +675,7 @@ type DiscussInfo struct {
 type MutilTransHead struct {
 	Status proto.Option[int32] `protobuf:"varint,1,opt"`
 	MsgId  proto.Option[int32] `protobuf:"varint,2,opt"`
+	_      [0]func()
 }
 
 type C2CTempMessageHead struct {
@@ -686,11 +703,13 @@ type InstInfo struct {
 	Instid         proto.Option[int32] `protobuf:"varint,2,opt"`
 	Platform       proto.Option[int32] `protobuf:"varint,3,opt"`
 	EnumDeviceType proto.Option[int32] `protobuf:"varint,10,opt"`
+	_              [0]func()
 }
 
 type ExtGroupKeyInfo struct {
 	CurMaxSeq proto.Option[int32] `protobuf:"varint,1,opt"`
 	CurTime   proto.Option[int64] `protobuf:"varint,2,opt"`
+	_         [0]func()
 }
 
 type SyncCookie struct {
@@ -703,6 +722,7 @@ type SyncCookie struct {
 	Const3       proto.Option[int64] `protobuf:"varint,12,opt"`
 	LastSyncTime proto.Option[int64] `protobuf:"varint,13,opt"`
 	Const4       proto.Option[int64] `protobuf:"varint,14,opt"`
+	_            [0]func()
 }
 
 type TransMsgInfo struct {
@@ -746,6 +766,7 @@ type GeneralFlags struct {
 type PbMultiMsgItem struct {
 	FileName proto.Option[string] `protobuf:"bytes,1,opt"`
 	Buffer   *PbMultiMsgNew       `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type PbMultiMsgNew struct {
@@ -760,6 +781,7 @@ type PbMultiMsgTransmit struct {
 type MsgElemInfoServtype3 struct {
 	FlashTroopPic *CustomFace     `protobuf:"bytes,1,opt"`
 	FlashC2CPic   *NotOnlineImage `protobuf:"bytes,2,opt"`
+	_             [0]func()
 }
 
 type MsgElemInfoServtype33 struct {
@@ -778,11 +800,13 @@ type SubMsgType0X4Body struct {
 	NotOnlineFile              *NotOnlineFile       `protobuf:"bytes,1,opt"`
 	MsgTime                    proto.Option[uint32] `protobuf:"varint,2,opt"`
 	OnlineFileForPolyToOffline proto.Option[uint32] `protobuf:"varint,3,opt"` // fileImageInfo
+	_                          [0]func()
 }
 
 type ResvAttr struct {
 	ImageBizType proto.Option[uint32] `protobuf:"varint,1,opt"`
 	ImageShow    *AnimationImageShow  `protobuf:"bytes,7,opt"`
+	_            [0]func()
 }
 
 type AnimationImageShow struct {
@@ -794,6 +818,7 @@ type UinTypeUserDef struct {
 	FromUinType   proto.Option[int32]  `protobuf:"varint,1,opt"`
 	FromGroupCode proto.Option[int64]  `protobuf:"varint,2,opt"`
 	FileUuid      proto.Option[string] `protobuf:"bytes,3,opt"`
+	_             [0]func()
 }
 
 type GetGroupMsgReq struct {
@@ -805,6 +830,7 @@ type GetGroupMsgReq struct {
 	PublicGroup     proto.Option[bool]   `protobuf:"varint,6,opt"`
 	ShieldFlag      proto.Option[uint32] `protobuf:"varint,7,opt"`
 	SaveTrafficFlag proto.Option[uint32] `protobuf:"varint,8,opt"`
+	_               [0]func()
 }
 
 type GetGroupMsgResp struct {
@@ -821,6 +847,7 @@ type PbGetOneDayRoamMsgReq struct {
 	LastMsgTime proto.Option[uint64] `protobuf:"varint,2,opt"`
 	Random      proto.Option[uint64] `protobuf:"varint,3,opt"`
 	ReadCnt     proto.Option[uint32] `protobuf:"varint,4,opt"`
+	_           [0]func()
 }
 
 type PbGetOneDayRoamMsgResp struct {
@@ -857,4 +884,5 @@ type MsgElemInfoServtype37 struct {
 type ElemFlags2_Inst struct {
 	AppId  proto.Option[uint32] `protobuf:"varint,1,opt"`
 	InstId proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_      [0]func()
 }

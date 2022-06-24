@@ -38,6 +38,7 @@ type CheckUrlReqItem struct {
 	ServiceType proto.Option[uint64] `protobuf:"varint,8,opt"`
 	SendUin     proto.Option[uint64] `protobuf:"varint,9,opt"`
 	ReqType     proto.Option[string] `protobuf:"bytes,10,opt"`
+	_           [0]func()
 }
 
 type CheckUrlRsp struct {
@@ -48,11 +49,13 @@ type CheckUrlRsp struct {
 type DBCBReqBody struct {
 	NotUseCache proto.Option[int32] `protobuf:"varint,9,opt"`
 	CheckUrlReq *CheckUrlReq        `protobuf:"bytes,10,opt"`
+	_           [0]func()
 }
 
 type DBCBRspBody struct {
 	Wording     proto.Option[string] `protobuf:"bytes,1,opt"`
 	CheckUrlRsp *CheckUrlRsp         `protobuf:"bytes,10,opt"`
+	_           [0]func()
 }
 
 type UrlCheckResult struct {
@@ -65,4 +68,5 @@ type UrlCheckResult struct {
 	Umrtype      proto.Option[uint32] `protobuf:"varint,7,opt"`
 	RetFrom      proto.Option[uint32] `protobuf:"varint,8,opt"`
 	OperationBit proto.Option[uint64] `protobuf:"varint,9,opt"`
+	_            [0]func()
 }

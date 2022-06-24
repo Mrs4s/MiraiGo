@@ -11,6 +11,7 @@ type PlatInfo struct {
 	Implat proto.Option[int64]  `protobuf:"varint,1,opt"`
 	Osver  proto.Option[string] `protobuf:"bytes,2,opt"`
 	Mqqver proto.Option[string] `protobuf:"bytes,3,opt"`
+	_      [0]func()
 }
 
 type FaceroamReqBody struct {
@@ -19,6 +20,7 @@ type FaceroamReqBody struct {
 	SubCmd        proto.Option[uint32] `protobuf:"varint,3,opt"`
 	ReqUserInfo   *ReqUserInfo         `protobuf:"bytes,4,opt"`
 	ReqDeleteItem *ReqDeleteItem       `protobuf:"bytes,5,opt"`
+	_             [0]func()
 }
 
 type ReqDeleteItem struct {
@@ -26,6 +28,7 @@ type ReqDeleteItem struct {
 }
 
 type ReqUserInfo struct {
+	_ [0]func()
 }
 
 type FaceroamRspBody struct {
@@ -34,6 +37,7 @@ type FaceroamRspBody struct {
 	SubCmd        proto.Option[uint32] `protobuf:"varint,3,opt"`
 	RspUserInfo   *RspUserInfo         `protobuf:"bytes,4,opt"`
 	RspDeleteItem *RspDeleteItem       `protobuf:"bytes,5,opt"`
+	_             [0]func()
 }
 
 type RspDeleteItem struct {

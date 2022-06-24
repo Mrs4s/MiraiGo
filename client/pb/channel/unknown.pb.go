@@ -21,26 +21,32 @@ type ChannelOidb0Xf5BRsp struct {
 
 type ChannelOidb0Xf88Rsp struct {
 	Profile *GuildUserProfile `protobuf:"bytes,1,opt"`
+	_       [0]func()
 }
 
 type ChannelOidb0Xfc9Rsp struct {
 	Profile *GuildUserProfile `protobuf:"bytes,1,opt"`
+	_       [0]func()
 }
 
 type ChannelOidb0Xf57Rsp struct {
 	Rsp *GuildMetaRsp `protobuf:"bytes,1,opt"`
+	_   [0]func()
 }
 
 type ChannelOidb0Xf55Rsp struct {
 	Info *GuildChannelInfo `protobuf:"bytes,1,opt"`
+	_    [0]func()
 }
 
 type ChannelOidb0Xf5DRsp struct {
 	Rsp *ChannelListRsp `protobuf:"bytes,1,opt"`
+	_   [0]func()
 }
 
 type ChannelOidb0X1017Rsp struct {
 	P1 *P10X1017 `protobuf:"bytes,1,opt"`
+	_  [0]func()
 }
 
 type P10X1017 struct {
@@ -55,11 +61,13 @@ type ChannelOidb0X1019Rsp struct {
 
 type ChannelOidb0X1016Rsp struct {
 	RoleId proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_      [0]func()
 }
 
 type GuildMetaRsp struct {
 	GuildId proto.Option[uint64] `protobuf:"varint,3,opt"`
 	Meta    *GuildMeta           `protobuf:"bytes,4,opt"`
+	_       [0]func()
 }
 
 type ChannelListRsp struct {
@@ -81,6 +89,7 @@ type GuildMemberInfo struct {
 	LastSpeakTime proto.Option[int64]  `protobuf:"varint,4,opt"` // uncertainty
 	Role          proto.Option[int32]  `protobuf:"varint,5,opt"` // uncertainty
 	TinyId        proto.Option[uint64] `protobuf:"varint,8,opt"`
+	_             [0]func()
 }
 
 // 频道系统用户资料
@@ -90,6 +99,7 @@ type GuildUserProfile struct {
 	AvatarUrl proto.Option[string] `protobuf:"bytes,6,opt"`
 	// 15: avatar url info
 	JoinTime proto.Option[int64] `protobuf:"varint,16,opt"` // uncertainty
+	_        [0]func()
 }
 
 type GuildRole struct {
@@ -101,6 +111,7 @@ type GuildRole struct {
 	Owned       proto.Option[int32]  `protobuf:"varint,6,opt"` // 是否拥有 存疑
 	Disabled    proto.Option[int32]  `protobuf:"varint,7,opt"` // 权限不足或不显示
 	MaxNum      proto.Option[int32]  `protobuf:"varint,8,opt"` // 9: ?
+	_           [0]func()
 }
 
 type GuildUserRole struct {
@@ -108,6 +119,7 @@ type GuildUserRole struct {
 	Name        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ArgbColor   proto.Option[uint32] `protobuf:"varint,3,opt"`
 	Independent proto.Option[int32]  `protobuf:"varint,4,opt"`
+	_           [0]func()
 }
 
 type GuildMeta struct {
@@ -123,6 +135,7 @@ type GuildMeta struct {
 	OwnerId        proto.Option[uint64] `protobuf:"varint,18,opt"`
 	CoverSeq       proto.Option[int64]  `protobuf:"varint,19,opt"`
 	ClientId       proto.Option[int32]  `protobuf:"varint,20,opt"`
+	_              [0]func()
 }
 
 type GuildChannelInfo struct {
@@ -148,10 +161,12 @@ type GuildChannelSlowModeInfo struct {
 	SpeakFrequency proto.Option[int32]  `protobuf:"varint,2,opt"`
 	SlowModeCircle proto.Option[int32]  `protobuf:"varint,3,opt"`
 	SlowModeText   proto.Option[string] `protobuf:"bytes,4,opt"`
+	_              [0]func()
 }
 
 type GuildChannelTopMsgInfo struct {
 	TopMsgSeq            proto.Option[uint64] `protobuf:"varint,1,opt"`
 	TopMsgTime           proto.Option[int64]  `protobuf:"varint,2,opt"`
 	TopMsgOperatorTinyId proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_                    [0]func()
 }

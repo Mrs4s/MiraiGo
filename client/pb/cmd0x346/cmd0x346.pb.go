@@ -6,6 +6,7 @@ package cmd0x346
 type ApplyCleanTrafficRsp struct {
 	RetCode int32  `protobuf:"varint,10,opt"`
 	RetMsg  string `protobuf:"bytes,20,opt"`
+	_       [0]func()
 }
 
 type ApplyCopyFromReq struct {
@@ -44,6 +45,7 @@ type ApplyCopyToRsp struct {
 	RetCode int32  `protobuf:"varint,10,opt"`
 	RetMsg  string `protobuf:"bytes,20,opt"`
 	FileKey string `protobuf:"bytes,30,opt"`
+	_       [0]func()
 }
 
 type ApplyDownloadAbsReq struct {
@@ -55,6 +57,7 @@ type ApplyDownloadAbsRsp struct {
 	RetCode      int32         `protobuf:"varint,10,opt"`
 	RetMsg       string        `protobuf:"bytes,20,opt"`
 	DownloadInfo *DownloadInfo `protobuf:"bytes,30,opt"`
+	_            [0]func()
 }
 
 type ApplyDownloadReq struct {
@@ -69,6 +72,7 @@ type ApplyDownloadRsp struct {
 	RetMsg       string        `protobuf:"bytes,20,opt"`
 	DownloadInfo *DownloadInfo `protobuf:"bytes,30,opt"`
 	FileInfo     *FileInfo     `protobuf:"bytes,40,opt"`
+	_            [0]func()
 }
 
 type ApplyForwardFileReq struct {
@@ -88,6 +92,7 @@ type ApplyForwardFileRsp struct {
 }
 
 type ApplyGetTrafficReq struct {
+	_ [0]func()
 }
 
 type ApplyGetTrafficRsp struct {
@@ -97,12 +102,14 @@ type ApplyGetTrafficRsp struct {
 	UseFileNum  int32  `protobuf:"varint,40,opt"`
 	AllFileSize int64  `protobuf:"varint,50,opt"`
 	AllFileNum  int32  `protobuf:"varint,60,opt"`
+	_           [0]func()
 }
 
 type ApplyListDownloadReq struct {
 	Uin        int64 `protobuf:"varint,10,opt"`
 	BeginIndex int32 `protobuf:"varint,20,opt"`
 	ReqCount   int32 `protobuf:"varint,30,opt"`
+	_          [0]func()
 }
 
 type ApplyListDownloadRsp struct {
@@ -286,6 +293,7 @@ type DelMessageReq struct {
 	Time        int32 `protobuf:"varint,10,opt"`
 	Random      int32 `protobuf:"varint,20,opt"`
 	SeqNo       int32 `protobuf:"varint,30,opt"`
+	_           [0]func()
 }
 
 type DeleteFileReq struct {
@@ -298,6 +306,7 @@ type DeleteFileReq struct {
 type DeleteFileRsp struct {
 	RetCode int32  `protobuf:"varint,10,opt"`
 	RetMsg  string `protobuf:"bytes,20,opt"`
+	_       [0]func()
 }
 
 type DownloadInfo struct {
@@ -319,6 +328,7 @@ type DownloadSuccRsp struct {
 	RetCode  int32  `protobuf:"varint,10,opt"`
 	RetMsg   string `protobuf:"bytes,20,opt"`
 	DownStat int32  `protobuf:"varint,30,opt"`
+	_        [0]func()
 }
 
 type ExtensionReq struct {
@@ -339,6 +349,7 @@ type ExtensionReq struct {
 }
 
 type ExtensionRsp struct {
+	_ [0]func()
 }
 
 type FileInfo struct {
@@ -367,6 +378,7 @@ type FileQueryRsp struct {
 	RetCode  int32     `protobuf:"varint,10,opt"`
 	RetMsg   string    `protobuf:"bytes,20,opt"`
 	FileInfo *FileInfo `protobuf:"bytes,30,opt"`
+	_        [0]func()
 }
 
 type RecallFileReq struct {
@@ -377,12 +389,14 @@ type RecallFileReq struct {
 type RecallFileRsp struct {
 	RetCode int32  `protobuf:"varint,1,opt"`
 	RetMsg  string `protobuf:"bytes,2,opt"`
+	_       [0]func()
 }
 
 type RecvListQueryReq struct {
 	Uin        int64 `protobuf:"varint,1,opt"`
 	BeginIndex int32 `protobuf:"varint,2,opt"`
 	ReqCount   int32 `protobuf:"varint,3,opt"`
+	_          [0]func()
 }
 
 type RecvListQueryRsp struct {
@@ -404,6 +418,7 @@ type RenewFileReq struct {
 type RenewFileRsp struct {
 	RetCode int32  `protobuf:"varint,1,opt"`
 	RetMsg  string `protobuf:"bytes,2,opt"`
+	_       [0]func()
 }
 
 type C346ReqBody struct {
@@ -435,6 +450,7 @@ type C346ReqBody struct {
 	//ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
 	ApplyGetTrafficReq *ApplyGetTrafficReq `protobuf:"bytes,90002,opt"`
 	ExtensionReq       *ExtensionReq       `protobuf:"bytes,99999,opt"`
+	_                  [0]func()
 }
 
 type C346RspBody struct {
@@ -465,12 +481,14 @@ type C346RspBody struct {
 	ApplyCleanTrafficRsp *ApplyCleanTrafficRsp `protobuf:"bytes,90001,opt"`
 	ApplyGetTrafficRsp   *ApplyGetTrafficRsp   `protobuf:"bytes,90002,opt"`
 	ExtensionRsp         *ExtensionRsp         `protobuf:"bytes,99999,opt"`
+	_                    [0]func()
 }
 
 type SendListQueryReq struct {
 	Uin        int64 `protobuf:"varint,1,opt"`
 	BeginIndex int32 `protobuf:"varint,2,opt"`
 	ReqCount   int32 `protobuf:"varint,3,opt"`
+	_          [0]func()
 }
 
 type SendListQueryRsp struct {
@@ -495,4 +513,5 @@ type UploadSuccRsp struct {
 	RetCode  int32     `protobuf:"varint,10,opt"`
 	RetMsg   string    `protobuf:"bytes,20,opt"`
 	FileInfo *FileInfo `protobuf:"bytes,30,opt"`
+	_        [0]func()
 }

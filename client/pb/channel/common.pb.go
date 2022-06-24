@@ -32,6 +32,7 @@ type ChannelEvent struct {
 	Type    proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Version proto.Option[uint64] `protobuf:"varint,2,opt"`
 	OpInfo  *ChannelMsgOpInfo    `protobuf:"bytes,3,opt"`
+	_       [0]func()
 }
 
 type ChannelExtInfo struct {
@@ -55,6 +56,7 @@ type ChannelFreqLimitInfo struct {
 	IsLimited      proto.Option[uint32] `protobuf:"varint,1,opt"`
 	LeftCount      proto.Option[uint32] `protobuf:"varint,2,opt"`
 	LimitTimestamp proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_              [0]func()
 }
 
 type ChannelInfo struct {
@@ -73,6 +75,7 @@ type ChannelLoginSig struct {
 type ChannelMeta struct {
 	FromUin  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	LoginSig *ChannelLoginSig     `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type ChannelMsgContent struct {
@@ -80,6 +83,7 @@ type ChannelMsgContent struct {
 	CtrlHead *ChannelMsgCtrlHead `protobuf:"bytes,2,opt"`
 	Body     *msg.MessageBody    `protobuf:"bytes,3,opt"`
 	ExtInfo  *ChannelExtInfo     `protobuf:"bytes,4,opt"`
+	_        [0]func()
 }
 
 type ChannelMsgCtrlHead struct {
@@ -101,10 +105,12 @@ type ChannelMsgCtrlHead struct {
 type ChannelMsgHead struct {
 	RoutingHead *ChannelRoutingHead `protobuf:"bytes,1,opt"`
 	ContentHead *ChannelContentHead `protobuf:"bytes,2,opt"`
+	_           [0]func()
 }
 
 type ChannelMsgMeta struct {
 	AtAllSeq proto.Option[uint64] `protobuf:"varint,1,opt"`
+	_        [0]func()
 }
 
 type ChannelMsgOpInfo struct {
@@ -113,11 +119,13 @@ type ChannelMsgOpInfo struct {
 	Reason         proto.Option[uint64] `protobuf:"varint,3,opt"`
 	Timestamp      proto.Option[uint64] `protobuf:"varint,4,opt"`
 	AtType         proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_              [0]func()
 }
 
 type PersonalLevel struct {
 	ToUin proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Level proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_     [0]func()
 }
 
 type ChannelRole struct {
@@ -134,4 +142,5 @@ type ChannelRoutingHead struct {
 	GuildCode         proto.Option[uint64] `protobuf:"varint,5,opt"`
 	FromAppid         proto.Option[uint64] `protobuf:"varint,6,opt"`
 	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,7,opt"`
+	_                 [0]func()
 }

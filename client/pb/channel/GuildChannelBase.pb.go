@@ -17,34 +17,40 @@ type ChannelUserInfo struct {
 type ChannelUserPermission struct {
 	AllowReadFeed  proto.Option[bool] `protobuf:"varint,1,opt"`
 	AllowWriteFeed proto.Option[bool] `protobuf:"varint,2,opt"`
+	_              [0]func()
 }
 
 type ClientIdentity struct {
 	ClientId proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Desc     proto.Option[string] `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type BaseGuildInfo struct {
 	GuildId  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Name     proto.Option[string] `protobuf:"bytes,2,opt"`
 	JoinTime proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_        [0]func()
 }
 
 type BaseRoleGroupInfo struct {
 	RoleId proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Name   proto.Option[string] `protobuf:"bytes,2,opt"`
 	Color  proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_      [0]func()
 }
 
 type StChannelInfo struct {
 	Sign    *StChannelSign       `protobuf:"bytes,1,opt"`
 	Name    proto.Option[string] `protobuf:"bytes,2,opt"`
 	IconUrl proto.Option[string] `protobuf:"bytes,3,opt"`
+	_       [0]func()
 }
 
 type StChannelSign struct {
 	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_         [0]func()
 }
 
 type StEmotionReactionInfo struct {
@@ -66,4 +72,5 @@ type BytesEntry struct {
 type CommonEntry struct {
 	Key   proto.Option[string] `protobuf:"bytes,1,opt"`
 	Value proto.Option[string] `protobuf:"bytes,2,opt"`
+	_     [0]func()
 }

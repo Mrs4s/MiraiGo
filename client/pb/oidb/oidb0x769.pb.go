@@ -11,17 +11,20 @@ type CPU struct {
 	Model     proto.Option[string] `protobuf:"bytes,1,opt"`
 	Cores     proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Frequency proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type Camera struct {
 	Primary   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Secondary proto.Option[uint64] `protobuf:"varint,2,opt"`
 	Flash     proto.Option[bool]   `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type D769ConfigSeq struct {
 	Type    proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Version proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_       [0]func()
 }
 
 type Content struct {
@@ -39,11 +42,13 @@ type D769DeviceInfo struct {
 	Storage *Storage             `protobuf:"bytes,6,opt"`
 	Screen  *Screen              `protobuf:"bytes,7,opt"`
 	Camera  *Camera              `protobuf:"bytes,8,opt"`
+	_       [0]func()
 }
 
 type Memory struct {
 	Total   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Process proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_       [0]func()
 }
 
 type C41219OS struct {
@@ -52,11 +57,13 @@ type C41219OS struct {
 	Sdk     proto.Option[string] `protobuf:"bytes,3,opt"`
 	Kernel  proto.Option[string] `protobuf:"bytes,4,opt"`
 	Rom     proto.Option[string] `protobuf:"bytes,5,opt"`
+	_       [0]func()
 }
 
 type QueryUinPackageUsageReq struct {
 	Type        proto.Option[uint32] `protobuf:"varint,1,opt"`
 	UinFileSize proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_           [0]func()
 }
 
 type QueryUinPackageUsageRsp struct {
@@ -89,11 +96,13 @@ type Screen struct {
 	Height     proto.Option[uint32] `protobuf:"varint,3,opt"`
 	Dpi        proto.Option[uint32] `protobuf:"varint,4,opt"`
 	MultiTouch proto.Option[bool]   `protobuf:"varint,5,opt"`
+	_          [0]func()
 }
 
 type Storage struct {
 	Builtin  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	External proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_        [0]func()
 }
 
 type UinPackageUsedInfo struct {
@@ -101,4 +110,5 @@ type UinPackageUsedInfo struct {
 	Author proto.Option[string] `protobuf:"bytes,2,opt"`
 	Url    proto.Option[string] `protobuf:"bytes,3,opt"`
 	UinNum proto.Option[uint64] `protobuf:"varint,4,opt"`
+	_      [0]func()
 }

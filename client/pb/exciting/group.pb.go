@@ -13,6 +13,7 @@ type FileUploadExt struct {
 	Unknown3   proto.Option[int32] `protobuf:"varint,3,opt"`
 	Entry      *FileUploadEntry    `protobuf:"bytes,100,opt"`
 	Unknown200 proto.Option[int32] `protobuf:"varint,200,opt"`
+	_          [0]func()
 }
 
 type FileUploadEntry struct {
@@ -21,6 +22,7 @@ type FileUploadEntry struct {
 	ClientInfo   *ExcitingClientInfo   `protobuf:"bytes,300,opt"`
 	FileNameInfo *ExcitingFileNameInfo `protobuf:"bytes,400,opt"`
 	Host         *ExcitingHostConfig   `protobuf:"bytes,500,opt"`
+	_            [0]func()
 }
 
 type ExcitingBusiInfo struct {
@@ -28,6 +30,7 @@ type ExcitingBusiInfo struct {
 	SenderUin   proto.Option[int64] `protobuf:"varint,100,opt"`
 	ReceiverUin proto.Option[int64] `protobuf:"varint,200,opt"` // probable
 	GroupCode   proto.Option[int64] `protobuf:"varint,400,opt"` // probable
+	_           [0]func()
 }
 
 type ExcitingFileEntry struct {
@@ -44,10 +47,12 @@ type ExcitingClientInfo struct {
 	TerminalType proto.Option[int32]  `protobuf:"varint,300,opt"` // probable
 	ClientVer    proto.Option[string] `protobuf:"bytes,400,opt"`
 	Unknown      proto.Option[int32]  `protobuf:"varint,600,opt"`
+	_            [0]func()
 }
 
 type ExcitingFileNameInfo struct {
 	FileName proto.Option[string] `protobuf:"bytes,100,opt"`
+	_        [0]func()
 }
 
 type ExcitingHostConfig struct {
@@ -57,9 +62,11 @@ type ExcitingHostConfig struct {
 type ExcitingHostInfo struct {
 	Url  *ExcitingUrlInfo    `protobuf:"bytes,1,opt"`
 	Port proto.Option[int32] `protobuf:"varint,2,opt"`
+	_    [0]func()
 }
 
 type ExcitingUrlInfo struct {
 	Unknown proto.Option[int32]  `protobuf:"varint,1,opt"` // not https?
 	Host    proto.Option[string] `protobuf:"bytes,2,opt"`
+	_       [0]func()
 }

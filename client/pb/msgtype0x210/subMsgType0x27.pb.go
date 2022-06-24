@@ -49,6 +49,7 @@ type ConfMsgRoamFlag struct {
 	Confid    proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Flag      proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Timestamp proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type DaRenNotify struct {
@@ -57,6 +58,7 @@ type DaRenNotify struct {
 	Days            proto.Option[uint32] `protobuf:"varint,3,opt"`
 	IsYestodayLogin proto.Option[uint32] `protobuf:"varint,4,opt"`
 	IsTodayLogin    proto.Option[uint32] `protobuf:"varint,5,opt"`
+	_               [0]func()
 }
 
 type DelFriend struct {
@@ -65,6 +67,7 @@ type DelFriend struct {
 
 type DelGroup struct {
 	Groupid proto.Option[uint32] `protobuf:"varint,1,opt"`
+	_       [0]func()
 }
 
 type FanpaiziNotify struct {
@@ -115,6 +118,7 @@ type ForwardBody struct {
 
 type FrdCustomOnlineStatusChange struct {
 	Uin proto.Option[uint64] `protobuf:"varint,1,opt"`
+	_   [0]func()
 }
 
 type FriendGroup struct {
@@ -135,6 +139,7 @@ type GPS struct {
 	Lon  proto.Option[int32] `protobuf:"varint,2,opt"`
 	Alt  proto.Option[int32] `protobuf:"varint,3,opt"`
 	Type proto.Option[int32] `protobuf:"varint,4,opt"`
+	_    [0]func()
 }
 
 type GroupMemberProfileInfo struct {
@@ -150,12 +155,14 @@ type GroupProfileInfo struct {
 type GroupSort struct {
 	Groupid proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Sortid  proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_       [0]func()
 }
 
 type GrpMsgRoamFlag struct {
 	Groupcode proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Flag      proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Timestamp proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type HotFriendNotify struct {
@@ -176,6 +183,7 @@ type HotFriendNotify struct {
 	QzoneHotDays   proto.Option[uint32] `protobuf:"varint,15,opt"`
 	QzoneFlag      proto.Option[uint32] `protobuf:"varint,16,opt"`
 	LastQzoneTime  proto.Option[uint64] `protobuf:"varint,17,opt"`
+	_              [0]func()
 }
 
 type MQQCampusNotify struct {
@@ -184,6 +192,7 @@ type MQQCampusNotify struct {
 	Target  proto.Option[string] `protobuf:"bytes,3,opt"`
 	Type    proto.Option[uint32] `protobuf:"varint,4,opt"`
 	Source  proto.Option[string] `protobuf:"bytes,5,opt"`
+	_       [0]func()
 }
 
 type ModConfProfile struct {
@@ -197,6 +206,7 @@ type ModCustomFace struct {
 	Uin       proto.Option[uint64] `protobuf:"varint,2,opt"`
 	GroupCode proto.Option[uint64] `protobuf:"varint,3,opt"`
 	CmdUin    proto.Option[uint64] `protobuf:"varint,4,opt"`
+	_         [0]func()
 }
 
 type ModFrdRoamPriv struct {
@@ -266,6 +276,7 @@ type NewComeinUserNotify struct {
 	NewComeinUser *NewComeinUser       `protobuf:"bytes,4,opt"`
 	NewGroup      *NewGroup            `protobuf:"bytes,5,opt"`
 	NewGroupUser  *NewGroupUser        `protobuf:"bytes,6,opt"`
+	_             [0]func()
 }
 
 type NewGroup struct {
@@ -288,12 +299,14 @@ type OneRoamPriv struct {
 	Fuin      proto.Option[uint64] `protobuf:"varint,1,opt"`
 	PrivTag   proto.Option[uint32] `protobuf:"varint,2,opt"`
 	PrivValue proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type PraiseRankNotify struct {
 	IsChampion proto.Option[uint32] `protobuf:"varint,11,opt"`
 	RankNum    proto.Option[uint32] `protobuf:"varint,12,opt"`
 	Msg        proto.Option[string] `protobuf:"bytes,13,opt"`
+	_          [0]func()
 }
 
 type ProfileInfo struct {
@@ -315,11 +328,13 @@ type PushSearchDev struct {
 	PushTime proto.Option[uint32] `protobuf:"varint,4,opt"`
 	Din      proto.Option[uint64] `protobuf:"varint,5,opt"`
 	Data     proto.Option[string] `protobuf:"bytes,6,opt"`
+	_        [0]func()
 }
 
 type QQPayPush struct {
 	Uin   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	PayOk proto.Option[bool]   `protobuf:"varint,2,opt"`
+	_     [0]func()
 }
 
 type SnsUpateBuffer struct {
@@ -343,4 +358,5 @@ type SnsUpdateOneFlag struct {
 	XUin proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Id   proto.Option[uint64] `protobuf:"varint,2,opt"`
 	Flag proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_    [0]func()
 }

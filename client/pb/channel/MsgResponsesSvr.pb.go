@@ -31,6 +31,7 @@ type EmojiReaction struct {
 	Cnt            proto.Option[uint64] `protobuf:"varint,3,opt"`
 	IsClicked      proto.Option[bool]   `protobuf:"varint,4,opt"`
 	IsDefaultEmoji proto.Option[bool]   `protobuf:"varint,10001,opt"`
+	_              [0]func()
 }
 
 type GuildMsg struct {
@@ -51,6 +52,7 @@ type MsgCnt struct {
 type MsgId struct {
 	Version proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Seq     proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_       [0]func()
 }
 
 type MsgRespData struct {

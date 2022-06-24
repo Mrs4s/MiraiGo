@@ -10,6 +10,7 @@ import (
 
 type DF62ReqBody struct {
 	Msg *ChannelMsgContent `protobuf:"bytes,1,opt"`
+	_   [0]func()
 }
 
 type DF62RspBody struct {

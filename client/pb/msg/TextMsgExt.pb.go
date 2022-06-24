@@ -10,6 +10,7 @@ import (
 type ExtChannelInfo struct {
 	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_         [0]func()
 }
 
 type TextResvAttr struct {

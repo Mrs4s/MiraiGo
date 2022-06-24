@@ -146,6 +146,7 @@ type PicSize struct {
 	Original proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Thumb    proto.Option[uint32] `protobuf:"varint,2,opt"`
 	High     proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_        [0]func()
 }
 
 type D388ReqBody struct {

@@ -10,6 +10,7 @@ type NotifyMsgBody struct {
 	OptGeneralGrayTip *GeneralGrayTipInfo    `protobuf:"bytes,26,opt"`
 	QqGroupDigestMsg  *QQGroupDigestMsg      `protobuf:"bytes,33,opt"`
 	ServiceType       int32                  `protobuf:"varint,13,opt"`
+	_                 [0]func()
 }
 
 type AIOGrayTipsInfo struct {
@@ -35,6 +36,7 @@ type GeneralGrayTipInfo struct {
 type TemplParam struct {
 	Name  string `protobuf:"bytes,1,opt"`
 	Value string `protobuf:"bytes,2,opt"`
+	_     [0]func()
 }
 
 type MessageRecallReminder struct {
@@ -54,6 +56,7 @@ type RecalledMessageMeta struct {
 	MsgType   int32 `protobuf:"varint,4,opt"`
 	MsgFlag   int32 `protobuf:"varint,5,opt"`
 	AuthorUin int64 `protobuf:"varint,6,opt"`
+	_         [0]func()
 }
 
 type RedGrayTipsInfo struct {

@@ -11,21 +11,25 @@ import (
 type DEB7ReqBody struct {
 	SignInStatusReq *StSignInStatusReq `protobuf:"bytes,1,opt"`
 	SignInWriteReq  *StSignInWriteReq  `protobuf:"bytes,2,opt"`
+	_               [0]func()
 }
 
 type DEB7Ret struct {
 	Code proto.Option[uint32] `protobuf:"varint,1,opt"`
 	Msg  proto.Option[string] `protobuf:"bytes,2,opt"`
+	_    [0]func()
 }
 
 type DEB7RspBody struct {
 	SignInStatusRsp *StSignInStatusRsp `protobuf:"bytes,1,opt"`
 	SignInWriteRsp  *StSignInWriteRsp  `protobuf:"bytes,2,opt"`
+	_               [0]func()
 }
 
 type SignInStatusBase struct {
 	Status           proto.Option[uint32] `protobuf:"varint,1,opt"`
 	CurrentTimeStamp proto.Option[int64]  `protobuf:"varint,2,opt"`
+	_                [0]func()
 }
 
 type SignInStatusDoneInfo struct {
@@ -38,18 +42,21 @@ type SignInStatusDoneInfo struct {
 type SignInStatusGroupScore struct {
 	GroupScoreWord proto.Option[string] `protobuf:"bytes,1,opt"`
 	ScoreUrl       proto.Option[string] `protobuf:"bytes,2,opt"`
+	_              [0]func()
 }
 
 type SignInStatusNotInfo struct {
 	ButtonWord        proto.Option[string] `protobuf:"bytes,1,opt"`
 	SignDescWordLeft  proto.Option[string] `protobuf:"bytes,2,opt"`
 	SignDescWordRight proto.Option[string] `protobuf:"bytes,3,opt"`
+	_                 [0]func()
 }
 
 type SignInStatusYesterdayFirst struct {
 	YesterdayFirstUid proto.Option[string] `protobuf:"bytes,1,opt"`
 	YesterdayWord     proto.Option[string] `protobuf:"bytes,2,opt"`
 	YesterdayNick     proto.Option[string] `protobuf:"bytes,3,opt"`
+	_                 [0]func()
 }
 
 type StDaySignedInfo struct {
@@ -57,6 +64,7 @@ type StDaySignedInfo struct {
 	UidGroupNick    proto.Option[string] `protobuf:"bytes,2,opt"`
 	SignedTimeStamp proto.Option[int64]  `protobuf:"varint,3,opt"`
 	SignInRank      proto.Option[int32]  `protobuf:"varint,4,opt"`
+	_               [0]func()
 }
 
 type StDaySignedListReq struct {
@@ -65,6 +73,7 @@ type StDaySignedListReq struct {
 	GroupId proto.Option[string] `protobuf:"bytes,3,opt"`
 	Offset  proto.Option[int32]  `protobuf:"varint,4,opt"`
 	Limit   proto.Option[int32]  `protobuf:"varint,5,opt"`
+	_       [0]func()
 }
 
 type StDaySignedListRsp struct {
@@ -83,11 +92,13 @@ type StKingSignedInfo struct {
 	GroupNick       proto.Option[string] `protobuf:"bytes,2,opt"`
 	SignedTimeStamp proto.Option[int64]  `protobuf:"varint,3,opt"`
 	SignedCount     proto.Option[int32]  `protobuf:"varint,4,opt"`
+	_               [0]func()
 }
 
 type StKingSignedListReq struct {
 	Uid     proto.Option[string] `protobuf:"bytes,1,opt"`
 	GroupId proto.Option[string] `protobuf:"bytes,2,opt"`
+	_       [0]func()
 }
 
 type StKingSignedListRsp struct {
@@ -102,6 +113,7 @@ type StSignInRecordDaySigned struct {
 	DayTotalSignedUid proto.Option[int32]   `protobuf:"varint,2,opt"`
 	DaySignedPage     *StDaySignedPage      `protobuf:"bytes,3,opt"`
 	DaySignedUrl      proto.Option[string]  `protobuf:"bytes,4,opt"`
+	_                 [0]func()
 }
 
 type StSignInRecordKing struct {
@@ -115,6 +127,7 @@ type StSignInRecordReq struct {
 	DayYmd  proto.Option[string] `protobuf:"bytes,1,opt"`
 	Uid     proto.Option[string] `protobuf:"bytes,2,opt"`
 	GroupId proto.Option[string] `protobuf:"bytes,3,opt"`
+	_       [0]func()
 }
 
 type StSignInRecordRsp struct {
@@ -124,6 +137,7 @@ type StSignInRecordRsp struct {
 	DaySigned  *StSignInRecordDaySigned `protobuf:"bytes,4,opt"`
 	KingRecord *StSignInRecordKing      `protobuf:"bytes,5,opt"`
 	Level      *StViewGroupLevel        `protobuf:"bytes,6,opt"`
+	_          [0]func()
 }
 
 type StSignInRecordUser struct {
@@ -139,6 +153,7 @@ type StSignInStatusReq struct {
 	GroupId       proto.Option[string] `protobuf:"bytes,2,opt"`
 	Scene         proto.Option[uint32] `protobuf:"varint,3,opt"`
 	ClientVersion proto.Option[string] `protobuf:"bytes,4,opt"`
+	_             [0]func()
 }
 
 type StSignInStatusRsp struct {
@@ -150,21 +165,25 @@ type StSignInStatusRsp struct {
 	GroupScore    *SignInStatusGroupScore     `protobuf:"bytes,6,opt"`
 	MantleUrl     proto.Option[string]        `protobuf:"bytes,7,opt"`
 	BackgroundUrl proto.Option[string]        `protobuf:"bytes,8,opt"`
+	_             [0]func()
 }
 
 type StSignInWriteReq struct {
 	Uid           proto.Option[string] `protobuf:"bytes,1,opt"`
 	GroupId       proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientVersion proto.Option[string] `protobuf:"bytes,3,opt"`
+	_             [0]func()
 }
 
 type StSignInWriteRsp struct {
 	Ret        *DEB7Ret                `protobuf:"bytes,1,opt"`
 	DoneInfo   *SignInStatusDoneInfo   `protobuf:"bytes,2,opt"`
 	GroupScore *SignInStatusGroupScore `protobuf:"bytes,3,opt"`
+	_          [0]func()
 }
 
 type StViewGroupLevel struct {
 	Title proto.Option[string] `protobuf:"bytes,1,opt"`
 	Url   proto.Option[string] `protobuf:"bytes,2,opt"`
+	_     [0]func()
 }

@@ -9,10 +9,12 @@ import (
 
 type C501ReqBody struct {
 	ReqBody *SubCmd0X501ReqBody `protobuf:"bytes,1281,opt"`
+	_       [0]func()
 }
 
 type C501RspBody struct {
 	RspBody *SubCmd0X501RspBody `protobuf:"bytes,1281,opt"`
+	_       [0]func()
 }
 
 type SubCmd0X501ReqBody struct {
@@ -42,4 +44,5 @@ type IpAddr struct {
 	Ip   proto.Option[uint32] `protobuf:"fixed32,2,opt"`
 	Port proto.Option[uint32] `protobuf:"varint,3,opt"`
 	Area proto.Option[uint32] `protobuf:"varint,4,opt"`
+	_    [0]func()
 }

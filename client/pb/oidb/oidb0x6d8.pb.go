@@ -12,6 +12,7 @@ type D6D8ReqBody struct {
 	FileListInfoReq   *GetFileListReqBody  `protobuf:"bytes,2,opt"`
 	GroupFileCountReq *GetFileCountReqBody `protobuf:"bytes,3,opt"`
 	GroupSpaceReq     *GetSpaceReqBody     `protobuf:"bytes,4,opt"`
+	_                 [0]func()
 }
 
 type D6D8RspBody struct {
@@ -19,6 +20,7 @@ type D6D8RspBody struct {
 	FileListInfoRsp *GetFileListRspBody  `protobuf:"bytes,2,opt"`
 	FileCountRsp    *GetFileCountRspBody `protobuf:"bytes,3,opt"`
 	GroupSpaceRsp   *GetSpaceRspBody     `protobuf:"bytes,4,opt"`
+	_               [0]func()
 }
 
 type GetFileInfoReqBody struct {
@@ -27,6 +29,7 @@ type GetFileInfoReqBody struct {
 	BusId     proto.Option[uint32] `protobuf:"varint,3,opt"`
 	FileId    proto.Option[string] `protobuf:"bytes,4,opt"`
 	FieldFlag proto.Option[uint32] `protobuf:"varint,5,opt"`
+	_         [0]func()
 }
 
 type GetFileInfoRspBody struct {
@@ -34,6 +37,7 @@ type GetFileInfoRspBody struct {
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
 	FileInfo      *GroupFileInfo       `protobuf:"bytes,4,opt"`
+	_             [0]func()
 }
 
 type GetFileListRspBody struct {
@@ -81,6 +85,7 @@ type GroupFolderInfo struct {
 	CreateUin      proto.Option[uint64] `protobuf:"varint,6,opt"`
 	CreatorName    proto.Option[string] `protobuf:"bytes,7,opt"`
 	TotalFileCount proto.Option[uint32] `protobuf:"varint,8,opt"`
+	_              [0]func()
 }
 
 type GetFileListReqBody struct {
@@ -105,11 +110,13 @@ type GetFileCountReqBody struct {
 	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
 	AppId     proto.Option[uint32] `protobuf:"varint,2,opt"`
 	BusId     proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type GetSpaceReqBody struct {
 	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
 	AppId     proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_         [0]func()
 }
 
 type GetFileCountRspBody struct {
@@ -120,6 +127,7 @@ type GetFileCountRspBody struct {
 	FileTooMany   proto.Option[bool]   `protobuf:"varint,5,opt"`
 	LimitCount    proto.Option[uint32] `protobuf:"varint,6,opt"`
 	IsFull        proto.Option[bool]   `protobuf:"varint,7,opt"`
+	_             [0]func()
 }
 
 type GetSpaceRspBody struct {
@@ -128,15 +136,18 @@ type GetSpaceRspBody struct {
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
 	TotalSpace    proto.Option[uint64] `protobuf:"varint,4,opt"`
 	UsedSpace     proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_             [0]func()
 }
 
 type FileTimeStamp struct {
 	UploadTime proto.Option[uint32] `protobuf:"varint,1,opt"`
 	FileId     proto.Option[string] `protobuf:"bytes,2,opt"`
+	_          [0]func()
 }
 
 type GetFileListRspBody_Item struct {
 	Type       proto.Option[uint32] `protobuf:"varint,1,opt"`
 	FolderInfo *GroupFolderInfo     `protobuf:"bytes,2,opt"`
 	FileInfo   *GroupFileInfo       `protobuf:"bytes,3,opt"`
+	_          [0]func()
 }

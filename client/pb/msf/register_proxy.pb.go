@@ -16,6 +16,7 @@ type DiscussList struct {
 	RedpackTime proto.Option[uint64] `protobuf:"varint,6,opt"`
 	HasMsg      proto.Option[bool]   `protobuf:"varint,7,opt"`
 	DicussFlag  proto.Option[int64]  `protobuf:"varint,8,opt"`
+	_           [0]func()
 }
 
 type GroupList struct {
@@ -31,6 +32,7 @@ type GroupList struct {
 	GroupMemberSeq        proto.Option[uint32] `protobuf:"varint,10,opt"`
 	UinFlagEx2            proto.Option[uint32] `protobuf:"varint,11,opt"`
 	ImportantMsgLatestSeq proto.Option[uint32] `protobuf:"varint,12,opt"`
+	_                     [0]func()
 }
 
 type SvcPbResponsePullDisMsgProxy struct {
@@ -56,6 +58,7 @@ type SvcRegisterProxyMsgResp struct {
 type SvcResponseMsgInfo struct {
 	GroupNum   proto.Option[uint32] `protobuf:"varint,1,opt"`
 	DiscussNum proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_          [0]func()
 }
 
 type SvcResponsePbPullGroupMsgProxy struct {

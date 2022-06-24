@@ -20,6 +20,7 @@ type ChannelMsgReq struct {
 	ChannelParam      *ChannelParam        `protobuf:"bytes,1,opt"`
 	WithVersionFlag   proto.Option[uint32] `protobuf:"varint,2,opt"`
 	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_                 [0]func()
 }
 
 type ChannelMsgRsp struct {
@@ -77,6 +78,7 @@ type FirstViewReq struct {
 	UdcFlag           proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Seq               proto.Option[uint32] `protobuf:"varint,3,opt"`
 	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,4,opt"`
+	_                 [0]func()
 }
 
 type FirstViewRsp struct {
@@ -101,6 +103,7 @@ type GuildNode struct {
 type MsgCond struct {
 	Seq          proto.Option[uint64] `protobuf:"varint,1,opt"`
 	EventVersion proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_            [0]func()
 }
 
 type MultiChannelMsg struct {
@@ -125,6 +128,7 @@ type MultiChannelMsgRsp struct {
 type ReqBody struct {
 	ChannelParam      *ChannelParam        `protobuf:"bytes,1,opt"`
 	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_                 [0]func()
 }
 
 type RspBody struct {

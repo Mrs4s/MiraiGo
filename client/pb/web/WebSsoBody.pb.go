@@ -13,6 +13,7 @@ type STServiceMonitItem struct {
 	Errcode proto.Option[int32]  `protobuf:"varint,3,opt"`
 	Cost    proto.Option[uint32] `protobuf:"varint,4,opt"`
 	Src     proto.Option[uint32] `protobuf:"varint,5,opt"`
+	_       [0]func()
 }
 
 type STServiceMonitReq struct {
@@ -22,6 +23,7 @@ type STServiceMonitReq struct {
 type WebSsoControlData struct {
 	Frequency   proto.Option[uint32] `protobuf:"varint,1,opt"`
 	PackageSize proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_           [0]func()
 }
 
 type WebSsoRequestBody struct {
@@ -29,6 +31,7 @@ type WebSsoRequestBody struct {
 	Type    proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Data    proto.Option[string] `protobuf:"bytes,3,opt"`
 	WebData proto.Option[string] `protobuf:"bytes,4,opt"`
+	_       [0]func()
 }
 
 type WebSsoResponseBody struct {
@@ -37,4 +40,5 @@ type WebSsoResponseBody struct {
 	Ret         proto.Option[uint32] `protobuf:"varint,3,opt"`
 	Data        proto.Option[string] `protobuf:"bytes,4,opt"`
 	ControlData *WebSsoControlData   `protobuf:"bytes,5,opt"`
+	_           [0]func()
 }

@@ -11,6 +11,7 @@ type BusiColor struct {
 	R proto.Option[int32] `protobuf:"varint,1,opt"`
 	G proto.Option[int32] `protobuf:"varint,2,opt"`
 	B proto.Option[int32] `protobuf:"varint,3,opt"`
+	_ [0]func()
 }
 
 type BusiComm struct {
@@ -38,6 +39,7 @@ type BusiCommonReq struct {
 	ServiceCmd proto.Option[string] `protobuf:"bytes,1,opt"`
 	VcReq      *BusiVisitorCountReq `protobuf:"bytes,2,opt"`
 	HrReq      *BusiHideRecordsReq  `protobuf:"bytes,3,opt"`
+	_          [0]func()
 }
 
 type BusiDetailRecord struct {
@@ -46,6 +48,7 @@ type BusiDetailRecord struct {
 	Vtime    proto.Option[int32] `protobuf:"varint,3,opt"`
 	Mod      proto.Option[int32] `protobuf:"varint,4,opt"`
 	HideFlag proto.Option[int32] `protobuf:"varint,5,opt"`
+	_        [0]func()
 }
 
 type BusiHideRecordsReq struct {
@@ -72,6 +75,7 @@ type BusiLoginSig struct {
 type BusiRichUi struct {
 	Name       proto.Option[string] `protobuf:"bytes,1,opt"`
 	ServiceUrl proto.Option[string] `protobuf:"bytes,2,opt"` //repeated UiInfo uiList = 3;
+	_          [0]func()
 }
 
 type BusiUi struct {
@@ -79,11 +83,13 @@ type BusiUi struct {
 	Title   proto.Option[string] `protobuf:"bytes,2,opt"`
 	Content proto.Option[string] `protobuf:"bytes,3,opt"`
 	JumpUrl proto.Option[string] `protobuf:"bytes,4,opt"`
+	_       [0]func()
 }
 
 type BusiUinInfo struct {
 	Int64Longitude proto.Option[int64] `protobuf:"varint,1,opt"`
 	Int64Latitude  proto.Option[int64] `protobuf:"varint,2,opt"`
+	_              [0]func()
 }
 
 type BusiVisitorCountReq struct {
@@ -91,6 +97,7 @@ type BusiVisitorCountReq struct {
 	Operuin    proto.Option[int32] `protobuf:"varint,2,opt"`
 	Mod        proto.Option[int32] `protobuf:"varint,3,opt"`
 	ReportFlag proto.Option[int32] `protobuf:"varint,4,opt"`
+	_          [0]func()
 }
 
 type BusiVisitorCountRsp struct {
@@ -100,4 +107,5 @@ type BusiVisitorCountRsp struct {
 	HotValue   proto.Option[int32] `protobuf:"varint,4,opt"`
 	RedValue   proto.Option[int32] `protobuf:"varint,5,opt"`
 	HotDiff    proto.Option[int32] `protobuf:"varint,6,opt"`
+	_          [0]func()
 }

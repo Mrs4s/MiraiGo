@@ -15,6 +15,7 @@ type DB77ReqBody struct {
 	RecvUin     uint64           `protobuf:"varint,11,opt"`
 	RichMsgBody *DB77RichMsgBody `protobuf:"bytes,12,opt"`
 	RecvGuildId uint64           `protobuf:"varint,19,opt"`
+	_           [0]func()
 }
 
 type DB77ClientInfo struct {
@@ -24,6 +25,7 @@ type DB77ClientInfo struct {
 	AndroidSignature   string `protobuf:"bytes,4,opt"`
 	IosBundleId        string `protobuf:"bytes,5,opt"`
 	PcSign             string `protobuf:"bytes,6,opt"`
+	_                  [0]func()
 }
 
 type DB77ExtInfo struct {
@@ -42,4 +44,5 @@ type DB77RichMsgBody struct {
 	PictureUrl string `protobuf:"bytes,14,opt"`
 	Action     string `protobuf:"bytes,15,opt"`
 	MusicUrl   string `protobuf:"bytes,16,opt"` //ImageInfo imageInfo = 17;
+	_          [0]func()
 }

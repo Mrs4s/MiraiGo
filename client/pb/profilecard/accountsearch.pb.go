@@ -10,6 +10,7 @@ import (
 type Location struct {
 	Latitude  proto.Option[float64] `protobuf:"fixed64,1,opt"`
 	Longitude proto.Option[float64] `protobuf:"fixed64,2,opt"`
+	_         [0]func()
 }
 
 type ResultItem struct {
@@ -35,6 +36,7 @@ type Hotwordrecord struct {
 	HotwordCoverUrl    proto.Option[string] `protobuf:"bytes,3,opt"`
 	HotwordTitle       proto.Option[string] `protobuf:"bytes,4,opt"`
 	HotwordDescription proto.Option[string] `protobuf:"bytes,5,opt"`
+	_                  [0]func()
 }
 
 type AccountSearchRecord struct {

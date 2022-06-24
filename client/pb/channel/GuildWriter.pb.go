@@ -34,6 +34,7 @@ type StClientImageContent struct {
 	TaskId proto.Option[string] `protobuf:"bytes,1,opt"`
 	PicId  proto.Option[string] `protobuf:"bytes,2,opt"`
 	Url    proto.Option[string] `protobuf:"bytes,3,opt"`
+	_      [0]func()
 }
 
 type StClientVideoContent struct {
@@ -41,6 +42,7 @@ type StClientVideoContent struct {
 	VideoId  proto.Option[string] `protobuf:"bytes,2,opt"`
 	VideoUrl proto.Option[string] `protobuf:"bytes,3,opt"`
 	CoverUrl proto.Option[string] `protobuf:"bytes,4,opt"`
+	_        [0]func()
 }
 
 type StDelFeedReq struct {
@@ -48,10 +50,12 @@ type StDelFeedReq struct {
 	Feed    *StFeed             `protobuf:"bytes,2,opt"`
 	From    proto.Option[int32] `protobuf:"varint,3,opt"`
 	Src     proto.Option[int32] `protobuf:"varint,4,opt"`
+	_       [0]func()
 }
 
 type StDelFeedRsp struct {
 	ExtInfo *StCommonExt `protobuf:"bytes,1,opt"`
+	_       [0]func()
 }
 
 type StDoCommentReq struct {
@@ -114,10 +118,12 @@ type StDoSecurityReq struct {
 	Reply   *StReply            `protobuf:"bytes,4,opt"`
 	Poster  *StUser             `protobuf:"bytes,5,opt"`
 	SecType proto.Option[int32] `protobuf:"varint,6,opt"`
+	_       [0]func()
 }
 
 type StDoSecurityRsp struct {
 	ExtInfo *StCommonExt `protobuf:"bytes,1,opt"`
+	_       [0]func()
 }
 
 type StModifyFeedReq struct {

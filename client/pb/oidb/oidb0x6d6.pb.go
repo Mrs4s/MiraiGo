@@ -13,12 +13,14 @@ type DeleteFileReqBody struct {
 	BusId          proto.Option[int32]  `protobuf:"varint,3,opt"`
 	ParentFolderId proto.Option[string] `protobuf:"bytes,4,opt"`
 	FileId         proto.Option[string] `protobuf:"bytes,5,opt"`
+	_              [0]func()
 }
 
 type DeleteFileRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
+	_             [0]func()
 }
 
 type DownloadFileReqBody struct {
@@ -29,6 +31,7 @@ type DownloadFileReqBody struct {
 	BoolThumbnailReq proto.Option[bool]   `protobuf:"varint,5,opt"`
 	UrlType          proto.Option[int32]  `protobuf:"varint,6,opt"`
 	BoolPreviewReq   proto.Option[bool]   `protobuf:"varint,7,opt"`
+	_                [0]func()
 }
 
 type DownloadFileRspBody struct {
@@ -53,6 +56,7 @@ type MoveFileReqBody struct {
 	FileId         proto.Option[string] `protobuf:"bytes,4,opt"`
 	ParentFolderId proto.Option[string] `protobuf:"bytes,5,opt"`
 	DestFolderId   proto.Option[string] `protobuf:"bytes,6,opt"`
+	_              [0]func()
 }
 
 type MoveFileRspBody struct {
@@ -60,6 +64,7 @@ type MoveFileRspBody struct {
 	RetMsg         proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording  proto.Option[string] `protobuf:"bytes,3,opt"`
 	ParentFolderId proto.Option[string] `protobuf:"bytes,4,opt"`
+	_              [0]func()
 }
 
 type RenameFileReqBody struct {
@@ -69,12 +74,14 @@ type RenameFileReqBody struct {
 	FileId         proto.Option[string] `protobuf:"bytes,4,opt"`
 	ParentFolderId proto.Option[string] `protobuf:"bytes,5,opt"`
 	NewFileName    proto.Option[string] `protobuf:"bytes,6,opt"`
+	_              [0]func()
 }
 
 type RenameFileRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
+	_             [0]func()
 }
 
 type D6D6ReqBody struct {
@@ -84,6 +91,7 @@ type D6D6ReqBody struct {
 	DeleteFileReq   *DeleteFileReqBody   `protobuf:"bytes,4,opt"`
 	RenameFileReq   *RenameFileReqBody   `protobuf:"bytes,5,opt"`
 	MoveFileReq     *MoveFileReqBody     `protobuf:"bytes,6,opt"`
+	_               [0]func()
 }
 
 type ResendReqBody struct {
@@ -110,6 +118,7 @@ type D6D6RspBody struct {
 	DeleteFileRsp   *DeleteFileRspBody   `protobuf:"bytes,4,opt"`
 	RenameFileRsp   *RenameFileRspBody   `protobuf:"bytes,5,opt"`
 	MoveFileRsp     *MoveFileRspBody     `protobuf:"bytes,6,opt"`
+	_               [0]func()
 }
 
 type UploadFileReqBody struct {

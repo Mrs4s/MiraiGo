@@ -11,6 +11,7 @@ type EACReqBody struct {
 	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Seq       proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Random    proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type EACRspBody struct {
@@ -19,4 +20,5 @@ type EACRspBody struct {
 	DigestTime proto.Option[uint32] `protobuf:"varint,3,opt"`
 	//optional DigestMsg msg = 4;
 	ErrorCode proto.Option[uint32] `protobuf:"varint,10,opt"`
+	_         [0]func()
 }

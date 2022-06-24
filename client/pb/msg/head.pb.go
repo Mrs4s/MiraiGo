@@ -46,6 +46,7 @@ type CSHead struct {
 	InstanceId    proto.Option[uint32] `protobuf:"varint,22,opt"`
 	SessionId     proto.Option[uint64] `protobuf:"varint,23,opt"`
 	IdcId         proto.Option[uint32] `protobuf:"varint,24,opt"`
+	_             [0]func()
 }
 
 type DeltaHead struct {
@@ -67,6 +68,7 @@ type IMHead struct {
 	LoginSig     *LoginSig            `protobuf:"bytes,6,opt"`
 	DeltaHead    *DeltaHead           `protobuf:"bytes,7,opt"`
 	C2CHead      *C2CHead             `protobuf:"bytes,8,opt"`
+	_            [0]func()
 }
 
 type HttpConnHead struct {
@@ -108,6 +110,7 @@ type RedirectMsg struct {
 	RedirectIp       proto.Option[uint32] `protobuf:"fixed32,3,opt"`
 	RedirectPort     proto.Option[uint32] `protobuf:"varint,4,opt"`
 	RedirectCount    proto.Option[uint32] `protobuf:"varint,5,opt"`
+	_                [0]func()
 }
 
 type S2CHead struct {
@@ -118,6 +121,7 @@ type S2CHead struct {
 	RelayIp    proto.Option[uint32] `protobuf:"fixed32,5,opt"`
 	RelayPort  proto.Option[uint32] `protobuf:"varint,6,opt"`
 	ToUin      proto.Option[uint64] `protobuf:"varint,7,opt"`
+	_          [0]func()
 }
 
 type TransOidbHead struct {
@@ -125,4 +129,5 @@ type TransOidbHead struct {
 	ServiceType proto.Option[uint32] `protobuf:"varint,2,opt"`
 	Result      proto.Option[uint32] `protobuf:"varint,3,opt"`
 	ErrorMsg    proto.Option[string] `protobuf:"bytes,4,opt"`
+	_           [0]func()
 }

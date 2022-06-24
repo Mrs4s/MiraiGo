@@ -24,6 +24,7 @@ type D8A0RspBody struct {
 type D8A0KickResult struct {
 	OptUint32Result    int32 `protobuf:"varint,1,opt"`
 	OptUint64MemberUin int64 `protobuf:"varint,2,opt"`
+	_                  [0]func()
 }
 
 type D8A0KickMemberInfo struct {
@@ -46,6 +47,7 @@ type D89AReqBody struct {
 	StGroupInfo         *D89AGroupinfo `protobuf:"bytes,2,opt"`
 	OriginalOperatorUin int64          `protobuf:"varint,3,opt"`
 	ReqGroupOpenAppid   int32          `protobuf:"varint,4,opt"`
+	_                   [0]func()
 }
 
 type D89AGroupinfo struct {
@@ -97,6 +99,7 @@ type D89AGroupNewGuidelinesInfo struct {
 type D89AGroupExInfoOnly struct {
 	TribeId          int32 `protobuf:"varint,1,opt"`
 	MoneyForAddGroup int32 `protobuf:"varint,2,opt"`
+	_                [0]func()
 }
 
 type D89AGroupGeoInfo struct {
@@ -113,4 +116,5 @@ type DED3ReqBody struct {
 	MsgSeq    int32 `protobuf:"varint,3,opt"`
 	MsgRand   int32 `protobuf:"varint,4,opt"`
 	AioUin    int64 `protobuf:"varint,5,opt"`
+	_         [0]func()
 }

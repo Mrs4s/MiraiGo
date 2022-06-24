@@ -52,6 +52,7 @@ type ShortVideoReqExtInfo struct {
 	Videoinfo            *VideoInfo             `protobuf:"bytes,4,opt"`
 	ShortvideoSureReq    *ShortVideoSureReqInfo `protobuf:"bytes,5,opt"`
 	IsMergeCmdBeforeData proto.Option[bool]     `protobuf:"varint,6,opt"`
+	_                    [0]func()
 }
 
 type ShortVideoRspExtInfo struct {
@@ -86,6 +87,7 @@ type ShortVideoSureRspInfo struct {
 }
 
 type StoryVideoExtReq struct {
+	_ [0]func()
 }
 
 type StoryVideoExtRsp struct {

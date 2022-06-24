@@ -15,6 +15,7 @@ type Comment struct {
 	ToUin    proto.Option[uint64] `protobuf:"varint,5,opt"`
 	ReplyId  proto.Option[string] `protobuf:"bytes,6,opt"`
 	FromNick proto.Option[string] `protobuf:"bytes,7,opt"`
+	_        [0]func()
 }
 
 type Praise struct {
@@ -22,6 +23,7 @@ type Praise struct {
 	ToUin    proto.Option[uint64] `protobuf:"varint,2,opt"`
 	Time     proto.Option[uint64] `protobuf:"varint,3,opt"`
 	FromNick proto.Option[string] `protobuf:"bytes,4,opt"`
+	_        [0]func()
 }
 
 type Quest struct {

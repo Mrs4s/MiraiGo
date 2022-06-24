@@ -13,11 +13,13 @@ type AppChannelMsg struct {
 	ExpireTimeMs proto.Option[uint64] `protobuf:"varint,3,opt"`
 	SchemaType   proto.Option[uint32] `protobuf:"varint,4,opt"`
 	Schema       proto.Option[string] `protobuf:"bytes,5,opt"`
+	_            [0]func()
 }
 
 type CategoryChannelInfo struct {
 	ChannelIndex proto.Option[uint32] `protobuf:"varint,1,opt"`
 	ChannelId    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_            [0]func()
 }
 
 type CategoryInfo struct {
@@ -40,6 +42,7 @@ type ChanInfoFilter struct {
 	VoiceChannelInfoFilter *VoiceChannelInfoFilter `protobuf:"bytes,14,opt"`
 	LiveChannelInfoFilter  *LiveChannelInfoFilter  `protobuf:"bytes,15,opt"`
 	BannedSpeak            proto.Option[uint32]    `protobuf:"varint,16,opt"`
+	_                      [0]func()
 }
 
 type ChangeChanInfo struct {
@@ -50,6 +53,7 @@ type ChangeChanInfo struct {
 	UpdateType     proto.Option[uint32] `protobuf:"varint,5,opt"`
 	ChanInfoFilter *ChanInfoFilter      `protobuf:"bytes,6,opt"`
 	ChanInfo       *ServChannelInfo     `protobuf:"bytes,7,opt"`
+	_              [0]func()
 }
 
 type ChangeGuildInfo struct {
@@ -60,10 +64,12 @@ type ChangeGuildInfo struct {
 	UpdateType      proto.Option[uint32] `protobuf:"varint,5,opt"`
 	GuildInfoFilter *GuildInfoFilter     `protobuf:"bytes,6,opt"`
 	GuildInfo       *GuildInfo           `protobuf:"bytes,7,opt"`
+	_               [0]func()
 }
 
 type ChannelID struct {
 	ChanId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	_      [0]func()
 }
 
 type ServChannelInfo struct {
@@ -102,6 +108,7 @@ type CreateChan struct {
 type CreateGuild struct {
 	OperatorId proto.Option[uint64] `protobuf:"varint,1,opt"`
 	GuildId    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_          [0]func()
 }
 
 type DestroyChan struct {
@@ -113,6 +120,7 @@ type DestroyChan struct {
 type DestroyGuild struct {
 	OperatorId proto.Option[uint64] `protobuf:"varint,1,opt"`
 	GuildId    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_          [0]func()
 }
 
 type EventBody struct {
@@ -151,16 +159,19 @@ type FeedEvent struct {
 	FeedId     proto.Option[string] `protobuf:"bytes,3,opt"`
 	MsgSummary proto.Option[string] `protobuf:"bytes,4,opt"`
 	EventTime  proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_          [0]func()
 }
 
 type ReadFeedNotify struct {
 	ReportTime proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_          [0]func()
 }
 
 type GroupProStatus struct {
 	IsEnable proto.Option[uint32] `protobuf:"varint,1,opt"`
 	IsBanned proto.Option[uint32] `protobuf:"varint,2,opt"`
 	IsFrozen proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_        [0]func()
 }
 
 type GuildInfo struct {
@@ -203,18 +214,21 @@ type GuildInfoFilter struct {
 	MemberChangeSeq    proto.Option[uint32] `protobuf:"varint,5002,opt"`
 	GuildInfoChangeSeq proto.Option[uint32] `protobuf:"varint,5003,opt"`
 	ChannelChangeSeq   proto.Option[uint32] `protobuf:"varint,5004,opt"`
+	_                  [0]func()
 }
 
 type JoinGuild struct {
 	MemberId     proto.Option[uint64] `protobuf:"varint,3,opt"`
 	MemberType   proto.Option[uint32] `protobuf:"varint,4,opt"`
 	MemberTinyid proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_            [0]func()
 }
 
 type KickOffGuild struct {
 	MemberId     proto.Option[uint64] `protobuf:"varint,3,opt"`
 	SetBlack     proto.Option[uint32] `protobuf:"varint,4,opt"`
 	MemberTinyid proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_            [0]func()
 }
 
 type LiveChannelInfo struct {
@@ -227,6 +241,7 @@ type LiveChannelInfoFilter struct {
 	IsNeedRoomId    proto.Option[uint32] `protobuf:"varint,1,opt"`
 	IsNeedAnchorUin proto.Option[uint32] `protobuf:"varint,2,opt"`
 	IsNeedName      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_               [0]func()
 }
 
 type LiveRoomStatusChangeMsg struct {
@@ -235,20 +250,24 @@ type LiveRoomStatusChangeMsg struct {
 	RoomId       proto.Option[uint64] `protobuf:"varint,3,opt"`
 	AnchorTinyid proto.Option[uint64] `protobuf:"varint,4,opt"`
 	Action       proto.Option[uint32] `protobuf:"varint,5,opt"`
+	_            [0]func()
 }
 
 type MsgEvent struct {
 	Seq          proto.Option[uint64] `protobuf:"varint,1,opt"`
 	EventType    proto.Option[uint64] `protobuf:"varint,2,opt"`
 	EventVersion proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_            [0]func()
 }
 
 type MsgSeq struct {
 	Seq  proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Time proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_    [0]func()
 }
 
 type QuitGuild struct {
+	_ [0]func()
 }
 
 type ReadNotify struct {
@@ -272,6 +291,7 @@ type SetAdmin struct {
 	AdminId     proto.Option[uint64] `protobuf:"varint,4,opt"`
 	AdminTinyid proto.Option[uint64] `protobuf:"varint,5,opt"`
 	OperateType proto.Option[uint32] `protobuf:"varint,6,opt"`
+	_           [0]func()
 }
 
 type SetMsgRecvType struct {
@@ -279,21 +299,25 @@ type SetMsgRecvType struct {
 	ChanId        proto.Option[uint64] `protobuf:"varint,2,opt"`
 	OperatorId    proto.Option[uint64] `protobuf:"varint,3,opt"`
 	MsgNotifyType proto.Option[uint32] `protobuf:"varint,4,opt"`
+	_             [0]func()
 }
 
 type SetMute struct {
 	Action proto.Option[uint32] `protobuf:"varint,1,opt"`
 	TinyID proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_      [0]func()
 }
 
 type SetTop struct {
 	Action proto.Option[uint32] `protobuf:"varint,1,opt"`
+	_      [0]func()
 }
 
 type SwitchDetail struct {
 	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
 	Platform  proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_         [0]func()
 }
 
 type SwitchLiveRoom struct {
@@ -303,17 +327,20 @@ type SwitchLiveRoom struct {
 	// optional uint64 tinyid = 4;
 	UserInfo *SwitchLiveRoomUserInfo `protobuf:"bytes,3,opt"`
 	Action   proto.Option[uint32]    `protobuf:"varint,4,opt"` // JOIN = 1 QUIT = 2
+	_        [0]func()
 }
 
 type SwitchLiveRoomUserInfo struct {
 	TinyId   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Nickname proto.Option[string] `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type SwitchVoiceChannel struct {
 	MemberId    proto.Option[uint64] `protobuf:"varint,1,opt"`
 	EnterDetail *SwitchDetail        `protobuf:"bytes,2,opt"`
 	LeaveDetail *SwitchDetail        `protobuf:"bytes,3,opt"`
+	_           [0]func()
 }
 
 type UpdateCategory struct {
@@ -330,19 +357,23 @@ type UpdateMsg struct {
 	OperatorRole       proto.Option[uint64] `protobuf:"varint,6,opt"`
 	Reason             proto.Option[uint64] `protobuf:"varint,7,opt"`
 	Timestamp          proto.Option[uint64] `protobuf:"varint,8,opt"`
+	_                  [0]func()
 }
 
 type UpdateVoiceBlockList struct {
 	Action       proto.Option[uint32] `protobuf:"varint,1,opt"`
 	ObjectTinyid proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_            [0]func()
 }
 
 type VoiceChannelInfo struct {
 	MemberMaxNum proto.Option[uint32] `protobuf:"varint,1,opt"`
+	_            [0]func()
 }
 
 type VoiceChannelInfoFilter struct {
 	MemberMaxNum proto.Option[uint32] `protobuf:"varint,1,opt"`
+	_            [0]func()
 }
 
 type CommGrayTips_TemplParam struct {

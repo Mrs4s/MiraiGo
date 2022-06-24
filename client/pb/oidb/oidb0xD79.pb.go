@@ -19,6 +19,7 @@ type D79RspBody struct {
 	Uin          uint64      `protobuf:"varint,3,opt"`
 	CompressFlag uint32      `protobuf:"varint,4,opt"`
 	Content      *D79Content `protobuf:"bytes,5,opt"`
+	_            [0]func()
 }
 
 type D79Content struct {

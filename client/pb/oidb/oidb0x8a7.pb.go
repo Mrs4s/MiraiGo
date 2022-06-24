@@ -13,6 +13,7 @@ type D8A7ReqBody struct {
 	LimitIntervalTypeForGroup proto.Option[uint32] `protobuf:"varint,3,opt"`
 	Uin                       proto.Option[uint64] `protobuf:"varint,4,opt"`
 	GroupCode                 proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_                         [0]func()
 }
 
 type D8A7RspBody struct {

@@ -6,11 +6,13 @@ package oidb
 type TranslateReqBody struct {
 	// TranslateReq translate_req = 1;
 	BatchTranslateReq *BatchTranslateReq `protobuf:"bytes,2,opt"`
+	_                 [0]func()
 }
 
 type TranslateRspBody struct {
 	// TranslateRsp translate_rsp = 1;
 	BatchTranslateRsp *BatchTranslateRsp `protobuf:"bytes,2,opt"`
+	_                 [0]func()
 }
 
 type BatchTranslateReq struct {

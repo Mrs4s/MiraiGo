@@ -9,6 +9,7 @@ import (
 
 type D88DGroupHeadPortraitInfo struct {
 	PicId proto.Option[uint32] `protobuf:"varint,1,opt"`
+	_     [0]func()
 }
 
 type D88DGroupHeadPortrait struct {
@@ -22,6 +23,7 @@ type D88DGroupHeadPortrait struct {
 type D88DGroupExInfoOnly struct {
 	TribeId          proto.Option[uint32] `protobuf:"varint,1,opt"`
 	MoneyForAddGroup proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_                [0]func()
 }
 
 type D88DGroupInfo struct {
@@ -114,6 +116,7 @@ type ReqGroupInfo struct {
 	GroupCode            proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Stgroupinfo          *D88DGroupInfo       `protobuf:"bytes,2,opt"`
 	LastGetGroupNameTime proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_                    [0]func()
 }
 
 type D88DReqBody struct {
@@ -126,6 +129,7 @@ type RspGroupInfo struct {
 	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
 	Result    proto.Option[uint32] `protobuf:"varint,2,opt"`
 	GroupInfo *D88DGroupInfo       `protobuf:"bytes,3,opt"`
+	_         [0]func()
 }
 
 type D88DRspBody struct {

@@ -12,24 +12,28 @@ type CreateFolderReqBody struct {
 	AppId          proto.Option[uint32] `protobuf:"varint,2,opt"`
 	ParentFolderId proto.Option[string] `protobuf:"bytes,3,opt"`
 	FolderName     proto.Option[string] `protobuf:"bytes,4,opt"`
+	_              [0]func()
 }
 
 type CreateFolderRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
+	_             [0]func()
 }
 
 type DeleteFolderReqBody struct {
 	GroupCode proto.Option[uint64] `protobuf:"varint,1,opt"`
 	AppId     proto.Option[uint32] `protobuf:"varint,2,opt"`
 	FolderId  proto.Option[string] `protobuf:"bytes,3,opt"`
+	_         [0]func()
 }
 
 type DeleteFolderRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
+	_             [0]func()
 }
 
 type MoveFolderReqBody struct {
@@ -38,12 +42,14 @@ type MoveFolderReqBody struct {
 	FolderId       proto.Option[string] `protobuf:"bytes,3,opt"`
 	ParentFolderId proto.Option[string] `protobuf:"bytes,4,opt"`
 	DestFolderId   proto.Option[string] `protobuf:"bytes,5,opt"`
+	_              [0]func()
 }
 
 type MoveFolderRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
+	_             [0]func()
 }
 
 type RenameFolderReqBody struct {
@@ -51,12 +57,14 @@ type RenameFolderReqBody struct {
 	AppId         proto.Option[uint32] `protobuf:"varint,2,opt"`
 	FolderId      proto.Option[string] `protobuf:"bytes,3,opt"`
 	NewFolderName proto.Option[string] `protobuf:"bytes,4,opt"`
+	_             [0]func()
 }
 
 type RenameFolderRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"` // optional group_file_common.FolderInfo folderInfo = 4;
+	_             [0]func()
 }
 
 type D6D7ReqBody struct {
@@ -64,6 +72,7 @@ type D6D7ReqBody struct {
 	DeleteFolderReq *DeleteFolderReqBody `protobuf:"bytes,2,opt"`
 	RenameFolderReq *RenameFolderReqBody `protobuf:"bytes,3,opt"`
 	MoveFolderReq   *MoveFolderReqBody   `protobuf:"bytes,4,opt"`
+	_               [0]func()
 }
 
 type D6D7RspBody struct {
@@ -71,4 +80,5 @@ type D6D7RspBody struct {
 	DeleteFolderRsp *DeleteFolderRspBody `protobuf:"bytes,2,opt"`
 	RenameFolderRsp *RenameFolderRspBody `protobuf:"bytes,3,opt"`
 	MoveFolderRsp   *MoveFolderRspBody   `protobuf:"bytes,4,opt"`
+	_               [0]func()
 }

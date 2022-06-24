@@ -13,6 +13,7 @@ type DeviceInfo struct {
 	AndroidId    string `protobuf:"bytes,7,opt"`
 	BaseBand     string `protobuf:"bytes,8,opt"`
 	InnerVersion string `protobuf:"bytes,9,opt"`
+	_            [0]func()
 }
 
 type RequestBody struct {
@@ -22,6 +23,7 @@ type RequestBody struct {
 type ConfigSeq struct {
 	Type    int32 `protobuf:"varint,1,opt"`
 	Version int32 `protobuf:"varint,2,opt"`
+	_       [0]func()
 }
 
 type D50ReqBody struct {
@@ -69,6 +71,7 @@ type DataHighwayHead struct {
 	CommandId  int32  `protobuf:"varint,8,opt"`
 	BuildVer   string `protobuf:"bytes,9,opt"`
 	LocaleId   int32  `protobuf:"varint,10,opt"`
+	_          [0]func()
 }
 
 type SegHead struct {
@@ -101,6 +104,7 @@ type MessageItem struct {
 
 type SubD4 struct {
 	Uin int64 `protobuf:"varint,1,opt"`
+	_   [0]func()
 }
 
 type Sub8A struct {
@@ -121,21 +125,25 @@ type Sub8AMsgInfo struct {
 	PkgNum    int32 `protobuf:"varint,7,opt"`
 	PkgIndex  int32 `protobuf:"varint,8,opt"`
 	DevSeq    int32 `protobuf:"varint,9,opt"`
+	_         [0]func()
 }
 
 type SubB3 struct {
 	Type            int32              `protobuf:"varint,1,opt"`
 	MsgAddFrdNotify *SubB3AddFrdNotify `protobuf:"bytes,2,opt"`
+	_               [0]func()
 }
 
 type SubB3AddFrdNotify struct {
 	Uin  int64  `protobuf:"varint,1,opt"`
 	Nick string `protobuf:"bytes,5,opt"`
+	_    [0]func()
 }
 
 type Sub44 struct {
 	FriendSyncMsg *Sub44FriendSyncMsg `protobuf:"bytes,1,opt"`
 	GroupSyncMsg  *Sub44GroupSyncMsg  `protobuf:"bytes,2,opt"`
+	_             [0]func()
 }
 
 type Sub44FriendSyncMsg struct {
@@ -177,6 +185,7 @@ type GroupMemberReqBody struct {
 	NewClient       bool  `protobuf:"varint,3,opt"`
 	ClientType      int32 `protobuf:"varint,4,opt"`
 	RichCardNameVer int32 `protobuf:"varint,5,opt"`
+	_               [0]func()
 }
 
 type GroupMemberRspBody struct {
@@ -185,6 +194,7 @@ type GroupMemberRspBody struct {
 	MemInfo                *GroupMemberInfo `protobuf:"bytes,3,opt"`
 	BoolSelfLocationShared bool             `protobuf:"varint,4,opt"`
 	GroupType              int32            `protobuf:"varint,5,opt"`
+	_                      [0]func()
 }
 
 type GroupMemberInfo struct {

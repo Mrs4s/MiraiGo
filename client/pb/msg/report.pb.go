@@ -22,11 +22,13 @@ type PbMsgReadedReportResp struct {
 type PbGroupReadedReportReq struct {
 	GroupCode   proto.Option[uint64] `protobuf:"varint,1,opt"`
 	LastReadSeq proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_           [0]func()
 }
 
 type PbDiscussReadedReportReq struct {
 	ConfUin     proto.Option[uint64] `protobuf:"varint,1,opt"`
 	LastReadSeq proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_           [0]func()
 }
 
 type PbC2CReadedReportReq struct {
@@ -51,6 +53,7 @@ type PbGroupReadedReportResp struct {
 	GroupCode   proto.Option[uint64] `protobuf:"varint,3,opt"`
 	MemberSeq   proto.Option[uint64] `protobuf:"varint,4,opt"`
 	GroupMsgSeq proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_           [0]func()
 }
 
 type PbDiscussReadedReportResp struct {
@@ -59,6 +62,7 @@ type PbDiscussReadedReportResp struct {
 	ConfUin   proto.Option[uint64] `protobuf:"varint,3,opt"`
 	MemberSeq proto.Option[uint64] `protobuf:"varint,4,opt"`
 	ConfSeq   proto.Option[uint64] `protobuf:"varint,5,opt"`
+	_         [0]func()
 }
 
 type PbC2CReadedReportResp struct {

@@ -5,6 +5,7 @@ package multimsg
 
 type ExternMsg struct {
 	ChannelType int32 `protobuf:"varint,1,opt"`
+	_           [0]func()
 }
 
 type MultiMsgApplyDownReq struct {

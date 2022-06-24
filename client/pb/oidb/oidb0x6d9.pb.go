@@ -59,6 +59,7 @@ type CopyToRspBody struct {
 	SaveFilePath  proto.Option[string] `protobuf:"bytes,4,opt"`
 	BusId         proto.Option[uint32] `protobuf:"varint,5,opt"`
 	FileName      proto.Option[string] `protobuf:"bytes,40,opt"`
+	_             [0]func()
 }
 
 type FeedsReqBody struct {
@@ -74,6 +75,7 @@ type FeedsRspBody struct {
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
 	//repeated C8639group_file_common.FeedsResult feedsResultList = 4;
 	SvrbusyWaitTime proto.Option[uint32] `protobuf:"varint,5,opt"`
+	_               [0]func()
 }
 
 type D6D9ReqBody struct {
@@ -81,6 +83,7 @@ type D6D9ReqBody struct {
 	CopyFromReq  *CopyFromReqBody  `protobuf:"bytes,2,opt"`
 	CopyToReq    *CopyToReqBody    `protobuf:"bytes,3,opt"`
 	FeedsInfoReq *FeedsReqBody     `protobuf:"bytes,5,opt"`
+	_            [0]func()
 }
 
 type D6D9RspBody struct {
@@ -88,6 +91,7 @@ type D6D9RspBody struct {
 	CopyFromRsp  *CopyFromRspBody  `protobuf:"bytes,2,opt"`
 	CopyToRsp    *CopyToRspBody    `protobuf:"bytes,3,opt"`
 	FeedsInfoRsp *FeedsRspBody     `protobuf:"bytes,5,opt"`
+	_            [0]func()
 }
 
 type TransFileReqBody struct {
@@ -95,6 +99,7 @@ type TransFileReqBody struct {
 	AppId     proto.Option[uint32] `protobuf:"varint,2,opt"`
 	BusId     proto.Option[uint32] `protobuf:"varint,3,opt"`
 	FileId    proto.Option[string] `protobuf:"bytes,4,opt"`
+	_         [0]func()
 }
 
 type TransFileRspBody struct {
@@ -103,4 +108,5 @@ type TransFileRspBody struct {
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
 	SaveBusId     proto.Option[uint32] `protobuf:"varint,4,opt"`
 	SaveFilePath  proto.Option[string] `protobuf:"bytes,5,opt"`
+	_             [0]func()
 }

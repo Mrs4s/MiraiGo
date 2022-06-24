@@ -11,6 +11,7 @@ type GetNoticesReq struct {
 	ExtInfo    *StCommonExt         `protobuf:"bytes,1,opt"`
 	PageNum    proto.Option[uint32] `protobuf:"varint,2,opt"`
 	AttachInfo proto.Option[string] `protobuf:"bytes,3,opt"`
+	_          [0]func()
 }
 
 type GetNoticesRsp struct {
@@ -23,10 +24,12 @@ type GetNoticesRsp struct {
 
 type NeedInsertCommentInfo struct {
 	CommentID proto.Option[string] `protobuf:"bytes,1,opt"`
+	_         [0]func()
 }
 
 type RefreshToast struct {
 	Text proto.Option[string] `protobuf:"bytes,1,opt"`
+	_    [0]func()
 }
 
 type StGetChannelFeedsReq struct {
@@ -35,6 +38,7 @@ type StGetChannelFeedsReq struct {
 	From          proto.Option[uint32] `protobuf:"varint,3,opt"`
 	ChannelSign   *StChannelSign       `protobuf:"bytes,4,opt"`
 	FeedAttchInfo proto.Option[string] `protobuf:"bytes,5,opt"`
+	_             [0]func()
 }
 
 type StGetChannelFeedsRsp struct {
@@ -50,11 +54,13 @@ type StGetChannelShareFeedReq struct {
 	ExtInfo          *StCommonExt         `protobuf:"bytes,1,opt"`
 	From             proto.Option[uint32] `protobuf:"varint,2,opt"`
 	ChannelShareInfo *StChannelShareInfo  `protobuf:"bytes,3,opt"`
+	_                [0]func()
 }
 
 type StGetChannelShareFeedRsp struct {
 	ExtInfo *StCommonExt `protobuf:"bytes,1,opt"`
 	Feed    *StFeed      `protobuf:"bytes,2,opt"`
+	_       [0]func()
 }
 
 type StGetFeedCommentsReq struct {
@@ -65,6 +71,7 @@ type StGetFeedCommentsReq struct {
 	From        proto.Option[uint32] `protobuf:"varint,5,opt"`
 	AttchInfo   proto.Option[string] `protobuf:"bytes,6,opt"`
 	EntrySchema proto.Option[string] `protobuf:"bytes,7,opt"`
+	_           [0]func()
 }
 
 type StGetFeedCommentsRsp struct {
@@ -83,10 +90,12 @@ type StGetFeedDetailReq struct {
 	CreateTime  proto.Option[uint64] `protobuf:"varint,5,opt"`
 	DetailType  proto.Option[uint32] `protobuf:"varint,6,opt"`
 	ChannelSign *StChannelSign       `protobuf:"bytes,7,opt"`
+	_           [0]func()
 }
 
 type StGetFeedDetailRsp struct {
 	ExtInfo   *StCommonExt `protobuf:"bytes,1,opt"`
 	Feed      *StFeed      `protobuf:"bytes,2,opt"`
 	LoginUser *StUser      `protobuf:"bytes,3,opt"`
+	_         [0]func()
 }

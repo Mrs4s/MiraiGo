@@ -47,11 +47,13 @@ type D8FCCardNameElem struct {
 type D8FCLevelName struct {
 	Level proto.Option[int32]  `protobuf:"varint,1,opt"`
 	Name  proto.Option[string] `protobuf:"bytes,2,opt"`
+	_     [0]func()
 }
 
 type D8FCClientInfo struct {
 	Implat       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	IngClientver proto.Option[string] `protobuf:"bytes,2,opt"`
+	_            [0]func()
 }
 
 type D8FCCommCardNameBuf struct {
