@@ -119,17 +119,22 @@ func (c *QQClient) GetTts(text string) ([]byte, error) {
 /* -------- GroupNotice -------- */
 
 type groupNoticeRsp struct {
-	Feeds []*struct {
-		SenderId    uint32 `json:"u"`
-		PublishTime uint64 `json:"pubt"`
-		Message     struct {
-			Text   string        `json:"text"`
-			Images []noticeImage `json:"pics"`
-		} `json:"msg"`
-	} `json:"feeds"`
+	Feeds []*GroupNoticeFeed `json:"feeds"`
+	Inst  []*GroupNoticeFeed `json:"inst"`
+}
+
+type GroupNoticeFeed struct {
+	NoticeId    string `json:"fid"`
+	SenderId    uint32 `json:"u"`
+	PublishTime uint64 `json:"pubt"`
+	Message     struct {
+		Text   string        `json:"text"`
+		Images []noticeImage `json:"pics"`
+	} `json:"msg"`
 }
 
 type GroupNoticeMessage struct {
+	NoticeId    string `json:"notice_id"`
 	SenderId    uint32 `json:"sender_id"`
 	PublishTime uint64 `json:"publish_time"`
 	Message     struct {
@@ -187,9 +192,8 @@ func (c *QQClient) GetGroupNotice(groupCode int64) (l []*GroupNoticeMessage, err
 }
 
 func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage {
-	o := make([]*GroupNoticeMessage, 0, len(s.Feeds))
-	for _, v := range s.Feeds {
-
+	o := make([]*GroupNoticeMessage, 0, len(s.Feeds)+len(s.Inst))
+	parse := func(v *GroupNoticeFeed) {
 		ims := make([]GroupNoticeImage, 0, len(v.Message.Images))
 		for i := 0; i < len(v.Message.Images); i++ {
 			ims = append(ims, GroupNoticeImage{
@@ -200,6 +204,7 @@ func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage
 		}
 
 		o = append(o, &GroupNoticeMessage{
+			NoticeId:    v.NoticeId,
 			SenderId:    v.SenderId,
 			PublishTime: v.PublishTime,
 			Message: struct {
@@ -211,7 +216,12 @@ func (c *QQClient) parseGroupNoticeJson(s *groupNoticeRsp) []*GroupNoticeMessage
 			},
 		})
 	}
-
+	for _, v := range s.Feeds {
+		parse(v)
+	}
+	for _, v := range s.Inst {
+		parse(v)
+	}
 	return o
 }
 
@@ -272,6 +282,15 @@ func (c *QQClient) AddGroupNoticeWithPic(groupCode int64, text string, pic []byt
 	}
 	body := fmt.Sprintf(`qid=%v&bkn=%v&text=%v&pinned=0&type=1&settings={"is_show_edit_card":0,"tip_window_type":1,"confirm_required":1}&pic=%v&imgWidth=%v&imgHeight=%v`, groupCode, c.getCSRFToken(), url.QueryEscape(text), img.ID, img.Width, img.Height)
 	_, err = utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/add_qun_notice?bkn="+fmt.Sprint(c.getCSRFToken()), []byte(body), c.getCookiesWithDomain("qun.qq.com"))
+	if err != nil {
+		return errors.Wrap(err, "request error")
+	}
+	return nil
+}
+
+func (c *QQClient) DelGroupNotice(groupCode int64, fid string) error {
+	body := fmt.Sprintf(`fid=%s&qid=%v&bkn=%v&ft=23&op=1`, fid, groupCode, c.getCSRFToken())
+	_, err := utils.HttpPostBytesWithCookie("https://web.qun.qq.com/cgi-bin/announce/del_feed", []byte(body), c.getCookiesWithDomain("qun.qq.com"))
 	if err != nil {
 		return errors.Wrap(err, "request error")
 	}
