@@ -163,8 +163,12 @@ func (l *forwardMsgLinker) link(name string) *message.ForwardMessage {
 			}
 		}
 
+		gid := int64(0) // 给群号一个缺省值0，防止在读合并转发的私聊内容时候会报错
+		if m.Head.GroupInfo != nil {
+			gid = m.Head.GroupInfo.GroupCode.Unwrap()
+		}
 		nodes = append(nodes, &message.ForwardNode{
-			GroupId:    m.Head.GroupInfo.GroupCode.Unwrap(),
+			GroupId:    gid,
 			SenderId:   m.Head.FromUin.Unwrap(),
 			SenderName: name,
 			Time:       m.Head.MsgTime.Unwrap(),
