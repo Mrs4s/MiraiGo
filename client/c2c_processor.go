@@ -106,7 +106,7 @@ func privateMessageDecoder(c *QQClient, pMsg *msg.Message, _ *network.IncomingPa
 			for {
 				frdSeq := c.friendSeq.Load()
 				if frdSeq < pMsg.Head.MsgSeq.Unwrap() {
-					if c.friendSeq.CAS(frdSeq, pMsg.Head.MsgSeq.Unwrap()) {
+					if c.friendSeq.CompareAndSwap(frdSeq, pMsg.Head.MsgSeq.Unwrap()) {
 						break
 					}
 				} else {

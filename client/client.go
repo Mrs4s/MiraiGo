@@ -9,10 +9,10 @@ import (
 	"sort"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
-	"go.uber.org/atomic"
 
 	"github.com/RomiChan/syncx"
 

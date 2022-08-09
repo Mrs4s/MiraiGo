@@ -1,8 +1,6 @@
 package client
 
-import (
-	"go.uber.org/atomic"
-)
+import "sync/atomic"
 
 type Statistics struct {
 	PacketReceived  atomic.Uint64 `json:"packet_received"`
