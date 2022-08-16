@@ -1,7 +1,6 @@
 package client
 
 import (
-	"errors"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
@@ -48,9 +47,6 @@ func (c *QQClient) GetGroupSystemMessages() (*GroupSystemMessages, error) {
 	i, err := c.sendAndWait(c.buildSystemMsgNewGroupPacket(false))
 	if err != nil {
 		return nil, err
-	}
-	if i == nil {
-		return nil, errors.New("nil response")
 	}
 	msg := i.(*GroupSystemMessages)
 	i, err = c.sendAndWait(c.buildSystemMsgNewGroupPacket(true))
