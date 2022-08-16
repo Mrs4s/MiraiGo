@@ -180,7 +180,7 @@ func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.Request
 	for {
 		select {
 		case rsp := <-ch:
-			if rsp.Response == nil {
+			if rsp.Response == nil && rsp.Error == nil {
 				return nil, errors.New("Response is nil")
 			}
 			return rsp.Response, rsp.Error
