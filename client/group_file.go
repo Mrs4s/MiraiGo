@@ -391,14 +391,20 @@ func decodeOIDB6d7Response(_ *QQClient, _ *network.IncomingPacketInfo, payload [
 	if err != nil {
 		return nil, err
 	}
-	if retCode := rsp.CreateFolderRsp.RetCode.Unwrap(); retCode != 0 {
-		return nil, errors.Errorf("create folder error: %v", retCode)
+	if createRsp := rsp.CreateFolderRsp; createRsp != nil {
+		if retCode := createRsp.RetCode.Unwrap(); retCode != 0 {
+			return nil, errors.Errorf("create folder error: %v", retCode)
+		}
 	}
-	if retCode := rsp.RenameFolderRsp.RetCode.Unwrap(); retCode != 0 {
-		return nil, errors.Errorf("rename folder error: %v", retCode)
+	if renameRsp := rsp.RenameFolderRsp; renameRsp != nil {
+		if retCode := renameRsp.RetCode.Unwrap(); retCode != 0 {
+			return nil, errors.Errorf("rename folder error: %v", retCode)
+		}
 	}
-	if retCode := rsp.DeleteFolderRsp.RetCode.Unwrap(); retCode != 0 {
-		return nil, errors.Errorf("delete folder error: %v", retCode)
+	if deleteRsp := rsp.DeleteFolderRsp; deleteRsp != nil {
+		if retCode := deleteRsp.RetCode.Unwrap(); retCode != 0 {
+			return nil, errors.Errorf("delete folder error: %v", retCode)
+		}
 	}
 	return nil, nil
 }
