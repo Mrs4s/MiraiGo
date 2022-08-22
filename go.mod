@@ -9,8 +9,8 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.15
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.0
-	github.com/tidwall/gjson v1.14.2
-	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
+	github.com/tidwall/gjson v1.14.3
+	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 )
 
 require (
