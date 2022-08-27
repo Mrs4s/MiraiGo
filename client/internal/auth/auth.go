@@ -77,8 +77,8 @@ func (i Protocol) Version() *AppVersion {
 	case MacOS:
 		return &AppVersion{
 			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537064315,
-			SubAppId:        537064315,
+			AppId:           537128930,
+			SubAppId:        537128930,
 			SortVersionName: "5.8.9",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
