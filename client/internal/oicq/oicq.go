@@ -111,16 +111,13 @@ func (c *Codec) Unmarshal(data []byte) (*Message, error) {
 	reader.ReadByte()
 	switch encryptType {
 	case 0:
-		m.Body = func() (decrypted []byte) {
-			d := reader.ReadBytes(reader.Len() - 1)
-			defer func() {
-				if pan := recover(); pan != nil {
-					tea := binary.NewTeaCipher(c.randomKey)
-					decrypted = tea.Decrypt(d)
-				}
-			}()
-			return binary.NewTeaCipher(c.ecdh.ShareKey).Decrypt(d)
+		d := reader.ReadBytes(reader.Len() - 1)
+		defer func() {
+			if pan := recover(); pan != nil {
+				m.Body = binary.NewTeaCipher(c.randomKey).Decrypt(d)
+			}
 		}()
+		m.Body = binary.NewTeaCipher(c.ecdh.ShareKey).Decrypt(d)
 	case 3:
 		d := reader.ReadBytes(reader.Len() - 1)
 		m.Body = binary.NewTeaCipher(c.WtSessionTicketKey).Decrypt(d)
