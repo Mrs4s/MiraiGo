@@ -1,9 +1,6 @@
 package crypto
 
 import (
-	"crypto/elliptic"
-	"crypto/md5"
-	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
@@ -26,19 +23,9 @@ func NewECDH() *ECDH {
 	e := &ECDH{
 		SvrPublicKeyVer: 1,
 	}
-	e.generateKey(serverPublicKey)
+	key, _ := hex.DecodeString(serverPublicKey)
+	e.init(key)
 	return e
-}
-
-func (e *ECDH) generateKey(sPubKey string) {
-	pub, _ := hex.DecodeString(sPubKey)
-	p256 := elliptic.P256()
-	key, sx, sy, _ := elliptic.GenerateKey(p256, rand.Reader)
-	tx, ty := elliptic.Unmarshal(p256, pub)
-	x, _ := p256.ScalarMult(tx, ty, key)
-	hash := md5.Sum(x.Bytes()[:16])
-	e.ShareKey = hash[:]
-	e.PublicKey = elliptic.Marshal(p256, sx, sy)
 }
 
 type pubKeyResp struct {
@@ -61,5 +48,6 @@ func (e *ECDH) FetchPubKey(uin int64) {
 		return
 	}
 	e.SvrPublicKeyVer = pubKey.Meta.PubKeyVer
-	e.generateKey(pubKey.Meta.PubKey) // todo check key sign
+	key, _ := hex.DecodeString(pubKey.Meta.PubKey)
+	e.init(key) // todo check key sign
 }
