@@ -190,7 +190,7 @@ func (e *GuildImageElement) Pack() (r []*msg.Elem) {
 		Size:      proto.Some(e.Size),
 		Md5:       e.Md5,
 		PbReserve: proto.DynamicMessage{
-			1: uint32(0), 2: uint32(0), 6: "", 10: uint32(0), 15: uint32(8),
+			1: 0, 2: 0, 6: "", 10: 0, 15: 8,
 			20: e.DownloadIndex,
 		}.Encode(),
 	}

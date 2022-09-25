@@ -91,8 +91,8 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 	if target.SourceType != message.SourceGroup { // guild
 		cmd = 83
 		ext = proto.DynamicMessage{
-			11: uint64(target.PrimaryID),
-			12: uint64(target.SecondaryID),
+			11: target.PrimaryID,
+			12: target.SecondaryID,
 		}.Encode()
 	}
 

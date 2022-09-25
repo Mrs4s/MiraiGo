@@ -7,6 +7,13 @@ import (
 
 type DynamicMessage map[uint64]any
 
+// zigzag encoding types
+type (
+	SInt   int
+	SInt32 int32
+	SInt64 int64
+)
+
 type encoder struct {
 	buf []byte
 }
@@ -26,19 +33,31 @@ func (msg DynamicMessage) Encode() []byte {
 			en.uvarint(vi)
 		case int:
 			en.uvarint(key | 0)
-			en.svarint(int64(v))
+			en.uvarint(uint64(v))
+		case uint:
+			en.uvarint(key | 0)
+			en.uvarint(uint64(v))
 		case int32:
 			en.uvarint(key | 0)
-			en.svarint(int64(v))
+			en.uvarint(uint64(v))
 		case int64:
 			en.uvarint(key | 0)
-			en.svarint(v)
+			en.uvarint(uint64(v))
 		case uint32:
 			en.uvarint(key | 0)
 			en.uvarint(uint64(v))
 		case uint64:
 			en.uvarint(key | 0)
 			en.uvarint(v)
+		case SInt:
+			en.uvarint(key | 0)
+			en.svarint(int64(v))
+		case SInt32:
+			en.uvarint(key | 0)
+			en.svarint(int64(v))
+		case SInt64:
+			en.uvarint(key | 0)
+			en.svarint(int64(v))
 		case float32:
 			en.uvarint(key | 5)
 			en.u32(math.Float32bits(v))
@@ -69,23 +88,17 @@ func (msg DynamicMessage) Encode() []byte {
 }
 
 func (en *encoder) uvarint(v uint64) {
-	var b [binary.MaxVarintLen64]byte
-	n := binary.PutUvarint(b[:], v)
-	en.buf = append(en.buf, b[:n]...)
+	en.buf = binary.AppendUvarint(en.buf, v)
 }
 
 func (en *encoder) svarint(v int64) {
-	en.uvarint(uint64(v)<<1 ^ uint64(v>>63))
+	en.buf = binary.AppendVarint(en.buf, v)
 }
 
 func (en *encoder) u32(v uint32) {
-	var b [4]byte
-	binary.LittleEndian.PutUint32(b[:], v)
-	en.buf = append(en.buf, b[:]...)
+	en.buf = binary.LittleEndian.AppendUint32(en.buf, v)
 }
 
 func (en *encoder) u64(v uint64) {
-	var b [8]byte
-	binary.LittleEndian.PutUint64(b[:], v)
-	en.buf = append(en.buf, b[:]...)
+	en.buf = binary.LittleEndian.AppendUint64(en.buf, v)
 }
