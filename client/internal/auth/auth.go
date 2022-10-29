@@ -62,9 +62,9 @@ func (i Protocol) Version() *AppVersion {
 	case IPad:
 		return &AppVersion{
 			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537097188,
-			SubAppId:        537097188,
-			SortVersionName: "8.8.35",
+			AppId:           537118796,
+			SubAppId:        537118796,
+			SortVersionName: "5.9.3",
 			BuildTime:       1595836208,
 			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
 			SdkVersion:      "6.0.0.2433",
