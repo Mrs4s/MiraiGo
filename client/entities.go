@@ -296,6 +296,7 @@ type (
 	unit = struct{}
 )
 
+//go:generate stringer -type=LoginError
 const (
 	NeedCaptcha            LoginError = 1
 	OtherLoginError        LoginError = 3
