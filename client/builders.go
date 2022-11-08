@@ -1196,3 +1196,32 @@ func (c *QQClient) buildUpdateProfileDetailPacket(profileRecord map[uint16][]byt
 	cl()
 	return c.uniPacket("OidbSvc.0x4ff_9_IMCore", payload)
 }
+
+// VisitorSvc.ReqFavorite
+func (c *QQClient) buildVisitorSvcPacket(uin int64, count int64) (uint16, []byte) {
+	req := &jce.VisitorSvcRequest{
+		Info: &jce.VisitorSvcInfo {
+			Uin: c.Uin,
+			A  : 1,
+			Seq: int16(c.nextSeq()),
+			B  : 1,
+			BS : []byte{0x0C,0x18,0x00,0x01,0x06,0x01,0x31,0x16,0x01,0x31},
+		},
+		Uin  : uin,
+		B    : 1,
+		Count: count,
+	}
+	if nil == c.FindFriend(uin) { req.B = 5 }
+
+	buf := &jce.RequestDataVersion3{Map: map[string][]byte{"ReqFavorite": packUniRequestData(req.ToBytes())}}
+	pkt := &jce.RequestPacket{
+		IVersion    : 3,
+		IRequestId  : c.nextPacketSeq(),
+		SServantName: "VisitorSvc",
+		SFuncName   : "ReqFavorite",
+		SBuffer     : buf.ToBytes(),
+		Context     : map[string]string{},
+		Status      : map[string]string{},
+	}
+	return c.uniPacket("VisitorSvc.ReqFavorite", pkt.ToBytes())
+}
