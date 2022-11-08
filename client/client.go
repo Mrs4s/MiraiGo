@@ -689,6 +689,13 @@ func (c *QQClient) FindGroup(code int64) *GroupInfo {
 	return nil
 }
 
+// 点赞, 默认一次, 支持陌生人点赞
+// 移植自 https://github.com/xfdown/oicq/commit/51f13200d1a4e0ce35bc3298bf74ad8131aa8e75
+func (c *QQClient) ThumbUp(uin int64, count int64) {
+	if count < 1 || count > 20 { count = 1 }
+	_, _ = c.sendAndWait(c.buildVisitorSvcPacket(uin, count))
+}
+
 func (c *QQClient) SolveGroupJoinRequest(i any, accept, block bool, reason string) {
 	if accept {
 		block = false

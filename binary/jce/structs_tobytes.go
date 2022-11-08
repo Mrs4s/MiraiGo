@@ -758,3 +758,20 @@ func (pkt *VipInfo) ToBytes() []byte {
 	w.WriteInt32(pkt.Level, 2)
 	return w.Bytes()
 }
+
+func (pkt *VisitorSvcRequest) ToBytes() []byte {
+	w := NewJceWriter()
+	w.writeHead (10, 0)
+	w.WriteInt64(pkt.Info.Uin, 0)
+	w.WriteInt64(pkt.Info.A  , 1)
+	w.WriteInt16(pkt.Info.Seq, 2)
+	w.WriteInt64(pkt.Info.B  , 3)
+	w.WriteInt64(pkt.Info.C  , 4)
+	w.WriteBytes(pkt.Info.BS , 5)
+	w.writeHead (11, 0)
+	w.WriteInt64(pkt.Uin  , 1)
+	w.WriteInt64(pkt.A    , 2)
+	w.WriteInt64(pkt.B    , 3)
+	w.WriteInt64(pkt.Count, 4)
+	return w.Bytes()
+}
