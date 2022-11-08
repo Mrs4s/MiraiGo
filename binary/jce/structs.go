@@ -533,6 +533,24 @@ type (
 		Type  int32 `jceId:"1"` // 1 为年费
 		Level int32 `jceId:"2"`
 	}
+	
+	// 赞
+	VisitorSvcInfo struct {
+		Uin  int64  `jceId:"0"`
+		A    int64  `jceId:"1"`
+		Seq  int16  `jceId:"2"`
+		B    int64  `jceId:"3"`
+		C    int64  `jceId:"4"`
+		BS   []byte `jceId:"5"`
+	}
+
+	VisitorSvcRequest struct {
+		Info *VisitorSvcInfo `jceId:"0"`
+		Uin   int64          `jceId:"1"`
+		A     int64          `jceId:"2"`
+		B     int64          `jceId:"3"`
+		Count int64          `jceId:"4"`
+	}
 )
 
 func (pkt *RequestPacket) ReadFrom(r *JceReader) {
