@@ -312,6 +312,8 @@ func decodeMsgSendResponse(c *QQClient, _ *network.IncomingPacketInfo, payload [
 	}
 	switch rsp.Result.Unwrap() {
 	case 0: // OK.
+	case 46:
+		c.error("sendPacket msg error: 需要使用安全设备验证")
 	case 55:
 		c.error("sendPacket msg error: %v Bot has blocked ta.'s content", rsp.Result.Unwrap())
 	default:
