@@ -349,6 +349,7 @@ const (
 	MacOS        = auth.MacOS
 	QiDian       = auth.QiDian
 	IPad         = auth.IPad
+	AndroidPad   = auth.AndroidPad
 )
 
 func (r *UserJoinGroupRequest) Accept() {

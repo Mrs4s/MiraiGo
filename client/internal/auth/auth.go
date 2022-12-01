@@ -10,6 +10,7 @@ const (
 	MacOS                 // MacOS
 	QiDian                // 企点
 	IPad                  // iPad
+	AndroidPad            // Android Pad (和Android Phone同一个包) (com.tencent.common.config.AppSetting)
 )
 
 type AppVersion struct {
@@ -29,16 +30,31 @@ type AppVersion struct {
 
 func (i Protocol) Version() *AppVersion {
 	switch i {
-	case AndroidPhone: // Dumped by mirai from qq android v8.8.38
+	case AndroidPhone:
 		return &AppVersion{
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537122601,
-			SubAppId:        537122601,
-			SortVersionName: "8.8.95",
-			BuildTime:       1654672174,
+			AppId:           537143097,
+			SubAppId:        537143097,
+			SortVersionName: "8.9.23.9425",
+			BuildTime:       1640921786,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2512",
-			SSOVersion:      18,
+			SdkVersion:      "6.0.0.2530",
+			SSOVersion:      19,
+			MiscBitmap:      150470524,
+			SubSigmap:       0x10400,
+			MainSigMap:      16724722,
+			Protocol:        i,
+		}
+	case AndroidPad:
+		return &AppVersion{
+			ApkId:           "com.tencent.mobileqq",
+			AppId:           537142586,
+			SubAppId:        537142586,
+			SortVersionName: "8.9.23.9425",
+			BuildTime:       1640921786,
+			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
+			SdkVersion:      "6.0.0.2530",
+			SSOVersion:      19,
 			MiscBitmap:      150470524,
 			SubSigmap:       0x10400,
 			MainSigMap:      16724722,
