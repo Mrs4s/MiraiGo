@@ -10,7 +10,7 @@ const (
 	MacOS                 // MacOS
 	QiDian                // 企点
 	IPad                  // iPad
-	AndroidPad            // Android Pad (和Android Phone同一个包) (com.tencent.common.config.AppSetting)
+	AndroidPad            // Android Pad
 )
 
 type AppVersion struct {

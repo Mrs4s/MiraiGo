@@ -14,11 +14,12 @@ func _() {
 	_ = x[MacOS-3]
 	_ = x[QiDian-4]
 	_ = x[IPad-5]
+	_ = x[AndroidPad-6]
 }
 
-const _Protocol_name = "UnsetAndroid PhoneAndroid WatchMacOS企点iPad"
+const _Protocol_name = "UnsetAndroid PhoneAndroid WatchMacOS企点iPadAndroid Pad"
 
-var _Protocol_index = [...]uint8{0, 5, 18, 31, 36, 42, 46}
+var _Protocol_index = [...]uint8{0, 5, 18, 31, 36, 42, 46, 57}
 
 func (i Protocol) String() string {
 	if i < 0 || i >= Protocol(len(_Protocol_index)-1) {
