@@ -49,6 +49,9 @@ func decodeGuildEventFlowPacket(c *QQClient, _ *network.IncomingPacketInfo, payl
 		push.Msgs = press.Msgs
 	}
 	for _, m := range push.Msgs {
+		if m.Head == nil {
+			continue
+		}
 		if m.Head.ContentHead.Type.Unwrap() == 3841 {
 			// todo: 回头 event flow 的处理移出去重构下逻辑, 先暂时这样方便改
 			var common *msg.CommonElem
