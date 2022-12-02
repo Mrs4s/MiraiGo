@@ -12,7 +12,7 @@ func (e *ECDH) init(svrPubKey []byte) {
 	p256 := ecdh.P256()
 	local, _ := p256.GenerateKey(rand.Reader)
 	remote, _ := p256.NewPublicKey(svrPubKey)
-	share, _ := p256.ECDH(local, remote)
+	share, _ := local.ECDH(remote)
 
 	hash := md5.New()
 	hash.Write(share[:16])
