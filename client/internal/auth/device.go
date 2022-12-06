@@ -134,7 +134,7 @@ func (info *Device) ReadJson(d []byte) error {
 	}
 
 	switch f.Protocol {
-	case 1, 2, 3, 4, 5:
+	case 1, 2, 3, 4, 5, 6:
 		info.Protocol = Protocol(f.Protocol)
 	default:
 		info.Protocol = IPad
