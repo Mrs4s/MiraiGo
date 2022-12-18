@@ -37,13 +37,13 @@ type SendMessageRequest struct {
 	MsgSeq      proto.Option[int32] `protobuf:"varint,4,opt"`
 	MsgRand     proto.Option[int32] `protobuf:"varint,5,opt"`
 	SyncCookie  []byte              `protobuf:"bytes,6,opt"`
-	//MsgComm.AppShareInfo? appShare = 7;
+	// MsgComm.AppShareInfo? appShare = 7;
 	MsgVia      proto.Option[int32] `protobuf:"varint,8,opt"`
 	DataStatist proto.Option[int32] `protobuf:"varint,9,opt"`
-	//MultiMsgAssist? multiMsgAssist = 10;
-	//PbInputNotifyInfo? inputNotifyInfo = 11;
+	// MultiMsgAssist? multiMsgAssist = 10;
+	// PbInputNotifyInfo? inputNotifyInfo = 11;
 	MsgCtrl *MsgCtrl `protobuf:"bytes,12,opt"`
-	//ImReceipt.ReceiptReq? receiptReq = 13;
+	// ImReceipt.ReceiptReq? receiptReq = 13;
 	MultiSendSeq proto.Option[int32] `protobuf:"varint,14,opt"`
 }
 
@@ -208,52 +208,52 @@ type Elem struct {
 	NotOnlineImage *NotOnlineImage `protobuf:"bytes,4,opt"`
 	TransElemInfo  *TransElem      `protobuf:"bytes,5,opt"`
 	MarketFace     *MarketFace     `protobuf:"bytes,6,opt"`
-	//ElemFlags elemFlags = 7;
+	// ElemFlags elemFlags = 7;
 	CustomFace *CustomFace `protobuf:"bytes,8,opt"`
 	ElemFlags2 *ElemFlags2 `protobuf:"bytes,9,opt"`
-	//FunFace funFace = 10;
-	//SecretFileMsg secretFile = 11;
+	// FunFace funFace = 10;
+	// SecretFileMsg secretFile = 11;
 	RichMsg   *RichMsg   `protobuf:"bytes,12,opt"`
 	GroupFile *GroupFile `protobuf:"bytes,13,opt"`
-	//PubGroup pubGroup = 14;
-	//MarketTrans marketTrans = 15;
+	// PubGroup pubGroup = 14;
+	// MarketTrans marketTrans = 15;
 	ExtraInfo *ExtraInfo `protobuf:"bytes,16,opt"`
-	//ShakeWindow? shakeWindow = 17;
-	//PubAccount? pubAccount = 18;
+	// ShakeWindow? shakeWindow = 17;
+	// PubAccount? pubAccount = 18;
 	VideoFile *VideoFile `protobuf:"bytes,19,opt"`
-	//TipsInfo? tipsInfo = 20;
+	// TipsInfo? tipsInfo = 20;
 	AnonGroupMsg *AnonymousGroupMessage `protobuf:"bytes,21,opt"`
-	//QQLiveOld? qqLiveOld = 22;
-	//LifeOnlineAccount? lifeOnline = 23;
+	// QQLiveOld? qqLiveOld = 22;
+	// LifeOnlineAccount? lifeOnline = 23;
 	QQWalletMsg *QQWalletMsg `protobuf:"bytes,24,opt"`
-	//CrmElem? crmElem = 25;
-	//ConferenceTipsInfo? conferenceTipsInfo = 26;
-	//RedBagInfo? redbagInfo = 27;
-	//LowVersionTips? lowVersionTips = 28;
-	//bytes bankcodeCtrlInfo = 29;
-	//NearByMessageType? nearByMsg = 30;
+	// CrmElem? crmElem = 25;
+	// ConferenceTipsInfo? conferenceTipsInfo = 26;
+	// RedBagInfo? redbagInfo = 27;
+	// LowVersionTips? lowVersionTips = 28;
+	// bytes bankcodeCtrlInfo = 29;
+	// NearByMessageType? nearByMsg = 30;
 	CustomElem *CustomElem `protobuf:"bytes,31,opt"`
-	//LocationInfo? locationInfo = 32;
-	//PubAccInfo? pubAccInfo = 33;
-	//SmallEmoji? smallEmoji = 34;
-	//FSJMessageElem? fsjMsgElem = 35;
-	//ArkAppElem? arkApp = 36;
+	// LocationInfo? locationInfo = 32;
+	// PubAccInfo? pubAccInfo = 33;
+	// SmallEmoji? smallEmoji = 34;
+	// FSJMessageElem? fsjMsgElem = 35;
+	// ArkAppElem? arkApp = 36;
 	GeneralFlags *GeneralFlags `protobuf:"bytes,37,opt"`
-	//CustomFace? hcFlashPic = 38;
-	//DeliverGiftMsg? deliverGiftMsg = 39;
-	//BitAppMsg? bitappMsg = 40;
-	//OpenQQData? openQqData = 41;
-	//ApolloActMsg? apolloMsg = 42;
-	//GroupPubAccountInfo? groupPubAccInfo = 43;
-	//BlessingMessage? blessMsg = 44;
+	// CustomFace? hcFlashPic = 38;
+	// DeliverGiftMsg? deliverGiftMsg = 39;
+	// BitAppMsg? bitappMsg = 40;
+	// OpenQQData? openQqData = 41;
+	// ApolloActMsg? apolloMsg = 42;
+	// GroupPubAccountInfo? groupPubAccInfo = 43;
+	// BlessingMessage? blessMsg = 44;
 	SrcMsg *SourceMsg `protobuf:"bytes,45,opt"`
-	//LolaMsg? lolaMsg = 46;
-	//GroupBusinessMsg? groupBusinessMsg = 47;
-	//WorkflowNotifyMsg? msgWorkflowNotify = 48;
-	//PatsElem? patElem = 49;
-	//GroupPostElem? groupPostElem = 50;
+	// LolaMsg? lolaMsg = 46;
+	// GroupBusinessMsg? groupBusinessMsg = 47;
+	// WorkflowNotifyMsg? msgWorkflowNotify = 48;
+	// PatsElem? patElem = 49;
+	// GroupPostElem? groupPostElem = 50;
 	LightApp *LightAppElem `protobuf:"bytes,51,opt"`
-	//EIMInfo? eimInfo = 52;
+	// EIMInfo? eimInfo = 52;
 	CommonElem *CommonElem `protobuf:"bytes,53,opt"`
 	_          [0]func()
 }

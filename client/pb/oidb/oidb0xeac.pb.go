@@ -18,7 +18,7 @@ type EACRspBody struct {
 	Wording    proto.Option[string] `protobuf:"bytes,1,opt"`
 	DigestUin  proto.Option[uint64] `protobuf:"varint,2,opt"`
 	DigestTime proto.Option[uint32] `protobuf:"varint,3,opt"`
-	//optional DigestMsg msg = 4;
+	// optional DigestMsg msg = 4;
 	ErrorCode proto.Option[uint32] `protobuf:"varint,10,opt"`
 	_         [0]func()
 }
