@@ -130,3 +130,69 @@ func (c *QQClient) buildRichMsgSendingPacket(guild uint64, target int64, msg *me
 	payload := c.packOIDBPackage(2935, 9, b)
 	return c.uniPacket("OidbSvc.0xb77_9", payload)
 }
+
+// SendGroupArkSign 发送群聊 JSON 卡片
+func (c *QQClient) SendGroupArkSign(target int64, msg *message.LightAppElement) (*message.GroupMessage, error) {
+	ch := make(chan *message.GroupMessage, 2)
+	eid := utils.RandomString(6)
+	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
+		for _, elem := range e.Msg.Elements {
+			if elem.Type() == message.LightApp || elem.Type() == message.Service {
+				ch <- e.Msg
+			}
+		}
+	})
+	defer c.onGroupMessageReceipt(eid)
+	_, _ = c.sendAndWait(c.buildRichMsgSignPacket(0, target, msg, 1)) // rsp is empty chunk
+	select {
+	case ret := <-ch:
+		return ret, nil
+	case <-time.After(time.Second * 5):
+		return nil, errors.New("timeout")
+	}
+}
+
+// SendFriendArkSign 发送好友 JSON 卡片
+func (c *QQClient) SendFriendArkSign(target int64, msg *message.LightAppElement) {
+	_, _ = c.sendAndWait(c.buildRichMsgSignPacket(0, target, msg, 0))
+}
+
+// SendGuildArkSign 发送频道 JSON 卡片
+func (c *QQClient) SendGuildArkSign(guildID, channelID uint64, msg *message.LightAppElement) {
+	// todo(wdvxdr): message receipt?
+	_, _ = c.sendAndWait(c.buildRichMsgSignPacket(guildID, int64(channelID), msg, 3))
+}
+
+// OidbSvc.0xb77_9 ArkSign
+func (c *QQClient) buildRichMsgSignPacket(guild uint64, target int64, msg *message.LightAppElement, sendType uint32) (uint16, []byte) {
+	// From: https://github.com/mamoe/mirai/issues/2279#issuecomment-1301550759
+	body := &oidb.DB77ReqBody{
+		AppId:    100951776,
+		AppType:  1,
+		MsgStyle: 10,
+		ClientInfo: &oidb.DB77ClientInfo{
+			Platform:           1,
+			SdkVersion:         "0.0.0",
+			AndroidPackageName: "tv.danmaku.bili",
+			AndroidSignature:   "7194d531cbe7960a22007b9f6bdaa38b",
+		},
+		ExtInfo:  &oidb.DB77ExtInfo{MsgSeq: rand.Uint64()},
+		SendType: sendType,
+		RecvUin:  uint64(target),
+		MiniAppMsgBody: &oidb.DB77MiniAppMsgBody{
+			MiniAppAppid: 1109937557,
+			MiniAppPath: &oidb.DB77MiniAppPath{
+				MiniAppPathData: "pages",
+			},
+			WebPageUrl:  "url",
+			MiniAppType: "text",
+			Title:       "text",
+			Desc:        "text",
+			JsonStr:     msg.Content,
+		},
+		RecvGuildId: guild,
+	}
+	b, _ := proto.Marshal(body)
+	payload := c.packOIDBPackage(2935, 9, b)
+	return c.uniPacket("OidbSvc.0xb77_9", payload)
+}

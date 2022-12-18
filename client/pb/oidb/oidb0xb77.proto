@@ -13,6 +13,7 @@ message DB77ReqBody {
   uint32 sendType = 10;
   uint64 recvUin = 11;
   DB77RichMsgBody richMsgBody = 12;
+  DB77MiniAppMsgBody miniAppMsgBody = 18;
   uint64 recvGuildId = 19;
 }
 
@@ -42,4 +43,18 @@ message DB77RichMsgBody {
   string action = 15;
   string musicUrl = 16;
   //ImageInfo imageInfo = 17;
+}
+
+message DB77MiniAppMsgBody {
+  uint64 miniAppAppid = 1;
+  DB77MiniAppPath miniAppPath  = 2;
+  string webPageUrl = 3;
+  string miniAppType = 4;
+  string title = 5;
+  string desc = 6;
+  string jsonStr = 10;
+}
+
+message DB77MiniAppPath {
+  string MiniAppPathData = 14;
 }

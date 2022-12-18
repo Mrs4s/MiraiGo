@@ -4,18 +4,19 @@
 package oidb
 
 type DB77ReqBody struct {
-	AppId       uint64           `protobuf:"varint,1,opt"`
-	AppType     uint32           `protobuf:"varint,2,opt"`
-	MsgStyle    uint32           `protobuf:"varint,3,opt"`
-	SenderUin   uint64           `protobuf:"varint,4,opt"`
-	ClientInfo  *DB77ClientInfo  `protobuf:"bytes,5,opt"`
-	TextMsg     string           `protobuf:"bytes,6,opt"`
-	ExtInfo     *DB77ExtInfo     `protobuf:"bytes,7,opt"`
-	SendType    uint32           `protobuf:"varint,10,opt"`
-	RecvUin     uint64           `protobuf:"varint,11,opt"`
-	RichMsgBody *DB77RichMsgBody `protobuf:"bytes,12,opt"`
-	RecvGuildId uint64           `protobuf:"varint,19,opt"`
-	_           [0]func()
+	AppId          uint64              `protobuf:"varint,1,opt"`
+	AppType        uint32              `protobuf:"varint,2,opt"`
+	MsgStyle       uint32              `protobuf:"varint,3,opt"`
+	SenderUin      uint64              `protobuf:"varint,4,opt"`
+	ClientInfo     *DB77ClientInfo     `protobuf:"bytes,5,opt"`
+	TextMsg        string              `protobuf:"bytes,6,opt"`
+	ExtInfo        *DB77ExtInfo        `protobuf:"bytes,7,opt"`
+	SendType       uint32              `protobuf:"varint,10,opt"`
+	RecvUin        uint64              `protobuf:"varint,11,opt"`
+	RichMsgBody    *DB77RichMsgBody    `protobuf:"bytes,12,opt"`
+	MiniAppMsgBody *DB77MiniAppMsgBody `protobuf:"bytes,18,opt"`
+	RecvGuildId    uint64              `protobuf:"varint,19,opt"`
+	_              [0]func()
 }
 
 type DB77ClientInfo struct {
@@ -45,4 +46,20 @@ type DB77RichMsgBody struct {
 	Action     string `protobuf:"bytes,15,opt"`
 	MusicUrl   string `protobuf:"bytes,16,opt"` //ImageInfo imageInfo = 17;
 	_          [0]func()
+}
+
+type DB77MiniAppMsgBody struct {
+	MiniAppAppid uint64           `protobuf:"varint,1,opt"`
+	MiniAppPath  *DB77MiniAppPath `protobuf:"bytes,2,opt"`
+	WebPageUrl   string           `protobuf:"bytes,3,opt"`
+	MiniAppType  string           `protobuf:"bytes,4,opt"`
+	Title        string           `protobuf:"bytes,5,opt"`
+	Desc         string           `protobuf:"bytes,6,opt"`
+	JsonStr      string           `protobuf:"bytes,10,opt"`
+	_            [0]func()
+}
+
+type DB77MiniAppPath struct {
+	MiniAppPathData string `protobuf:"bytes,14,opt"`
+	_               [0]func()
 }
