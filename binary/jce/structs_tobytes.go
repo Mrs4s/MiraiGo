@@ -758,3 +758,28 @@ func (pkt *VipInfo) ToBytes() []byte {
 	w.WriteInt32(pkt.Level, 2)
 	return w.Bytes()
 }
+
+func (pkt *ServiceReqHeader) ToBytes() []byte {
+	w := NewJceWriter()
+	w.WriteInt64(pkt.Uin, 0)
+	w.WriteInt32(pkt.ShVersion, 1)
+	w.WriteInt32(pkt.Seq, 2)
+	w.WriteInt32(int32(pkt.ReqType), 3)
+	w.WriteInt32(int32(pkt.Triggered), 4)
+	w.WriteBytes(pkt.Cookies, 5)
+	return w.Bytes()
+}
+
+func (pkt *ReqFavorite) ToBytes() []byte {
+	w := NewJceWriter()
+	{
+		w.writeHead(10, 0)
+		w.buf.Write(pkt.Header.ToBytes())
+		w.writeHead(11, 0)
+	}
+	w.WriteInt64(pkt.Mid, 1)
+	w.WriteInt32(pkt.OpType, 2)
+	w.WriteInt32(pkt.Source, 3)
+	w.WriteInt32(pkt.Times, 4)
+	return w.Bytes()
+}

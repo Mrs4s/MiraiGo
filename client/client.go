@@ -858,3 +858,7 @@ func (c *QQClient) doHeartbeat() {
 	}
 	c.heartbeatEnabled = false
 }
+
+func (c *QQClient) SendLike(userID int64, times int32) {
+	_, _ = c.sendAndWait(c.buildSendLikePacket(userID, times))
+}

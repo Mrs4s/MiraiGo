@@ -533,6 +533,24 @@ type (
 		Type  int32 `jceId:"1"` // 1 为年费
 		Level int32 `jceId:"2"`
 	}
+
+	ReqFavorite struct {
+		Header IJceStruct `jceId:"0"`
+		Mid    int64      `jceId:"1"`
+		OpType int32      `jceId:"2"`
+		Source int32      `jceId:"3"`
+		Times  int32      `jceId:"4"`
+	}
+
+	ServiceReqHeader struct {
+		IJceStruct
+		Uin       int64  `jceId:"0"`
+		ShVersion int32  `jceId:"1"`
+		Seq       int32  `jceId:"2"`
+		ReqType   uint8  `jceId:"3"`
+		Triggered uint8  `jceId:"4"`
+		Cookies   []byte `jceId:"5"`
+	}
 )
 
 func (pkt *RequestPacket) ReadFrom(r *JceReader) {

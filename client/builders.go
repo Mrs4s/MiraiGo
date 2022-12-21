@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"math/rand"
 	"time"
@@ -1195,4 +1196,39 @@ func (c *QQClient) buildUpdateProfileDetailPacket(profileRecord map[uint16][]byt
 	payload := c.packOIDBPackage(1279, 9, b)
 	cl()
 	return c.uniPacket("OidbSvc.0x4ff_9_IMCore", payload)
+}
+
+// VisitorSvc.ReqFavorite
+func (c *QQClient) buildSendLikePacket(userID int64, times int32) (uint16, []byte) {
+	cookies, _ := hex.DecodeString("0C180001060131160131")
+
+	req := &jce.ReqFavorite{
+		Header: &jce.ServiceReqHeader{
+			Uin:       c.Uin,
+			ShVersion: 1,
+			Seq:       int32(c.nextSeq()),
+			ReqType:   1,
+			Triggered: 0,
+			Cookies:   cookies,
+		},
+		Mid:    userID,
+		OpType: 0,
+		Source: 1,
+		Times:  times,
+	}
+
+	buf := &jce.RequestDataVersion3{
+		Map: map[string][]byte{
+			"ReqFavorite": packUniRequestData(req.ToBytes()),
+		},
+	}
+
+	pkt := &jce.RequestPacket{
+		IVersion:     3,
+		SServantName: "VisitorSvc",
+		SFuncName:    "ReqFavorite",
+		SBuffer:      buf.ToBytes(),
+	}
+
+	return c.uniPacket("VisitorSvc.ReqFavorite", pkt.ToBytes())
 }
