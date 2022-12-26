@@ -536,7 +536,7 @@ type (
 
 	ReqFavorite struct {
 		Header IJceStruct `jceId:"0"`
-		Mid    int64      `jceId:"1"`
+		UserId int64      `jceId:"1"`
 		OpType int32      `jceId:"2"`
 		Source int32      `jceId:"3"`
 		Times  int32      `jceId:"4"`

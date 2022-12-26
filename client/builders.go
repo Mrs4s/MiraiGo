@@ -1199,7 +1199,11 @@ func (c *QQClient) buildUpdateProfileDetailPacket(profileRecord map[uint16][]byt
 }
 
 // VisitorSvc.ReqFavorite
-func (c *QQClient) buildSendLikePacket(userID int64, times int32) (uint16, []byte) {
+func (c *QQClient) buildSendLikePacket(userId int64, times int32) (uint16, []byte) {
+	if times > 20 {
+		times = 20
+	}
+
 	cookies, _ := hex.DecodeString("0C180001060131160131")
 
 	req := &jce.ReqFavorite{
@@ -1211,7 +1215,7 @@ func (c *QQClient) buildSendLikePacket(userID int64, times int32) (uint16, []byt
 			Triggered: 0,
 			Cookies:   cookies,
 		},
-		Mid:    userID,
+		UserId: userId,
 		OpType: 0,
 		Source: 1,
 		Times:  times,
