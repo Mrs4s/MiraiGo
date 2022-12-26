@@ -777,7 +777,7 @@ func (pkt *ReqFavorite) ToBytes() []byte {
 		w.buf.Write(pkt.Header.ToBytes())
 		w.writeHead(11, 0)
 	}
-	w.WriteInt64(pkt.Mid, 1)
+	w.WriteInt64(pkt.UserId, 1)
 	w.WriteInt32(pkt.OpType, 2)
 	w.WriteInt32(pkt.Source, 3)
 	w.WriteInt32(pkt.Times, 4)
