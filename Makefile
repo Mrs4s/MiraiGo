@@ -1,3 +1,6 @@
+.PHONY: protoc-gen-golite-version clean install-protoc-plugin proto
+.DEFAULT_GOAL := proto
+
 PROTO_DIR=client/pb
 PROTO_OUTPUT_PATH=client
 PROTO_IMPORT_PATH=client
@@ -30,9 +33,6 @@ PROTO_FILES := \
 PROTOC_GEN_GOLITE_VERSION := \
 	$(shell grep "github.com/RomiChan/protobuf" go.mod | awk -F v '{print "v"$$2}')
 
-.PHONY: protoc-gen-golite-version clean install-protoc-plugin proto
-.DEFAULT_GOAL := proto
-
 protoc-gen-golite-version:
 	@echo "Use protoc-gen-golite version: $(PROTOC_GEN_GOLITE_VERSION)"
 
@@ -44,3 +44,9 @@ install-protoc-plugin: protoc-gen-golite-version
 
 proto: install-protoc-plugin
 	protoc --golite_out=$(PROTO_OUTPUT_PATH) --golite_opt=paths=source_relative -I=$(PROTO_IMPORT_PATH) $(PROTO_FILES)
+
+fmt:
+	go vet -stdmethods=false ./...
+
+.EXPORT_ALL_VARIABLES:
+GO111MODULE = on
