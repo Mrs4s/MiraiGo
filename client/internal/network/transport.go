@@ -1,6 +1,7 @@
 package network
 
 import (
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"strconv"
 	"sync"
 
