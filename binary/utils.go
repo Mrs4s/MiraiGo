@@ -72,7 +72,7 @@ func CalculateImageResourceId(md5 []byte) string {
 	AppendUUID(id[1:], md5)
 	id = id[:37]
 	id = append(id, "}.png"...)
-	return utils.B2S(bytes.ToUpper(id))
+	return utils.ByteSliceToString(bytes.ToUpper(id))
 }
 
 func GenUUID(uuid []byte) []byte {

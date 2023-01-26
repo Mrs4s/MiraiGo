@@ -5,6 +5,7 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"io"
 	"net/http"
 
@@ -126,7 +127,7 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 			Sig:  c.QiDian.bigDataReqSession.SigSession,
 		},
 	})
-	tea := binary.NewTeaCipher(c.QiDian.bigDataReqSession.SessionKey)
+	tea := tea.NewCipher(c.QiDian.bigDataReqSession.SessionKey)
 	body := tea.Encrypt(data)
 	url := fmt.Sprintf("http://%v/cgi-bin/httpconn", c.QiDian.bigDataReqAddrs[0])
 	httpReq, _ := http.NewRequest("POST", url, bytes.NewReader(binary.NewWriterF(func(w *binary.Writer) {

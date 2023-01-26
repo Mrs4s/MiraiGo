@@ -178,7 +178,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 		OtherRambleNumber:  proto.Int32(3),
 	})
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
-		"req_PbOffMsg": jce.NewJceWriter().WriteBytes(append([]byte{0, 0, 0, 0}, msgReq...), 0).Bytes(),
+		"req_PbOffMsg": jce.NewWriter().WriteBytes(append([]byte{0, 0, 0, 0}, msgReq...), 0).Bytes(),
 		"req_OffMsg":   packUniRequestData(regReq.ToBytes()),
 	}}
 	pkt := &jce.RequestPacket{
@@ -247,8 +247,8 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 	msgReq.PubaccountCookie = c.sig.PubAccountCookie
 	pubMsg, _ := proto.Marshal(msgReq)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
-		"req_PbOffMsg": jce.NewJceWriter().WriteBytes(append([]byte{0, 0, 0, 0}, offMsg...), 0).Bytes(),
-		"req_PbPubMsg": jce.NewJceWriter().WriteBytes(append([]byte{0, 0, 0, 0}, pubMsg...), 0).Bytes(),
+		"req_PbOffMsg": jce.NewWriter().WriteBytes(append([]byte{0, 0, 0, 0}, offMsg...), 0).Bytes(),
+		"req_PbPubMsg": jce.NewWriter().WriteBytes(append([]byte{0, 0, 0, 0}, pubMsg...), 0).Bytes(),
 		"req_OffMsg":   packUniRequestData(regReq.ToBytes()),
 	}}
 	pkt := &jce.RequestPacket{
@@ -283,10 +283,10 @@ func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte)
 // StatSvc.GetDevLoginInfo
 func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	rsp := jce.NewJceReader(data.Map["SvcRspGetDevLoginInfo"]["QQService.SvcRspGetDevLoginInfo"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	rsp := jce.NewReader(data.Map["SvcRspGetDevLoginInfo"]["QQService.SvcRspGetDevLoginInfo"][1:])
 	d := rsp.ReadSvcDevLoginInfos(4)
 	if len(d) > 0 {
 		return d, nil
@@ -305,10 +305,10 @@ func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload [
 // RegPrxySvc.PushParam
 func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	reader := jce.NewJceReader(data.Map["SvcRespParam"]["RegisterProxySvcPack.SvcRespParam"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	reader := jce.NewReader(data.Map["SvcRespParam"]["RegisterProxySvcPack.SvcRespParam"][1:])
 	rsp := &jce.SvcRespParam{}
 	rsp.ReadFrom(reader)
 	allowedClients, _ := c.GetAllowedClients()
@@ -414,10 +414,10 @@ var loginNotifyLock sync.Mutex
 // StatSvc.SvcReqMSFLoginNotify
 func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	reader := jce.NewJceReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	reader := jce.NewReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])
 	notify := &jce.SvcReqMSFLoginNotify{}
 	notify.ReadFrom(reader)
 	loginNotifyLock.Lock()

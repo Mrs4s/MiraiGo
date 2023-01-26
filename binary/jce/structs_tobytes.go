@@ -3,7 +3,7 @@
 package jce
 
 func (pkt *RequestPacket) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt16(pkt.IVersion, 1)
 	w.WriteByte(pkt.CPacketType, 2)
 	w.WriteInt32(pkt.IMessageType, 3)
@@ -18,19 +18,19 @@ func (pkt *RequestPacket) ToBytes() []byte {
 }
 
 func (pkt *RequestDataVersion3) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.writeMapStrBytes(pkt.Map, 0)
 	return w.Bytes()
 }
 
 func (pkt *RequestDataVersion2) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.writeMapStrMapStrBytes(pkt.Map, 0)
 	return w.Bytes()
 }
 
 func (pkt *SsoServerInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteString(pkt.Server, 1)
 	w.WriteInt32(pkt.Port, 2)
 	w.WriteString(pkt.Location, 8)
@@ -38,7 +38,7 @@ func (pkt *SsoServerInfo) ToBytes() []byte {
 }
 
 func (pkt *FileStoragePushFSSvcList) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	{ // write pkt.UploadList tag=0
 		w.writeHead(9, 0)
 		if len(pkt.UploadList) == 0 {
@@ -140,14 +140,14 @@ func (pkt *FileStoragePushFSSvcList) ToBytes() []byte {
 }
 
 func (pkt *FileStorageServerInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteString(pkt.Server, 1)
 	w.WriteInt32(pkt.Port, 2)
 	return w.Bytes()
 }
 
 func (pkt *BigDataChannel) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	{ // write pkt.IPLists tag=0
 		w.writeHead(9, 0)
 		if len(pkt.IPLists) == 0 {
@@ -170,7 +170,7 @@ func (pkt *BigDataChannel) ToBytes() []byte {
 }
 
 func (pkt *BigDataIPList) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.ServiceType, 0)
 	{ // write pkt.IPList tag=1
 		w.writeHead(9, 1)
@@ -190,7 +190,7 @@ func (pkt *BigDataIPList) ToBytes() []byte {
 }
 
 func (pkt *BigDataIPInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Type, 0)
 	w.WriteString(pkt.Server, 1)
 	w.WriteInt64(pkt.Port, 2)
@@ -198,7 +198,7 @@ func (pkt *BigDataIPInfo) ToBytes() []byte {
 }
 
 func (pkt *SvcReqRegister) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt64(pkt.Bid, 1)
 	w.WriteByte(pkt.ConnType, 2)
@@ -241,7 +241,7 @@ func (pkt *SvcReqRegister) ToBytes() []byte {
 }
 
 func (pkt *SvcRespRegister) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt64(pkt.Bid, 1)
 	w.WriteByte(pkt.ReplyCode, 2)
@@ -266,7 +266,7 @@ func (pkt *SvcRespRegister) ToBytes() []byte {
 }
 
 func (pkt *SvcReqRegisterNew) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.RequestOptional, 0)
 	{ // write C2CMsg tag=1
 		w.writeHead(10, 1)
@@ -286,7 +286,7 @@ func (pkt *SvcReqRegisterNew) ToBytes() []byte {
 }
 
 func (pkt *SvcReqGetMsgV2) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt32(pkt.DateTime, 1)
 	w.WriteByte(pkt.RecivePic, 4)
@@ -303,7 +303,7 @@ func (pkt *SvcReqGetMsgV2) ToBytes() []byte {
 }
 
 func (pkt *SvcReqPullGroupMsgSeq) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	{ // write pkt.GroupInfo tag=0
 		w.writeHead(9, 0)
 		if len(pkt.GroupInfo) == 0 {
@@ -323,14 +323,14 @@ func (pkt *SvcReqPullGroupMsgSeq) ToBytes() []byte {
 }
 
 func (pkt *PullGroupSeqParam) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.GroupCode, 0)
 	w.WriteInt64(pkt.LastSeqId, 1)
 	return w.Bytes()
 }
 
 func (pkt *SvcRespParam) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt32(pkt.PCStat, 0)
 	w.WriteInt32(pkt.IsSupportC2CRoamMsg, 1)
 	w.WriteInt32(pkt.IsSupportDataLine, 2)
@@ -356,7 +356,7 @@ func (pkt *SvcRespParam) ToBytes() []byte {
 }
 
 func (pkt *RequestPushNotify) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteByte(pkt.Type, 1)
 	w.WriteString(pkt.Service, 2)
@@ -370,7 +370,7 @@ func (pkt *RequestPushNotify) ToBytes() []byte {
 }
 
 func (pkt *OnlineInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt32(pkt.InstanceId, 0)
 	w.WriteInt32(pkt.ClientType, 1)
 	w.WriteInt32(pkt.OnlineStatus, 2)
@@ -381,7 +381,7 @@ func (pkt *OnlineInfo) ToBytes() []byte {
 }
 
 func (pkt *SvcReqMSFLoginNotify) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.AppId, 0)
 	w.WriteByte(pkt.Status, 1)
 	w.WriteByte(pkt.Tablet, 2)
@@ -407,7 +407,7 @@ func (pkt *SvcReqMSFLoginNotify) ToBytes() []byte {
 }
 
 func (pkt *InstanceInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt32(pkt.AppId, 0)
 	w.WriteByte(pkt.Tablet, 1)
 	w.WriteInt64(pkt.Platform, 2)
@@ -417,7 +417,7 @@ func (pkt *InstanceInfo) ToBytes() []byte {
 }
 
 func (pkt *PushMessageInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.FromUin, 0)
 	w.WriteInt64(pkt.MsgTime, 1)
 	w.WriteInt16(pkt.MsgType, 2)
@@ -438,7 +438,7 @@ func (pkt *PushMessageInfo) ToBytes() []byte {
 }
 
 func (pkt *SvcRespPushMsg) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	{ // write pkt.DelInfos tag=1
 		w.writeHead(9, 1)
@@ -460,7 +460,7 @@ func (pkt *SvcRespPushMsg) ToBytes() []byte {
 }
 
 func (pkt *SvcReqGetDevLoginInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteBytes(pkt.Guid, 0)
 	w.WriteString(pkt.AppName, 1)
 	w.WriteInt64(pkt.LoginType, 2)
@@ -472,7 +472,7 @@ func (pkt *SvcReqGetDevLoginInfo) ToBytes() []byte {
 }
 
 func (pkt *DelMsgInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.FromUin, 0)
 	w.WriteInt64(pkt.MsgTime, 1)
 	w.WriteInt16(pkt.MsgSeq, 2)
@@ -488,7 +488,7 @@ func (pkt *DelMsgInfo) ToBytes() []byte {
 }
 
 func (pkt *FriendListRequest) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt32(pkt.Reqtype, 0)
 	w.WriteByte(pkt.IfReflush, 1)
 	w.WriteInt64(pkt.Uin, 2)
@@ -512,7 +512,7 @@ func (pkt *FriendListRequest) ToBytes() []byte {
 }
 
 func (pkt *FriendInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.FriendUin, 0)
 	w.WriteByte(pkt.GroupId, 1)
 	w.WriteInt16(pkt.FaceId, 2)
@@ -573,7 +573,7 @@ func (pkt *FriendInfo) ToBytes() []byte {
 }
 
 func (pkt *TroopListRequest) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteByte(pkt.GetMSFMsgFlag, 1)
 	w.WriteBytes(pkt.Cookies, 2)
@@ -587,7 +587,7 @@ func (pkt *TroopListRequest) ToBytes() []byte {
 }
 
 func (pkt *TroopNumber) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.GroupUin, 0)
 	w.WriteInt64(pkt.GroupCode, 1)
 	w.WriteByte(pkt.Flag, 2)
@@ -627,7 +627,7 @@ func (pkt *TroopNumber) ToBytes() []byte {
 }
 
 func (pkt *TroopMemberListRequest) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt64(pkt.GroupCode, 1)
 	w.WriteInt64(pkt.NextUin, 2)
@@ -640,7 +640,7 @@ func (pkt *TroopMemberListRequest) ToBytes() []byte {
 }
 
 func (pkt *TroopMemberInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.MemberUin, 0)
 	w.WriteInt16(pkt.FaceId, 1)
 	w.WriteByte(pkt.Age, 2)
@@ -680,7 +680,7 @@ func (pkt *TroopMemberInfo) ToBytes() []byte {
 }
 
 func (pkt *ModifyGroupCardRequest) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Zero, 0)
 	w.WriteInt64(pkt.GroupCode, 1)
 	w.WriteInt64(pkt.NewSeq, 2)
@@ -701,7 +701,7 @@ func (pkt *ModifyGroupCardRequest) ToBytes() []byte {
 }
 
 func (pkt *UinInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt64(pkt.Flag, 1)
 	w.WriteString(pkt.Name, 2)
@@ -713,7 +713,7 @@ func (pkt *UinInfo) ToBytes() []byte {
 }
 
 func (pkt *SummaryCardReq) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt32(pkt.ComeFrom, 1)
 	w.WriteInt64(pkt.QzoneFeedTimestamp, 2)
@@ -734,7 +734,7 @@ func (pkt *SummaryCardReq) ToBytes() []byte {
 }
 
 func (pkt *SummaryCardReqSearch) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteString(pkt.Keyword, 0)
 	w.WriteString(pkt.CountryCode, 1)
 	w.WriteInt32(pkt.Version, 2)
@@ -743,7 +743,7 @@ func (pkt *SummaryCardReqSearch) ToBytes() []byte {
 }
 
 func (pkt *DelFriendReq) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteInt64(pkt.Uin, 0)
 	w.WriteInt64(pkt.DelUin, 1)
 	w.WriteByte(pkt.DelType, 2)
@@ -752,7 +752,7 @@ func (pkt *DelFriendReq) ToBytes() []byte {
 }
 
 func (pkt *VipInfo) ToBytes() []byte {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteByte(pkt.Open, 0)
 	w.WriteInt32(pkt.Type, 1)
 	w.WriteInt32(pkt.Level, 2)

@@ -163,7 +163,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 			}),
 		},
 	}
-	head := jce.NewJceWriter()
+	head := jce.NewWriter()
 	head.WriteInt32(2, 0)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
 		"ReqHead":   packUniRequestData(head.Bytes()),
@@ -183,14 +183,14 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 // SummaryCard.ReqSearch
 func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	data.ReadFrom(jce.NewReader(request.SBuffer))
 	if len(data.Map["RespHead"]["SummaryCard.RespHead"]) > 20 {
 		return nil, errors.New("not found")
 	}
 	rsp := data.Map["RespSearch"]["SummaryCard.RespSearch"][1:]
-	r := jce.NewJceReader(rsp)
+	r := jce.NewReader(rsp)
 	// rspService := r.ReadAny(2).([]interface{})[0].([]byte)
 	rspService := r.ReadByteArrArr(2)[0]
 	sr := binary.NewReader(rspService)

@@ -2,7 +2,7 @@ package jce
 
 type IJceStruct interface {
 	ToBytes() []byte
-	ReadFrom(*JceReader)
+	ReadFrom(*Reader)
 }
 
 //go:generate go run github.com/Mrs4s/MiraiGo/internal/generator/jce_gen -file=structs.go -o structs_tobytes.go
@@ -535,7 +535,7 @@ type (
 	}
 )
 
-func (pkt *RequestPacket) ReadFrom(r *JceReader) {
+func (pkt *RequestPacket) ReadFrom(r *Reader) {
 	pkt.IVersion = r.ReadInt16(1)
 	pkt.CPacketType = r.ReadByte(2)
 	pkt.IMessageType = r.ReadInt32(3)
@@ -550,21 +550,21 @@ func (pkt *RequestPacket) ReadFrom(r *JceReader) {
 	pkt.Status = r.ReadMapStrStr(10)
 }
 
-func (pkt *RequestDataVersion3) ReadFrom(r *JceReader) {
+func (pkt *RequestDataVersion3) ReadFrom(r *Reader) {
 	pkt.Map = r.ReadMapStrByte(0)
 }
 
-func (pkt *RequestDataVersion2) ReadFrom(r *JceReader) {
+func (pkt *RequestDataVersion2) ReadFrom(r *Reader) {
 	pkt.Map = r.ReadMapStrMapStrByte(0)
 }
 
-func (pkt *SsoServerInfo) ReadFrom(r *JceReader) {
+func (pkt *SsoServerInfo) ReadFrom(r *Reader) {
 	pkt.Server = r.ReadString(1)
 	pkt.Port = r.ReadInt32(2)
 	pkt.Location = r.ReadString(8)
 }
 
-func (pkt *FileStoragePushFSSvcList) ReadFrom(r *JceReader) {
+func (pkt *FileStoragePushFSSvcList) ReadFrom(r *Reader) {
 	pkt.UploadList = r.ReadFileStorageServerInfos(0)
 	pkt.PicDownloadList = r.ReadFileStorageServerInfos(1)
 	pkt.GPicDownloadList = r.ReadFileStorageServerInfos(2)
@@ -577,12 +577,12 @@ func (pkt *FileStoragePushFSSvcList) ReadFrom(r *JceReader) {
 	pkt.PttList = r.ReadBytes(10)
 }
 
-func (pkt *FileStorageServerInfo) ReadFrom(r *JceReader) {
+func (pkt *FileStorageServerInfo) ReadFrom(r *Reader) {
 	pkt.Server = r.ReadString(1)
 	pkt.Port = r.ReadInt32(2)
 }
 
-func (pkt *BigDataChannel) ReadFrom(r *JceReader) {
+func (pkt *BigDataChannel) ReadFrom(r *Reader) {
 	pkt.IPLists = r.ReadBigDataIPLists(0)
 	pkt.SigSession = r.ReadBytes(1)
 	pkt.KeySession = r.ReadBytes(2)
@@ -591,19 +591,19 @@ func (pkt *BigDataChannel) ReadFrom(r *JceReader) {
 	pkt.PbBuf = r.ReadBytes(5)
 }
 
-func (pkt *BigDataIPList) ReadFrom(r *JceReader) {
+func (pkt *BigDataIPList) ReadFrom(r *Reader) {
 	pkt.ServiceType = r.ReadInt64(0)
 	pkt.IPList = r.ReadBigDataIPInfos(1)
 	pkt.FragmentSize = r.ReadInt64(3)
 }
 
-func (pkt *BigDataIPInfo) ReadFrom(r *JceReader) {
+func (pkt *BigDataIPInfo) ReadFrom(r *Reader) {
 	pkt.Type = r.ReadInt64(0)
 	pkt.Server = r.ReadString(1)
 	pkt.Port = r.ReadInt64(2)
 }
 
-func (pkt *SvcRespRegister) ReadFrom(r *JceReader) {
+func (pkt *SvcRespRegister) ReadFrom(r *Reader) {
 	pkt.Uin = r.ReadInt64(0)
 	pkt.Bid = r.ReadInt64(1)
 	pkt.ReplyCode = r.ReadByte(2)
@@ -624,7 +624,7 @@ func (pkt *SvcRespRegister) ReadFrom(r *JceReader) {
 	pkt.ExtOnlineStatus = r.ReadInt64(17)
 }
 
-func (pkt *FriendInfo) ReadFrom(r *JceReader) {
+func (pkt *FriendInfo) ReadFrom(r *Reader) {
 	pkt.FriendUin = r.ReadInt64(0)
 	pkt.GroupId = r.ReadByte(1)
 	pkt.FaceId = r.ReadInt16(2)
@@ -637,7 +637,7 @@ func (pkt *FriendInfo) ReadFrom(r *JceReader) {
 	pkt.CardID = r.ReadBytes(41)
 }
 
-func (pkt *TroopNumber) ReadFrom(r *JceReader) {
+func (pkt *TroopNumber) ReadFrom(r *Reader) {
 	pkt.GroupUin = r.ReadInt64(0)
 	pkt.GroupCode = r.ReadInt64(1)
 	pkt.GroupName = r.ReadString(4)
@@ -647,7 +647,7 @@ func (pkt *TroopNumber) ReadFrom(r *JceReader) {
 	pkt.MaxGroupMemberNum = r.ReadInt64(29)
 }
 
-func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
+func (pkt *TroopMemberInfo) ReadFrom(r *Reader) {
 	pkt.MemberUin = r.ReadInt64(0)
 	pkt.FaceId = r.ReadInt16(1)
 	pkt.Gender = r.ReadByte(3)
@@ -664,7 +664,7 @@ func (pkt *TroopMemberInfo) ReadFrom(r *JceReader) {
 	pkt.ShutUpTimestap = r.ReadInt64(30)
 }
 
-func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
+func (pkt *PushMessageInfo) ReadFrom(r *Reader) {
 	pkt.FromUin = r.ReadInt64(0)
 	pkt.MsgTime = r.ReadInt64(1)
 	pkt.MsgType = r.ReadInt16(2)
@@ -677,7 +677,7 @@ func (pkt *PushMessageInfo) ReadFrom(r *JceReader) {
 	pkt.FromName = r.ReadString(17)
 }
 
-func (pkt *SvcDevLoginInfo) ReadFrom(r *JceReader) {
+func (pkt *SvcDevLoginInfo) ReadFrom(r *Reader) {
 	pkt.AppId = r.ReadInt64(0)
 	pkt.Guid = r.ReadBytes(1)
 	pkt.LoginTime = r.ReadInt64(2)
@@ -690,7 +690,7 @@ func (pkt *SvcDevLoginInfo) ReadFrom(r *JceReader) {
 	pkt.CanBeKicked = r.ReadInt64(10)
 }
 
-func (pkt *SvcRespParam) ReadFrom(r *JceReader) {
+func (pkt *SvcRespParam) ReadFrom(r *Reader) {
 	pkt.PCStat = r.ReadInt32(0)
 	pkt.IsSupportC2CRoamMsg = r.ReadInt32(1)
 	pkt.IsSupportDataLine = r.ReadInt32(2)
@@ -702,7 +702,7 @@ func (pkt *SvcRespParam) ReadFrom(r *JceReader) {
 	pkt.PCClientType = r.ReadInt32(8)
 }
 
-func (pkt *RequestPushNotify) ReadFrom(r *JceReader) {
+func (pkt *RequestPushNotify) ReadFrom(r *Reader) {
 	pkt.Uin = r.ReadInt64(0)
 	pkt.Type = r.ReadByte(1)
 	pkt.Service = r.ReadString(2)
@@ -714,7 +714,7 @@ func (pkt *RequestPushNotify) ReadFrom(r *JceReader) {
 	pkt.BindedUin = r.ReadInt64(8)
 }
 
-func (pkt *OnlineInfo) ReadFrom(r *JceReader) {
+func (pkt *OnlineInfo) ReadFrom(r *Reader) {
 	pkt.InstanceId = r.ReadInt32(0)
 	pkt.ClientType = r.ReadInt32(1)
 	pkt.OnlineStatus = r.ReadInt32(2)
@@ -723,7 +723,7 @@ func (pkt *OnlineInfo) ReadFrom(r *JceReader) {
 	pkt.UClientType = r.ReadInt64(5)
 }
 
-func (pkt *SvcReqMSFLoginNotify) ReadFrom(r *JceReader) {
+func (pkt *SvcReqMSFLoginNotify) ReadFrom(r *Reader) {
 	pkt.AppId = r.ReadInt64(0)
 	pkt.Status = r.ReadByte(1)
 	pkt.Tablet = r.ReadByte(2)
@@ -735,7 +735,7 @@ func (pkt *SvcReqMSFLoginNotify) ReadFrom(r *JceReader) {
 	pkt.InstanceList = r.ReadInstanceInfos(8)
 }
 
-func (pkt *InstanceInfo) ReadFrom(r *JceReader) {
+func (pkt *InstanceInfo) ReadFrom(r *Reader) {
 	pkt.AppId = r.ReadInt32(0)
 	pkt.Tablet = r.ReadByte(1)
 	pkt.Platform = r.ReadInt64(2)
@@ -743,7 +743,7 @@ func (pkt *InstanceInfo) ReadFrom(r *JceReader) {
 	pkt.ClientType = r.ReadInt64(4)
 }
 
-func (pkt *VipInfo) ReadFrom(r *JceReader) {
+func (pkt *VipInfo) ReadFrom(r *Reader) {
 	pkt.Open = r.ReadByte(0)
 	pkt.Type = r.ReadInt32(1)
 	pkt.Level = r.ReadInt32(2)

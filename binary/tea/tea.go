@@ -1,16 +1,13 @@
-package binary
+package tea
 
 import (
 	"encoding/binary"
 	_ "unsafe" // required by go:linkname
 )
 
-type TEA [4]uint32
+type Cipher [4]uint32
 
-// Encrypt tea 加密
-// http://bbs.chinaunix.net/thread-583468-1-1.html
-// 感谢xichen大佬对TEA的解释
-func (t TEA) Encrypt(src []byte) (dst []byte) {
+func (t Cipher) Encrypt(src []byte) (dst []byte) {
 	lens := len(src)
 	fill := 10 - (lens+1)%8
 	dst = make([]byte, fill+lens+7)
@@ -30,7 +27,7 @@ func (t TEA) Encrypt(src []byte) (dst []byte) {
 	return dst
 }
 
-func (t TEA) Decrypt(data []byte) []byte {
+func (t Cipher) Decrypt(data []byte) []byte {
 	if len(data) < 16 || len(data)%8 != 0 {
 		return nil
 	}
@@ -47,7 +44,7 @@ func (t TEA) Decrypt(data []byte) []byte {
 }
 
 //go:nosplit
-func (t *TEA) encode(n uint64) uint64 {
+func (t *Cipher) encode(n uint64) uint64 {
 	v0, v1 := uint32(n>>32), uint32(n)
 	t0, t1, t2, t3 := t[0], t[1], t[2], t[3]
 
@@ -90,7 +87,7 @@ func (t *TEA) encode(n uint64) uint64 {
 // 每次8字节
 //
 //go:nosplit
-func (t *TEA) decode(n uint64) uint64 {
+func (t *Cipher) decode(n uint64) uint64 {
 	v0, v1 := uint32(n>>32), uint32(n)
 	t0, t1, t2, t3 := t[0], t[1], t[2], t[3]
 
@@ -131,9 +128,9 @@ func (t *TEA) decode(n uint64) uint64 {
 }
 
 //go:nosplit
-func NewTeaCipher(key []byte) (t TEA) {
+func NewCipher(key []byte) (t Cipher) {
 	if len(key) != 16 {
-		return TEA{}
+		return Cipher{}
 	}
 	t[3] = binary.BigEndian.Uint32(key[12:16])
 	t[2] = binary.BigEndian.Uint32(key[8:12])

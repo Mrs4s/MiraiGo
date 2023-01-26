@@ -751,7 +751,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payloa
 			info := &GuildInfo{
 				GuildId:   guild.GuildId.Unwrap(),
 				GuildCode: guild.GuildCode.Unwrap(),
-				GuildName: utils.B2S(guild.GuildName),
+				GuildName: utils.ByteSliceToString(guild.GuildName),
 				CoverUrl:  fmt.Sprintf("https://groupprocover-76483.picgzc.qpic.cn/%v", guild.GuildId.Unwrap()),
 				AvatarUrl: fmt.Sprintf("https://groupprohead-76292.picgzc.qpic.cn/%v", guild.GuildId.Unwrap()),
 			}
@@ -763,7 +763,7 @@ func decodeGuildPushFirstView(c *QQClient, _ *network.IncomingPacketInfo, payloa
 					_ = proto.Unmarshal(node.Meta, meta)
 					info.Channels = append(info.Channels, &ChannelInfo{
 						ChannelId:   node.ChannelId.Unwrap(),
-						ChannelName: utils.B2S(node.ChannelName),
+						ChannelName: utils.ByteSliceToString(node.ChannelName),
 						Time:        node.Time.Unwrap(),
 						EventTime:   node.EventTime.Unwrap(),
 						NotifyType:  node.NotifyType.Unwrap(),

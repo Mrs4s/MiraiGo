@@ -18,8 +18,8 @@ import (
 
 // see com/tencent/mobileqq/highway/utils/BaseConstants.java#L120-L121
 const (
-	_REQ_CMD_DATA        = "PicUp.DataUp"
-	_REQ_CMD_HEART_BREAK = "PicUp.Echo"
+	reqCmdData       = "PicUp.DataUp"
+	reqCmdHeartBreak = "PicUp.Echo"
 )
 
 type Session struct {
@@ -68,7 +68,7 @@ func (s *Session) Upload(addr Addr, trans Transaction) error {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
+			MsgBasehead: s.dataHighwayHead(reqCmdData, 4096, trans.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      trans.Size,
 				Dataoffset:    int64(offset),
@@ -114,7 +114,7 @@ func (s *Session) UploadExciting(trans Transaction) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 0, trans.CommandID, 0),
+			MsgBasehead: s.dataHighwayHead(reqCmdData, 0, trans.CommandID, 0),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      trans.Size,
 				Dataoffset:    offset,
@@ -177,7 +177,7 @@ func (s *Session) dataHighwayHead(cmd string, flag, cmdID, locale int32) *pb.Dat
 
 func (s *Session) sendHeartbreak(conn net.Conn) error {
 	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-		MsgBasehead: s.dataHighwayHead(_REQ_CMD_HEART_BREAK, 4096, 0, 2052),
+		MsgBasehead: s.dataHighwayHead(reqCmdHeartBreak, 4096, 0, 2052),
 	})
 	frame := newFrame(head, nil)
 	_, err := frame.WriteTo(conn)

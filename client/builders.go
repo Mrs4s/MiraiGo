@@ -590,7 +590,7 @@ func (c *QQClient) buildStatusSetPacket(status, extStatus int32) (uint16, []byte
 
 // ConfigPushSvc.PushResp
 func (c *QQClient) buildConfPushRespPacket(t int32, pktSeq int64, jceBuf []byte) (uint16, []byte) {
-	req := jce.NewJceWriter()
+	req := jce.NewWriter()
 	req.WriteInt32(t, 1)
 	req.WriteInt64(pktSeq, 2)
 	req.WriteBytes(jceBuf, 3)
@@ -731,7 +731,7 @@ func (c *QQClient) buildSummaryCardRequestPacket(target int64) (uint16, []byte) 
 		ReqNearbyGodInfo: 1,
 		ReqExtendCard:    1,
 	}
-	head := jce.NewJceWriter()
+	head := jce.NewWriter()
 	head.WriteInt32(2, 0)
 	buf := &jce.RequestDataVersion3{Map: map[string][]byte{
 		"ReqHead":        packUniRequestData(head.Bytes()),
@@ -1096,7 +1096,7 @@ func (c *QQClient) buildGroupAdminSetPacket(groupCode, member int64, flag bool) 
 
 // ProfileService.GroupMngReq
 func (c *QQClient) buildQuitGroupPacket(groupCode int64) (uint16, []byte) {
-	jw := jce.NewJceWriter()
+	jw := jce.NewWriter()
 	jw.WriteInt32(2, 0)
 	jw.WriteInt64(c.Uin, 1)
 	b, cl := binary.OpenWriterF(func(w *binary.Writer) {

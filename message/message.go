@@ -481,14 +481,14 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
-				Name:       utils.B2S(elem.MarketFace.FaceName),
+				Name:       utils.ByteSliceToString(elem.MarketFace.FaceName),
 				FaceId:     elem.MarketFace.FaceId,
 				TabId:      int32(elem.MarketFace.TabId.Unwrap()),
 				ItemType:   int32(elem.MarketFace.ItemType.Unwrap()),
 				SubType:    int32(elem.MarketFace.SubType.Unwrap()),
 				MediaType:  int32(elem.MarketFace.MediaType.Unwrap()),
 				EncryptKey: elem.MarketFace.Key,
-				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
+				MagicValue: utils.ByteSliceToString(elem.MarketFace.Mobileparam),
 			}
 			if face.Name == "[骰子]" || face.Name == "[随机骰子]" {
 				_, v, _ := strings.Cut(face.MagicValue, "=")

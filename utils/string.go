@@ -49,10 +49,10 @@ func ConvertSubVersionToInt(str string) int32 {
 	return int32(i) * 10
 }
 
-// B2S converts byte slice to a string without memory allocation.
+// ByteSliceToString converts byte slice to a string without memory allocation.
 // See https://groups.google.com/forum/#!msg/Golang-Nuts/ENgbUzYvCuU/90yGx7GUAgAJ .
 // from github.com/savsgio/gotils/strconv
-func B2S(b []byte) string {
+func ByteSliceToString(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
