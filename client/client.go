@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"crypto/md5"
 	"fmt"
 	"math/rand"
@@ -535,20 +536,30 @@ func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
 	}
 	curFriendCount := 0
 	r := &FriendListResponse{}
-	for {
-		rsp, err := c.sendAndWait(c.buildFriendGroupListRequestPacket(int16(curFriendCount), 150, 0, 0))
-		if err != nil {
-			return nil, err
-		}
-		list := rsp.(*FriendListResponse)
-		r.TotalCount = list.TotalCount
-		r.List = append(r.List, list.List...)
-		curFriendCount += len(list.List)
-		if int32(len(r.List)) >= r.TotalCount {
-			break
-		}
+	mu := &sync.Mutex{}
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+	for err := ctx.Err(); err == nil; {
+		go func() {
+			u, d := c.buildFriendGroupListRequestPacket(int16(curFriendCount), 150, 0, 0)
+			rsp, err := c.sendAndWaitContext(ctx, u, d)
+			//TODO do we need passing the error to context?
+			if err != nil {
+				cancel()
+				return
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			list := rsp.(*FriendListResponse)
+			r.TotalCount = list.TotalCount
+			r.List = append(r.List, list.List...)
+			curFriendCount += len(list.List)
+			if int32(len(r.List)) >= r.TotalCount {
+				cancel()
+			}
+		}()
 	}
-	return r, nil
+	return r, ctx.Err()
 }
 
 func (c *QQClient) SendGroupPoke(groupCode, target int64) {
