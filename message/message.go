@@ -17,32 +17,33 @@ type (
 	PrivateMessage struct {
 		Id         int32
 		InternalId int32
-		Self       int64
-		Target     int64
 		Time       int32
 		Sender     *Sender
 		Elements   []IMessageElement
+		Self       int64
+		Target     int64
 	}
 
 	TempMessage struct {
-		Id        int32
+		Id       int32
+		Sender   *Sender
+		Elements []IMessageElement
+
 		GroupCode int64
 		GroupName string
 		Self      int64
-		Sender    *Sender
-		Elements  []IMessageElement
 	}
 
 	GroupMessage struct {
 		Id             int32
 		InternalId     int32
-		GroupCode      int64
-		GroupName      string
-		Sender         *Sender
 		Time           int32
+		Sender         *Sender
 		Elements       []IMessageElement
 		OriginalObject *msg.Message
 		// OriginalElements []*msg.Elem
+		GroupCode int64
+		GroupName string
 	}
 
 	SendingMessage struct {

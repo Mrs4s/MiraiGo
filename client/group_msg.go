@@ -34,50 +34,109 @@ func init() {
 	decoders["OidbSvc.0xeac_2"] = decodeEssenceMsgResponse
 }
 
-// SendGroupMessage 发送群消息
-func (c *QQClient) SendGroupMessage(groupCode int64, m *message.SendingMessage) *message.GroupMessage {
-	useHighwayMessage := false
+// sendGroupMessage 发送群消息
+func (g *Group) sendGroupMessage(forward bool, m *message.SendingMessage) *GroupMessageReceipt {
+	eid := utils.RandomString(6)
+	mr := int32(rand.Uint32())
+	ch := make(chan int32, 1)
+	groupCode := g.i.Code
+	g.c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
+		if e.Rand == mr {
+			ch <- e.Seq
+		}
+	})
+	defer g.c.onGroupMessageReceipt(eid)
 	imgCount := 0
+	serviceFlag := true
 	for _, e := range m.Elements {
 		switch e.Type() {
 		case message.Image:
 			imgCount++
-		case message.Reply:
-			useHighwayMessage = true
+		case message.Forward:
+			forward = true
+			fallthrough
+		case message.Reply, message.Voice, message.Service:
+			serviceFlag = false
 		}
 	}
-	msgLen := message.EstimateLength(m.Elements)
-	if msgLen > message.MaxMessageSize || imgCount > 50 {
-		return nil
-	}
-	useHighwayMessage = useHighwayMessage || msgLen > 100 || imgCount > 2
-	if useHighwayMessage && c.UseHighwayMessage {
-		lmsg, err := c.uploadGroupLongMessage(groupCode,
-			message.NewForwardMessage().AddNode(&message.ForwardNode{
-				SenderId:   c.Uin,
-				SenderName: c.Nickname,
-				Time:       int32(time.Now().Unix()),
-				Message:    m.Elements,
-			}))
-		if err == nil {
-			ret := c.sendGroupMessage(groupCode, false, &message.SendingMessage{Elements: []message.IMessageElement{lmsg}})
-			ret.Elements = m.Elements
-			return ret
+	if !forward && serviceFlag && g.c.UseFragmentMessage && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
+		div := int32(rand.Uint32())
+		fragmented := m.ToFragmented()
+		for i, elems := range fragmented {
+			_, pkt := g.c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
+			_ = g.c.sendPacket(pkt)
 		}
-		c.error("%v", err)
+	} else {
+		_, pkt := g.c.buildGroupSendingPacket(groupCode, mr, 1, 0, 0, forward, m.Elements)
+		_ = g.c.sendPacket(pkt)
 	}
-	return c.sendGroupMessage(groupCode, false, m)
+	var mid int32
+	ret := &message.GroupMessage{
+		Id:         -1,
+		InternalId: mr,
+		GroupCode:  groupCode,
+		Sender: &message.Sender{
+			Uin:      g.c.Uin,
+			Nickname: g.c.Nickname,
+			IsFriend: true,
+		},
+		Time:     int32(time.Now().Unix()),
+		Elements: m.Elements,
+	}
+	select {
+	case mid = <-ch:
+		ret.Id = mid
+		return &GroupMessageReceipt{
+			id: &messageIdentifier{
+				Sequence: MessageSequence(ret.Id),
+				Internal: MessageInternal(ret.InternalId),
+			},
+			elems:  ret.Elements,
+			sender: ret.Sender,
+			time:   ret.Time,
+			target: g,
+		}
+	case <-time.After(time.Second * 5):
+		if i, err := g.c.GetGroupInfo(groupCode); err == nil {
+			if history, err := g.c.GetGroupMessages(groupCode, MessageSequence(i.LastMsgSeq-10), MessageSequence(i.LastMsgSeq+1)); err == nil {
+				for _, m := range history {
+					if m.InternalId == mr {
+						return &GroupMessageReceipt{
+							id: &messageIdentifier{
+								Sequence: MessageSequence(m.Id),
+								Internal: MessageInternal(m.InternalId),
+							},
+							elems:  m.Elements,
+							sender: m.Sender,
+							time:   m.Time,
+							target: g,
+						}
+					}
+				}
+			}
+		}
+		return &GroupMessageReceipt{
+			id: &messageIdentifier{
+				Sequence: MessageSequence(ret.Id),
+				Internal: MessageInternal(ret.InternalId),
+			},
+			elems:  ret.Elements,
+			sender: ret.Sender,
+			time:   ret.Time,
+			target: g,
+		}
+	}
 }
 
 // SendGroupForwardMessage 发送群合并转发消息
-func (c *QQClient) SendGroupForwardMessage(groupCode int64, m *message.ForwardElement) *message.GroupMessage {
-	return c.sendGroupMessage(groupCode, true,
+func (g *Group) SendGroupForwardMessage(m *message.ForwardElement) *GroupMessageReceipt {
+	return g.sendGroupMessage(true,
 		&message.SendingMessage{Elements: []message.IMessageElement{m}},
 	)
 }
 
 // GetGroupMessages 从服务器获取历史信息
-func (c *QQClient) GetGroupMessages(groupCode, beginSeq, endSeq int64) ([]*message.GroupMessage, error) {
+func (c *QQClient) GetGroupMessages(groupCode int64, beginSeq, endSeq MessageSequence) ([]*message.GroupMessage, error) {
 	seq, pkt := c.buildGetGroupMsgRequest(groupCode, beginSeq, endSeq)
 	i, err := c.sendAndWait(seq, pkt, network.RequestParams{"raw": false})
 	if err != nil {
@@ -92,71 +151,6 @@ func (c *QQClient) GetAtAllRemain(groupCode int64) (*AtAllRemainInfo, error) {
 		return nil, err
 	}
 	return i.(*AtAllRemainInfo), nil
-}
-
-func (c *QQClient) sendGroupMessage(groupCode int64, forward bool, m *message.SendingMessage) *message.GroupMessage {
-	eid := utils.RandomString(6)
-	mr := int32(rand.Uint32())
-	ch := make(chan int32, 1)
-	c.onGroupMessageReceipt(eid, func(c *QQClient, e *groupMessageReceiptEvent) {
-		if e.Rand == mr {
-			ch <- e.Seq
-		}
-	})
-	defer c.onGroupMessageReceipt(eid)
-	imgCount := 0
-	serviceFlag := true
-	for _, e := range m.Elements {
-		switch e.Type() {
-		case message.Image:
-			imgCount++
-		case message.Forward:
-			forward = true
-			fallthrough
-		case message.Reply, message.Voice, message.Service:
-			serviceFlag = false
-		}
-	}
-	if !forward && serviceFlag && c.UseFragmentMessage && (imgCount > 1 || message.EstimateLength(m.Elements) > 100) {
-		div := int32(rand.Uint32())
-		fragmented := m.ToFragmented()
-		for i, elems := range fragmented {
-			_, pkt := c.buildGroupSendingPacket(groupCode, mr, int32(len(fragmented)), int32(i), div, forward, elems)
-			_ = c.sendPacket(pkt)
-		}
-	} else {
-		_, pkt := c.buildGroupSendingPacket(groupCode, mr, 1, 0, 0, forward, m.Elements)
-		_ = c.sendPacket(pkt)
-	}
-	var mid int32
-	ret := &message.GroupMessage{
-		Id:         -1,
-		InternalId: mr,
-		GroupCode:  groupCode,
-		Sender: &message.Sender{
-			Uin:      c.Uin,
-			Nickname: c.Nickname,
-			IsFriend: true,
-		},
-		Time:     int32(time.Now().Unix()),
-		Elements: m.Elements,
-	}
-	select {
-	case mid = <-ch:
-		ret.Id = mid
-		return ret
-	case <-time.After(time.Second * 5):
-		if g, err := c.GetGroupInfo(groupCode); err == nil {
-			if history, err := c.GetGroupMessages(groupCode, g.LastMsgSeq-10, g.LastMsgSeq+1); err == nil {
-				for _, m := range history {
-					if m.InternalId == mr {
-						return m
-					}
-				}
-			}
-		}
-		return ret
-	}
 }
 
 func (c *QQClient) uploadGroupLongMessage(groupCode int64, m *message.ForwardMessage) (*message.ServiceElement, error) {
@@ -248,11 +242,11 @@ func (c *QQClient) buildGroupSendingPacket(groupCode int64, r, pkgNum, pkgIndex,
 	return c.uniPacket("MessageSvc.PbSendMsg", payload)
 }
 
-func (c *QQClient) buildGetGroupMsgRequest(groupCode, beginSeq, endSeq int64) (uint16, []byte) {
+func (c *QQClient) buildGetGroupMsgRequest(groupCode int64, beginSeq, endSeq uint64) (uint16, []byte) {
 	req := &msg.GetGroupMsgReq{
 		GroupCode:   proto.Uint64(uint64(groupCode)),
-		BeginSeq:    proto.Uint64(uint64(beginSeq)),
-		EndSeq:      proto.Uint64(uint64(endSeq)),
+		BeginSeq:    proto.Uint64(beginSeq),
+		EndSeq:      proto.Uint64(endSeq),
 		PublicGroup: proto.Bool(false),
 	}
 	payload, _ := proto.Marshal(req)
@@ -344,7 +338,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.IncomingPacketInfo, pa
 				builder := &messageBuilder{}
 				for {
 					end := int32(math.Min(float64(i+19), float64(m.Head.MsgSeq.Unwrap()+m.Content.PkgNum.Unwrap())))
-					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GroupCode.Unwrap(), int64(i), int64(end))
+					seq, pkt := c.buildGetGroupMsgRequest(m.Head.GroupInfo.GroupCode.Unwrap(), uint64(i), uint64(end))
 					data, err := c.sendAndWait(seq, pkt, network.RequestParams{"raw": true})
 					if err != nil {
 						return nil, errors.Wrap(err, "build fragmented message error")
