@@ -1196,3 +1196,18 @@ func (c *QQClient) buildUpdateProfileDetailPacket(profileRecord map[uint16][]byt
 	cl()
 	return c.uniPacket("OidbSvc.0x4ff_9_IMCore", payload)
 }
+
+// OidbSvc.0x568_22
+func (c *QQClient) buildSetGroupAnonymous(groupCode int64, enable bool) (uint16, []byte) {
+	var t byte = 0
+	if enable {
+		t = 1
+	}
+	b, cl := binary.OpenWriterF(func(w *binary.Writer) {
+		w.WriteUInt32(uint32(groupCode))
+		w.WriteByte(t)
+	})
+	payload := c.packOIDBPackage(1384, 22, b)
+	cl()
+	return c.uniPacket("OidbSvc.0x568_22", payload)
+}

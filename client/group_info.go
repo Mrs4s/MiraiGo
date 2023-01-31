@@ -408,6 +408,12 @@ func (m *GroupMemberInfo) Mute(time uint32) error {
 	}
 }
 
+func (g *GroupInfo) SetAnonymous(enable bool) {
+	if g.AdministratorOrOwner() {
+		g.client.setGroupAnonymous(g.Code, enable)
+	}
+}
+
 func (m *GroupMemberInfo) Manageable() bool {
 	if m.Uin == m.Group.client.Uin {
 		return true
