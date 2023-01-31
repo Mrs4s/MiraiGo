@@ -790,6 +790,10 @@ func (g *GroupInfo) removeMember(uin int64) {
 	})
 }
 
+func (c *QQClient) setGroupAnonymous(groupCode int64, enable bool) {
+	_, _ = c.sendAndWait(c.buildSetGroupAnonymous(groupCode, enable))
+}
+
 // UpdateProfile 修改个人资料
 func (c *QQClient) UpdateProfile(profile ProfileDetailUpdate) {
 	_, _ = c.sendAndWait(c.buildUpdateProfileDetailPacket(profile))
