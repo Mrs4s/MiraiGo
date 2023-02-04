@@ -47,7 +47,7 @@ func (c *QQClient) GetUnidirectionalFriendList() (ret []*UnidirectionalFriendInf
 			if err != nil {
 				return ""
 			}
-			return utils.B2S(b)
+			return utils.ByteSliceToString(b)
 		}
 		ret = append(ret, &UnidirectionalFriendInfo{
 			Uin:      block.Uin,

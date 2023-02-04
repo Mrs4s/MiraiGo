@@ -7,27 +7,27 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
-type JceReader struct {
+type Reader struct {
 	buf []byte
 	off int
 }
 
-type HeadData struct {
+type Header struct {
 	Type byte
 	Tag  int
 }
 
-func NewJceReader(data []byte) *JceReader {
-	return &JceReader{buf: data}
+func NewReader(data []byte) *Reader {
+	return &Reader{buf: data}
 }
 
-func (r *JceReader) readHead() (hd HeadData, l int) {
+func (r *Reader) readHead() (hd Header, l int) {
 	hd, l = r.peakHead()
 	r.off += l
 	return
 }
 
-func (r *JceReader) peakHead() (hd HeadData, l int) {
+func (r *Reader) peakHead() (hd Header, l int) {
 	b := r.buf[r.off]
 	hd.Type = b & 0xF
 	hd.Tag = int(uint(b) >> 4)
@@ -40,7 +40,7 @@ func (r *JceReader) peakHead() (hd HeadData, l int) {
 	return
 }
 
-func (r *JceReader) skipHead() {
+func (r *Reader) skipHead() {
 	l := 1
 	if int(uint(r.buf[r.off])>>4) == 0xF {
 		l = 2
@@ -48,11 +48,11 @@ func (r *JceReader) skipHead() {
 	r.off += l
 }
 
-func (r *JceReader) skip(l int) {
+func (r *Reader) skip(l int) {
 	r.off += l
 }
 
-func (r *JceReader) skipField(t byte) {
+func (r *Reader) skipField(t byte) {
 	switch t {
 	case 0:
 		r.skip(1)
@@ -85,18 +85,18 @@ func (r *JceReader) skipField(t byte) {
 	}
 }
 
-func (r *JceReader) skipNextField() {
+func (r *Reader) skipNextField() {
 	hd, _ := r.readHead()
 	r.skipField(hd.Type)
 }
 
-func (r *JceReader) SkipField(c int) {
+func (r *Reader) SkipField(c int) {
 	for i := 0; i < c; i++ {
 		r.skipNextField()
 	}
 }
 
-func (r *JceReader) readBytes(n int) []byte {
+func (r *Reader) readBytes(n int) []byte {
 	if r.off+n > len(r.buf) {
 		panic("readBytes: EOF")
 	}
@@ -105,7 +105,7 @@ func (r *JceReader) readBytes(n int) []byte {
 	return b
 }
 
-func (r *JceReader) readByte() byte {
+func (r *Reader) readByte() byte {
 	if r.off >= len(r.buf) {
 		panic("readByte: EOF")
 	}
@@ -114,33 +114,33 @@ func (r *JceReader) readByte() byte {
 	return b
 }
 
-func (r *JceReader) readUInt16() uint16 {
+func (r *Reader) readUInt16() uint16 {
 	b := make([]byte, 2)
 	r.off += copy(b, r.buf[r.off:])
 	return goBinary.BigEndian.Uint16(b)
 }
 
-func (r *JceReader) readUInt32() uint32 {
+func (r *Reader) readUInt32() uint32 {
 	b := make([]byte, 4)
 	r.off += copy(b, r.buf[r.off:])
 	return goBinary.BigEndian.Uint32(b)
 }
 
-func (r *JceReader) readUInt64() uint64 {
+func (r *Reader) readUInt64() uint64 {
 	b := make([]byte, 8)
 	r.off += copy(b, r.buf[r.off:])
 	return goBinary.BigEndian.Uint64(b)
 }
 
-func (r *JceReader) readFloat32() float32 {
+func (r *Reader) readFloat32() float32 {
 	return math.Float32frombits(r.readUInt32())
 }
 
-func (r *JceReader) readFloat64() float64 {
+func (r *Reader) readFloat64() float64 {
 	return math.Float64frombits(r.readUInt64())
 }
 
-func (r *JceReader) skipToTag(tag int) bool {
+func (r *Reader) skipToTag(tag int) bool {
 	hd, l := r.peakHead()
 	for tag > hd.Tag && hd.Type != 11 {
 		r.skip(l)
@@ -150,7 +150,7 @@ func (r *JceReader) skipToTag(tag int) bool {
 	return tag == hd.Tag
 }
 
-func (r *JceReader) skipToStructEnd() {
+func (r *Reader) skipToStructEnd() {
 	hd, _ := r.readHead()
 	for hd.Type != 11 {
 		r.skipField(hd.Type)
@@ -158,7 +158,7 @@ func (r *JceReader) skipToStructEnd() {
 	}
 }
 
-func (r *JceReader) ReadByte(tag int) byte {
+func (r *Reader) ReadByte(tag int) byte {
 	if !r.skipToTag(tag) {
 		return 0
 	}
@@ -173,11 +173,11 @@ func (r *JceReader) ReadByte(tag int) byte {
 	}
 }
 
-func (r *JceReader) ReadBool(tag int) bool {
+func (r *Reader) ReadBool(tag int) bool {
 	return r.ReadByte(tag) != 0
 }
 
-func (r *JceReader) ReadInt16(tag int) int16 {
+func (r *Reader) ReadInt16(tag int) int16 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
@@ -194,7 +194,7 @@ func (r *JceReader) ReadInt16(tag int) int16 {
 	}
 }
 
-func (r *JceReader) ReadInt32(tag int) int32 {
+func (r *Reader) ReadInt32(tag int) int32 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
@@ -213,7 +213,7 @@ func (r *JceReader) ReadInt32(tag int) int32 {
 	}
 }
 
-func (r *JceReader) ReadInt64(tag int) int64 {
+func (r *Reader) ReadInt64(tag int) int64 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
@@ -234,7 +234,7 @@ func (r *JceReader) ReadInt64(tag int) int64 {
 	}
 }
 
-func (r *JceReader) ReadFloat32(tag int) float32 {
+func (r *Reader) ReadFloat32(tag int) float32 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
@@ -249,7 +249,7 @@ func (r *JceReader) ReadFloat32(tag int) float32 {
 	}
 }
 
-func (r *JceReader) ReadFloat64(tag int) float64 {
+func (r *Reader) ReadFloat64(tag int) float64 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
@@ -266,22 +266,22 @@ func (r *JceReader) ReadFloat64(tag int) float64 {
 	}
 }
 
-func (r *JceReader) ReadString(tag int) string {
+func (r *Reader) ReadString(tag int) string {
 	if !r.skipToTag(tag) {
 		return ""
 	}
 	hd, _ := r.readHead()
 	switch hd.Type {
 	case 6:
-		return utils.B2S(r.readBytes(int(r.readByte())))
+		return utils.ByteSliceToString(r.readBytes(int(r.readByte())))
 	case 7:
-		return utils.B2S(r.readBytes(int(r.readUInt32())))
+		return utils.ByteSliceToString(r.readBytes(int(r.readUInt32())))
 	default:
 		return ""
 	}
 }
 
-func (r *JceReader) ReadBytes(tag int) []byte {
+func (r *Reader) ReadBytes(tag int) []byte {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -302,7 +302,7 @@ func (r *JceReader) ReadBytes(tag int) []byte {
 	}
 }
 
-func (r *JceReader) ReadByteArrArr(tag int) (baa [][]byte) {
+func (r *Reader) ReadByteArrArr(tag int) (baa [][]byte) {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -322,7 +322,7 @@ func (r *JceReader) ReadByteArrArr(tag int) (baa [][]byte) {
 
 /*
 // ReadAny Read any type via tag, unsupported JceStruct
-func (r *JceReader) ReadAny(tag int) interface{} {
+func (r *Reader) ReadAny(tag int) interface{} {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -341,9 +341,9 @@ func (r *JceReader) ReadAny(tag int) interface{} {
 	case 5:
 		return r.readFloat64()
 	case 6:
-		return utils.B2S(r.readBytes(int(r.readByte())))
+		return utils.ByteSliceToString(r.readBytes(int(r.readByte())))
 	case 7:
-		return utils.B2S(r.readBytes(int(r.readUInt32())))
+		return utils.ByteSliceToString(r.readBytes(int(r.readUInt32())))
 	case 8:
 		s := r.ReadInt32(0)
 		m := make(map[interface{}]interface{})
@@ -369,7 +369,7 @@ func (r *JceReader) ReadAny(tag int) interface{} {
 }
 */
 
-func (r *JceReader) ReadJceStruct(obj IJceStruct, tag int) {
+func (r *Reader) ReadJceStruct(obj IJceStruct, tag int) {
 	if !r.skipToTag(tag) {
 		return
 	}
@@ -381,7 +381,7 @@ func (r *JceReader) ReadJceStruct(obj IJceStruct, tag int) {
 	r.skipToStructEnd()
 }
 
-func (r *JceReader) ReadMapStrStr(tag int) map[string]string {
+func (r *Reader) ReadMapStrStr(tag int) map[string]string {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -399,7 +399,7 @@ func (r *JceReader) ReadMapStrStr(tag int) map[string]string {
 	}
 }
 
-func (r *JceReader) ReadMapStrByte(tag int) map[string][]byte {
+func (r *Reader) ReadMapStrByte(tag int) map[string][]byte {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -417,7 +417,7 @@ func (r *JceReader) ReadMapStrByte(tag int) map[string][]byte {
 	}
 }
 
-func (r *JceReader) ReadMapIntVipInfo(tag int) map[int]*VipInfo {
+func (r *Reader) ReadMapIntVipInfo(tag int) map[int]*VipInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -443,7 +443,7 @@ func (r *JceReader) ReadMapIntVipInfo(tag int) map[int]*VipInfo {
 	}
 }
 
-func (r *JceReader) ReadMapStrMapStrByte(tag int) map[string]map[string][]byte {
+func (r *Reader) ReadMapStrMapStrByte(tag int) map[string]map[string][]byte {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -462,11 +462,11 @@ func (r *JceReader) ReadMapStrMapStrByte(tag int) map[string]map[string][]byte {
 }
 
 /*
-func (r *JceReader) ReadMap(i interface{}, tag int) {
+func (r *Reader) ReadMap(i interface{}, tag int) {
 	r.readMap(reflect.ValueOf(i), tag)
 }
 
-func (r *JceReader) readMap(v reflect.Value, tag int) {
+func (r *Reader) readMap(v reflect.Value, tag int) {
 	if v.Kind() != reflect.Map || !r.skipToTag(tag) {
 		return
 	}
@@ -508,7 +508,7 @@ func (r *JceReader) readMap(v reflect.Value, tag int) {
 }
 */
 
-func (r *JceReader) ReadFileStorageServerInfos(tag int) []FileStorageServerInfo {
+func (r *Reader) ReadFileStorageServerInfos(tag int) []FileStorageServerInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -528,7 +528,7 @@ func (r *JceReader) ReadFileStorageServerInfos(tag int) []FileStorageServerInfo 
 	}
 }
 
-func (r *JceReader) ReadBigDataIPLists(tag int) []BigDataIPList {
+func (r *Reader) ReadBigDataIPLists(tag int) []BigDataIPList {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -548,7 +548,7 @@ func (r *JceReader) ReadBigDataIPLists(tag int) []BigDataIPList {
 	}
 }
 
-func (r *JceReader) ReadBigDataIPInfos(tag int) []BigDataIPInfo {
+func (r *Reader) ReadBigDataIPInfos(tag int) []BigDataIPInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -568,7 +568,7 @@ func (r *JceReader) ReadBigDataIPInfos(tag int) []BigDataIPInfo {
 	}
 }
 
-func (r *JceReader) ReadOnlineInfos(tag int) []OnlineInfo {
+func (r *Reader) ReadOnlineInfos(tag int) []OnlineInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -588,7 +588,7 @@ func (r *JceReader) ReadOnlineInfos(tag int) []OnlineInfo {
 	}
 }
 
-func (r *JceReader) ReadInstanceInfos(tag int) []InstanceInfo {
+func (r *Reader) ReadInstanceInfos(tag int) []InstanceInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -608,7 +608,7 @@ func (r *JceReader) ReadInstanceInfos(tag int) []InstanceInfo {
 	}
 }
 
-func (r *JceReader) ReadSsoServerInfos(tag int) []SsoServerInfo {
+func (r *Reader) ReadSsoServerInfos(tag int) []SsoServerInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -628,7 +628,7 @@ func (r *JceReader) ReadSsoServerInfos(tag int) []SsoServerInfo {
 	}
 }
 
-func (r *JceReader) ReadFriendInfos(tag int) []FriendInfo {
+func (r *Reader) ReadFriendInfos(tag int) []FriendInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -648,7 +648,7 @@ func (r *JceReader) ReadFriendInfos(tag int) []FriendInfo {
 	}
 }
 
-func (r *JceReader) ReadTroopNumbers(tag int) []TroopNumber {
+func (r *Reader) ReadTroopNumbers(tag int) []TroopNumber {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -668,7 +668,7 @@ func (r *JceReader) ReadTroopNumbers(tag int) []TroopNumber {
 	}
 }
 
-func (r *JceReader) ReadTroopMemberInfos(tag int) []TroopMemberInfo {
+func (r *Reader) ReadTroopMemberInfos(tag int) []TroopMemberInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -688,7 +688,7 @@ func (r *JceReader) ReadTroopMemberInfos(tag int) []TroopMemberInfo {
 	}
 }
 
-func (r *JceReader) ReadPushMessageInfos(tag int) []PushMessageInfo {
+func (r *Reader) ReadPushMessageInfos(tag int) []PushMessageInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -708,7 +708,7 @@ func (r *JceReader) ReadPushMessageInfos(tag int) []PushMessageInfo {
 	}
 }
 
-func (r *JceReader) ReadSvcDevLoginInfos(tag int) []SvcDevLoginInfo {
+func (r *Reader) ReadSvcDevLoginInfos(tag int) []SvcDevLoginInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
@@ -729,11 +729,11 @@ func (r *JceReader) ReadSvcDevLoginInfos(tag int) []SvcDevLoginInfo {
 }
 
 /*
-func (r *JceReader) ReadSlice(i interface{}, tag int) {
+func (r *Reader) ReadSlice(i interface{}, tag int) {
 	r.readSlice(reflect.ValueOf(i), tag)
 }
 
-func (r *JceReader) readSlice(v reflect.Value, tag int) {
+func (r *Reader) readSlice(v reflect.Value, tag int) {
 	t := v.Type()
 	if t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Slice || !r.skipToTag(tag) {
 		return
@@ -759,11 +759,11 @@ func (r *JceReader) readSlice(v reflect.Value, tag int) {
 	}
 }
 
-func (r *JceReader) ReadObject(i interface{}, tag int) {
+func (r *Reader) ReadObject(i interface{}, tag int) {
 	r.readObject(reflect.ValueOf(i), tag)
 }
 
-func (r *JceReader) readObject(v reflect.Value, tag int) {
+func (r *Reader) readObject(v reflect.Value, tag int) {
 	if v.Kind() != reflect.Ptr || v.IsNil() {
 		return
 	}

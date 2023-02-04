@@ -108,9 +108,9 @@ func (f *Feed) ToSendingPayload(selfUin int64) string {
 		"data": patternData,
 	})
 	packedPattern, _ := json.Marshal(patternInfo)
-	c["patternInfo"] = utils.B2S(packedPattern)
+	c["patternInfo"] = utils.ByteSliceToString(packedPattern)
 	packedContent, _ := json.Marshal(c)
-	return utils.B2S(packedContent)
+	return utils.ByteSliceToString(packedContent)
 }
 
 func DecodeFeed(p *channel.StFeed) *Feed {

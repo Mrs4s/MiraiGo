@@ -2,6 +2,7 @@ package oicq
 
 import (
 	goBinary "encoding/binary"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"math/rand"
 
 	"github.com/pkg/errors"
@@ -114,13 +115,13 @@ func (c *Codec) Unmarshal(data []byte) (*Message, error) {
 		d := reader.ReadBytes(reader.Len() - 1)
 		defer func() {
 			if pan := recover(); pan != nil {
-				m.Body = binary.NewTeaCipher(c.randomKey).Decrypt(d)
+				m.Body = tea.NewCipher(c.randomKey).Decrypt(d)
 			}
 		}()
-		m.Body = binary.NewTeaCipher(c.ecdh.ShareKey).Decrypt(d)
+		m.Body = tea.NewCipher(c.ecdh.ShareKey).Decrypt(d)
 	case 3:
 		d := reader.ReadBytes(reader.Len() - 1)
-		m.Body = binary.NewTeaCipher(c.WtSessionTicketKey).Decrypt(d)
+		m.Body = tea.NewCipher(c.WtSessionTicketKey).Decrypt(d)
 	default:
 		return nil, ErrUnknownEncryptType
 	}

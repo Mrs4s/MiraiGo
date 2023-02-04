@@ -188,11 +188,11 @@ func decodeLoginResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 // StatSvc.register
 func decodeClientRegisterResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	data.ReadFrom(jce.NewReader(request.SBuffer))
 	svcRsp := &jce.SvcRespRegister{}
-	svcRsp.ReadFrom(jce.NewJceReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
+	svcRsp.ReadFrom(jce.NewReader(data.Map["SvcRespRegister"]["QQService.SvcRespRegister"][1:]))
 	if svcRsp.Result != "" || svcRsp.ReplyCode != 0 {
 		if svcRsp.Result != "" {
 			c.error("reg error: %v", svcRsp.Result)
@@ -308,16 +308,16 @@ func decodeTransEmpResponse(c *QQClient, _ *network.IncomingPacketInfo, payload 
 // ConfigPushSvc.PushReq
 func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	r := jce.NewJceReader(data.Map["PushReq"]["ConfigPush.PushReq"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	r := jce.NewReader(data.Map["PushReq"]["ConfigPush.PushReq"][1:])
 	t := r.ReadInt32(1)
 	jceBuf := r.ReadBytes(2)
 	if len(jceBuf) > 0 {
 		switch t {
 		case 1:
-			ssoPkt := jce.NewJceReader(jceBuf)
+			ssoPkt := jce.NewReader(jceBuf)
 			servers := ssoPkt.ReadSsoServerInfos(1)
 			if len(servers) > 0 {
 				var adds []netip.AddrPort
@@ -345,7 +345,7 @@ func decodePushReqPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []b
 				return nil, nil
 			}
 		case 2:
-			fmtPkt := jce.NewJceReader(jceBuf)
+			fmtPkt := jce.NewReader(jceBuf)
 			list := &jce.FileStoragePushFSSvcList{}
 			list.ReadFrom(fmtPkt)
 			c.debug("got file storage svc push.")
@@ -392,15 +392,15 @@ func decodeMessageSvcPacket(c *QQClient, info *network.IncomingPacketInfo, paylo
 // MessageSvc.PushNotify
 func decodeSvcNotify(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload[4:]))
+	request.ReadFrom(jce.NewReader(payload[4:]))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
+	data.ReadFrom(jce.NewReader(request.SBuffer))
 	if len(data.Map) == 0 {
 		_, err := c.sendAndWait(c.buildGetMessageRequestPacket(msg.SyncFlag_START, time.Now().Unix()))
 		return nil, err
 	}
 	notify := &jce.RequestPushNotify{}
-	notify.ReadFrom(jce.NewJceReader(data.Map["req_PushNotify"]["PushNotifyPack.RequestPushNotify"][1:]))
+	notify.ReadFrom(jce.NewReader(data.Map["req_PushNotify"]["PushNotifyPack.RequestPushNotify"][1:]))
 	if decoder, typ := peekC2CDecoder(notify.MsgType); decoder != nil {
 		// notify.MsgType != 85 && notify.MsgType != 36 moves to _c2c_decoders.go [nonSvcNotifyTroopSystemMsgDecoders]
 		if typ == troopSystemMsgDecoders {
@@ -419,14 +419,14 @@ func decodeSvcNotify(c *QQClient, _ *network.IncomingPacketInfo, payload []byte)
 // SummaryCard.ReqSummaryCard
 func decodeSummaryCardResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	rsp := func() *jce.JceReader {
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	rsp := func() *jce.Reader {
 		if r, ok := data.Map["RespSummaryCard"]["SummaryCard.RespSummaryCard"]; ok {
-			return jce.NewJceReader(r[1:])
+			return jce.NewReader(r[1:])
 		}
-		return jce.NewJceReader(data.Map["RespSummaryCard"]["SummaryCard_Old.RespSummaryCard"][1:])
+		return jce.NewReader(data.Map["RespSummaryCard"]["SummaryCard_Old.RespSummaryCard"][1:])
 	}()
 	info := &SummaryCardInfo{
 		Sex:      rsp.ReadByte(1),
@@ -476,10 +476,10 @@ func decodeSummaryCardResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 // friendlist.getFriendGroupList
 func decodeFriendGroupListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion3{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	r := jce.NewJceReader(data.Map["FLRESP"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	r := jce.NewReader(data.Map["FLRESP"][1:])
 	totalFriendCount := r.ReadInt16(5)
 	friends := r.ReadFriendInfos(7)
 	l := make([]*FriendInfo, 0, len(friends))
@@ -501,10 +501,10 @@ func decodeFriendGroupListResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 // friendlist.delFriend
 func decodeFriendDeleteResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion3{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	r := jce.NewJceReader(data.Map["DFRESP"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	r := jce.NewReader(data.Map["DFRESP"][1:])
 	if ret := r.ReadInt32(2); ret != 0 {
 		return nil, errors.Errorf("delete friend error: %v", ret)
 	}
@@ -514,10 +514,10 @@ func decodeFriendDeleteResponse(_ *QQClient, _ *network.IncomingPacketInfo, payl
 // friendlist.GetTroopListReqV2
 func decodeGroupListResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion3{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	r := jce.NewJceReader(data.Map["GetTroopListRespV2"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	r := jce.NewReader(data.Map["GetTroopListRespV2"][1:])
 	vecCookie := r.ReadBytes(4)
 	groups := r.ReadTroopNumbers(5)
 	l := make([]*GroupInfo, 0, len(groups))
@@ -545,10 +545,10 @@ func decodeGroupListResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 // friendlist.GetTroopMemberListReq
 func decodeGroupMemberListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion3{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	r := jce.NewJceReader(data.Map["GTMLRESP"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	r := jce.NewReader(data.Map["GTMLRESP"][1:])
 	members := r.ReadTroopMemberInfos(3)
 	next := r.ReadInt64(4)
 	l := make([]*GroupMemberInfo, 0, len(members))
@@ -771,10 +771,10 @@ func decodeSystemMsgFriendPacket(c *QQClient, _ *network.IncomingPacketInfo, pay
 // MessageSvc.PushForceOffline
 func decodeForceOfflinePacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	r := jce.NewJceReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	r := jce.NewReader(data.Map["req_PushForceOffline"]["PushNotifyPack.RequestPushForceOffline"][1:])
 	tips := r.ReadString(2)
 	c.Disconnect()
 	go c.DisconnectedEvent.dispatch(c, &ClientDisconnectedEvent{Message: tips})

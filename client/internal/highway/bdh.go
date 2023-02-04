@@ -2,6 +2,7 @@ package highway
 
 import (
 	"crypto/md5"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"io"
 	"net"
 	"sync"
@@ -31,7 +32,7 @@ func (bdh *Transaction) encrypt(key []byte) error {
 		if len(key) == 0 {
 			return errors.New("session key not found. maybe miss some packet?")
 		}
-		bdh.Ext = binary.NewTeaCipher(key).Encrypt(bdh.Ext)
+		bdh.Ext = tea.NewCipher(key).Encrypt(bdh.Ext)
 	}
 	return nil
 }
@@ -75,7 +76,7 @@ func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
+			MsgBasehead: s.dataHighwayHead(reqCmdData, 4096, trans.CommandID, 2052),
 			MsgSeghead: &pb.SegHead{
 				Filesize:      trans.Size,
 				Dataoffset:    int64(offset),
@@ -177,7 +178,7 @@ func (s *Session) UploadBDHMultiThread(trans Transaction, threadCount int) ([]by
 			}
 			ch := md5.Sum(chunk)
 			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-				MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
+				MsgBasehead: s.dataHighwayHead(reqCmdData, 4096, trans.CommandID, 2052),
 				MsgSeghead: &pb.SegHead{
 					Filesize:      trans.Size,
 					Dataoffset:    off,

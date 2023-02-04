@@ -25,10 +25,10 @@ var msg0x210Decoders = map[int64]func(*QQClient, []byte) error{
 // OnlinePush.ReqPush
 func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewReader(payload))
 	data := &jce.RequestDataVersion2{}
-	data.ReadFrom(jce.NewJceReader(request.SBuffer))
-	jr := jce.NewJceReader(data.Map["req"]["OnlinePushPack.SvcReqPushMsg"][1:])
+	data.ReadFrom(jce.NewReader(request.SBuffer))
+	jr := jce.NewReader(data.Map["req"]["OnlinePushPack.SvcReqPushMsg"][1:])
 	uin := jr.ReadInt64(0)
 	msgInfos := jr.ReadPushMessageInfos(2)
 	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(uin, 0, nil, info.SequenceId, msgInfos))
@@ -120,7 +120,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 		}
 		// 0x210
 		if m.MsgType == 528 {
-			vr := jce.NewJceReader(m.VMsg)
+			vr := jce.NewReader(m.VMsg)
 			subType := vr.ReadInt64(0)
 			if decoder, ok := msg0x210Decoders[subType]; ok {
 				protobuf := vr.ReadBytes(10)

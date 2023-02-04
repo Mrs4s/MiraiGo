@@ -1,6 +1,7 @@
 package network
 
 import (
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -44,10 +45,10 @@ func (t *Transport) ReadResponse(head []byte) (*Response, error) {
 	case EncryptTypeNoEncrypt:
 		// nothing to do
 	case EncryptTypeD2Key:
-		body = binary.NewTeaCipher(t.Sig.D2Key).Decrypt(body)
+		body = tea.NewCipher(t.Sig.D2Key).Decrypt(body)
 	case EncryptTypeEmptyKey:
 		emptyKey := make([]byte, 16)
-		body = binary.NewTeaCipher(emptyKey).Decrypt(body)
+		body = tea.NewCipher(emptyKey).Decrypt(body)
 	}
 	err := t.readSSOFrame(resp, body)
 	return resp, err

@@ -111,7 +111,7 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 		Data    string `json:"data"`
 		Text    string `json:"text"`
 	}
-	content := utils.B2S(tipInfo.Content)
+	content := utils.ByteSliceToString(tipInfo.Content)
 	var tipCmds []*tipCommand
 	start := -1
 	for i := 0; i < len(content); i++ {

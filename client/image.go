@@ -379,7 +379,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	if rsp.Result.Unwrap() != 0 {
 		return &imageUploadResponse{
 			ResultCode: int32(rsp.Result.Unwrap()),
-			Message:    utils.B2S(rsp.FailMsg),
+			Message:    utils.ByteSliceToString(rsp.FailMsg),
 		}, nil
 	}
 	if rsp.FileExit.Unwrap() {
@@ -405,7 +405,7 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 		return nil, errors.New("response not found")
 	}
 	if len(pkt.GetimgUrlRsp[0].FailMsg) != 0 {
-		return nil, errors.New(utils.B2S(pkt.GetimgUrlRsp[0].FailMsg))
+		return nil, errors.New(utils.ByteSliceToString(pkt.GetimgUrlRsp[0].FailMsg))
 	}
 	return fmt.Sprintf("https://%s%s", pkt.GetimgUrlRsp[0].DownDomain, pkt.GetimgUrlRsp[0].BigDownPara), nil
 }

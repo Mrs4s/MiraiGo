@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"net"
 	"runtime/debug"
 	"sync"
@@ -150,49 +151,6 @@ func (c *QQClient) Disconnect() {
 	c.TCP.Close()
 }
 
-// sendAndWait 向服务器发送一个数据包, 并等待返回
-func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
-	type T struct {
-		Response any
-		Error    error
-	}
-	ch := make(chan T, 1)
-	var p network.RequestParams
-
-	if len(params) != 0 {
-		p = params[0]
-	}
-
-	c.handlers.Store(seq, &handlerInfo{fun: func(i any, err error) {
-		ch <- T{
-			Response: i,
-			Error:    err,
-		}
-	}, params: p, dynamic: false})
-
-	err := c.sendPacket(pkt)
-	if err != nil {
-		c.handlers.Delete(seq)
-		return nil, err
-	}
-
-	retry := 0
-	for {
-		select {
-		case rsp := <-ch:
-			return rsp.Response, rsp.Error
-		case <-time.After(time.Second * 15):
-			retry++
-			if retry < 2 {
-				_ = c.sendPacket(pkt)
-				continue
-			}
-			c.handlers.Delete(seq)
-			return nil, errors.New("Packet timed out")
-		}
-	}
-}
-
 // sendPacket 向服务器发送一个数据包
 func (c *QQClient) sendPacket(pkt []byte) error {
 	err := c.TCP.Write(pkt)
@@ -233,23 +191,85 @@ func (c *QQClient) waitPacketTimeoutSyncF(cmd string, timeout time.Duration, fil
 	}
 }
 
-// sendAndWaitDynamic
-// 发送数据包并返回需要解析的 response
-func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
-	ch := make(chan []byte, 1)
-	c.handlers.Store(seq, &handlerInfo{fun: func(i any, err error) { ch <- i.([]byte) }, dynamic: true})
+type sendFunc func(seq uint16, pkt []byte, params ...network.RequestParams) (any, error)
+type sendFuncWithContext func(ctx context.Context, seq uint16, pkt []byte, params ...network.RequestParams) (any, error)
+
+// sendWithTimeoutRetry 向服务器发送一个数据包, 并等待返回, 默认3次重试, 每次的超时时间为15秒
+func (c *QQClient) sendWithTimeoutRetry(f sendFuncWithContext) sendFunc {
+	return func(seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
+		retry := 3
+		for retry > 0 {
+			v, err := func() (any, error) {
+				ctx, cancel := context.WithTimeout(context.TODO(), time.Second*15)
+				defer cancel()
+
+				return f(ctx, seq, pkt, params...)
+			}()
+			if err == nil {
+				return v, nil
+			}
+			retry--
+		}
+		return nil, errors.New("Packet timeout")
+	}
+}
+
+// sendAndWaitRawContext 向服务器发送一个数据包, 并等待返回
+func (c *QQClient) sendAndWaitRawContext(ctx context.Context, dynamic bool, seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
+	type T struct {
+		Resp any
+		Err  error
+	}
+	ch := make(chan T, 1)
+	var p network.RequestParams
+
+	if len(params) != 0 {
+		p = params[0]
+	}
+
+	hdrInfo := &handlerInfo{fun: func(i any, err error) {
+		ch <- T{
+			Resp: i,
+			Err:  err,
+		}
+	}, params: p, dynamic: dynamic}
+	c.handlers.Store(seq, hdrInfo)
+
 	err := c.sendPacket(pkt)
 	if err != nil {
 		c.handlers.Delete(seq)
 		return nil, err
 	}
-	select {
-	case rsp := <-ch:
-		return rsp, nil
-	case <-time.After(time.Second * 15):
-		c.handlers.Delete(seq)
-		return nil, errors.New("Packet timed out")
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case rsp := <-ch:
+			return rsp.Resp, rsp.Err
+		}
 	}
+}
+
+// sendAndWaitContext 向服务器发送一个数据包, 并等待返回
+func (c *QQClient) sendAndWaitContext(ctx context.Context, seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
+	return c.sendAndWaitRawContext(ctx, false, seq, pkt, params...)
+}
+
+// sendAndWaitContext 向服务器发送一个数据包, 并等待返回
+func (c *QQClient) sendAndWait(seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
+	return c.sendWithTimeoutRetry(c.sendAndWaitContext)(seq, pkt, params...)
+}
+
+// sendAndWaitDynamicContext 发送数据包并返回需要解析的 response, 类型始终为[]byte
+func (c *QQClient) sendAndWaitDynamicContext(ctx context.Context, seq uint16, pkt []byte, params ...network.RequestParams) (any, error) {
+	return c.sendAndWaitRawContext(ctx, true, seq, pkt, params...)
+}
+
+// sendAndWaitDynamic 发送数据包并返回需要解析的 response
+func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
+	v, err := c.sendWithTimeoutRetry(c.sendAndWaitDynamicContext)(seq, pkt)
+	return v.([]byte), err
 }
 
 // plannedDisconnect 计划中断线事件

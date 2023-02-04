@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 )
 
 // Writer 写入
@@ -97,7 +98,7 @@ func (w *Writer) WriteBool(b bool) {
 }
 
 func (w *Writer) EncryptAndWrite(key []byte, data []byte) {
-	w.Write(NewTeaCipher(key).Encrypt(data))
+	w.Write(tea.NewCipher(key).Encrypt(data))
 }
 
 func (w *Writer) WriteIntLvPacket(offset int, f func(*Writer)) {

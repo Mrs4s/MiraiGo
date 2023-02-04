@@ -1,6 +1,7 @@
 package network
 
 import (
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"strconv"
 	"sync"
 
@@ -87,10 +88,10 @@ func (t *Transport) PackPacket(req *Request) []byte {
 	// encrypt body
 	switch req.EncryptType {
 	case EncryptTypeD2Key:
-		body = binary.NewTeaCipher(t.Sig.D2Key).Encrypt(body)
+		body = tea.NewCipher(t.Sig.D2Key).Encrypt(body)
 	case EncryptTypeEmptyKey:
 		emptyKey := make([]byte, 16)
-		body = binary.NewTeaCipher(emptyKey).Encrypt(body)
+		body = tea.NewCipher(emptyKey).Encrypt(body)
 	}
 	w.Write(body)
 	binary.PutWriter(w2)

@@ -18,9 +18,9 @@ func TestJceReader_ReadSlice(t *testing.T) {
 		_, _ = rand.Read(b)
 		s[i] = b
 	}
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteBytesSlice(s, 1)
-	r := NewJceReader(w.Bytes())
+	r := NewReader(w.Bytes())
 	result := r.ReadByteArrArr(1)
 	assert.Equal(t, s, result)
 }
@@ -35,13 +35,13 @@ func BenchmarkJceReader_ReadSlice(b *testing.B) {
 			Port:   8080,
 		})
 	}
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteObject(test, 1)
 	src := w.Bytes()
 	b.SetBytes(int64(len(src)))
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		r := NewJceReader(src)
+		r := NewReader(src)
 		_ = r.ReadBigDataIPInfos(1)
 	}
 }
@@ -68,22 +68,22 @@ var req = RequestDataVersion2{
 
 func TestRequestDataVersion2_ReadFrom(t *testing.T) {
 	// todo(wdv): fuzz test
-	w := NewJceWriter()
+	w := NewWriter()
 	w.writeMapStrMapStrBytes(req.Map, 0)
 	src := w.Bytes()
 	result := RequestDataVersion2{}
-	result.ReadFrom(NewJceReader(src))
+	result.ReadFrom(NewReader(src))
 	assert.Equal(t, req, result)
 }
 
 func BenchmarkRequestDataVersion2_ReadFrom(b *testing.B) {
-	w := NewJceWriter()
+	w := NewWriter()
 	w.writeMapStrMapStrBytes(req.Map, 0)
 	src := w.Bytes()
 	b.SetBytes(int64(len(src)))
 	result := &RequestDataVersion2{}
 	for i := 0; i < b.N; i++ {
-		result.ReadFrom(NewJceReader(src))
+		result.ReadFrom(NewReader(src))
 	}
 }
 
@@ -91,15 +91,15 @@ func TestJceReader_ReadBytes(t *testing.T) {
 	b := make([]byte, 1024)
 	rand.Read(b)
 
-	w := NewJceWriter()
+	w := NewWriter()
 	w.WriteBytes(b, 0)
-	r := NewJceReader(w.Bytes())
+	r := NewReader(w.Bytes())
 	rb := r.ReadBytes(0)
 
 	assert.Equal(t, b, rb)
 }
 
-func (w *JceWriter) WriteObject(i any, tag byte) {
+func (w *Writer) WriteObject(i any, tag byte) {
 	t := reflect.TypeOf(i)
 	if t.Kind() == reflect.Map {
 		w.WriteMap(i, tag)
@@ -135,7 +135,7 @@ func (w *JceWriter) WriteObject(i any, tag byte) {
 	}
 }
 
-func (w *JceWriter) writeObject(v reflect.Value, tag byte) {
+func (w *Writer) writeObject(v reflect.Value, tag byte) {
 	k := v.Kind()
 	if k == reflect.Map {
 		switch o := v.Interface().(type) {
@@ -192,7 +192,7 @@ type decoder struct {
 var decoderCache = sync.Map{}
 
 // WriteJceStructRaw 写入 Jce 结构体
-func (w *JceWriter) WriteJceStructRaw(s any) {
+func (w *Writer) WriteJceStructRaw(s any) {
 	t := reflect.TypeOf(s)
 	if t.Kind() != reflect.Ptr {
 		return
@@ -228,21 +228,21 @@ func (w *JceWriter) WriteJceStructRaw(s any) {
 	}
 }
 
-func (w *JceWriter) WriteJceStruct(s IJceStruct, tag byte) {
+func (w *Writer) WriteJceStruct(s IJceStruct, tag byte) {
 	w.writeHead(10, tag)
 	w.WriteJceStructRaw(s)
 	w.writeHead(11, 0)
 }
 
-func (w *JceWriter) WriteSlice(i any, tag byte) {
+func (w *Writer) WriteSlice(i any, tag byte) {
 	va := reflect.ValueOf(i)
 	if va.Kind() != reflect.Slice {
-		panic("JceWriter.WriteSlice: not a slice")
+		panic("Writer.WriteSlice: not a slice")
 	}
 	w.writeSlice(va, tag)
 }
 
-func (w *JceWriter) writeSlice(slice reflect.Value, tag byte) {
+func (w *Writer) writeSlice(slice reflect.Value, tag byte) {
 	if slice.Kind() != reflect.Slice {
 		return
 	}
@@ -258,7 +258,7 @@ func (w *JceWriter) writeSlice(slice reflect.Value, tag byte) {
 	}
 }
 
-func (w *JceWriter) WriteJceStructSlice(l []IJceStruct, tag byte) {
+func (w *Writer) WriteJceStructSlice(l []IJceStruct, tag byte) {
 	w.writeHead(9, tag)
 	if len(l) == 0 {
 		w.writeHead(12, 0) // w.WriteInt32(0, 0)
@@ -270,15 +270,15 @@ func (w *JceWriter) WriteJceStructSlice(l []IJceStruct, tag byte) {
 	}
 }
 
-func (w *JceWriter) WriteMap(m any, tag byte) {
+func (w *Writer) WriteMap(m any, tag byte) {
 	va := reflect.ValueOf(m)
 	if va.Kind() != reflect.Map {
-		panic("JceWriter.WriteMap: not a map")
+		panic("Writer.WriteMap: not a map")
 	}
 	w.writeMap(va, tag)
 }
 
-func (w *JceWriter) writeMap(m reflect.Value, tag byte) {
+func (w *Writer) writeMap(m reflect.Value, tag byte) {
 	if m.IsNil() {
 		w.writeHead(8, tag)
 		w.writeHead(12, 0) // w.WriteInt32(0, 0)

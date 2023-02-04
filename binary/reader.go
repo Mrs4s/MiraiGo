@@ -71,7 +71,7 @@ func (r *Reader) ReadInt64() int64 {
 
 func (r *Reader) ReadString() string {
 	data := r.ReadBytes(int(r.ReadInt32() - 4))
-	return utils.B2S(data)
+	return utils.ByteSliceToString(data)
 }
 
 func (r *Reader) ReadInt32Bytes() []byte {
@@ -80,12 +80,12 @@ func (r *Reader) ReadInt32Bytes() []byte {
 
 func (r *Reader) ReadStringShort() string {
 	data := r.ReadBytes(int(r.ReadUInt16()))
-	return utils.B2S(data)
+	return utils.ByteSliceToString(data)
 }
 
 func (r *Reader) ReadStringLimit(limit int) string {
 	data := r.ReadBytes(limit)
-	return utils.B2S(data)
+	return utils.ByteSliceToString(data)
 }
 
 func (r *Reader) ReadAvailable() []byte {

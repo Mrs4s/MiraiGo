@@ -3,6 +3,7 @@ package client
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"time"
 
 	"github.com/Mrs4s/MiraiGo/utils"
@@ -24,8 +25,8 @@ func (c *QQClient) decodeT161(data []byte) {
 */
 
 func (c *QQClient) decodeT119(data, ek []byte) {
-	tea := binary.NewTeaCipher(ek)
-	reader := binary.NewReader(tea.Decrypt(data))
+	cipher := tea.NewCipher(ek)
+	reader := binary.NewReader(cipher.Decrypt(data))
 	reader.ReadBytes(2)
 	m := reader.ReadTlvMap(2)
 	if t130, ok := m[0x130]; ok {
@@ -118,7 +119,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		})
 		key := md5.Sum(data)
 		cl()
-		decrypted := binary.NewTeaCipher(key[:]).Decrypt(c.sig.EncryptedA1)
+		decrypted := tea.NewCipher(key[:]).Decrypt(c.sig.EncryptedA1)
 		if len(decrypted) > 51+16 {
 			dr := binary.NewReader(decrypted)
 			dr.ReadBytes(51)
@@ -132,8 +133,8 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 
 // wtlogin.exchange_emp
 func (c *QQClient) decodeT119R(data []byte) {
-	tea := binary.NewTeaCipher(c.deviceInfo.TgtgtKey)
-	reader := binary.NewReader(tea.Decrypt(data))
+	cipher := tea.NewCipher(c.deviceInfo.TgtgtKey)
+	reader := binary.NewReader(cipher.Decrypt(data))
 	reader.ReadBytes(2)
 	m := reader.ReadTlvMap(2)
 	if t120, ok := m[0x120]; ok {

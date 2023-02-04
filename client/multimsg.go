@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"math"
 	"math/rand"
 	"strconv"
@@ -114,14 +115,14 @@ func decodeMultiApplyDownResponse(_ *QQClient, _ *network.IncomingPacketInfo, pa
 	if b[0] != 40 {
 		return nil, errors.New("unexpected body data")
 	}
-	tea := binary.NewTeaCipher(body.MultimsgApplydownRsp[0].MsgKey)
+	cipher := tea.NewCipher(body.MultimsgApplydownRsp[0].MsgKey)
 	r := binary.NewReader(b[1:])
 	i1 := r.ReadInt32()
 	i2 := r.ReadInt32()
 	if i1 > 0 {
 		r.ReadBytes(int(i1)) // im msg head
 	}
-	data := tea.Decrypt(r.ReadBytes(int(i2)))
+	data := cipher.Decrypt(r.ReadBytes(int(i2)))
 	lb := longmsg.LongRspBody{}
 	if err = proto.Unmarshal(data, &lb); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/Mrs4s/MiraiGo/binary/tea"
 	"math/rand"
 	"net"
 	"net/netip"
@@ -119,7 +120,7 @@ func GenIMEI() string {
 func getSSOAddress() ([]netip.AddrPort, error) {
 	protocol := SystemDeviceInfo.Protocol.Version()
 	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")
-	payload := jce.NewJceWriter(). // see ServerConfig.d
+	payload := jce.NewWriter(). // see ServerConfig.d
 					WriteInt64(0, 1).WriteInt64(0, 2).WriteByte(1, 3).
 					WriteString("00000", 4).WriteInt32(100, 5).
 					WriteInt32(int32(protocol.AppId), 6).WriteString(SystemDeviceInfo.IMEI, 7).
@@ -139,8 +140,8 @@ func getSSOAddress() ([]netip.AddrPort, error) {
 			w.Write(pkt.ToBytes())
 		})
 	})
-	tea := binary.NewTeaCipher(key)
-	encpkt := tea.Encrypt(b)
+	cipher := tea.NewCipher(key)
+	encpkt := cipher.Encrypt(b)
 	cl()
 	rsp, err := utils.HttpPostBytes("https://configsvr.msf.3g.qq.com/configsvr/serverlist.jsp?mType=getssolist", encpkt)
 	if err != nil {
@@ -148,9 +149,9 @@ func getSSOAddress() ([]netip.AddrPort, error) {
 	}
 	rspPkt := &jce.RequestPacket{}
 	data := &jce.RequestDataVersion3{}
-	rspPkt.ReadFrom(jce.NewJceReader(tea.Decrypt(rsp)[4:]))
-	data.ReadFrom(jce.NewJceReader(rspPkt.SBuffer))
-	reader := jce.NewJceReader(data.Map["HttpServerListRes"][1:])
+	rspPkt.ReadFrom(jce.NewReader(cipher.Decrypt(rsp)[4:]))
+	data.ReadFrom(jce.NewReader(rspPkt.SBuffer))
+	reader := jce.NewReader(data.Map["HttpServerListRes"][1:])
 	servers := reader.ReadSsoServerInfos(2)
 	adds := make([]netip.AddrPort, 0, len(servers))
 	for _, s := range servers {
@@ -326,7 +327,7 @@ func genLongTemplate(resID, brief string, ts int64) *message.ServiceElement {
 
 func (c *QQClient) getWebDeviceInfo() (i string) {
 	qimei := strings.ToLower(utils.RandomString(36))
-	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.deviceInfo.IMEI, utils.B2S(c.deviceInfo.MacAddress), utils.B2S(c.deviceInfo.Device), utils.B2S(c.deviceInfo.Version.Release))
+	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.deviceInfo.IMEI, utils.ByteSliceToString(c.deviceInfo.MacAddress), utils.ByteSliceToString(c.deviceInfo.Device), utils.ByteSliceToString(c.deviceInfo.Version.Release))
 	i += fmt.Sprintf("a=%v&sd=0&c64=0&sc=1&p=1080*2210&aid=%v&", c.deviceInfo.Version.SDK, c.deviceInfo.IMEI)
 	i += fmt.Sprintf("f=%v&mm=%v&cf=%v&cc=%v&", c.deviceInfo.Brand, 5629 /* Total Memory*/, 1725 /* CPU Frequency */, 8 /* CPU Core Count */)
 	i += fmt.Sprintf("qimei=%v&qimei36=%v&", qimei, qimei)

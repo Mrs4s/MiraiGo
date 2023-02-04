@@ -17,32 +17,33 @@ type (
 	PrivateMessage struct {
 		Id         int32
 		InternalId int32
-		Self       int64
-		Target     int64
 		Time       int32
 		Sender     *Sender
 		Elements   []IMessageElement
+		Self       int64
+		Target     int64
 	}
 
 	TempMessage struct {
-		Id        int32
+		Id       int32
+		Sender   *Sender
+		Elements []IMessageElement
+
 		GroupCode int64
 		GroupName string
 		Self      int64
-		Sender    *Sender
-		Elements  []IMessageElement
 	}
 
 	GroupMessage struct {
 		Id             int32
 		InternalId     int32
-		GroupCode      int64
-		GroupName      string
-		Sender         *Sender
 		Time           int32
+		Sender         *Sender
 		Elements       []IMessageElement
 		OriginalObject *msg.Message
 		// OriginalElements []*msg.Elem
+		GroupCode int64
+		GroupName string
 	}
 
 	SendingMessage struct {
@@ -481,14 +482,14 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 		}
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
-				Name:       utils.B2S(elem.MarketFace.FaceName),
+				Name:       utils.ByteSliceToString(elem.MarketFace.FaceName),
 				FaceId:     elem.MarketFace.FaceId,
 				TabId:      int32(elem.MarketFace.TabId.Unwrap()),
 				ItemType:   int32(elem.MarketFace.ItemType.Unwrap()),
 				SubType:    int32(elem.MarketFace.SubType.Unwrap()),
 				MediaType:  int32(elem.MarketFace.MediaType.Unwrap()),
 				EncryptKey: elem.MarketFace.Key,
-				MagicValue: utils.B2S(elem.MarketFace.Mobileparam),
+				MagicValue: utils.ByteSliceToString(elem.MarketFace.Mobileparam),
 			}
 			if face.Name == "[骰子]" || face.Name == "[随机骰子]" {
 				_, v, _ := strings.Cut(face.MagicValue, "=")

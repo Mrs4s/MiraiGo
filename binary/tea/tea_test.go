@@ -1,4 +1,4 @@
-package binary
+package tea
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/utils"
 )
 
-var testTEA = NewTeaCipher([]byte("0123456789ABCDEF"))
+var testTEA = NewCipher([]byte("0123456789ABCDEF"))
 
 const (
 	KEY = iota
@@ -29,7 +29,7 @@ var sampleData = func() [][3]string {
 	}
 	for i := range out {
 		c, _ := hex.DecodeString(out[i][ENC])
-		out[i][ENC] = utils.B2S(c)
+		out[i][ENC] = utils.ByteSliceToString(c)
 	}
 	return out
 }()
@@ -37,13 +37,13 @@ var sampleData = func() [][3]string {
 func TestTEA(t *testing.T) {
 	// Self Testing
 	for _, sample := range sampleData {
-		tea := NewTeaCipher(utils.S2B(sample[KEY]))
-		dat := utils.B2S(tea.Decrypt(utils.S2B(sample[ENC])))
+		tea := NewCipher(utils.S2B(sample[KEY]))
+		dat := utils.ByteSliceToString(tea.Decrypt(utils.S2B(sample[ENC])))
 		if dat != sample[DAT] {
 			t.Fatalf("error decrypt %v %x", sample, dat)
 		}
-		enc := utils.B2S(tea.Encrypt(utils.S2B(sample[DAT])))
-		dat = utils.B2S(tea.Decrypt(utils.S2B(enc)))
+		enc := utils.ByteSliceToString(tea.Encrypt(utils.S2B(sample[DAT])))
+		dat = utils.ByteSliceToString(tea.Decrypt(utils.S2B(enc)))
 		if dat != sample[DAT] {
 			t.Fatal("error self test", sample)
 		}
@@ -60,7 +60,7 @@ func TestTEA(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		tea := NewTeaCipher(key)
+		tea := NewCipher(key)
 
 		dat := make([]byte, i)
 		_, err = rand.Read(dat)

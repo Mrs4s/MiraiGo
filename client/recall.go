@@ -11,26 +11,33 @@ import (
 
 // 撤回相关处理逻辑
 
-func (c *QQClient) RecallGroupMessage(groupCode int64, msgID, msgInternalId int32) error {
-	if m, _ := c.GetGroupMessages(groupCode, int64(msgID), int64(msgID)); len(m) > 0 {
+func (g *Group) recallGroupMessage(id *messageIdentifier) error {
+	groupCode := g.i.Code
+	msgSeq := id.Sequence
+	if m, _ := g.c.GetGroupMessages(groupCode, msgSeq, msgSeq); len(m) > 0 {
 		content := m[0].OriginalObject.Content
 		if content.PkgNum.Unwrap() > 1 {
-			if m, err := c.GetGroupMessages(groupCode, int64(msgID-content.PkgIndex.Unwrap()-1), int64(msgID+(content.PkgNum.Unwrap()-content.PkgIndex.Unwrap()+1))); err == nil {
-				if flag, _ := c.internalGroupRecall(groupCode, msgInternalId, m); flag {
+			if m, err := g.c.GetGroupMessages(
+				groupCode,
+				msgSeq-MessageSequence(content.PkgIndex.Unwrap()-1),
+				msgSeq+MessageSequence(content.PkgNum.Unwrap()-content.PkgIndex.Unwrap()+1),
+			); err == nil {
+				if flag, _ := g.internalGroupRecall(id, m); flag {
 					return nil
 				}
 			}
 		}
 	}
-	_, err := c.sendAndWait(c.buildGroupRecallPacket(groupCode, msgID, msgInternalId))
+	_, err := g.c.sendAndWait(g.c.buildGroupRecallPacket(groupCode, int32(id.Sequence), int32(id.Internal)))
 	return err
 }
 
-func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalID int32, m []*message.GroupMessage) (flag bool, err error) {
+func (g *Group) internalGroupRecall(id *messageIdentifier, m []*message.GroupMessage) (flag bool, err error) {
+	groupCode := g.i.Code
 	for _, item := range m {
-		if item.InternalId == msgInternalID {
+		if int64(item.InternalId) == id.Internal {
 			flag = true
-			if _, err := c.sendAndWait(c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId)); err != nil {
+			if _, err := g.c.sendAndWait(g.c.buildGroupRecallPacket(groupCode, item.Id, item.InternalId)); err != nil {
 				return false, err
 			}
 		}
@@ -38,8 +45,8 @@ func (c *QQClient) internalGroupRecall(groupCode int64, msgInternalID int32, m [
 	return flag, nil
 }
 
-func (c *QQClient) RecallPrivateMessage(uin, ts int64, msgID, msgInternalId int32) error {
-	_, err := c.sendAndWait(c.buildPrivateRecallPacket(uin, ts, msgID, msgInternalId))
+func (c *QQClient) RecallPrivateMessage(uin, ts int64, msgSeq MessageSequence, msgInternalId MessageInternal) error {
+	_, err := c.sendAndWait(c.buildPrivateRecallPacket(uin, ts, int32(msgSeq), int32(msgInternalId)))
 	return err
 }
 
