@@ -1,6 +1,6 @@
 module github.com/Mrs4s/MiraiGo
 
-go 1.19
+go 1.20
 
 require (
 	github.com/RomiChan/protobuf v0.1.1-0.20230204044148-2ed269a2e54d
