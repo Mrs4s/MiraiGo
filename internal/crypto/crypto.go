@@ -1,6 +1,9 @@
 package crypto
 
 import (
+	"crypto/ecdh"
+	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
@@ -50,4 +53,16 @@ func (e *ECDH) FetchPubKey(uin int64) {
 	e.SvrPublicKeyVer = pubKey.Meta.PubKeyVer
 	key, _ := hex.DecodeString(pubKey.Meta.PubKey)
 	e.init(key) // todo check key sign
+}
+
+func (e *ECDH) init(svrPubKey []byte) {
+	p256 := ecdh.P256()
+	local, _ := p256.GenerateKey(rand.Reader)
+	remote, _ := p256.NewPublicKey(svrPubKey)
+	share, _ := local.ECDH(remote)
+
+	hash := md5.New()
+	hash.Write(share[:16])
+	e.ShareKey = hash.Sum(nil)
+	e.PublicKey = local.PublicKey().Bytes()
 }

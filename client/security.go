@@ -49,7 +49,7 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 }
 
 func decodeUrlCheckResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
-	rsp := &oidb.DBCBRspBody{}
+	rsp := oidb.DBCBRspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
 		return nil, err
