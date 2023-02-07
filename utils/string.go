@@ -50,7 +50,7 @@ func ConvertSubVersionToInt(str string) int32 {
 
 // B2S converts byte slice to a string without memory allocation.
 func B2S(b []byte) string {
-	return unsafe.String(&b[0], len(b))
+	return unsafe.String(*(**byte)(unsafe.Pointer(&b)), len(b))
 }
 
 // S2B converts string to a byte slice without memory allocation.
