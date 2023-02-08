@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-type DynamicMessage map[uint64]any
+type DynamicMessage []any
 
 // zigzag encoding types
 type (
@@ -22,7 +22,7 @@ func (msg DynamicMessage) Encode() []byte {
 	en := encoder{}
 	//nolint:staticcheck
 	for id, value := range msg {
-		key := id << 3
+		key := uint64(id << 3)
 		switch v := value.(type) {
 		case bool:
 			en.uvarint(key | 0)
