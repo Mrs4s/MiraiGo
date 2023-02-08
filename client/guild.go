@@ -175,7 +175,7 @@ func (g *GuildInfo) removeChannel(id uint64) {
 }
 
 func (s *GuildService) GetUserProfile(tinyId uint64) (*GuildUserProfile, error) {
-	flags := proto.DynamicMessage{}
+	flags := make(proto.DynamicMessage, 101)
 	for i := 3; i <= 29; i++ {
 		flags[uint64(i)] = 1
 	}
@@ -275,7 +275,7 @@ func (s *GuildService) FetchGuildMemberListWithRole(guildId, channelId uint64, s
 // FetchGuildMemberProfileInfo 获取单个频道成员资料
 func (s *GuildService) FetchGuildMemberProfileInfo(guildId, tinyId uint64) (*GuildUserProfile, error) {
 	seq := s.c.nextSeq()
-	flags := proto.DynamicMessage{}
+	flags := make(proto.DynamicMessage, 101)
 	for i := 3; i <= 29; i++ {
 		flags[uint64(i)] = 1
 	}
