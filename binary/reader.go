@@ -17,8 +17,6 @@ type NetworkReader struct {
 	conn net.Conn
 }
 
-type TlvMap map[uint16][]byte
-
 // --- ByteStream reader ---
 
 func NewReader(data []byte) *Reader {
@@ -92,44 +90,12 @@ func (r *Reader) ReadAvailable() []byte {
 	return r.ReadBytes(r.buf.Len())
 }
 
-func (r *Reader) ReadTlvMap(tagSize int) (m TlvMap) {
-	defer func() {
-		if r := recover(); r != nil {
-			// TODO: error
-		}
-	}()
-	m = make(map[uint16][]byte)
-	for {
-		if r.Len() < tagSize {
-			return m
-		}
-		var k uint16
-		switch tagSize {
-		case 1:
-			k = uint16(r.ReadByte())
-		case 2:
-			k = r.ReadUInt16()
-		case 4:
-			k = uint16(r.ReadInt32())
-		}
-		if k == 255 {
-			return m
-		}
-		m[k] = r.ReadBytes(int(r.ReadUInt16()))
-	}
-}
-
 func (r *Reader) Len() int {
 	return r.buf.Len()
 }
 
 func (r *Reader) Index() int64 {
 	return r.buf.Size()
-}
-
-func (tlv TlvMap) Exists(key uint16) bool {
-	_, ok := tlv[key]
-	return ok
 }
 
 // --- Network reader ---

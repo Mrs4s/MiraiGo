@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/tlv"
 	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -25,9 +26,7 @@ func (c *QQClient) decodeT161(data []byte) {
 
 func (c *QQClient) decodeT119(data, ek []byte) {
 	tea := binary.NewTeaCipher(ek)
-	reader := binary.NewReader(tea.Decrypt(data))
-	reader.ReadBytes(2)
-	m := reader.ReadTlvMap(2)
+	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(tea.Decrypt(data)[2:])
 	if t130, ok := m[0x130]; ok {
 		c.decodeT130(t130)
 	}
@@ -133,9 +132,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 // wtlogin.exchange_emp
 func (c *QQClient) decodeT119R(data []byte) {
 	tea := binary.NewTeaCipher(c.deviceInfo.TgtgtKey)
-	reader := binary.NewReader(tea.Decrypt(data))
-	reader.ReadBytes(2)
-	m := reader.ReadTlvMap(2)
+	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(tea.Decrypt(data)[2:])
 	if t120, ok := m[0x120]; ok {
 		c.sig.SKey = t120
 		c.sig.SKeyExpiredTime = time.Now().Unix() + 21600
@@ -223,8 +220,7 @@ func readT512(data []byte) (psKeyMap map[string][]byte, pt4TokenMap map[string][
 }
 
 func readT531(data []byte) (a1, noPicSig []byte) {
-	reader := binary.NewReader(data)
-	m := reader.ReadTlvMap(2)
+	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(data)
 	if m.Exists(0x103) && m.Exists(0x16a) && m.Exists(0x113) && m.Exists(0x10c) {
 		a1 = append(m[0x106], m[0x10c]...)
 		noPicSig = m[0x16a]
