@@ -1,9 +1,9 @@
 package client
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -48,29 +48,10 @@ func (c *QQClient) UploadImage(target message.Source, img io.ReadSeeker, thread 
 	case message.SourceGroup, message.SourceGuildChannel, message.SourceGuildDirect:
 		return c.uploadGroupOrGuildImage(target, img, thread...)
 	case message.SourcePrivate:
-		img, err := c.uploadPrivateImage(target.PrimaryID, img, 0)
-		// Note: we need this check, we should return untyped nil instead of (*FriendImageElement)(nil)
-		// TODO: change c.uploadPrivateImage signature after delete c.UploadPrivateImage
-		if err != nil {
-			return nil, err
-		}
-		return img, nil
+		return c.uploadPrivateImage(target.PrimaryID, img, 0)
 	default:
 		return nil, errors.New("unsupported target type")
 	}
-}
-
-// Deprecated: use UploadImage instead
-func (c *QQClient) UploadGroupImage(groupCode int64, img io.ReadSeeker, thread ...int) (*message.GroupImageElement, error) {
-	source := message.Source{
-		SourceType: message.SourceGroup,
-		PrimaryID:  groupCode,
-	}
-	x, err := c.UploadImage(source, img, thread...)
-	if err != nil {
-		return nil, err
-	}
-	return x.(*message.GroupImageElement), nil
 }
 
 func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSeeker, thread ...int) (message.IMessageElement, error) {
@@ -172,11 +153,6 @@ ok:
 	}, nil
 }
 
-// Deprecated: use UploadImage instead
-func (c *QQClient) UploadPrivateImage(target int64, img io.ReadSeeker) (*message.FriendImageElement, error) {
-	return c.uploadPrivateImage(target, img, 0)
-}
-
 func (c *QQClient) GetGroupImageDownloadUrl(fileId, groupCode int64, fileMd5 []byte) (string, error) {
 	i, err := c.sendAndWait(c.buildGroupImageDownloadPacket(fileId, groupCode, fileMd5))
 	if err != nil {
@@ -185,7 +161,7 @@ func (c *QQClient) GetGroupImageDownloadUrl(fileId, groupCode int64, fileMd5 []b
 	return i.(string), nil
 }
 
-func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int) (*message.FriendImageElement, error) {
+func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int) (message.IMessageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart)
 	count++
 	fh, length := utils.ComputeMd5AndLength(img)
