@@ -36,7 +36,6 @@ type QQClient struct {
 
 	// option
 	AllowSlider        bool
-	UseHighwayMessage  bool
 	UseFragmentMessage bool
 
 	// account info
