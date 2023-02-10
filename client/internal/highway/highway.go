@@ -97,8 +97,11 @@ func (s *Session) Upload(addr Addr, trans Transaction) error {
 }
 
 func (s *Session) UploadExciting(trans Transaction) ([]byte, error) {
-	addr := s.SsoAddr[0]
-	url := fmt.Sprintf("http://%v/cgi-bin/httpconn?htcmd=0x6FF0087&Uin=%v", addr, s.Uin)
+	return s.retry(uploadExciting, &trans)
+}
+
+func uploadExciting(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
+	url := fmt.Sprintf("http://%v/cgi-bin/httpconn?htcmd=0x6FF0087&Uin=%v", addr.String(), s.Uin)
 	var rspExt []byte
 	var offset int64
 	const chunkSize = 524288

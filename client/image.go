@@ -113,7 +113,7 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		Ext:       ext,
 	}
 	if tc > 1 && length > 3*1024*1024 {
-		_, err = c.highwaySession.UploadBDHMultiThread(input, tc)
+		_, err = c.highwaySession.UploadBDHMultiThread(input)
 	} else {
 		_, err = c.highwaySession.UploadBDH(input)
 	}

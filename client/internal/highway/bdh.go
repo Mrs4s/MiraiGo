@@ -36,18 +36,35 @@ func (bdh *Transaction) encrypt(key []byte) error {
 	return nil
 }
 
-func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
-	if len(s.SsoAddr) == 0 {
-		return nil, errors.New("srv addrs not found. maybe miss some packet?")
+func (s *Session) retry(upload func(s *Session, addr Addr, trans *Transaction) ([]byte, error), trans *Transaction) ([]byte, error) {
+	// try to find a available server
+	for _, addr := range s.SsoAddr {
+		r, err := upload(s, addr, trans)
+		if err == nil {
+			return r, nil
+		}
+		if _, ok := err.(net.Error); ok {
+			// try another server
+			// TODO: delete broken servers?
+			continue
+		}
+		return nil, err
 	}
-	addr := s.SsoAddr[0].String()
+	return nil, errors.New("cannot found available server")
+}
 
+func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
+	// encrypt ext data
 	if err := trans.encrypt(s.SessionKey); err != nil {
 		return nil, err
 	}
-	conn, err := net.DialTimeout("tcp", addr, time.Second*20)
+	return s.retry(uploadBDH, &trans)
+}
+
+func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
+	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*20)
 	if err != nil {
-		return nil, errors.Wrap(err, "connect error")
+		return nil, err
 	}
 	defer conn.Close()
 
@@ -109,23 +126,23 @@ func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
 	return rspExt, nil
 }
 
-func (s *Session) UploadBDHMultiThread(trans Transaction, threadCount int) ([]byte, error) {
+func (s *Session) UploadBDHMultiThread(trans Transaction) ([]byte, error) {
 	// for small file and small thread count,
 	// use UploadBDH instead of UploadBDHMultiThread
-	if trans.Size < 1024*1024*3 || threadCount < 2 {
+	if trans.Size < 1024*1024*3 {
 		return s.UploadBDH(trans)
 	}
 
-	if len(s.SsoAddr) == 0 {
-		return nil, errors.New("srv addrs not found. maybe miss some packet?")
-	}
-	addr := s.SsoAddr[0].String()
-
+	// encrypt ext data
 	if err := trans.encrypt(s.SessionKey); err != nil {
 		return nil, err
 	}
+	return s.retry(uploadBDHMultiThread, &trans)
+}
 
+func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 	const blockSize int64 = 256 * 1024
+	const threadCount = 4
 	var (
 		rspExt          []byte
 		completedThread uint32
@@ -141,9 +158,9 @@ func (s *Session) UploadBDHMultiThread(trans Transaction, threadCount int) ([]by
 			cond.Signal()
 		}()
 
-		conn, err := net.DialTimeout("tcp", addr, time.Second*20)
+		conn, err := net.DialTimeout("tcp", addr.String(), time.Second*20)
 		if err != nil {
-			return errors.Wrap(err, "connect error")
+			return err
 		}
 		defer conn.Close()
 		reader := binary.NewNetworkReader(conn)

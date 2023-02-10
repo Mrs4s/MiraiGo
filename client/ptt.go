@@ -169,7 +169,7 @@ func (c *QQClient) UploadShortVideo(target message.Source, video, thumb io.ReadS
 		Encrypt:   true,
 	}
 	if thread > 1 {
-		hwRsp, err = c.highwaySession.UploadBDHMultiThread(input, thread)
+		hwRsp, err = c.highwaySession.UploadBDHMultiThread(input)
 	} else {
 		hwRsp, err = c.highwaySession.UploadBDH(input)
 	}
