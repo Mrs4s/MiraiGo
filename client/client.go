@@ -67,7 +67,7 @@ type QQClient struct {
 	currServerIndex int
 	retryTimes      int
 	version         *auth.AppVersion
-	deviceInfo      *auth.Device
+	device          *auth.Device
 	alive           bool
 
 	// session info
@@ -199,14 +199,14 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		alive:           true,
 		highwaySession:  new(highway.Session),
 
-		version:    new(auth.AppVersion),
-		deviceInfo: new(auth.Device),
+		version: new(auth.AppVersion),
+		device:  new(auth.Device),
 	}
 
 	cli.transport = &network.Transport{
 		Sig:     cli.sig,
 		Version: cli.version,
-		Device:  cli.deviceInfo,
+		Device:  cli.device,
 	}
 	cli.oicq = oicq.NewCodec(cli.Uin)
 	{ // init atomic values
@@ -273,7 +273,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 
 func (c *QQClient) UseDevice(info *auth.Device) {
 	*c.version = *info.Protocol.Version()
-	*c.deviceInfo = *info
+	*c.device = *info
 	c.highwaySession.AppID = int32(c.version.AppId)
 	c.sig.Ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
 }
@@ -326,7 +326,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		c.oicq.WtSessionTicketKey = r.ReadBytesShort()
 		c.sig.OutPacketSessionID = r.ReadBytesShort()
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
-		c.deviceInfo.TgtgtKey = r.ReadBytesShort()
+		c.device.TgtgtKey = r.ReadBytesShort()
 	}
 	_, err = c.sendAndWait(c.buildRequestChangeSigPacket(true))
 	if err != nil {
@@ -477,7 +477,7 @@ func (c *QQClient) GenToken() []byte {
 		w.WriteBytesShort(c.sig.EncryptedA1)
 		w.WriteBytesShort(c.oicq.WtSessionTicketKey)
 		w.WriteBytesShort(c.sig.OutPacketSessionID)
-		w.WriteBytesShort(c.deviceInfo.TgtgtKey)
+		w.WriteBytesShort(c.device.TgtgtKey)
 	})
 }
 

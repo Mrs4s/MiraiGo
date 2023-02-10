@@ -121,7 +121,7 @@ func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
 // StatSvc.GetDevLoginInfo
 func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 	req := &jce.SvcReqGetDevLoginInfo{
-		Guid:           c.deviceInfo.Guid,
+		Guid:           c.device.Guid,
 		LoginType:      1,
 		AppName:        "com.tencent.mobileqq",
 		RequireMax:     20,

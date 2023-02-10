@@ -31,7 +31,7 @@ func (c *QQClient) buildFaceroamRequestPacket() (uint16, []byte) {
 	payload, _ := proto.Marshal(&faceroam.FaceroamReqBody{
 		Comm: &faceroam.PlatInfo{
 			Implat: proto.Int64(109),
-			Osver:  proto.String(string(c.deviceInfo.Version.Release)),
+			Osver:  proto.String(string(c.device.Version.Release)),
 			Mqqver: proto.Some(c.version.SortVersionName),
 		},
 		Uin:         proto.Uint64(uint64(c.Uin)),

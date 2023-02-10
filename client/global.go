@@ -2,6 +2,7 @@ package client
 
 import (
 	"crypto/md5"
+	crand "crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -65,9 +66,8 @@ var SystemDeviceInfo = &DeviceInfo{
 var EmptyBytes = make([]byte, 0)
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
 	r := make([]byte, 16)
-	rand.Read(r)
+	crand.Read(r)
 	t := md5.Sum(r)
 	SystemDeviceInfo.IMSIMd5 = t[:]
 	SystemDeviceInfo.GenNewGuid()
@@ -76,18 +76,18 @@ func init() {
 
 func GenRandomDevice() {
 	r := make([]byte, 16)
-	rand.Read(r)
+	crand.Read(r)
 	const numberRange = "0123456789"
 	SystemDeviceInfo.Display = []byte("MIRAI." + utils.RandomStringRange(6, numberRange) + ".001")
 	SystemDeviceInfo.FingerPrint = []byte("mamoe/mirai/mirai:10/MIRAI.200122.001/" + utils.RandomStringRange(7, numberRange) + ":user/release-keys")
 	SystemDeviceInfo.BootId = binary.GenUUID(r)
 	SystemDeviceInfo.ProcVersion = []byte("Linux version 3.0.31-" + utils.RandomString(8) + " (android-build@xxx.xxx.xxx.xxx.com)")
-	rand.Read(r)
+	crand.Read(r)
 	t := md5.Sum(r)
 	SystemDeviceInfo.IMSIMd5 = t[:]
 	SystemDeviceInfo.IMEI = GenIMEI()
 	r = make([]byte, 8)
-	rand.Read(r)
+	crand.Read(r)
 	hex.Encode(SystemDeviceInfo.AndroidId, r)
 	SystemDeviceInfo.GenNewGuid()
 	SystemDeviceInfo.GenNewTgtgtKey()
@@ -97,9 +97,7 @@ func GenIMEI() string {
 	sum := 0 // the control sum of digits
 	var final strings.Builder
 
-	randSrc := rand.NewSource(time.Now().UnixNano())
-	randGen := rand.New(randSrc)
-
+	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < 14; i++ { // generating all the base digits
 		toAdd := randGen.Intn(10)
 		if (i+1)%2 == 0 { // special proc for every 2nd one
@@ -109,10 +107,10 @@ func GenIMEI() string {
 			}
 		}
 		sum += toAdd
-		final.WriteString(fmt.Sprintf("%d", toAdd)) // and even printing them here!
+		fmt.Fprintf(&final, "%d", toAdd) // and even printing them here!
 	}
 	ctrlDigit := (sum * 9) % 10 // calculating the control digit
-	final.WriteString(fmt.Sprintf("%d", ctrlDigit))
+	fmt.Fprintf(&final, "%d", ctrlDigit)
 	return final.String()
 }
 
@@ -179,16 +177,16 @@ func qualityTest(addr string) (int64, error) {
 func (c *QQClient) parsePrivateMessage(msg *msg.Message) *message.PrivateMessage {
 	friend := c.FindFriend(msg.Head.FromUin.Unwrap())
 	var sender *message.Sender
-	if friend == nil {
-		sender = &message.Sender{
-			Uin:      msg.Head.FromUin.Unwrap(),
-			Nickname: msg.Head.FromNick.Unwrap(),
-		}
-	} else {
+	if friend != nil {
 		sender = &message.Sender{
 			Uin:      friend.Uin,
 			Nickname: friend.Nickname,
 			IsFriend: true,
+		}
+	} else {
+		sender = &message.Sender{
+			Uin:      msg.Head.FromUin.Unwrap(),
+			Nickname: msg.Head.FromNick.Unwrap(),
 		}
 	}
 	ret := &message.PrivateMessage{
@@ -326,9 +324,9 @@ func genLongTemplate(resID, brief string, ts int64) *message.ServiceElement {
 
 func (c *QQClient) getWebDeviceInfo() (i string) {
 	qimei := strings.ToLower(utils.RandomString(36))
-	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.deviceInfo.IMEI, utils.B2S(c.deviceInfo.MacAddress), utils.B2S(c.deviceInfo.Device), utils.B2S(c.deviceInfo.Version.Release))
-	i += fmt.Sprintf("a=%v&sd=0&c64=0&sc=1&p=1080*2210&aid=%v&", c.deviceInfo.Version.SDK, c.deviceInfo.IMEI)
-	i += fmt.Sprintf("f=%v&mm=%v&cf=%v&cc=%v&", c.deviceInfo.Brand, 5629 /* Total Memory*/, 1725 /* CPU Frequency */, 8 /* CPU Core Count */)
+	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.device.IMEI, utils.B2S(c.device.MacAddress), utils.B2S(c.device.Device), utils.B2S(c.device.Version.Release))
+	i += fmt.Sprintf("a=%v&sd=0&c64=0&sc=1&p=1080*2210&aid=%v&", c.device.Version.SDK, c.device.IMEI)
+	i += fmt.Sprintf("f=%v&mm=%v&cf=%v&cc=%v&", c.device.Brand, 5629 /* Total Memory*/, 1725 /* CPU Frequency */, 8 /* CPU Core Count */)
 	i += fmt.Sprintf("qimei=%v&qimei36=%v&", qimei, qimei)
 	i += "sharpP=1&n=wifi&support_xsj_live=true&client_mod=default&timezone=Asia/Shanghai&material_sdk_version=2.9.0&vh265=null&refreshrate=60"
 	return
