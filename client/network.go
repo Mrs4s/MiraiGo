@@ -10,7 +10,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
-	"github.com/Mrs4s/MiraiGo/internal/packets"
 	"github.com/Mrs4s/MiraiGo/message"
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -324,12 +323,12 @@ func (c *QQClient) netLoop() {
 		errCount = 0
 		c.debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
 		c.stat.PacketReceived.Add(1)
-		pkt := &packets.IncomingPacket{
+		pkt := &network.IncomingPacket{
 			SequenceId:  uint16(resp.SequenceID),
 			CommandName: resp.CommandName,
 			Payload:     resp.Body,
 		}
-		go func(pkt *packets.IncomingPacket) {
+		go func(pkt *network.IncomingPacket) {
 			defer func() {
 				if pan := recover(); pan != nil {
 					c.error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())

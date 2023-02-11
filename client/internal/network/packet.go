@@ -1,5 +1,13 @@
 package network
 
+type IncomingPacket struct {
+	SequenceId  uint16
+	Flag2       byte
+	CommandName string
+	SessionId   []byte
+	Payload     []byte
+}
+
 type IncomingPacketInfo struct {
 	CommandName string
 	SequenceId  uint16
