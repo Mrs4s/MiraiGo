@@ -230,7 +230,7 @@ func decodeGuildMessageEmojiReactions(content *channel.ChannelMsgContent) (r []*
 	return
 }
 
-func decodeGuildImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeGuildImageStoreResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	body := new(cmd0x388.D388RspBody)
 	if err := proto.Unmarshal(payload, body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

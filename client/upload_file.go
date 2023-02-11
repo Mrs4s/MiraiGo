@@ -220,7 +220,7 @@ func (c *QQClient) buildPrivateFileUploadReqPacket(target message.Source, file *
 }
 
 // OfflineFilleHandleSvr.pb_ftn_CMD_REQ_APPLY_UPLOAD_V3-1700
-func decodePrivateFileUploadReq(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodePrivateFileUploadReq(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	var rsp cmd0x346.C346RspBody
 	err := proto.Unmarshal(payload, &rsp)
 	if err != nil {

@@ -51,7 +51,7 @@ func (c *QQClient) buildMultiApplyUpPacket(data, hash []byte, buType int32, grou
 }
 
 // MultiMsg.ApplyUp
-func decodeMultiApplyUpResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeMultiApplyUpResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	body := multimsg.MultiRspBody{}
 	if err := proto.Unmarshal(payload, &body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
@@ -91,7 +91,7 @@ func (c *QQClient) buildMultiApplyDownPacket(resID string) (uint16, []byte) {
 }
 
 // MultiMsg.ApplyDown
-func decodeMultiApplyDownResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeMultiApplyDownResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	body := multimsg.MultiRspBody{}
 	if err := proto.Unmarshal(payload, &body); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")

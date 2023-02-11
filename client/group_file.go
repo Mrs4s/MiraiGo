@@ -334,7 +334,7 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 	return c.uniPacket("OidbSvc.0x6d6_3", payload)
 }
 
-func decodeOIDB6d81Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeOIDB6d81Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	rsp := oidb.D6D8RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
@@ -344,7 +344,7 @@ func decodeOIDB6d81Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeOIDB6d62Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	rsp := oidb.D6D6RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
@@ -358,7 +358,7 @@ func decodeOIDB6d62Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
-func decodeOIDB6d63Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeOIDB6d63Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	rsp := oidb.D6D6RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
@@ -367,7 +367,7 @@ func decodeOIDB6d63Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	return rsp.DeleteFileRsp.ClientWording.Unwrap(), nil
 }
 
-func decodeOIDB6d60Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeOIDB6d60Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	rsp := oidb.D6D6RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {
@@ -385,7 +385,7 @@ func decodeOIDB6d60Response(_ *QQClient, _ *network.IncomingPacketInfo, payload 
 	return r, nil
 }
 
-func decodeOIDB6d7Response(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeOIDB6d7Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	rsp := oidb.D6D7RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {

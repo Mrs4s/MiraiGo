@@ -345,7 +345,7 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
 	err := proto.Unmarshal(payload, &pkt)
 	if err != nil {
@@ -372,7 +372,7 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.IncomingPacketInfo, p
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
 	if err := proto.Unmarshal(payload, &pkt); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
@@ -387,7 +387,7 @@ func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.IncomingPacketInfo
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeImageOcrResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
 	rsp := oidb.DE07RspBody{}
 	err := unpackOIDBPackage(payload, &rsp)
 	if err != nil {

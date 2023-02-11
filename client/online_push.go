@@ -23,7 +23,7 @@ var msg0x210Decoders = map[int64]func(*QQClient, []byte) error{
 }
 
 // OnlinePush.ReqPush
-func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (any, error) {
+func decodeOnlinePushReqPacket(c *QQClient, info *network.Packet, payload []byte) (any, error) {
 	request := &jce.RequestPacket{}
 	request.ReadFrom(jce.NewJceReader(payload))
 	data := &jce.RequestDataVersion2{}

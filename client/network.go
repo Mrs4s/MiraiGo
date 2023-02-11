@@ -323,12 +323,12 @@ func (c *QQClient) netLoop() {
 		errCount = 0
 		c.debug("rev pkt: %v seq: %v", resp.CommandName, resp.SequenceID)
 		c.stat.PacketReceived.Add(1)
-		pkt := &network.IncomingPacket{
+		pkt := &network.Packet{
 			SequenceId:  uint16(resp.SequenceID),
 			CommandName: resp.CommandName,
 			Payload:     resp.Body,
 		}
-		go func(pkt *network.IncomingPacket) {
+		go func(pkt *network.Packet) {
 			defer func() {
 				if pan := recover(); pan != nil {
 					c.error("panic on decoder %v : %v\n%s", pkt.CommandName, pan, debug.Stack())
@@ -342,11 +342,8 @@ func (c *QQClient) netLoop() {
 				var decoded any
 				decoded = pkt.Payload
 				if info == nil || !info.dynamic {
-					decoded, err = decoder(c, &network.IncomingPacketInfo{
-						SequenceId:  pkt.SequenceId,
-						CommandName: pkt.CommandName,
-						Params:      info.getParams(),
-					}, pkt.Payload)
+					pkt.Params = info.getParams()
+					decoded, err = decoder(c, pkt, pkt.Payload)
 					if err != nil {
 						c.debug("decode pkt %v error: %+v", pkt.CommandName, err)
 					}

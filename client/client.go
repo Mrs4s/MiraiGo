@@ -147,7 +147,7 @@ func (h *handlerInfo) getParams() network.RequestParams {
 	return h.params
 }
 
-var decoders = map[string]func(*QQClient, *network.IncomingPacketInfo, []byte) (any, error){
+var decoders = map[string]func(*QQClient, *network.Packet, []byte) (any, error){
 	"wtlogin.login":                                decodeLoginResponse,
 	"wtlogin.exchange_emp":                         decodeExchangeEmpResponse,
 	"wtlogin.trans_emp":                            decodeTransEmpResponse,
