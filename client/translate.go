@@ -34,9 +34,9 @@ func (c *QQClient) Translate(src, dst, text string) (string, error) {
 }
 
 // OidbSvc.0x990
-func decodeTranslateResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeTranslateResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.TranslateRspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}

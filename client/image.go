@@ -345,9 +345,9 @@ func (c *QQClient) buildImageOcrRequestPacket(url, md5 string, size, weight, hei
 }
 
 // ImgStore.GroupPicUp
-func decodeGroupImageStoreResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeGroupImageStoreResponse(_ *QQClient, packet *network.Packet) (any, error) {
 	pkt := cmd0x388.D388RspBody{}
-	err := proto.Unmarshal(payload, &pkt)
+	err := proto.Unmarshal(packet.Payload, &pkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
@@ -372,24 +372,24 @@ func decodeGroupImageStoreResponse(_ *QQClient, _ *network.Packet, payload []byt
 	}, nil
 }
 
-func decodeGroupImageDownloadResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
-	pkt := cmd0x388.D388RspBody{}
-	if err := proto.Unmarshal(payload, &pkt); err != nil {
+func decodeGroupImageDownloadResponse(_ *QQClient, pkt *network.Packet) (any, error) {
+	rsp := cmd0x388.D388RspBody{}
+	if err := proto.Unmarshal(pkt.Payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "unmarshal protobuf message error")
 	}
-	if len(pkt.GetimgUrlRsp) == 0 {
+	if len(rsp.GetimgUrlRsp) == 0 {
 		return nil, errors.New("response not found")
 	}
-	if len(pkt.GetimgUrlRsp[0].FailMsg) != 0 {
-		return nil, errors.New(utils.B2S(pkt.GetimgUrlRsp[0].FailMsg))
+	if len(rsp.GetimgUrlRsp[0].FailMsg) != 0 {
+		return nil, errors.New(utils.B2S(rsp.GetimgUrlRsp[0].FailMsg))
 	}
-	return fmt.Sprintf("https://%s%s", pkt.GetimgUrlRsp[0].DownDomain, pkt.GetimgUrlRsp[0].BigDownPara), nil
+	return fmt.Sprintf("https://%s%s", rsp.GetimgUrlRsp[0].DownDomain, rsp.GetimgUrlRsp[0].BigDownPara), nil
 }
 
 // OidbSvc.0xe07_0
-func decodeImageOcrResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeImageOcrResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.DE07RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}

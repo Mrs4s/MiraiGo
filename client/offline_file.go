@@ -33,9 +33,9 @@ func (c *QQClient) buildOfflineFileDownloadRequestPacket(uuid []byte) (uint16, [
 	return seq, packet
 }
 
-func decodeOfflineFileDownloadResponse(c *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeOfflineFileDownloadResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	rsp := cmd0x346.C346RspBody{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, &rsp); err != nil {
 		c.error("unmarshal cmd0x346 rsp body error: %v", err)
 		return nil, errors.Wrap(err, "unmarshal cmd0x346 rsp body error")
 	}

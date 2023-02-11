@@ -222,9 +222,9 @@ func (c *QQClient) buildAtAllRemainRequestPacket(groupCode int64) (uint16, []byt
 }
 
 // OnlinePush.PbPushGroupMsg
-func decodeGroupMessagePacket(c *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeGroupMessagePacket(c *QQClient, packet *network.Packet) (any, error) {
 	pkt := msg.PushMessagePacket{}
-	err := proto.Unmarshal(payload, &pkt)
+	err := proto.Unmarshal(packet.Payload, &pkt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
@@ -257,9 +257,9 @@ func decodeGroupMessagePacket(c *QQClient, _ *network.Packet, payload []byte) (a
 	return nil, nil
 }
 
-func decodeMsgSendResponse(c *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeMsgSendResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	rsp := msg.SendMessageResponse{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	switch rsp.Result.Unwrap() {
@@ -274,9 +274,9 @@ func decodeMsgSendResponse(c *QQClient, _ *network.Packet, payload []byte) (any,
 	return nil, nil
 }
 
-func decodeGetGroupMsgResponse(c *QQClient, info *network.Packet, payload []byte) (any, error) {
+func decodeGetGroupMsgResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	rsp := msg.GetGroupMsgResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if rsp.Result.Unwrap() != 0 {
@@ -288,7 +288,7 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.Packet, payload []byte
 		if m.Head.FromUin.IsNone() {
 			continue
 		}
-		if m.Content != nil && m.Content.PkgNum.Unwrap() > 1 && !info.Params.Bool("raw") {
+		if m.Content != nil && m.Content.PkgNum.Unwrap() > 1 && !pkt.Params.Bool("raw") {
 			if m.Content.PkgIndex.Unwrap() == 0 {
 				c.debug("build fragmented message from history")
 				i := m.Head.MsgSeq.Unwrap() - m.Content.PkgNum.Unwrap()
@@ -323,9 +323,9 @@ func decodeGetGroupMsgResponse(c *QQClient, info *network.Packet, payload []byte
 	return ret, nil
 }
 
-func decodeAtAllRemainResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeAtAllRemainResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D8A7RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -548,9 +548,9 @@ func (c *QQClient) buildEssenceMsgOperatePacket(groupCode int64, msgSeq, msgRand
 }
 
 // OidbSvc.0xeac_1/2
-func decodeEssenceMsgResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeEssenceMsgResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := &oidb.EACRspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}

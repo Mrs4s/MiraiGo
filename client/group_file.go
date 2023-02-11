@@ -334,9 +334,9 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 	return c.uniPacket("OidbSvc.0x6d6_3", payload)
 }
 
-func decodeOIDB6d81Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeOIDB6d81Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D8RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -344,9 +344,9 @@ func decodeOIDB6d81Response(_ *QQClient, _ *network.Packet, payload []byte) (any
 }
 
 // OidbSvc.0x6d6_2
-func decodeOIDB6d62Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeOIDB6d62Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D6RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -358,18 +358,18 @@ func decodeOIDB6d62Response(_ *QQClient, _ *network.Packet, payload []byte) (any
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
-func decodeOIDB6d63Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeOIDB6d63Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D6RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}
 	return rsp.DeleteFileRsp.ClientWording.Unwrap(), nil
 }
 
-func decodeOIDB6d60Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeOIDB6d60Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D6RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}
@@ -385,9 +385,9 @@ func decodeOIDB6d60Response(_ *QQClient, _ *network.Packet, payload []byte) (any
 	return r, nil
 }
 
-func decodeOIDB6d7Response(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeOIDB6d7Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D7RspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}

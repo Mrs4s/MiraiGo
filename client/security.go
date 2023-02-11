@@ -48,9 +48,9 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xbcb_0", payload)
 }
 
-func decodeUrlCheckResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeUrlCheckResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.DBCBRspBody{}
-	err := unpackOIDBPackage(payload, &rsp)
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
 	if err != nil {
 		return nil, err
 	}

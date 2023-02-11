@@ -27,9 +27,9 @@ type tipsPushInfo struct {
 	ChannelId uint64
 }
 
-func decodeGuildEventFlowPacket(c *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeGuildEventFlowPacket(c *QQClient, pkt *network.Packet) (any, error) {
 	push := new(channel.MsgOnlinePush)
-	if err := proto.Unmarshal(payload, push); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, push); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if push.CompressFlag.Unwrap() == 1 && len(push.CompressMsg) > 0 {

@@ -343,7 +343,7 @@ func (c *QQClient) netLoop() {
 				decoded = pkt.Payload
 				if info == nil || !info.dynamic {
 					pkt.Params = info.getParams()
-					decoded, err = decoder(c, pkt, pkt.Payload)
+					decoded, err = decoder(c, pkt)
 					if err != nil {
 						c.debug("decode pkt %v error: %+v", pkt.CommandName, err)
 					}

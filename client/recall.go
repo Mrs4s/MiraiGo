@@ -92,9 +92,9 @@ func (c *QQClient) buildPrivateRecallPacket(uin, ts int64, msgSeq, random int32)
 	return c.uniPacket("PbMessageSvc.PbMsgWithDraw", payload)
 }
 
-func decodeMsgWithDrawResponse(_ *QQClient, _ *network.Packet, payload []byte) (any, error) {
+func decodeMsgWithDrawResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := msg.MsgWithDrawResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.C2CWithDraw) > 0 {
