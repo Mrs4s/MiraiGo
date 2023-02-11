@@ -514,25 +514,31 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			return []IMessageElement{face}
 		}
 		if elem.NotOnlineImage != nil {
-			var img string
-			if elem.NotOnlineImage.OrigUrl.Unwrap() != "" {
-				img = "https://c2cpicdw.qpic.cn" + elem.NotOnlineImage.OrigUrl.Unwrap()
-			} else {
-				img = "https://c2cpicdw.qpic.cn/offpic_new/0"
-				downloadPath := elem.NotOnlineImage.ResId.Unwrap()
-				if elem.NotOnlineImage.DownloadPath.Unwrap() != "" {
-					downloadPath = elem.NotOnlineImage.DownloadPath.Unwrap()
+			img := elem.NotOnlineImage
+
+			var url string
+			switch {
+			case img.PbReserve != nil && img.PbReserve.Url.Unwrap() != "":
+				url = fmt.Sprintf("https://c2cpicdw.qpic.cn%s&spec=0&rf=naio", img.PbReserve.Url.Unwrap())
+			case img.OrigUrl.Unwrap() != "":
+				url = "https://c2cpicdw.qpic.cn" + img.OrigUrl.Unwrap()
+			default:
+				url = "https://c2cpicdw.qpic.cn/offpic_new/0"
+				downloadPath := img.ResId.Unwrap()
+				if img.DownloadPath.Unwrap() != "" {
+					downloadPath = img.DownloadPath.Unwrap()
 				}
 				if !strings.HasPrefix(downloadPath, "/") {
-					img += "/"
+					url += "/"
 				}
-				img += downloadPath + "/0?term=3"
+				url += downloadPath + "/0?term=3"
 			}
+
 			res = append(res, &FriendImageElement{
-				ImageId: elem.NotOnlineImage.FilePath.Unwrap(),
-				Size:    elem.NotOnlineImage.FileLen.Unwrap(),
-				Url:     img,
-				Md5:     elem.NotOnlineImage.PicMd5,
+				ImageId: img.FilePath.Unwrap(),
+				Size:    img.FileLen.Unwrap(),
+				Url:     url,
+				Md5:     img.PicMd5,
 			})
 		}
 		if elem.QQWalletMsg != nil && elem.QQWalletMsg.AioBody != nil {

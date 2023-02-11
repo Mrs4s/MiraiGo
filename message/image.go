@@ -153,7 +153,6 @@ func (e *FriendImageElement) Pack() []*msg.Elem {
 		PicMd5:       e.Md5,
 		DownloadPath: proto.Some(e.ImageId),
 		Original:     proto.Int32(1),
-		PbReserve:    []byte{0x78, 0x02},
 	}
 
 	if e.Flash {

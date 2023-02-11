@@ -447,7 +447,7 @@ type C346ReqBody struct {
 	ClientType               int32                 `protobuf:"varint,102,opt"`
 	FlagSupportMediaplatform uint32                `protobuf:"varint,200,opt"`
 	ApplyCopyToReq           *ApplyCopyToReq       `protobuf:"bytes,90000,opt"`
-	//ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
+	// ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
 	ApplyGetTrafficReq *ApplyGetTrafficReq `protobuf:"bytes,90002,opt"`
 	ExtensionReq       *ExtensionReq       `protobuf:"bytes,99999,opt"`
 	_                  [0]func()

@@ -4,7 +4,7 @@
 package qweb
 
 type GetAppInfoByIdReq struct {
-	//CommonExt ExtInfo = 1;
+	// CommonExt ExtInfo = 1;
 	AppId           string `protobuf:"bytes,2,opt"`
 	NeedVersionInfo int32  `protobuf:"varint,3,opt"`
 	_               [0]func()

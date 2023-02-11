@@ -67,7 +67,7 @@ type AccountSearchRecord struct {
 	ArticleCreateTime proto.Option[string] `protobuf:"bytes,25,opt"`
 	ArticleAuthor     proto.Option[string] `protobuf:"bytes,26,opt"`
 	AccountId         proto.Option[uint64] `protobuf:"varint,27,opt"`
-	//repeated Label groupLabels = 30;
+	// repeated Label groupLabels = 30;
 	VideoAccount  proto.Option[uint32] `protobuf:"varint,31,opt"`
 	VideoArticle  proto.Option[uint32] `protobuf:"varint,32,opt"`
 	UinPrivilege  proto.Option[int32]  `protobuf:"varint,33,opt"`
@@ -87,7 +87,7 @@ type AccountSearch struct {
 	UserLocation  *Location              `protobuf:"bytes,10,opt"`
 	LocationGroup proto.Option[bool]     `protobuf:"varint,11,opt"`
 	Filtertype    proto.Option[int32]    `protobuf:"varint,12,opt"`
-	//repeated C33304record recommendList = 13;
+	// repeated C33304record recommendList = 13;
 	HotwordRecord  *Hotwordrecord       `protobuf:"bytes,14,opt"`
 	ArticleMoreUrl proto.Option[string] `protobuf:"bytes,15,opt"`
 	ResultItems    []*ResultItem        `protobuf:"bytes,16,rep"`

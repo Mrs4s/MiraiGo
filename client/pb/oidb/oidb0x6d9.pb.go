@@ -73,7 +73,7 @@ type FeedsRspBody struct {
 	RetCode       proto.Option[int32]  `protobuf:"varint,1,opt"`
 	RetMsg        proto.Option[string] `protobuf:"bytes,2,opt"`
 	ClientWording proto.Option[string] `protobuf:"bytes,3,opt"`
-	//repeated C8639group_file_common.FeedsResult feedsResultList = 4;
+	// repeated C8639group_file_common.FeedsResult feedsResultList = 4;
 	SvrbusyWaitTime proto.Option[uint32] `protobuf:"varint,5,opt"`
 	_               [0]func()
 }

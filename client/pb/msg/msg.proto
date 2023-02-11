@@ -455,7 +455,12 @@ message NotOnlineImage {
   optional int32 fileId = 23;
   optional int32 showLen = 24;
   optional int32 downloadLen = 25;
-  optional bytes pbReserve = 29;
+
+  // TODO: find this message
+  message PbReserve {
+    optional string url = 30;
+  }
+  optional PbReserve pbReserve = 29;
 }
 
 message NotOnlineFile {
