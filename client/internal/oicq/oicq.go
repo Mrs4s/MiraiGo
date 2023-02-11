@@ -1,17 +1,16 @@
 package oicq
 
 import (
+	"crypto/rand"
 	goBinary "encoding/binary"
-	"math/rand"
 
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/internal/crypto"
 )
 
 type Codec struct {
-	ecdh      *crypto.ECDH
+	ecdh      *session
 	randomKey []byte
 
 	WtSessionTicketKey []byte
@@ -19,11 +18,11 @@ type Codec struct {
 
 func NewCodec(uin int64) *Codec {
 	c := &Codec{
-		ecdh:      crypto.NewECDH(),
+		ecdh:      newSession(),
 		randomKey: make([]byte, 16),
 	}
 	rand.Read(c.randomKey)
-	c.ecdh.FetchPubKey(uin)
+	c.ecdh.fetchPubKey(uin)
 	return c
 }
 
