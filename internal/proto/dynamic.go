@@ -3,9 +3,10 @@ package proto
 import (
 	"encoding/binary"
 	"math"
+	"sort"
 )
 
-type DynamicMessage []any
+type DynamicMessage map[uint64]any
 
 // zigzag encoding types
 type (
@@ -20,10 +21,24 @@ type encoder struct {
 
 func (msg DynamicMessage) Encode() []byte {
 	en := encoder{}
+
+	// sort all items
+	type pair struct {
+		key   uint64
+		value any
+	}
+	var all []pair
+	for k, v := range msg {
+		all = append(all, pair{key: k, value: v})
+	}
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].key < all[j].key
+	})
+
 	//nolint:staticcheck
-	for id, value := range msg {
-		key := uint64(id << 3)
-		switch v := value.(type) {
+	for _, item := range all {
+		key := item.key << 3
+		switch v := item.value.(type) {
 		case bool:
 			en.uvarint(key | 0)
 			vi := uint64(0)
