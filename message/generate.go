@@ -10,12 +10,14 @@ import (
 	"go/format"
 	"html/template"
 	"io"
-	"net/http"
 	"os"
 	"strings"
 )
 
-const faceDownloadUrl = `https://down.qq.com/qqface/config/face_config_json_1026_hide.zip?mType=Other` //? 好像是会自动更新的
+// TODO: Update face_config_json.zip:
+// 1. download latest linux qq
+// 2. run and login
+// 3. copy $HOME/.config/QQ/global/nt_data/Emoji/emoji-resource/face_config_json.zip
 
 type ani struct {
 	QSid      string
@@ -51,13 +53,8 @@ var stickerMap = map[int]string{
 func main() {
 	f, _ := os.OpenFile("face.go", os.O_WRONLY|os.O_CREATE|os.O_SYNC|os.O_TRUNC, 0o755)
 	defer func() { _ = f.Close() }()
-	resp, err := http.Get(faceDownloadUrl)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-	rsp, _ := io.ReadAll(resp.Body)
-	reader, _ := zip.NewReader(bytes.NewReader(rsp), resp.ContentLength)
+	face, _ := os.ReadFile("face_config_json.zip")
+	reader, _ := zip.NewReader(bytes.NewReader(face), int64(len(face)))
 	file, _ := reader.Open("face_config.json")
 	data, _ := io.ReadAll(file)
 	faceConfig := config{}
