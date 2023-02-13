@@ -40,14 +40,14 @@ message LongReqBody {
   int32 termType = 2;
   int32 platformType = 3;
   repeated LongMsgUpReq msgUpReq = 4;
-  repeated LongMsgDownReq msgDownReq = 5;
-  repeated LongMsgDeleteReq msgDelReq = 6;
+  //repeated LongMsgDownReq msgDownReq = 5;
+  //repeated LongMsgDeleteReq msgDelReq = 6;
   int32 agentType = 10;
 }
 message LongRspBody {
   int32 subcmd = 1;
-  repeated LongMsgUpRsp msgUpRsp = 2;
+  //repeated LongMsgUpRsp msgUpRsp = 2;
   repeated LongMsgDownRsp msgDownRsp = 3;
-  repeated LongMsgDeleteRsp msgDelRsp = 4;
+  //repeated LongMsgDeleteRsp msgDelRsp = 4;
 }
    

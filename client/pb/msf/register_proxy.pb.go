@@ -41,18 +41,18 @@ type SvcPbResponsePullDisMsgProxy struct {
 }
 
 type SvcRegisterProxyMsgResp struct {
-	Result          proto.Option[uint32]              `protobuf:"varint,1,opt"`
-	ErrMsg          []byte                            `protobuf:"bytes,2,opt"`
-	Flag            proto.Option[uint32]              `protobuf:"varint,3,opt"`
-	Seq             proto.Option[uint32]              `protobuf:"varint,4,opt"`
-	Info            *SvcResponseMsgInfo               `protobuf:"bytes,5,opt"`
-	GroupList       []*GroupList                      `protobuf:"bytes,6,rep"`
-	DiscussList     []*DiscussList                    `protobuf:"bytes,7,rep"`
-	GroupMsg        []*SvcResponsePbPullGroupMsgProxy `protobuf:"bytes,8,rep"`
-	DiscussMsg      []*SvcPbResponsePullDisMsgProxy   `protobuf:"bytes,9,rep"`
-	C2CMsg          []byte                            `protobuf:"bytes,10,opt"`
-	PubAccountMsg   []byte                            `protobuf:"bytes,11,opt"`
-	DiscussListFlag proto.Option[uint32]              `protobuf:"varint,12,opt"`
+	Result proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ErrMsg []byte               `protobuf:"bytes,2,opt"`
+	Flag   proto.Option[uint32] `protobuf:"varint,3,opt"`
+	Seq    proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Info   *SvcResponseMsgInfo  `protobuf:"bytes,5,opt"`
+	// repeated GroupList groupList = 6;
+	// repeated DiscussList discussList = 7;
+	GroupMsg []*SvcResponsePbPullGroupMsgProxy `protobuf:"bytes,8,rep"`
+	// repeated SvcPbResponsePullDisMsgProxy discussMsg = 9;
+	C2CMsg          []byte               `protobuf:"bytes,10,opt"`
+	PubAccountMsg   []byte               `protobuf:"bytes,11,opt"`
+	DiscussListFlag proto.Option[uint32] `protobuf:"varint,12,opt"`
 }
 
 type SvcResponseMsgInfo struct {

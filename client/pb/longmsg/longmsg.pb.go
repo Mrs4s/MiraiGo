@@ -43,18 +43,17 @@ type LongMsgUpRsp struct {
 }
 
 type LongReqBody struct {
-	Subcmd       int32               `protobuf:"varint,1,opt"`
-	TermType     int32               `protobuf:"varint,2,opt"`
-	PlatformType int32               `protobuf:"varint,3,opt"`
-	MsgUpReq     []*LongMsgUpReq     `protobuf:"bytes,4,rep"`
-	MsgDownReq   []*LongMsgDownReq   `protobuf:"bytes,5,rep"`
-	MsgDelReq    []*LongMsgDeleteReq `protobuf:"bytes,6,rep"`
-	AgentType    int32               `protobuf:"varint,10,opt"`
+	Subcmd       int32           `protobuf:"varint,1,opt"`
+	TermType     int32           `protobuf:"varint,2,opt"`
+	PlatformType int32           `protobuf:"varint,3,opt"`
+	MsgUpReq     []*LongMsgUpReq `protobuf:"bytes,4,rep"`
+	// repeated LongMsgDownReq msgDownReq = 5;
+	// repeated LongMsgDeleteReq msgDelReq = 6;
+	AgentType int32 `protobuf:"varint,10,opt"`
 }
 
 type LongRspBody struct {
-	Subcmd     int32               `protobuf:"varint,1,opt"`
-	MsgUpRsp   []*LongMsgUpRsp     `protobuf:"bytes,2,rep"`
-	MsgDownRsp []*LongMsgDownRsp   `protobuf:"bytes,3,rep"`
-	MsgDelRsp  []*LongMsgDeleteRsp `protobuf:"bytes,4,rep"`
+	Subcmd int32 `protobuf:"varint,1,opt"`
+	// repeated LongMsgUpRsp msgUpRsp = 2;
+	MsgDownRsp []*LongMsgDownRsp `protobuf:"bytes,3,rep"` //repeated LongMsgDeleteRsp msgDelRsp = 4;
 }

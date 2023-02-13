@@ -19,9 +19,9 @@ type TextResvAttr struct {
 	AtType             proto.Option[uint32] `protobuf:"varint,3,opt"`
 	AtMemberUin        proto.Option[uint64] `protobuf:"varint,4,opt"`
 	AtMemberTinyid     proto.Option[uint64] `protobuf:"varint,5,opt"`
-	AtMemberRoleInfo   *ExtRoleInfo         `protobuf:"bytes,6,opt"`
-	AtRoleInfo         *ExtRoleInfo         `protobuf:"bytes,7,opt"`
-	AtChannelInfo      *ExtChannelInfo      `protobuf:"bytes,8,opt"`
+	// optional ExtRoleInfo atMemberRoleInfo = 6;
+	// optional ExtRoleInfo atRoleInfo = 7;
+	AtChannelInfo *ExtChannelInfo `protobuf:"bytes,8,opt"`
 }
 
 type ExtRoleInfo struct {

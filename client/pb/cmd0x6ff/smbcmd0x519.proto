@@ -34,7 +34,7 @@ message C519ReqBody {
   optional uint32 subCmd = 1;
   optional C519CRMMsgHead crmCommonHead = 2;
   optional GetAddressDetailListReqBody getAddressDetailListReqBody = 33;
-  optional GetNavigationMenuReqBody getNavigationMenuReq = 35;
+  // optional GetNavigationMenuReqBody getNavigationMenuReq = 35;
 }
 
 message C519RetInfo {
@@ -44,9 +44,9 @@ message C519RetInfo {
 
 message C519RspBody {
   optional uint32 subCmd = 1;
-  optional C519CRMMsgHead crmCommonHead = 2;
+  // optional C519CRMMsgHead crmCommonHead = 2;
   optional GetAddressDetailListRspBody getAddressDetailListRspBody = 33;
-  optional GetNavigationMenuRspBody getNavigationMenuRsp = 35;
+  //optional GetNavigationMenuRspBody getNavigationMenuRsp = 35;
 }
 
 message GetAddressDetailListReqBody {
@@ -55,7 +55,7 @@ message GetAddressDetailListReqBody {
 }
 
 message GetAddressDetailListRspBody {
-  optional C519RetInfo ret = 1;
+  //optional C519RetInfo ret = 1;
   optional fixed32 timestamp = 2;
   optional bool full = 3;
   repeated AddressDetail addressDetail = 4;
@@ -84,13 +84,13 @@ message AddressDetail {
   optional bytes fax1 = 19;
   optional bytes comment = 20;
   optional bytes headUrl = 21;
-  repeated AddressMobileInfo mobilePhone = 22;
+  //repeated AddressMobileInfo mobilePhone = 22;
   optional bool mobilePhoneUpdated = 23;
   repeated AddressQQinfo qq = 24;
   optional bool qqPhoneUpdated = 25;
   optional fixed64 modifyTime2 = 26;
-  optional NewBizClientRegion clientRegion = 27;
-  optional NewBizClientRegionCode clientRegionCode = 28;
+  //optional NewBizClientRegion clientRegion = 27;
+  //optional NewBizClientRegionCode clientRegionCode = 28;
 }
 
 message AddressMobileInfo {

@@ -210,7 +210,7 @@ type Elem struct {
 	MarketFace     *MarketFace     `protobuf:"bytes,6,opt"`
 	// ElemFlags elemFlags = 7;
 	CustomFace *CustomFace `protobuf:"bytes,8,opt"`
-	ElemFlags2 *ElemFlags2 `protobuf:"bytes,9,opt"`
+	// optional ElemFlags2 elemFlags2 = 9;
 	// FunFace funFace = 10;
 	// SecretFileMsg secretFile = 11;
 	RichMsg   *RichMsg   `protobuf:"bytes,12,opt"`
@@ -622,35 +622,35 @@ type ContentHead struct {
 }
 
 type MessageHead struct {
-	FromUin                    proto.Option[int64]  `protobuf:"varint,1,opt"`
-	ToUin                      proto.Option[int64]  `protobuf:"varint,2,opt"`
-	MsgType                    proto.Option[int32]  `protobuf:"varint,3,opt"`
-	C2CCmd                     proto.Option[int32]  `protobuf:"varint,4,opt"`
-	MsgSeq                     proto.Option[int32]  `protobuf:"varint,5,opt"`
-	MsgTime                    proto.Option[int32]  `protobuf:"varint,6,opt"`
-	MsgUid                     proto.Option[int64]  `protobuf:"varint,7,opt"`
-	C2CTmpMsgHead              *C2CTempMessageHead  `protobuf:"bytes,8,opt"`
-	GroupInfo                  *GroupInfo           `protobuf:"bytes,9,opt"`
-	FromAppid                  proto.Option[int32]  `protobuf:"varint,10,opt"`
-	FromInstid                 proto.Option[int32]  `protobuf:"varint,11,opt"`
-	UserActive                 proto.Option[int32]  `protobuf:"varint,12,opt"`
-	DiscussInfo                *DiscussInfo         `protobuf:"bytes,13,opt"`
-	FromNick                   proto.Option[string] `protobuf:"bytes,14,opt"`
-	AuthUin                    proto.Option[int64]  `protobuf:"varint,15,opt"`
-	AuthNick                   proto.Option[string] `protobuf:"bytes,16,opt"`
-	MsgFlag                    proto.Option[int32]  `protobuf:"varint,17,opt"`
-	AuthRemark                 proto.Option[string] `protobuf:"bytes,18,opt"`
-	GroupName                  proto.Option[string] `protobuf:"bytes,19,opt"`
-	MutiltransHead             *MutilTransHead      `protobuf:"bytes,20,opt"`
-	MsgInstCtrl                *InstCtrl            `protobuf:"bytes,21,opt"`
-	PublicAccountGroupSendFlag proto.Option[int32]  `protobuf:"varint,22,opt"`
-	WseqInC2CMsghead           proto.Option[int32]  `protobuf:"varint,23,opt"`
-	Cpid                       proto.Option[int64]  `protobuf:"varint,24,opt"`
-	ExtGroupKeyInfo            *ExtGroupKeyInfo     `protobuf:"bytes,25,opt"`
-	MultiCompatibleText        proto.Option[string] `protobuf:"bytes,26,opt"`
-	AuthSex                    proto.Option[int32]  `protobuf:"varint,27,opt"`
-	IsSrcMsg                   proto.Option[bool]   `protobuf:"varint,28,opt"`
-	_                          [0]func()
+	FromUin       proto.Option[int64] `protobuf:"varint,1,opt"`
+	ToUin         proto.Option[int64] `protobuf:"varint,2,opt"`
+	MsgType       proto.Option[int32] `protobuf:"varint,3,opt"`
+	C2CCmd        proto.Option[int32] `protobuf:"varint,4,opt"`
+	MsgSeq        proto.Option[int32] `protobuf:"varint,5,opt"`
+	MsgTime       proto.Option[int32] `protobuf:"varint,6,opt"`
+	MsgUid        proto.Option[int64] `protobuf:"varint,7,opt"`
+	C2CTmpMsgHead *C2CTempMessageHead `protobuf:"bytes,8,opt"`
+	GroupInfo     *GroupInfo          `protobuf:"bytes,9,opt"`
+	FromAppid     proto.Option[int32] `protobuf:"varint,10,opt"`
+	FromInstid    proto.Option[int32] `protobuf:"varint,11,opt"`
+	UserActive    proto.Option[int32] `protobuf:"varint,12,opt"`
+	// optional DiscussInfo discussInfo = 13;
+	FromNick       proto.Option[string] `protobuf:"bytes,14,opt"`
+	AuthUin        proto.Option[int64]  `protobuf:"varint,15,opt"`
+	AuthNick       proto.Option[string] `protobuf:"bytes,16,opt"`
+	MsgFlag        proto.Option[int32]  `protobuf:"varint,17,opt"`
+	AuthRemark     proto.Option[string] `protobuf:"bytes,18,opt"`
+	GroupName      proto.Option[string] `protobuf:"bytes,19,opt"`
+	MutiltransHead *MutilTransHead      `protobuf:"bytes,20,opt"`
+	// optional InstCtrl msgInstCtrl = 21;
+	PublicAccountGroupSendFlag proto.Option[int32] `protobuf:"varint,22,opt"`
+	WseqInC2CMsghead           proto.Option[int32] `protobuf:"varint,23,opt"`
+	Cpid                       proto.Option[int64] `protobuf:"varint,24,opt"`
+	// optional ExtGroupKeyInfo extGroupKeyInfo = 25;
+	MultiCompatibleText proto.Option[string] `protobuf:"bytes,26,opt"`
+	AuthSex             proto.Option[int32]  `protobuf:"varint,27,opt"`
+	IsSrcMsg            proto.Option[bool]   `protobuf:"varint,28,opt"`
+	_                   [0]func()
 }
 
 type GroupInfo struct {

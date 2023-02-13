@@ -13,7 +13,7 @@ message OIDBSSOPkg {
 
 message D8A0RspBody {
   int64 optUint64GroupCode = 1;
-  repeated D8A0KickResult msgKickResult = 2;
+  // repeated D8A0KickResult msgKickResult = 2;
 }
 message D8A0KickResult {
   int32 optUint32Result = 1;
@@ -54,18 +54,18 @@ message D89AGroupinfo {
   int32 certificationType = 11;
   bytes ingCertificationText = 12;
   bytes ingGroupRichFingerMemo = 13;
-  D89AGroupNewGuidelinesInfo stGroupNewguidelines = 14;
+  // D89AGroupNewGuidelinesInfo stGroupNewguidelines = 14;
   int32 groupFace = 15;
   int32 addOption = 16;
   optional int32 shutupTime = 17;
   int32 groupTypeFlag = 18;
   bytes stringGroupTag = 19;
-  D89AGroupGeoInfo msgGroupGeoInfo = 20;
+  // D89AGroupGeoInfo msgGroupGeoInfo = 20;
   int32 groupClassExt = 21;
   bytes ingGroupClassText = 22;
   int32 appPrivilegeFlag = 23;
   int32 appPrivilegeMask = 24;
-  D89AGroupExInfoOnly stGroupExInfo = 25;
+  // D89AGroupExInfoOnly stGroupExInfo = 25;
   int32 groupSecLevel = 26;
   int32 groupSecLevelInfo = 27;
   int64 subscriptionUin = 28;

@@ -39,10 +39,10 @@ message SvcRegisterProxyMsgResp {
   optional uint32 flag = 3;
   optional uint32 seq = 4;
   optional SvcResponseMsgInfo info = 5;
-  repeated GroupList groupList = 6;
-  repeated DiscussList discussList = 7;
+  //repeated GroupList groupList = 6;
+  //repeated DiscussList discussList = 7;
   repeated SvcResponsePbPullGroupMsgProxy groupMsg = 8;
-  repeated SvcPbResponsePullDisMsgProxy discussMsg = 9;
+  //repeated SvcPbResponsePullDisMsgProxy discussMsg = 9;
   optional bytes c2CMsg = 10;
   optional bytes pubAccountMsg = 11;
   optional uint32 discussListFlag = 12;

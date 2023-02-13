@@ -46,12 +46,12 @@ message ShortVideoDownloadReq {
 message ShortVideoDownloadRsp {
   int32 retCode = 1;
   string retMsg = 2;
-  repeated ShortVideoIpList sameAreaOutAddr = 3;
-  repeated ShortVideoIpList diffAreaOutAddr = 4;
+  //repeated ShortVideoIpList sameAreaOutAddr = 3;
+  //repeated ShortVideoIpList diffAreaOutAddr = 4;
   bytes downloadKey = 5;
   bytes fileMd5 = 6;
-  repeated ShortVideoIpList sameAreaInnerAddr = 7;
-  repeated ShortVideoIpList diffAreaInnerAddr = 8;
+  //repeated ShortVideoIpList sameAreaInnerAddr = 7;
+  //repeated ShortVideoIpList diffAreaInnerAddr = 8;
   ShortVideoAddr downloadAddr = 9;
   bytes encryptKey = 10;
 }
@@ -59,14 +59,14 @@ message ShortVideoDownloadRsp {
 message ShortVideoUploadRsp {
   int32 retCode = 1;
   string retMsg = 2;
-  repeated ShortVideoIpList sameAreaOutAddr = 3;
-  repeated ShortVideoIpList diffAreaOutAddr = 4;
+  //repeated ShortVideoIpList sameAreaOutAddr = 3;
+  //repeated ShortVideoIpList diffAreaOutAddr = 4;
   string fileId = 5;
   bytes uKey = 6;
   int32 fileExists = 7;
-  repeated ShortVideoIpList sameAreaInnerAddr = 8;
-  repeated ShortVideoIpList diffAreaInnerAddr = 9;
-  repeated DataHole dataHole = 10;
+  //repeated ShortVideoIpList sameAreaInnerAddr = 8;
+  //repeated ShortVideoIpList diffAreaInnerAddr = 9;
+  //repeated DataHole dataHole = 10;
 }
 
 message ShortVideoFileInfo {

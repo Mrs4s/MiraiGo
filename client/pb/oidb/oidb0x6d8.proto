@@ -3,14 +3,14 @@ syntax = "proto2";
 option go_package = "github.com/Mrs4s/MiraiGo/client/pb/oidb";
 
 message D6D8ReqBody {
-  optional GetFileInfoReqBody fileInfoReq = 1;
+  // optional GetFileInfoReqBody fileInfoReq = 1;
   optional GetFileListReqBody fileListInfoReq = 2;
   optional GetFileCountReqBody groupFileCountReq = 3;
   optional GetSpaceReqBody groupSpaceReq = 4;
 }
 
 message D6D8RspBody {
-  optional GetFileInfoRspBody fileInfoRsp = 1;
+  // optional GetFileInfoRspBody fileInfoRsp = 1;
   optional GetFileListRspBody fileListInfoRsp = 2;
   optional GetFileCountRspBody fileCountRsp = 3;
   optional GetSpaceRspBody groupSpaceRsp = 4;

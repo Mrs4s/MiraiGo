@@ -42,8 +42,7 @@ type GetNavigationMenuRspBody struct {
 type C519ReqBody struct {
 	SubCmd                      proto.Option[uint32]         `protobuf:"varint,1,opt"`
 	CrmCommonHead               *C519CRMMsgHead              `protobuf:"bytes,2,opt"`
-	GetAddressDetailListReqBody *GetAddressDetailListReqBody `protobuf:"bytes,33,opt"`
-	GetNavigationMenuReq        *GetNavigationMenuReqBody    `protobuf:"bytes,35,opt"`
+	GetAddressDetailListReqBody *GetAddressDetailListReqBody `protobuf:"bytes,33,opt"` // optional GetNavigationMenuReqBody getNavigationMenuReq = 35;
 	_                           [0]func()
 }
 
@@ -54,10 +53,9 @@ type C519RetInfo struct {
 }
 
 type C519RspBody struct {
-	SubCmd                      proto.Option[uint32]         `protobuf:"varint,1,opt"`
-	CrmCommonHead               *C519CRMMsgHead              `protobuf:"bytes,2,opt"`
-	GetAddressDetailListRspBody *GetAddressDetailListRspBody `protobuf:"bytes,33,opt"`
-	GetNavigationMenuRsp        *GetNavigationMenuRspBody    `protobuf:"bytes,35,opt"`
+	SubCmd proto.Option[uint32] `protobuf:"varint,1,opt"`
+	// optional C519CRMMsgHead crmCommonHead = 2;
+	GetAddressDetailListRspBody *GetAddressDetailListRspBody `protobuf:"bytes,33,opt"` //optional GetNavigationMenuRspBody getNavigationMenuRsp = 35;
 	_                           [0]func()
 }
 
@@ -68,7 +66,7 @@ type GetAddressDetailListReqBody struct {
 }
 
 type GetAddressDetailListRspBody struct {
-	Ret           *C519RetInfo         `protobuf:"bytes,1,opt"`
+	// optional C519RetInfo ret = 1;
 	Timestamp     proto.Option[uint32] `protobuf:"fixed32,2,opt"`
 	Full          proto.Option[bool]   `protobuf:"varint,3,opt"`
 	AddressDetail []*AddressDetail     `protobuf:"bytes,4,rep"`
@@ -76,34 +74,32 @@ type GetAddressDetailListRspBody struct {
 }
 
 type AddressDetail struct {
-	Aid                proto.Option[uint32]    `protobuf:"varint,1,opt"`
-	ModifyTime         proto.Option[uint32]    `protobuf:"fixed32,2,opt"`
-	CreateTime         proto.Option[uint32]    `protobuf:"fixed32,3,opt"`
-	Status             proto.Option[uint32]    `protobuf:"varint,4,opt"`
-	Groupid            proto.Option[uint32]    `protobuf:"varint,5,opt"`
-	AddGroupName       []byte                  `protobuf:"bytes,6,opt"`
-	Name               []byte                  `protobuf:"bytes,7,opt"`
-	Gender             proto.Option[uint32]    `protobuf:"varint,8,opt"`
-	Birthday           proto.Option[uint32]    `protobuf:"fixed32,9,opt"`
-	Company0           []byte                  `protobuf:"bytes,10,opt"`
-	CompanyPosition0   []byte                  `protobuf:"bytes,11,opt"`
-	Company1           []byte                  `protobuf:"bytes,12,opt"`
-	CompanyPosition1   []byte                  `protobuf:"bytes,13,opt"`
-	FixedPhone0        []byte                  `protobuf:"bytes,14,opt"`
-	FixedPhone1        []byte                  `protobuf:"bytes,15,opt"`
-	Email0             []byte                  `protobuf:"bytes,16,opt"`
-	Email1             []byte                  `protobuf:"bytes,17,opt"`
-	Fax0               []byte                  `protobuf:"bytes,18,opt"`
-	Fax1               []byte                  `protobuf:"bytes,19,opt"`
-	Comment            []byte                  `protobuf:"bytes,20,opt"`
-	HeadUrl            []byte                  `protobuf:"bytes,21,opt"`
-	MobilePhone        []*AddressMobileInfo    `protobuf:"bytes,22,rep"`
-	MobilePhoneUpdated proto.Option[bool]      `protobuf:"varint,23,opt"`
-	Qq                 []*AddressQQinfo        `protobuf:"bytes,24,rep"`
-	QqPhoneUpdated     proto.Option[bool]      `protobuf:"varint,25,opt"`
-	ModifyTime2        proto.Option[uint64]    `protobuf:"fixed64,26,opt"`
-	ClientRegion       *NewBizClientRegion     `protobuf:"bytes,27,opt"`
-	ClientRegionCode   *NewBizClientRegionCode `protobuf:"bytes,28,opt"`
+	Aid              proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ModifyTime       proto.Option[uint32] `protobuf:"fixed32,2,opt"`
+	CreateTime       proto.Option[uint32] `protobuf:"fixed32,3,opt"`
+	Status           proto.Option[uint32] `protobuf:"varint,4,opt"`
+	Groupid          proto.Option[uint32] `protobuf:"varint,5,opt"`
+	AddGroupName     []byte               `protobuf:"bytes,6,opt"`
+	Name             []byte               `protobuf:"bytes,7,opt"`
+	Gender           proto.Option[uint32] `protobuf:"varint,8,opt"`
+	Birthday         proto.Option[uint32] `protobuf:"fixed32,9,opt"`
+	Company0         []byte               `protobuf:"bytes,10,opt"`
+	CompanyPosition0 []byte               `protobuf:"bytes,11,opt"`
+	Company1         []byte               `protobuf:"bytes,12,opt"`
+	CompanyPosition1 []byte               `protobuf:"bytes,13,opt"`
+	FixedPhone0      []byte               `protobuf:"bytes,14,opt"`
+	FixedPhone1      []byte               `protobuf:"bytes,15,opt"`
+	Email0           []byte               `protobuf:"bytes,16,opt"`
+	Email1           []byte               `protobuf:"bytes,17,opt"`
+	Fax0             []byte               `protobuf:"bytes,18,opt"`
+	Fax1             []byte               `protobuf:"bytes,19,opt"`
+	Comment          []byte               `protobuf:"bytes,20,opt"`
+	HeadUrl          []byte               `protobuf:"bytes,21,opt"`
+	// repeated AddressMobileInfo mobilePhone = 22;
+	MobilePhoneUpdated proto.Option[bool]   `protobuf:"varint,23,opt"`
+	Qq                 []*AddressQQinfo     `protobuf:"bytes,24,rep"`
+	QqPhoneUpdated     proto.Option[bool]   `protobuf:"varint,25,opt"`
+	ModifyTime2        proto.Option[uint64] `protobuf:"fixed64,26,opt"`
 }
 
 type AddressMobileInfo struct {

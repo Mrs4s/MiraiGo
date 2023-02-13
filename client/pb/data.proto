@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/Mrs4s/MiraiGo/client/pb/pb";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb";
 
 message DeviceInfo {
   string bootloader = 1;

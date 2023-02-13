@@ -66,11 +66,11 @@ message RenameFileRspBody {
 }
 message D6D6ReqBody {
   optional UploadFileReqBody uploadFileReq = 1;
-  optional ResendReqBody resendFileReq = 2;
+  // optional ResendReqBody resendFileReq = 2;
   optional DownloadFileReqBody downloadFileReq = 3;
   optional DeleteFileReqBody deleteFileReq = 4;
-  optional RenameFileReqBody renameFileReq = 5;
-  optional MoveFileReqBody moveFileReq = 6;
+  // optional RenameFileReqBody renameFileReq = 5;
+  // optional MoveFileReqBody moveFileReq = 6;
 }
 message ResendReqBody {
   optional int64 groupCode = 1;

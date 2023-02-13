@@ -50,7 +50,7 @@ message GateVaProfileGateReq {
   optional int32 uCmd = 1;
   optional GatePrivilegeBaseInfoReq stPrivilegeReq = 2;
   optional GateGetGiftListReq stGiftReq = 3;
-  repeated GateCommTaskInfo taskItem = 4;
+  // repeated GateCommTaskInfo taskItem = 4;
   repeated GateOidbFlagInfo oidbFlag = 5;
   optional GateGetVipCareReq stVipCare = 6;
 }
@@ -65,10 +65,10 @@ message GateQidInfoItem {
 message GateVaProfileGateRsp {
   optional int32 iRetCode = 1;
   optional bytes sRetMsg = 2;
-  optional GatePrivilegeBaseInfoRsp stPrivilegeRsp = 3;
-  optional GateGetGiftListRsp stGiftRsp = 4;
-  repeated GateCommTaskInfo taskItem = 5;
-  repeated GateOidbFlagInfo oidbFlag = 6;
-  optional GateGetVipCareRsp stVipCare = 7;
+  //optional GatePrivilegeBaseInfoRsp stPrivilegeRsp = 3;
+  //optional GateGetGiftListRsp stGiftRsp = 4;
+  //repeated GateCommTaskInfo taskItem = 5;
+  //repeated GateOidbFlagInfo oidbFlag = 6;
+  //optional GateGetVipCareRsp stVipCare = 7;
   optional GateQidInfoItem qidInfo = 9;
 }

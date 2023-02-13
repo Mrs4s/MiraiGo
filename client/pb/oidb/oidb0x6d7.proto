@@ -61,12 +61,12 @@ message D6D7ReqBody {
   optional CreateFolderReqBody createFolderReq = 1;
   optional DeleteFolderReqBody deleteFolderReq = 2;
   optional RenameFolderReqBody renameFolderReq = 3;
-  optional MoveFolderReqBody moveFolderReq = 4;
+  // optional MoveFolderReqBody moveFolderReq = 4;
 }
 
 message D6D7RspBody {
   optional CreateFolderRspBody createFolderRsp = 1;
   optional DeleteFolderRspBody deleteFolderRsp = 2;
   optional RenameFolderRspBody renameFolderRsp = 3;
-  optional MoveFolderRspBody moveFolderRsp = 4;
+  // optional MoveFolderRspBody moveFolderRsp = 4;
 }

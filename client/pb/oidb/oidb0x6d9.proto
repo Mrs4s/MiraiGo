@@ -72,9 +72,9 @@ message FeedsRspBody {
 }
 
 message D6D9ReqBody {
-  optional TransFileReqBody transFileReq = 1;
-  optional CopyFromReqBody copyFromReq = 2;
-  optional CopyToReqBody copyToReq = 3;
+  // optional TransFileReqBody transFileReq = 1;
+  // optional CopyFromReqBody copyFromReq = 2;
+  // optional CopyToReqBody copyToReq = 3;
   optional FeedsReqBody feedsInfoReq = 5;
 }
 

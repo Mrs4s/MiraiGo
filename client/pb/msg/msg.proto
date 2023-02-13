@@ -206,7 +206,7 @@ message Elem {
   optional MarketFace marketFace = 6;
   //ElemFlags elemFlags = 7;
   optional CustomFace customFace = 8;
-  optional ElemFlags2 elemFlags2 = 9;
+  //optional ElemFlags2 elemFlags2 = 9;
   //FunFace funFace = 10;
   //SecretFileMsg secretFile = 11;
   optional RichMsg richMsg = 12;
@@ -637,7 +637,7 @@ message MessageHead {
   optional int32 fromAppid = 10;
   optional int32 fromInstid = 11;
   optional int32 userActive = 12;
-  optional DiscussInfo discussInfo = 13;
+  // optional DiscussInfo discussInfo = 13;
   optional string fromNick = 14;
   optional int64 authUin = 15;
   optional string authNick = 16;
@@ -645,11 +645,11 @@ message MessageHead {
   optional string authRemark = 18;
   optional string groupName = 19;
   optional MutilTransHead mutiltransHead = 20;
-  optional InstCtrl msgInstCtrl = 21;
+  // optional InstCtrl msgInstCtrl = 21;
   optional int32 publicAccountGroupSendFlag = 22;
   optional int32 wseqInC2cMsghead = 23;
   optional int64 cpid = 24;
-  optional ExtGroupKeyInfo extGroupKeyInfo = 25;
+  // optional ExtGroupKeyInfo extGroupKeyInfo = 25;
   optional string multiCompatibleText = 26;
   optional int32 authSex = 27;
   optional bool isSrcMsg = 28;

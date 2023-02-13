@@ -13,8 +13,8 @@ message TextResvAttr {
   optional uint32 atType = 3;
   optional uint64 atMemberUin = 4;
   optional uint64 atMemberTinyid = 5;
-  optional ExtRoleInfo atMemberRoleInfo = 6;
-  optional ExtRoleInfo atRoleInfo = 7;
+  //optional ExtRoleInfo atMemberRoleInfo = 6;
+  //optional ExtRoleInfo atRoleInfo = 7;
   optional ExtChannelInfo atChannelInfo = 8;
 }
 

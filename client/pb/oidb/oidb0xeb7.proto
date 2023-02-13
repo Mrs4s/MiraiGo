@@ -4,7 +4,7 @@ option go_package = "github.com/Mrs4s/MiraiGo/client/pb/oidb";
 
 // DEB7 prefix
 message DEB7ReqBody {
-  optional StSignInStatusReq signInStatusReq = 1;
+  // optional StSignInStatusReq signInStatusReq = 1;
   optional StSignInWriteReq signInWriteReq = 2;
 }
 

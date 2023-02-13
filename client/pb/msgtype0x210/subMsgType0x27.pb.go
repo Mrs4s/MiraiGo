@@ -78,42 +78,21 @@ type FanpaiziNotify struct {
 }
 
 type ForwardBody struct {
-	NotifyType                  proto.Option[uint32]         `protobuf:"varint,1,opt"`
-	OpType                      proto.Option[uint32]         `protobuf:"varint,2,opt"`
-	AddGroup                    *AddGroup                    `protobuf:"bytes,3,opt"`
-	DelGroup                    *DelGroup                    `protobuf:"bytes,4,opt"`
-	ModGroupName                *ModGroupName                `protobuf:"bytes,5,opt"`
-	ModGroupSort                *ModGroupSort                `protobuf:"bytes,6,opt"`
-	ModFriendGroup              *ModFriendGroup              `protobuf:"bytes,7,opt"`
-	ModProfile                  *ModProfile                  `protobuf:"bytes,8,opt"`
-	ModFriendRemark             *ModFriendRemark             `protobuf:"bytes,9,opt"`
-	ModLongNick                 *ModLongNick                 `protobuf:"bytes,10,opt"`
-	ModCustomFace               *ModCustomFace               `protobuf:"bytes,11,opt"`
-	ModGroupProfile             *ModGroupProfile             `protobuf:"bytes,12,opt"`
-	ModGroupMemberProfile       *ModGroupMemberProfile       `protobuf:"bytes,13,opt"`
-	DelFriend                   *DelFriend                   `protobuf:"bytes,14,opt"`
-	RoamPriv                    *ModFrdRoamPriv              `protobuf:"bytes,15,opt"`
-	GrpMsgRoamFlag              *GrpMsgRoamFlag              `protobuf:"bytes,16,opt"`
-	ConfMsgRoamFlag             *ConfMsgRoamFlag             `protobuf:"bytes,17,opt"`
-	ModRichLongNick             *ModLongNick                 `protobuf:"bytes,18,opt"`
-	BinPkg                      *BinaryMsg                   `protobuf:"bytes,19,opt"`
-	ModFriendRings              *ModSnsGeneralInfo           `protobuf:"bytes,20,opt"`
-	ModConfProfile              *ModConfProfile              `protobuf:"bytes,21,opt"`
-	ModFriendFlag               *SnsUpdateFlag               `protobuf:"bytes,22,opt"`
-	AppointmentNotify           *AppointmentNotify           `protobuf:"bytes,23,opt"`
-	DarenNotify                 *DaRenNotify                 `protobuf:"bytes,25,opt"`
-	NewComeinUserNotify         *NewComeinUserNotify         `protobuf:"bytes,26,opt"`
-	PushSearchDev               *PushSearchDev               `protobuf:"bytes,200,opt"`
-	PushReportDev               *PushReportDev               `protobuf:"bytes,201,opt"`
-	QqPayPush                   *QQPayPush                   `protobuf:"bytes,202,opt"`
-	RedpointInfo                []byte                       `protobuf:"bytes,203,opt"`
-	HotFriendNotify             *HotFriendNotify             `protobuf:"bytes,204,opt"`
-	PraiseRankNotify            *PraiseRankNotify            `protobuf:"bytes,205,opt"`
-	CampusNotify                *MQQCampusNotify             `protobuf:"bytes,210,opt"`
-	ModRichLongNickEx           *ModLongNick                 `protobuf:"bytes,211,opt"`
-	ChatMatchInfo               *ChatMatchInfo               `protobuf:"bytes,212,opt"`
-	FrdCustomOnlineStatusChange *FrdCustomOnlineStatusChange `protobuf:"bytes,214,opt"`
-	FanpanziNotify              *FanpaiziNotify              `protobuf:"bytes,2000,opt"`
+	// optional uint32 notifyType = 1;
+	// optional uint32 opType = 2;
+	// optional AddGroup addGroup = 3;
+	// optional DelGroup delGroup = 4;
+	// optional ModGroupName modGroupName = 5;
+	// optional ModGroupSort modGroupSort = 6;
+	// optional ModFriendGroup modFriendGroup = 7;
+	// optional ModProfile modProfile = 8;
+	// optional ModFriendRemark modFriendRemark = 9;
+	// optional ModLongNick modLongNick = 10;
+	// optional ModCustomFace modCustomFace = 11;
+	ModGroupProfile *ModGroupProfile `protobuf:"bytes,12,opt"`
+	// optional ModGroupMemberProfile modGroupMemberProfile = 13;
+	DelFriend *DelFriend `protobuf:"bytes,14,opt"`
+	_         [0]func()
 }
 
 type FrdCustomOnlineStatusChange struct {

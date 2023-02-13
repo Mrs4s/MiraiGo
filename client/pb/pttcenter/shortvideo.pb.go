@@ -48,29 +48,26 @@ type ShortVideoDownloadReq struct {
 }
 
 type ShortVideoDownloadRsp struct {
-	RetCode           int32               `protobuf:"varint,1,opt"`
-	RetMsg            string              `protobuf:"bytes,2,opt"`
-	SameAreaOutAddr   []*ShortVideoIpList `protobuf:"bytes,3,rep"`
-	DiffAreaOutAddr   []*ShortVideoIpList `protobuf:"bytes,4,rep"`
-	DownloadKey       []byte              `protobuf:"bytes,5,opt"`
-	FileMd5           []byte              `protobuf:"bytes,6,opt"`
-	SameAreaInnerAddr []*ShortVideoIpList `protobuf:"bytes,7,rep"`
-	DiffAreaInnerAddr []*ShortVideoIpList `protobuf:"bytes,8,rep"`
-	DownloadAddr      *ShortVideoAddr     `protobuf:"bytes,9,opt"`
-	EncryptKey        []byte              `protobuf:"bytes,10,opt"`
+	RetCode int32  `protobuf:"varint,1,opt"`
+	RetMsg  string `protobuf:"bytes,2,opt"`
+	// repeated ShortVideoIpList sameAreaOutAddr = 3;
+	// repeated ShortVideoIpList diffAreaOutAddr = 4;
+	DownloadKey []byte `protobuf:"bytes,5,opt"`
+	FileMd5     []byte `protobuf:"bytes,6,opt"`
+	// repeated ShortVideoIpList sameAreaInnerAddr = 7;
+	// repeated ShortVideoIpList diffAreaInnerAddr = 8;
+	DownloadAddr *ShortVideoAddr `protobuf:"bytes,9,opt"`
+	EncryptKey   []byte          `protobuf:"bytes,10,opt"`
 }
 
 type ShortVideoUploadRsp struct {
-	RetCode           int32               `protobuf:"varint,1,opt"`
-	RetMsg            string              `protobuf:"bytes,2,opt"`
-	SameAreaOutAddr   []*ShortVideoIpList `protobuf:"bytes,3,rep"`
-	DiffAreaOutAddr   []*ShortVideoIpList `protobuf:"bytes,4,rep"`
-	FileId            string              `protobuf:"bytes,5,opt"`
-	UKey              []byte              `protobuf:"bytes,6,opt"`
-	FileExists        int32               `protobuf:"varint,7,opt"`
-	SameAreaInnerAddr []*ShortVideoIpList `protobuf:"bytes,8,rep"`
-	DiffAreaInnerAddr []*ShortVideoIpList `protobuf:"bytes,9,rep"`
-	DataHole          []*DataHole         `protobuf:"bytes,10,rep"`
+	RetCode int32  `protobuf:"varint,1,opt"`
+	RetMsg  string `protobuf:"bytes,2,opt"`
+	// repeated ShortVideoIpList sameAreaOutAddr = 3;
+	// repeated ShortVideoIpList diffAreaOutAddr = 4;
+	FileId     string `protobuf:"bytes,5,opt"`
+	UKey       []byte `protobuf:"bytes,6,opt"`
+	FileExists int32  `protobuf:"varint,7,opt"`
 }
 
 type ShortVideoFileInfo struct {

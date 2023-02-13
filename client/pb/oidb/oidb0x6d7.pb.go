@@ -70,15 +70,13 @@ type RenameFolderRspBody struct {
 type D6D7ReqBody struct {
 	CreateFolderReq *CreateFolderReqBody `protobuf:"bytes,1,opt"`
 	DeleteFolderReq *DeleteFolderReqBody `protobuf:"bytes,2,opt"`
-	RenameFolderReq *RenameFolderReqBody `protobuf:"bytes,3,opt"`
-	MoveFolderReq   *MoveFolderReqBody   `protobuf:"bytes,4,opt"`
+	RenameFolderReq *RenameFolderReqBody `protobuf:"bytes,3,opt"` // optional MoveFolderReqBody moveFolderReq = 4;
 	_               [0]func()
 }
 
 type D6D7RspBody struct {
 	CreateFolderRsp *CreateFolderRspBody `protobuf:"bytes,1,opt"`
 	DeleteFolderRsp *DeleteFolderRspBody `protobuf:"bytes,2,opt"`
-	RenameFolderRsp *RenameFolderRspBody `protobuf:"bytes,3,opt"`
-	MoveFolderRsp   *MoveFolderRspBody   `protobuf:"bytes,4,opt"`
+	RenameFolderRsp *RenameFolderRspBody `protobuf:"bytes,3,opt"` // optional MoveFolderRspBody moveFolderRsp = 4;
 	_               [0]func()
 }

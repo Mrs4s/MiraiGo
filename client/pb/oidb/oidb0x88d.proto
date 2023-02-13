@@ -9,17 +9,21 @@ message D88DGroupHeadPortraitInfo
 
 message D88DGroupHeadPortrait
 {
+  /*
   optional uint32 picCount = 1;
   repeated D88DGroupHeadPortraitInfo msgInfo = 2;
   optional uint32 defaultId = 3;
   optional uint32 verifyingPicCnt = 4;
   repeated D88DGroupHeadPortraitInfo msgVerifyingPicInfo = 5;
+   */
 }
 
 message D88DGroupExInfoOnly
 {
+  /*
   optional uint32 tribeId = 1;
   optional uint32 moneyForAddGroup = 2;
+   */
 };
 
 message D88DGroupInfo
@@ -64,8 +68,8 @@ message D88DGroupInfo
   optional uint32 certificationType = 38;
   optional bytes  certificationText = 39;
   optional bytes  groupRichFingerMemo = 40;
-  repeated D88DTagRecord tagRecord = 41;
-  optional D88DGroupGeoInfo groupGeoInfo = 42;
+  // repeated D88DTagRecord tagRecord = 41;
+  // optional D88DGroupGeoInfo groupGeoInfo = 42;
   optional uint32 headPortraitSeq = 43;
   optional D88DGroupHeadPortrait msgHeadPortrait = 44;
   optional uint32 shutupTimestamp = 45 ;

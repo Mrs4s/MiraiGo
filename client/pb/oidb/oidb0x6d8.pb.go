@@ -8,7 +8,7 @@ import (
 )
 
 type D6D8ReqBody struct {
-	FileInfoReq       *GetFileInfoReqBody  `protobuf:"bytes,1,opt"`
+	// optional GetFileInfoReqBody fileInfoReq = 1;
 	FileListInfoReq   *GetFileListReqBody  `protobuf:"bytes,2,opt"`
 	GroupFileCountReq *GetFileCountReqBody `protobuf:"bytes,3,opt"`
 	GroupSpaceReq     *GetSpaceReqBody     `protobuf:"bytes,4,opt"`
@@ -16,7 +16,7 @@ type D6D8ReqBody struct {
 }
 
 type D6D8RspBody struct {
-	FileInfoRsp     *GetFileInfoRspBody  `protobuf:"bytes,1,opt"`
+	// optional GetFileInfoRspBody fileInfoRsp = 1;
 	FileListInfoRsp *GetFileListRspBody  `protobuf:"bytes,2,opt"`
 	FileCountRsp    *GetFileCountRspBody `protobuf:"bytes,3,opt"`
 	GroupSpaceRsp   *GetSpaceRspBody     `protobuf:"bytes,4,opt"`

@@ -69,9 +69,9 @@ type GateVaProfileGateReq struct {
 	UCmd           proto.Option[int32]       `protobuf:"varint,1,opt"`
 	StPrivilegeReq *GatePrivilegeBaseInfoReq `protobuf:"bytes,2,opt"`
 	StGiftReq      *GateGetGiftListReq       `protobuf:"bytes,3,opt"`
-	TaskItem       []*GateCommTaskInfo       `protobuf:"bytes,4,rep"`
-	OidbFlag       []*GateOidbFlagInfo       `protobuf:"bytes,5,rep"`
-	StVipCare      *GateGetVipCareReq        `protobuf:"bytes,6,opt"`
+	// repeated GateCommTaskInfo taskItem = 4;
+	OidbFlag  []*GateOidbFlagInfo `protobuf:"bytes,5,rep"`
+	StVipCare *GateGetVipCareReq  `protobuf:"bytes,6,opt"`
 }
 
 type GateQidInfoItem struct {
@@ -83,12 +83,12 @@ type GateQidInfoItem struct {
 }
 
 type GateVaProfileGateRsp struct {
-	IRetCode       proto.Option[int32]       `protobuf:"varint,1,opt"`
-	SRetMsg        []byte                    `protobuf:"bytes,2,opt"`
-	StPrivilegeRsp *GatePrivilegeBaseInfoRsp `protobuf:"bytes,3,opt"`
-	StGiftRsp      *GateGetGiftListRsp       `protobuf:"bytes,4,opt"`
-	TaskItem       []*GateCommTaskInfo       `protobuf:"bytes,5,rep"`
-	OidbFlag       []*GateOidbFlagInfo       `protobuf:"bytes,6,rep"`
-	StVipCare      *GateGetVipCareRsp        `protobuf:"bytes,7,opt"`
-	QidInfo        *GateQidInfoItem          `protobuf:"bytes,9,opt"`
+	IRetCode proto.Option[int32] `protobuf:"varint,1,opt"`
+	SRetMsg  []byte              `protobuf:"bytes,2,opt"`
+	// optional GatePrivilegeBaseInfoRsp stPrivilegeRsp = 3;
+	// optional GateGetGiftListRsp stGiftRsp = 4;
+	// repeated GateCommTaskInfo taskItem = 5;
+	// repeated GateOidbFlagInfo oidbFlag = 6;
+	// optional GateGetVipCareRsp stVipCare = 7;
+	QidInfo *GateQidInfoItem `protobuf:"bytes,9,opt"`
 }

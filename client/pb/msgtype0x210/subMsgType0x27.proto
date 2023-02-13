@@ -70,6 +70,7 @@ message FanpaiziNotify {
 }
 
 message ForwardBody {
+  /*
   optional uint32 notifyType = 1;
   optional uint32 opType = 2;
   optional AddGroup addGroup = 3;
@@ -81,9 +82,11 @@ message ForwardBody {
   optional ModFriendRemark modFriendRemark = 9;
   optional ModLongNick modLongNick = 10;
   optional ModCustomFace modCustomFace = 11;
+  */
   optional ModGroupProfile modGroupProfile = 12;
-  optional ModGroupMemberProfile modGroupMemberProfile = 13;
+  //optional ModGroupMemberProfile modGroupMemberProfile = 13;
   optional DelFriend delFriend = 14;
+  /*
   optional ModFrdRoamPriv roamPriv = 15;
   optional GrpMsgRoamFlag grpMsgRoamFlag = 16;
   optional ConfMsgRoamFlag confMsgRoamFlag = 17;
@@ -106,6 +109,7 @@ message ForwardBody {
   optional ChatMatchInfo chatMatchInfo = 212;
   optional FrdCustomOnlineStatusChange frdCustomOnlineStatusChange = 214;
   optional FanpaiziNotify fanpanziNotify = 2000;
+   */
 }
 
 message FrdCustomOnlineStatusChange {

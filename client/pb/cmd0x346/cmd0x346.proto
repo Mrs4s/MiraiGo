@@ -364,62 +364,69 @@ message RenewFileRsp {
 message C346ReqBody {
   int32 cmd = 1;
   int32 seq = 2;
+  /*
   RecvListQueryReq recvListQueryReq = 3;
   SendListQueryReq sendListQueryReq = 4;
   RenewFileReq renewFileReq = 5;
   RecallFileReq recallFileReq = 6;
+  */
   ApplyUploadReq applyUploadReq = 7;
-  ApplyUploadHitReq applyUploadHitReq = 8;
-  ApplyForwardFileReq applyForwardFileReq = 9;
+  // ApplyUploadHitReq applyUploadHitReq = 8;
+  // ApplyForwardFileReq applyForwardFileReq = 9;
   UploadSuccReq uploadSuccReq = 10;
-  DeleteFileReq deleteFileReq = 11;
-  DownloadSuccReq downloadSuccReq = 12;
-  ApplyDownloadAbsReq applyDownloadAbsReq = 13;
+  // DeleteFileReq deleteFileReq = 11;
+  // DownloadSuccReq downloadSuccReq = 12;
+  // ApplyDownloadAbsReq applyDownloadAbsReq = 13;
   ApplyDownloadReq applyDownloadReq = 14;
-  ApplyListDownloadReq applyListDownloadReq = 15;
-  FileQueryReq fileQueryReq = 16;
-  ApplyCopyFromReq applyCopyFromReq = 17;
-  ApplyUploadReqV2 applyUploadReqV2 = 18;
+  // ApplyListDownloadReq applyListDownloadReq = 15;
+  // FileQueryReq fileQueryReq = 16;
+  // ApplyCopyFromReq applyCopyFromReq = 17;
+  // ApplyUploadReqV2 applyUploadReqV2 = 18;
   ApplyUploadReqV3 applyUploadReqV3 = 19;
-  ApplyUploadHitReqV2 applyUploadHitReqV2 = 20;
-  ApplyUploadHitReqV3 applyUploadHitReqV3 = 21;
+  //ApplyUploadHitReqV2 applyUploadHitReqV2 = 20;
+  //ApplyUploadHitReqV3 applyUploadHitReqV3 = 21;
   int32 businessId = 101;
   int32 clientType = 102;
   uint32 flagSupportMediaplatform = 200;
-  ApplyCopyToReq applyCopyToReq = 90000;
+  //ApplyCopyToReq applyCopyToReq = 90000;
   //ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
-  ApplyGetTrafficReq applyGetTrafficReq = 90002;
+  //ApplyGetTrafficReq applyGetTrafficReq = 90002;
   ExtensionReq extensionReq = 99999;
 }
 message C346RspBody {
   int32 cmd = 1;
   int32 seq = 2;
+  /*
   RecvListQueryRsp recvListQueryRsp = 3;
   SendListQueryRsp sendListQueryRsp = 4;
   RenewFileRsp renewFileRsp = 5;
   RecallFileRsp recallFileRsp = 6;
+  */
   ApplyUploadRsp applyUploadRsp = 7;
+  /*
   ApplyUploadHitRsp applyUploadHitRsp = 8;
   ApplyForwardFileRsp applyForwardFileRsp = 9;
   UploadSuccRsp uploadSuccRsp = 10;
   DeleteFileRsp deleteFileRsp = 11;
   DownloadSuccRsp downloadSuccRsp = 12;
   ApplyDownloadAbsRsp applyDownloadAbsRsp = 13;
+  */
   ApplyDownloadRsp applyDownloadRsp = 14;
-  ApplyListDownloadRsp applyListDownloadRsp = 15;
-  FileQueryRsp fileQueryRsp = 16;
-  ApplyCopyFromRsp applyCopyFromRsp = 17;
-  ApplyUploadRspV2 applyUploadRspV2 = 18;
+  // ApplyListDownloadRsp applyListDownloadRsp = 15;
+  // FileQueryRsp fileQueryRsp = 16;
+  // ApplyCopyFromRsp applyCopyFromRsp = 17;
+  // ApplyUploadRspV2 applyUploadRspV2 = 18;
   ApplyUploadRspV3 applyUploadRspV3 = 19;
-  ApplyUploadHitRspV2 applyUploadHitRspV2 = 20;
-  ApplyUploadHitRspV3 applyUploadHitRspV3 = 21;
+  // ApplyUploadHitRspV2 applyUploadHitRspV2 = 20;
+  // ApplyUploadHitRspV3 applyUploadHitRspV3 = 21;
   int32 businessId = 101;
   int32 clientType = 102;
+  /*
   ApplyCopyToRsp applyCopyToRsp = 90000;
   ApplyCleanTrafficRsp applyCleanTrafficRsp = 90001;
   ApplyGetTrafficRsp applyGetTrafficRsp = 90002;
   ExtensionRsp extensionRsp = 99999;
-
+   */
 }
 message SendListQueryReq {
   int64 uin = 1;

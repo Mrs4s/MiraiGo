@@ -177,13 +177,13 @@ message SystemMsg {
   string msgDecided = 6;
   int32 srcId = 7;
   int32 subSrcId = 8;
-  repeated SystemMsgAction actions = 9;
+  // repeated SystemMsgAction actions = 9;
   int64 groupCode = 10;
   int64 actionUin = 11;
   int32 groupMsgType = 12;
   int32 groupInviterRole = 13;
-  FriendInfo friendInfo = 14;
-  SGroupInfo groupInfo = 15;
+  // FriendInfo friendInfo = 14;
+  // SGroupInfo groupInfo = 15;
   int64 actorUin = 16;
   string msgActorDescribe = 17;
   string msgAdditionalList = 18;
@@ -192,8 +192,8 @@ message SystemMsg {
   int64 cloneUin = 21;
   int64 discussUin = 22;
   int64 eimGroupId = 23;
-  MsgInviteExt msgInviteExtinfo = 24;
-  MsgPayGroupExt msgPayGroupExtinfo = 25;
+  // MsgInviteExt msgInviteExtinfo = 24;
+  // MsgPayGroupExt msgPayGroupExtinfo = 25;
   int32 sourceFlag = 26;
   bytes gameNick = 27;
   bytes gameMsg = 28;
@@ -222,6 +222,7 @@ message SystemMsg {
   int32 c2cInviteJoinGroupFlag = 69;
   int32 cardSwitch = 101;
 }
+
 message SystemMsgAction {
   string name = 1;
   string result = 2;

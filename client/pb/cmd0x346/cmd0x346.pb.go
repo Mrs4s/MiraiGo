@@ -422,66 +422,62 @@ type RenewFileRsp struct {
 }
 
 type C346ReqBody struct {
-	Cmd                      int32                 `protobuf:"varint,1,opt"`
-	Seq                      int32                 `protobuf:"varint,2,opt"`
-	RecvListQueryReq         *RecvListQueryReq     `protobuf:"bytes,3,opt"`
-	SendListQueryReq         *SendListQueryReq     `protobuf:"bytes,4,opt"`
-	RenewFileReq             *RenewFileReq         `protobuf:"bytes,5,opt"`
-	RecallFileReq            *RecallFileReq        `protobuf:"bytes,6,opt"`
-	ApplyUploadReq           *ApplyUploadReq       `protobuf:"bytes,7,opt"`
-	ApplyUploadHitReq        *ApplyUploadHitReq    `protobuf:"bytes,8,opt"`
-	ApplyForwardFileReq      *ApplyForwardFileReq  `protobuf:"bytes,9,opt"`
-	UploadSuccReq            *UploadSuccReq        `protobuf:"bytes,10,opt"`
-	DeleteFileReq            *DeleteFileReq        `protobuf:"bytes,11,opt"`
-	DownloadSuccReq          *DownloadSuccReq      `protobuf:"bytes,12,opt"`
-	ApplyDownloadAbsReq      *ApplyDownloadAbsReq  `protobuf:"bytes,13,opt"`
-	ApplyDownloadReq         *ApplyDownloadReq     `protobuf:"bytes,14,opt"`
-	ApplyListDownloadReq     *ApplyListDownloadReq `protobuf:"bytes,15,opt"`
-	FileQueryReq             *FileQueryReq         `protobuf:"bytes,16,opt"`
-	ApplyCopyFromReq         *ApplyCopyFromReq     `protobuf:"bytes,17,opt"`
-	ApplyUploadReqV2         *ApplyUploadReqV2     `protobuf:"bytes,18,opt"`
-	ApplyUploadReqV3         *ApplyUploadReqV3     `protobuf:"bytes,19,opt"`
-	ApplyUploadHitReqV2      *ApplyUploadHitReqV2  `protobuf:"bytes,20,opt"`
-	ApplyUploadHitReqV3      *ApplyUploadHitReqV3  `protobuf:"bytes,21,opt"`
-	BusinessId               int32                 `protobuf:"varint,101,opt"`
-	ClientType               int32                 `protobuf:"varint,102,opt"`
-	FlagSupportMediaplatform uint32                `protobuf:"varint,200,opt"`
-	ApplyCopyToReq           *ApplyCopyToReq       `protobuf:"bytes,90000,opt"`
+	Cmd int32 `protobuf:"varint,1,opt"`
+	Seq int32 `protobuf:"varint,2,opt"`
+	// RecvListQueryReq recvListQueryReq = 3;
+	// SendListQueryReq sendListQueryReq = 4;
+	// RenewFileReq renewFileReq = 5;
+	// RecallFileReq recallFileReq = 6;
+	ApplyUploadReq *ApplyUploadReq `protobuf:"bytes,7,opt"`
+	// ApplyUploadHitReq applyUploadHitReq = 8;
+	// ApplyForwardFileReq applyForwardFileReq = 9;
+	UploadSuccReq *UploadSuccReq `protobuf:"bytes,10,opt"`
+	// DeleteFileReq deleteFileReq = 11;
+	// DownloadSuccReq downloadSuccReq = 12;
+	// ApplyDownloadAbsReq applyDownloadAbsReq = 13;
+	ApplyDownloadReq *ApplyDownloadReq `protobuf:"bytes,14,opt"`
+	// ApplyListDownloadReq applyListDownloadReq = 15;
+	// FileQueryReq fileQueryReq = 16;
+	// ApplyCopyFromReq applyCopyFromReq = 17;
+	// ApplyUploadReqV2 applyUploadReqV2 = 18;
+	ApplyUploadReqV3 *ApplyUploadReqV3 `protobuf:"bytes,19,opt"`
+	// ApplyUploadHitReqV2 applyUploadHitReqV2 = 20;
+	// ApplyUploadHitReqV3 applyUploadHitReqV3 = 21;
+	BusinessId               int32  `protobuf:"varint,101,opt"`
+	ClientType               int32  `protobuf:"varint,102,opt"`
+	FlagSupportMediaplatform uint32 `protobuf:"varint,200,opt"`
+	// ApplyCopyToReq applyCopyToReq = 90000;
 	// ApplyCleanTrafficReq applyCleanTrafficReq = 90001; empty message
-	ApplyGetTrafficReq *ApplyGetTrafficReq `protobuf:"bytes,90002,opt"`
-	ExtensionReq       *ExtensionReq       `protobuf:"bytes,99999,opt"`
-	_                  [0]func()
+	// ApplyGetTrafficReq applyGetTrafficReq = 90002;
+	ExtensionReq *ExtensionReq `protobuf:"bytes,99999,opt"`
+	_            [0]func()
 }
 
 type C346RspBody struct {
-	Cmd                  int32                 `protobuf:"varint,1,opt"`
-	Seq                  int32                 `protobuf:"varint,2,opt"`
-	RecvListQueryRsp     *RecvListQueryRsp     `protobuf:"bytes,3,opt"`
-	SendListQueryRsp     *SendListQueryRsp     `protobuf:"bytes,4,opt"`
-	RenewFileRsp         *RenewFileRsp         `protobuf:"bytes,5,opt"`
-	RecallFileRsp        *RecallFileRsp        `protobuf:"bytes,6,opt"`
-	ApplyUploadRsp       *ApplyUploadRsp       `protobuf:"bytes,7,opt"`
-	ApplyUploadHitRsp    *ApplyUploadHitRsp    `protobuf:"bytes,8,opt"`
-	ApplyForwardFileRsp  *ApplyForwardFileRsp  `protobuf:"bytes,9,opt"`
-	UploadSuccRsp        *UploadSuccRsp        `protobuf:"bytes,10,opt"`
-	DeleteFileRsp        *DeleteFileRsp        `protobuf:"bytes,11,opt"`
-	DownloadSuccRsp      *DownloadSuccRsp      `protobuf:"bytes,12,opt"`
-	ApplyDownloadAbsRsp  *ApplyDownloadAbsRsp  `protobuf:"bytes,13,opt"`
-	ApplyDownloadRsp     *ApplyDownloadRsp     `protobuf:"bytes,14,opt"`
-	ApplyListDownloadRsp *ApplyListDownloadRsp `protobuf:"bytes,15,opt"`
-	FileQueryRsp         *FileQueryRsp         `protobuf:"bytes,16,opt"`
-	ApplyCopyFromRsp     *ApplyCopyFromRsp     `protobuf:"bytes,17,opt"`
-	ApplyUploadRspV2     *ApplyUploadRspV2     `protobuf:"bytes,18,opt"`
-	ApplyUploadRspV3     *ApplyUploadRspV3     `protobuf:"bytes,19,opt"`
-	ApplyUploadHitRspV2  *ApplyUploadHitRspV2  `protobuf:"bytes,20,opt"`
-	ApplyUploadHitRspV3  *ApplyUploadHitRspV3  `protobuf:"bytes,21,opt"`
-	BusinessId           int32                 `protobuf:"varint,101,opt"`
-	ClientType           int32                 `protobuf:"varint,102,opt"`
-	ApplyCopyToRsp       *ApplyCopyToRsp       `protobuf:"bytes,90000,opt"`
-	ApplyCleanTrafficRsp *ApplyCleanTrafficRsp `protobuf:"bytes,90001,opt"`
-	ApplyGetTrafficRsp   *ApplyGetTrafficRsp   `protobuf:"bytes,90002,opt"`
-	ExtensionRsp         *ExtensionRsp         `protobuf:"bytes,99999,opt"`
-	_                    [0]func()
+	Cmd int32 `protobuf:"varint,1,opt"`
+	Seq int32 `protobuf:"varint,2,opt"`
+	// RecvListQueryRsp recvListQueryRsp = 3;
+	// SendListQueryRsp sendListQueryRsp = 4;
+	// RenewFileRsp renewFileRsp = 5;
+	// RecallFileRsp recallFileRsp = 6;
+	ApplyUploadRsp *ApplyUploadRsp `protobuf:"bytes,7,opt"`
+	// ApplyUploadHitRsp applyUploadHitRsp = 8;
+	// ApplyForwardFileRsp applyForwardFileRsp = 9;
+	// UploadSuccRsp uploadSuccRsp = 10;
+	// DeleteFileRsp deleteFileRsp = 11;
+	// DownloadSuccRsp downloadSuccRsp = 12;
+	// ApplyDownloadAbsRsp applyDownloadAbsRsp = 13;
+	ApplyDownloadRsp *ApplyDownloadRsp `protobuf:"bytes,14,opt"`
+	// ApplyListDownloadRsp applyListDownloadRsp = 15;
+	// FileQueryRsp fileQueryRsp = 16;
+	// ApplyCopyFromRsp applyCopyFromRsp = 17;
+	// ApplyUploadRspV2 applyUploadRspV2 = 18;
+	ApplyUploadRspV3 *ApplyUploadRspV3 `protobuf:"bytes,19,opt"`
+	// ApplyUploadHitRspV2 applyUploadHitRspV2 = 20;
+	// ApplyUploadHitRspV3 applyUploadHitRspV3 = 21;
+	BusinessId int32 `protobuf:"varint,101,opt"`
+	ClientType int32 `protobuf:"varint,102,opt"`
+	_          [0]func()
 }
 
 type SendListQueryReq struct {
