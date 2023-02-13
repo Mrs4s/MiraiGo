@@ -64,8 +64,8 @@ func decodeGuildEventFlowPacket(c *QQClient, pkt *network.Packet) (any, error) {
 				}
 			}
 			if m.Head.ContentHead.SubType.Unwrap() == 2 { // todo: tips?
-				if common == nil { // empty tips
-				}
+				// if common == nil { // empty tips
+				// }
 				tipsInfo := &tipsPushInfo{
 					TinyId:    m.Head.RoutingHead.FromTinyid.Unwrap(),
 					GuildId:   m.Head.RoutingHead.GuildId.Unwrap(),

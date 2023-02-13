@@ -35,7 +35,7 @@ func CalcPow(data []byte) []byte {
 		}
 		ok = true
 		dst = tmp.Bytes()
-		elp = uint32(time.Now().Sub(start).Milliseconds())
+		elp = uint32(time.Since(start).Milliseconds())
 	}
 
 	w := binary.SelectWriter()

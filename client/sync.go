@@ -169,7 +169,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 	}
 	flag := msg.SyncFlag_START
 	msgReq, _ := proto.Marshal(&msg.GetMessageRequest{
-		SyncFlag:           proto.Some(int32(flag)),
+		SyncFlag:           proto.Some(flag),
 		SyncCookie:         c.sig.SyncCookie,
 		RambleFlag:         proto.Int32(0),
 		ContextFlag:        proto.Int32(1),
@@ -232,7 +232,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 	}
 	flag := msg.SyncFlag_START
 	msgReq := &msg.GetMessageRequest{
-		SyncFlag:           proto.Some(int32(flag)),
+		SyncFlag:           proto.Some(flag),
 		SyncCookie:         c.sig.SyncCookie,
 		RambleFlag:         proto.Int32(0),
 		ContextFlag:        proto.Int32(1),

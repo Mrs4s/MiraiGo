@@ -85,7 +85,7 @@ func (s *Session) Upload(addr Addr, trans Transaction) error {
 		if err != nil {
 			return errors.Wrap(err, "write conn error")
 		}
-		rspHead, _, err := readResponse(reader)
+		rspHead, err := readResponse(reader)
 		if err != nil {
 			return errors.Wrap(err, "highway upload error")
 		}
@@ -130,7 +130,7 @@ func uploadExciting(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 		})
 		offset += int64(rl)
 		frame := newFrame(head, chunk)
-		req, _ := http.NewRequest("POST", url, &frame)
+		req, _ := http.NewRequest(http.MethodPost, url, &frame)
 		req.Header.Set("Accept", "*/*")
 		req.Header.Set("Connection", "Keep-Alive")
 		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
@@ -192,28 +192,28 @@ func (s *Session) sendEcho(conn net.Conn) error {
 	if err != nil {
 		return errors.Wrap(err, "echo error")
 	}
-	if _, _, err = readResponse(binary.NewNetworkReader(conn)); err != nil {
+	if _, err = readResponse(binary.NewNetworkReader(conn)); err != nil {
 		return errors.Wrap(err, "echo error")
 	}
 	return nil
 }
 
-func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, []byte, error) {
+func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, error) {
 	_, err := r.ReadByte()
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to read byte")
+		return nil, errors.Wrap(err, "failed to read byte")
 	}
 	hl, _ := r.ReadInt32()
 	a2, _ := r.ReadInt32()
 	if hl > highwayMaxResponseSize || a2 > highwayMaxResponseSize {
-		return nil, nil, errors.Errorf("highway response invild. head size: %v body size: %v", hl, a2)
+		return nil, errors.Errorf("highway response invild. head size: %v body size: %v", hl, a2)
 	}
 	head, _ := r.ReadBytes(int(hl))
-	payload, _ := r.ReadBytes(int(a2))
+	_, _ = r.ReadBytes(int(a2)) // skip payload
 	_, _ = r.ReadByte()
 	rsp := new(pb.RspDataHighwayHead)
 	if err = proto.Unmarshal(head, rsp); err != nil {
-		return nil, nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
-	return rsp, payload, nil
+	return rsp, nil
 }

@@ -28,7 +28,7 @@ func HttpGetBytes(url, cookie string) ([]byte, error) {
 }
 
 func HttpPostBytes(url string, data []byte) ([]byte, error) {
-	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func HttpPostBytesWithCookie(url string, data []byte, cookie string, contentType
 	if len(contentType) > 0 {
 		t = contentType[0]
 	}
-	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (g *gzipCloser) Close() error {
 
 // HTTPGetReadCloser 从 Http url 获取 io.ReadCloser
 func HTTPGetReadCloser(url string, cookie string) (io.ReadCloser, error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

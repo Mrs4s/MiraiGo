@@ -20,9 +20,7 @@ func (rm RecordMap) Exists(key int) bool {
 	return ok
 }
 
-var (
-	ErrMessageTooShort = errors.New("tlv: message too short")
-)
+var ErrMessageTooShort = errors.New("tlv: message too short")
 
 // Decoder is a configurable TLV decoder.
 type Decoder struct {

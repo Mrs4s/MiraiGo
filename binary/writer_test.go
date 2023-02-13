@@ -1,7 +1,7 @@
 package binary
 
 import (
-	"math/rand"
+	"crypto/rand"
 	"testing"
 )
 

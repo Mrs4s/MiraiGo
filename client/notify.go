@@ -127,8 +127,7 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 		}
 	}
 	// 好像只能这么判断
-	switch {
-	case strings.Contains(content, "头衔"):
+	if strings.Contains(content, "头衔") {
 		event := &MemberSpecialTitleUpdatedEvent{GroupCode: groupCode}
 		for _, cmd := range tipCmds {
 			if cmd.Command == 5 {
@@ -185,6 +184,7 @@ func (e *MemberHonorChangedNotifyEvent) Content() string {
 		return fmt.Sprintf("%s(%d) 在群 %d 里连续发消息超过7天, 获得 群聊之火 标识。", e.Nick, e.Uin, e.GroupCode)
 	case Emotion:
 		return fmt.Sprintf("%s(%d) 在群聊 %d 中连续发表情包超过3天，且累计数量超过20条，获得 快乐源泉 标识。", e.Nick, e.Uin, e.GroupCode)
+	default:
+		return "ERROR"
 	}
-	return "ERROR"
 }

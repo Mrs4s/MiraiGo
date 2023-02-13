@@ -1,7 +1,7 @@
 package jce
 
 import (
-	"math/rand"
+	"crypto/rand"
 	"reflect"
 	"strconv"
 	"sync"

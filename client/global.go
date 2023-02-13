@@ -304,24 +304,6 @@ func genForwardTemplate(resID, preview, summary string, ts int64, items []*msg.P
 	}
 }
 
-func genLongTemplate(resID, brief string, ts int64) *message.ServiceElement {
-	limited := func() string {
-		if ss := []rune(brief); len(ss) > 30 {
-			return string(ss[:30]) + "…"
-		}
-		return brief
-	}()
-	template := fmt.Sprintf(`<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><msg serviceID="35" templateID="1" action="viewMultiMsg" brief="%s" m_resid="%s" m_fileName="%d" sourceMsgId="0" url="" flag="3" adverSign="0" multiMsgFlag="1"> <item layout="1"> <title>%s</title> <hr hidden="false" style="0"/> <summary>点击查看完整消息</summary> </item> <source name="聊天记录" icon="" action="" appid="-1"/> </msg>`,
-		utils.XmlEscape(limited), resID, ts, utils.XmlEscape(limited),
-	)
-	return &message.ServiceElement{
-		Id:      35,
-		Content: template,
-		ResId:   resID,
-		SubType: "Long",
-	}
-}
-
 func (c *QQClient) getWebDeviceInfo() (i string) {
 	qimei := strings.ToLower(utils.RandomString(36))
 	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.device.IMEI, utils.B2S(c.device.MacAddress), utils.B2S(c.device.Device), utils.B2S(c.device.Version.Release))

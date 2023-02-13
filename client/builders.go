@@ -869,7 +869,7 @@ func (c *QQClient) buildGetMessageRequestPacket(flag msg.SyncFlag, msgTime int64
 		})
 	}
 	req := &msg.GetMessageRequest{
-		SyncFlag:           proto.Some(int32(flag)),
+		SyncFlag:           proto.Some(flag),
 		SyncCookie:         cook,
 		LatestRambleNumber: proto.Int32(20),
 		OtherRambleNumber:  proto.Int32(3),

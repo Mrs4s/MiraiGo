@@ -778,7 +778,7 @@ func decodeGuildPushFirstView(c *QQClient, pkt *network.Packet) (any, error) {
 			c.GuildService.Guilds = append(c.GuildService.Guilds, info)
 		}
 	}
-	if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg
-	}
+	// if len(firstViewMsg.ChannelMsgs) > 0 { // sync msg
+	// }
 	return nil, nil
 }

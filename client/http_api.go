@@ -241,7 +241,7 @@ func (c *QQClient) uploadGroupNoticePic(img []byte) (*noticeImage, error) {
 	fw, _ := w.CreatePart(h)
 	_, _ = fw.Write(img)
 	_ = w.Close()
-	req, err := http.NewRequest("POST", "https://web.qun.qq.com/cgi-bin/announce/upload_img", buf)
+	req, err := http.NewRequest(http.MethodPost, "https://web.qun.qq.com/cgi-bin/announce/upload_img", buf)
 	if err != nil {
 		return nil, errors.Wrap(err, "new request error")
 	}

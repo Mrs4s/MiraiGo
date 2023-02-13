@@ -2,9 +2,9 @@ package auth
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"math/rand"
 
 	"github.com/pkg/errors"
 

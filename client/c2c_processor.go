@@ -145,10 +145,10 @@ func privatePttDecoder(c *QQClient, pMsg *msg.Message, _ network.RequestParams) 
 	if pMsg.Body == nil || pMsg.Body.RichText == nil || pMsg.Body.RichText.Ptt == nil {
 		return
 	}
-	if len(pMsg.Body.RichText.Ptt.Reserve) != 0 {
-		// m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
-		// T3 -> timestamp T8 -> voiceType T9 -> voiceLength T10 -> PbReserveStruct
-	}
+	// if len(pMsg.Body.RichText.Ptt.Reserve) != 0 {
+	// 	m := binary.NewReader(pMsg.Body.RichText.Ptt.Reserve[1:]).ReadTlvMap(1)
+	// 	T3 -> timestamp T8 -> voiceType T9 -> voiceLength T10 -> PbReserveStruct
+	//}
 	c.PrivateMessageEvent.dispatch(c, c.parsePrivateMessage(pMsg))
 }
 

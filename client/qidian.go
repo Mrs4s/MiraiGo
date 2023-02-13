@@ -129,7 +129,7 @@ func (c *QQClient) bigDataRequest(subCmd uint32, req proto.Message) ([]byte, err
 	tea := binary.NewTeaCipher(c.QiDian.bigDataReqSession.SessionKey)
 	body := tea.Encrypt(data)
 	url := fmt.Sprintf("http://%v/cgi-bin/httpconn", c.QiDian.bigDataReqAddrs[0])
-	httpReq, _ := http.NewRequest("POST", url, bytes.NewReader(binary.NewWriterF(func(w *binary.Writer) {
+	httpReq, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(binary.NewWriterF(func(w *binary.Writer) {
 		w.WriteByte(40)
 		w.WriteUInt32(uint32(len(head)))
 		w.WriteUInt32(uint32(len(body)))

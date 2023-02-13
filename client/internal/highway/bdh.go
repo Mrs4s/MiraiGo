@@ -109,7 +109,7 @@ func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "write conn error")
 		}
-		rspHead, _, err := readResponse(reader)
+		rspHead, err := readResponse(reader)
 		if err != nil {
 			return nil, errors.Wrap(err, "highway upload error")
 		}
@@ -210,7 +210,7 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}
-			rspHead, _, err := readResponse(reader)
+			rspHead, err := readResponse(reader)
 			if err != nil {
 				return errors.Wrap(err, "highway upload error")
 			}
