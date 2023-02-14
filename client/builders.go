@@ -137,9 +137,8 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 }
 
 func (c *QQClient) buildQRCodeFetchRequestPacket(size, margin, ecLevel uint32) (uint16, []byte) {
-	version := c.transport.Version
 	watch := auth.AndroidWatch.Version()
-	c.transport.Version = watch
+	c.transport.Version = &watch
 	seq := c.nextSeq()
 	req := oicq.Message{
 		Command:          0x0812,
@@ -173,13 +172,13 @@ func (c *QQClient) buildQRCodeFetchRequestPacket(size, margin, ecLevel uint32) (
 		Body:        c.oicq.Marshal(&req),
 	}
 	payload := c.transport.PackPacket(&r)
-	c.transport.Version = version
+	c.transport.Version = &c.version
 	return seq, payload
 }
 
 func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
-	version := c.transport.Version
-	c.transport.Version = auth.AndroidWatch.Version()
+	watch := auth.AndroidWatch.Version()
+	c.transport.Version = &watch
 	seq := c.nextSeq()
 	req := oicq.Message{
 		Command:          0x0812,
@@ -209,7 +208,7 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 		Body:        c.oicq.Marshal(&req),
 	}
 	payload := c.transport.PackPacket(&r)
-	c.transport.Version = version
+	c.transport.Version = &c.version
 	return seq, payload
 }
 

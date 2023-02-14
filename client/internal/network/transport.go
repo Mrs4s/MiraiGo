@@ -10,8 +10,8 @@ import (
 // Transport is a network transport.
 type Transport struct {
 	Sig     *auth.SigInfo
-	Version *auth.AppVersion
-	Device  *auth.Device
+	Version **auth.AppVersion
+	Device  **auth.Device
 
 	// connection
 	// conn *TCPClient
@@ -21,8 +21,8 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 	pos := w.FillUInt32()
 	if req.Type == RequestTypeLogin {
 		w.WriteUInt32(uint32(req.SequenceID))
-		w.WriteUInt32(t.Version.AppId)
-		w.WriteUInt32(t.Version.SubAppId)
+		w.WriteUInt32((*t.Version).AppId)
+		w.WriteUInt32((*t.Version).SubAppId)
 		w.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
 		tgt := t.Sig.TGT
 		if len(tgt) == 0 || len(tgt) == 4 {
@@ -36,7 +36,7 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 	w.WriteUInt32(uint32(len(t.Sig.OutPacketSessionID) + 4))
 	w.Write(t.Sig.OutPacketSessionID)
 	if req.Type == RequestTypeLogin {
-		w.WriteString(t.Device.IMEI)
+		w.WriteString((*t.Device).IMEI)
 		w.WriteUInt32(0x04)
 
 		w.WriteUInt16(uint16(len(t.Sig.Ksid)) + 2)

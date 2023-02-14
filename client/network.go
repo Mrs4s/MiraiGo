@@ -2,7 +2,9 @@ package client
 
 import (
 	"net"
+	"net/netip"
 	"runtime/debug"
+	"sort"
 	"sync"
 	"time"
 
@@ -86,8 +88,65 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 	return r
 }
 
+func (c *QQClient) initServers() {
+	if c.device == nil {
+		// must have device. Use c.UseDevice to set it!
+		panic("client device is nil")
+	}
+
+	sso, err := getSSOAddress(c.device)
+	if err == nil && len(sso) > 0 {
+		c.servers = append(sso, c.servers...)
+	}
+	adds, err := net.LookupIP("msfwifi.3g.qq.com") // host servers
+	if err == nil && len(adds) > 0 {
+		var hostAddrs []netip.AddrPort
+		for _, addr := range adds {
+			ip, ok := netip.AddrFromSlice(addr.To4())
+			if ok {
+				hostAddrs = append(hostAddrs, netip.AddrPortFrom(ip, 8080))
+			}
+		}
+		c.servers = append(hostAddrs, c.servers...)
+	}
+	if len(c.servers) == 0 {
+		c.servers = []netip.AddrPort{ // default servers
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 81}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{114, 221, 148, 59}), 14000),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 147}), 443),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{125, 94, 60, 146}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{114, 221, 144, 215}), 80),
+			netip.AddrPortFrom(netip.AddrFrom4([4]byte{42, 81, 172, 22}), 80),
+		}
+	}
+	pings := make([]int64, len(c.servers))
+	wg := sync.WaitGroup{}
+	wg.Add(len(c.servers))
+	for i := range c.servers {
+		go func(index int) {
+			defer wg.Done()
+			p, err := qualityTest(c.servers[index].String())
+			if err != nil {
+				pings[index] = 9999
+				return
+			}
+			pings[index] = p
+		}(i)
+	}
+	wg.Wait()
+	sort.Slice(c.servers, func(i, j int) bool {
+		return pings[i] < pings[j]
+	})
+	if len(c.servers) > 3 {
+		c.servers = c.servers[0 : len(c.servers)/2] // 保留ping值中位数以上的server
+	}
+}
+
 // connect 连接到 QQClient.servers 中的服务器
 func (c *QQClient) connect() error {
+	// init qq servers
+	c.initServerOnce.Do(c.initServers)
+
 	addr := c.servers[c.currServerIndex].String()
 	c.info("connect to server: %v", addr)
 	err := c.TCP.Connect(addr)

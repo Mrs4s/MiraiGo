@@ -139,6 +139,14 @@ func (info *Device) ReadJson(d []byte) error {
 	default:
 		info.Protocol = IPad
 	}
+
+	v := new(OSVersion)
+	v.SDK = f.Version.Sdk
+	v.Release = []byte(f.Version.Release)
+	v.CodeName = []byte(f.Version.Codename)
+	v.Incremental = []byte(f.Version.Incremental)
+	info.Version = v
+
 	info.GenNewGuid()
 	info.GenNewTgtgtKey()
 	return nil
