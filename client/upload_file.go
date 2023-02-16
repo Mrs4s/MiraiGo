@@ -105,7 +105,7 @@ func (c *QQClient) UploadFile(target message.Source, file *LocalFile) error {
 				},
 				ClientInfo: &exciting.ExcitingClientInfo{
 					ClientType:   proto.Int32(2),
-					AppId:        proto.String(fmt.Sprint(c.version.AppId)),
+					AppId:        proto.String(fmt.Sprint(c.version().AppId)),
 					TerminalType: proto.Int32(2),
 					ClientVer:    proto.String("d92615c5"),
 					Unknown:      proto.Int32(4),

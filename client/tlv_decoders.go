@@ -121,7 +121,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		if len(decrypted) > 51+16 {
 			dr := binary.NewReader(decrypted)
 			dr.ReadBytes(51)
-			c.device.TgtgtKey = dr.ReadBytes(16)
+			c.Device().TgtgtKey = dr.ReadBytes(16)
 		}
 	}
 	c.Nickname = nick
@@ -131,7 +131,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 
 // wtlogin.exchange_emp
 func (c *QQClient) decodeT119R(data []byte) {
-	tea := binary.NewTeaCipher(c.device.TgtgtKey)
+	tea := binary.NewTeaCipher(c.Device().TgtgtKey)
 	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(tea.Decrypt(data)[2:])
 	if t120, ok := m[0x120]; ok {
 		c.sig.SKey = t120

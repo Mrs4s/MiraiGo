@@ -297,9 +297,9 @@ func genForwardTemplate(resID, preview, summary string, ts int64, items []*msg.P
 
 func (c *QQClient) getWebDeviceInfo() (i string) {
 	qimei := strings.ToLower(utils.RandomString(36))
-	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.device.IMEI, utils.B2S(c.device.MacAddress), utils.B2S(c.device.Device), utils.B2S(c.device.Version.Release))
-	i += fmt.Sprintf("a=%v&sd=0&c64=0&sc=1&p=1080*2210&aid=%v&", c.device.Version.SDK, c.device.IMEI)
-	i += fmt.Sprintf("f=%v&mm=%v&cf=%v&cc=%v&", c.device.Brand, 5629 /* Total Memory*/, 1725 /* CPU Frequency */, 8 /* CPU Core Count */)
+	i += fmt.Sprintf("i=%v&imsi=&mac=%v&m=%v&o=%v&", c.Device().IMEI, utils.B2S(c.Device().MacAddress), utils.B2S(c.Device().Device), utils.B2S(c.Device().Version.Release))
+	i += fmt.Sprintf("a=%v&sd=0&c64=0&sc=1&p=1080*2210&aid=%v&", c.Device().Version.SDK, c.Device().IMEI)
+	i += fmt.Sprintf("f=%v&mm=%v&cf=%v&cc=%v&", c.Device().Brand, 5629 /* Total Memory*/, 1725 /* CPU Frequency */, 8 /* CPU Core Count */)
 	i += fmt.Sprintf("qimei=%v&qimei36=%v&", qimei, qimei)
 	i += "sharpP=1&n=wifi&support_xsj_live=true&client_mod=default&timezone=Asia/Shanghai&material_sdk_version=2.9.0&vh265=null&refreshrate=60"
 	return
@@ -322,7 +322,7 @@ func (c *QQClient) packOIDBPackage(cmd, serviceType int32, body []byte) []byte {
 		Command:       cmd,
 		ServiceType:   serviceType,
 		Bodybuffer:    body,
-		ClientVersion: "Android " + c.version.SortVersionName,
+		ClientVersion: "Android " + c.version().SortVersionName,
 	}
 	r, _ := proto.Marshal(pkg)
 	return r

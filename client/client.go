@@ -65,8 +65,6 @@ type QQClient struct {
 	servers         []netip.AddrPort
 	currServerIndex int
 	retryTimes      int
-	version         *auth.AppVersion
-	device          *auth.Device
 	alive           bool
 
 	// session info
@@ -199,11 +197,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 		highwaySession:  new(highway.Session),
 	}
 
-	cli.transport = &network.Transport{
-		Sig:     cli.sig,
-		Version: &cli.version,
-		Device:  &cli.device,
-	}
+	cli.transport = &network.Transport{Sig: cli.sig}
 	cli.oicq = oicq.NewCodec(cli.Uin)
 	{ // init atomic values
 		cli.SequenceId.Store(0x3635)
@@ -219,14 +213,18 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	return cli
 }
 
+func (c *QQClient) version() *auth.AppVersion {
+	return c.transport.Version
+}
+
 func (c *QQClient) Device() *DeviceInfo {
-	return c.device
+	return c.transport.Device
 }
 
 func (c *QQClient) UseDevice(info *auth.Device) {
-	c.version = info.Protocol.Version()
-	c.device = info
-	c.highwaySession.AppID = int32(c.version.AppId)
+	c.transport.Version = info.Protocol.Version()
+	c.transport.Device = info
+	c.highwaySession.AppID = int32(c.version().AppId)
 	c.sig.Ksid = []byte(fmt.Sprintf("|%s|A8.2.7.27f6ea96", info.IMEI))
 }
 
@@ -278,7 +276,7 @@ func (c *QQClient) TokenLogin(token []byte) error {
 		c.oicq.WtSessionTicketKey = r.ReadBytesShort()
 		c.sig.OutPacketSessionID = r.ReadBytesShort()
 		// SystemDeviceInfo.TgtgtKey = r.ReadBytesShort()
-		c.device.TgtgtKey = r.ReadBytesShort()
+		c.Device().TgtgtKey = r.ReadBytesShort()
 	}
 	_, err = c.sendAndWait(c.buildRequestChangeSigPacket(true))
 	if err != nil {
@@ -408,7 +406,7 @@ func (c *QQClient) init(tokenLogin bool) error {
 		go c.doHeartbeat()
 	}
 	_ = c.RefreshStatus()
-	if c.version.Protocol == auth.QiDian {
+	if c.version().Protocol == auth.QiDian {
 		_, _ = c.sendAndWait(c.buildLoginExtraPacket())     // 小登录
 		_, _ = c.sendAndWait(c.buildConnKeyRequestPacket()) // big data key 如果等待 config push 的话时间来不及
 	}
@@ -429,7 +427,7 @@ func (c *QQClient) GenToken() []byte {
 		w.WriteBytesShort(c.sig.EncryptedA1)
 		w.WriteBytesShort(c.oicq.WtSessionTicketKey)
 		w.WriteBytesShort(c.sig.OutPacketSessionID)
-		w.WriteBytesShort(c.device.TgtgtKey)
+		w.WriteBytesShort(c.Device().TgtgtKey)
 	})
 }
 
@@ -478,7 +476,7 @@ func (c *QQClient) ReloadFriendList() error {
 // 当使用普通QQ时: 请求好友列表
 // 当使用企点QQ时: 请求外部联系人列表
 func (c *QQClient) GetFriendList() (*FriendListResponse, error) {
-	if c.version.Protocol == auth.QiDian {
+	if c.version().Protocol == auth.QiDian {
 		rsp, err := c.getQiDianAddressDetailList()
 		if err != nil {
 			return nil, err

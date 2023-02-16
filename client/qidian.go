@@ -30,7 +30,7 @@ func (c *QQClient) getQiDianAddressDetailList() ([]*FriendInfo, error) {
 		SubCmd: proto.Uint32(33),
 		CrmCommonHead: &cmd0x6ff.C519CRMMsgHead{
 			KfUin:     proto.Uint64(uint64(c.QiDian.MasterUin)),
-			VerNo:     proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version.SortVersionName))),
+			VerNo:     proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version().SortVersionName))),
 			CrmSubCmd: proto.Uint32(33),
 			LaborUin:  proto.Uint64(uint64(c.Uin)),
 		},
@@ -68,21 +68,21 @@ func (c *QQClient) buildLoginExtraPacket() (uint16, []byte) {
 		SubCmd: proto.Uint32(69),
 		CrmCommonHead: &cmd0x3f6.C3F6CRMMsgHead{
 			CrmSubCmd:  proto.Uint32(69),
-			VerNo:      proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version.SortVersionName))),
+			VerNo:      proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version().SortVersionName))),
 			Clienttype: proto.Uint32(2),
 		},
 		SubcmdLoginProcessCompleteReqBody: &cmd0x3f6.QDUserLoginProcessCompleteReqBody{
 			Kfext:        proto.Uint64(uint64(c.Uin)),
-			Pubno:        proto.Some(c.version.AppId),
-			Buildno:      proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version.SortVersionName))),
+			Pubno:        proto.Some(c.version().AppId),
+			Buildno:      proto.Uint32(uint32(utils.ConvertSubVersionToInt(c.version().SortVersionName))),
 			TerminalType: proto.Uint32(2),
 			Status:       proto.Uint32(10),
 			LoginTime:    proto.Uint32(5),
-			HardwareInfo: proto.String(string(c.device.Model)),
-			SoftwareInfo: proto.String(string(c.device.Version.Release)),
-			Guid:         c.device.Guid,
-			AppName:      proto.Some(c.version.ApkId),
-			SubAppId:     proto.Some(c.version.AppId),
+			HardwareInfo: proto.String(string(c.Device().Model)),
+			SoftwareInfo: proto.String(string(c.Device().Version.Release)),
+			Guid:         c.Device().Guid,
+			AppName:      proto.Some(c.version().ApkId),
+			SubAppId:     proto.Some(c.version().AppId),
 		},
 	}
 	payload, _ := proto.Marshal(req)

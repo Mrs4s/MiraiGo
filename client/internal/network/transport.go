@@ -10,8 +10,8 @@ import (
 // Transport is a network transport.
 type Transport struct {
 	Sig     *auth.SigInfo
-	Version **auth.AppVersion
-	Device  **auth.Device
+	Version *auth.AppVersion
+	Device  *auth.Device
 
 	// connection
 	// conn *TCPClient

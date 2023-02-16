@@ -45,7 +45,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	if m.Exists(0x402) {
 		c.sig.Dpwd = []byte(utils.RandomString(16))
 		c.sig.T402 = m[0x402]
-		h := md5.Sum(append(append(c.device.Guid, c.sig.Dpwd...), c.sig.T402...))
+		h := md5.Sum(append(append(c.Device().Guid, c.sig.Dpwd...), c.sig.T402...))
 		c.sig.G = h[:]
 	}
 	if m.Exists(0x546) {
@@ -61,7 +61,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		if m.Exists(0x403) {
 			c.sig.RandSeed = m[0x403]
 		}
-		c.decodeT119(m[0x119], c.device.TgtgtKey)
+		c.decodeT119(m[0x119], c.Device().TgtgtKey)
 		return LoginResponse{
 			Success: true,
 		}, nil
@@ -306,7 +306,7 @@ func decodeTransEmpResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		if !m.Exists(0x18) || !m.Exists(0x1e) || !m.Exists(0x19) {
 			return nil, errors.New("wtlogin.trans_emp sub cmd 0x12 error: tlv error")
 		}
-		c.device.TgtgtKey = m[0x1e]
+		c.Device().TgtgtKey = m[0x1e]
 		return &QRCodeLoginResponse{State: QRCodeConfirmed, LoginInfo: &QRCodeLoginInfo{
 			tmpPwd:      m[0x18],
 			tmpNoPicSig: m[0x19],

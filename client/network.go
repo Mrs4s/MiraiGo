@@ -89,12 +89,12 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 }
 
 func (c *QQClient) initServers() {
-	if c.device == nil {
+	if c.Device() == nil {
 		// must have device. Use c.UseDevice to set it!
 		panic("client device is nil")
 	}
 
-	sso, err := getSSOAddress(c.device)
+	sso, err := getSSOAddress(c.Device())
 	if err == nil && len(sso) > 0 {
 		c.servers = append(sso, c.servers...)
 	}

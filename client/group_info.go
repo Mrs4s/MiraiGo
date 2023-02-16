@@ -79,7 +79,7 @@ func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
 // OidbSvc.0x88d_0
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
 	body := &oidb.D88DReqBody{
-		AppId: proto.Uint32(c.version.AppId),
+		AppId: proto.Uint32(c.version().AppId),
 		ReqGroupInfo: []*oidb.ReqGroupInfo{
 			{
 				GroupCode: proto.Uint64(uint64(groupCode)),
