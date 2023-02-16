@@ -313,17 +313,13 @@ func (builder *ForwardMessageBuilder) Main(m *message.ForwardMessage) *message.F
 		Sum:       bodyHash[:],
 		Size:      int64(len(body)),
 	}
-	for i, ip := range rsp.Uint32UpIp {
-		addr := highway.Addr{IP: uint32(ip), Port: int(rsp.Uint32UpPort[i])}
-		err := c.highwaySession.Upload(addr, input)
-		if err != nil {
-			continue
-		}
-		return &message.ForwardElement{
-			FileName: filename,
-			Content:  content,
-			ResId:    rsp.MsgResid,
-		}
+	_, err = c.highwaySession.UploadBDH(input)
+	if err != nil {
+		return nil
 	}
-	return nil
+	return &message.ForwardElement{
+		FileName: filename,
+		Content:  content,
+		ResId:    rsp.MsgResid,
+	}
 }

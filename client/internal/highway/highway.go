@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 	"sync/atomic"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -21,6 +20,19 @@ const (
 	_REQ_CMD_DATA        = "PicUp.DataUp"
 	_REQ_CMD_HEART_BREAK = "PicUp.Echo"
 )
+
+type Addr struct {
+	IP   uint32
+	Port int
+}
+
+func (a Addr) AsNetIP() net.IP {
+	return net.IPv4(byte(a.IP>>24), byte(a.IP>>16), byte(a.IP>>8), byte(a.IP))
+}
+
+func (a Addr) String() string {
+	return fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(a.IP), a.Port)
+}
 
 type Session struct {
 	Uin        string
@@ -44,56 +56,6 @@ func (s *Session) AppendAddr(ip, port uint32) {
 		Port: int(port),
 	}
 	s.SsoAddr = append(s.SsoAddr, addr)
-}
-
-func (s *Session) Upload(addr Addr, trans Transaction) error {
-	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*3)
-	if err != nil {
-		return errors.Wrap(err, "connect error")
-	}
-	defer conn.Close()
-
-	const chunkSize = 8192 * 8
-	chunk := make([]byte, chunkSize)
-	offset := 0
-	reader := binary.NewNetworkReader(conn)
-	for {
-		chunk = chunk[:chunkSize]
-		rl, err := io.ReadFull(trans.Body, chunk)
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if errors.Is(err, io.ErrUnexpectedEOF) {
-			chunk = chunk[:rl]
-		}
-		ch := md5.Sum(chunk)
-		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
-			MsgSeghead: &pb.SegHead{
-				Filesize:      trans.Size,
-				Dataoffset:    int64(offset),
-				Datalength:    int32(rl),
-				Serviceticket: trans.Ticket,
-				Md5:           ch[:],
-				FileMd5:       trans.Sum,
-			},
-			ReqExtendinfo: []byte{},
-		})
-		offset += rl
-		frame := newFrame(head, chunk)
-		_, err = frame.WriteTo(conn)
-		if err != nil {
-			return errors.Wrap(err, "write conn error")
-		}
-		rspHead, err := readResponse(reader)
-		if err != nil {
-			return errors.Wrap(err, "highway upload error")
-		}
-		if rspHead.ErrorCode != 0 {
-			return errors.New("upload failed")
-		}
-	}
-	return nil
 }
 
 func (s *Session) UploadExciting(trans Transaction) ([]byte, error) {

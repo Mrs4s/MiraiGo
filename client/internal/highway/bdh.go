@@ -74,13 +74,9 @@ func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 	}
 
 	const chunkSize = 256 * 1024
-	var rspExt, chunk []byte
+	var rspExt []byte
 	offset := 0
-	if trans.Size > chunkSize {
-		chunk = make([]byte, chunkSize)
-	} else {
-		chunk = make([]byte, trans.Size)
-	}
+	chunk := make([]byte, chunkSize)
 	for {
 		chunk = chunk[:cap(chunk)]
 		rl, err := io.ReadFull(trans.Body, chunk)
