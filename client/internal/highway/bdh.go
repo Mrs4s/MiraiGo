@@ -27,12 +27,13 @@ type Transaction struct {
 }
 
 func (bdh *Transaction) encrypt(key []byte) error {
-	if bdh.Encrypt {
-		if len(key) == 0 {
-			return errors.New("session key not found. maybe miss some packet?")
-		}
-		bdh.Ext = binary.NewTeaCipher(key).Encrypt(bdh.Ext)
+	if !bdh.Encrypt {
+		return nil
 	}
+	if len(key) == 0 {
+		return errors.New("session key not found. maybe miss some packet?")
+	}
+	bdh.Ext = binary.NewTeaCipher(key).Encrypt(bdh.Ext)
 	return nil
 }
 
@@ -88,7 +89,16 @@ func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 		}
 		ch := md5.Sum(chunk)
 		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
+			MsgBasehead: &pb.DataHighwayHead{
+				Version:   1,
+				Uin:       s.Uin,
+				Command:   _REQ_CMD_DATA,
+				Seq:       s.nextSeq(),
+				Appid:     s.AppID,
+				Dataflag:  4096,
+				CommandId: trans.CommandID,
+				LocaleId:  2052,
+			},
 			MsgSeghead: &pb.SegHead{
 				Filesize:      trans.Size,
 				Dataoffset:    int64(offset),
@@ -100,8 +110,8 @@ func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 			ReqExtendinfo: trans.Ext,
 		})
 		offset += rl
-		frame := newFrame(head, chunk)
-		_, err = frame.WriteTo(conn)
+		buffers := frame(head, chunk)
+		_, err = buffers.WriteTo(conn)
 		if err != nil {
 			return nil, errors.Wrap(err, "write conn error")
 		}
@@ -190,7 +200,16 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 			}
 			ch := md5.Sum(chunk)
 			head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-				MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 4096, trans.CommandID, 2052),
+				MsgBasehead: &pb.DataHighwayHead{
+					Version:   1,
+					Uin:       s.Uin,
+					Command:   _REQ_CMD_DATA,
+					Seq:       s.nextSeq(),
+					Appid:     s.AppID,
+					Dataflag:  4096,
+					CommandId: trans.CommandID,
+					LocaleId:  2052,
+				},
 				MsgSeghead: &pb.SegHead{
 					Filesize:      trans.Size,
 					Dataoffset:    off,
@@ -201,8 +220,8 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 				},
 				ReqExtendinfo: trans.Ext,
 			})
-			frame := newFrame(head, chunk)
-			_, err = frame.WriteTo(conn)
+			buffers := frame(head, chunk)
+			_, err = buffers.WriteTo(conn)
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}

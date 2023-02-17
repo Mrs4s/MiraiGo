@@ -1,11 +1,8 @@
 package highway
 
 import (
-	"crypto/md5"
 	"fmt"
-	"io"
 	"net"
-	"net/http"
 	"sync/atomic"
 
 	"github.com/pkg/errors"
@@ -42,6 +39,11 @@ type Session struct {
 	SsoAddr    []Addr
 
 	seq int32
+	/*
+		idleMu    sync.Mutex
+		idleCount int
+		idle      *idle
+	*/
 }
 
 const highwayMaxResponseSize int32 = 1024 * 100 // 100k
@@ -58,94 +60,25 @@ func (s *Session) AppendAddr(ip, port uint32) {
 	s.SsoAddr = append(s.SsoAddr, addr)
 }
 
-func (s *Session) UploadExciting(trans Transaction) ([]byte, error) {
-	return s.retry(uploadExciting, &trans)
-}
-
-func uploadExciting(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
-	url := fmt.Sprintf("http://%v/cgi-bin/httpconn?htcmd=0x6FF0087&Uin=%v", addr.String(), s.Uin)
-	var rspExt []byte
-	var offset int64
-	const chunkSize = 524288
-	chunk := make([]byte, chunkSize)
-	for {
-		chunk = chunk[:chunkSize]
-		rl, err := io.ReadFull(trans.Body, chunk)
-		if rl == 0 {
-			break
-		}
-		if err == io.ErrUnexpectedEOF {
-			chunk = chunk[:rl]
-		}
-		ch := md5.Sum(chunk)
-		head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-			MsgBasehead: s.dataHighwayHead(_REQ_CMD_DATA, 0, trans.CommandID, 0),
-			MsgSeghead: &pb.SegHead{
-				Filesize:      trans.Size,
-				Dataoffset:    offset,
-				Datalength:    int32(rl),
-				Serviceticket: trans.Ticket,
-				Md5:           ch[:],
-				FileMd5:       trans.Sum,
-			},
-			ReqExtendinfo: trans.Ext,
-		})
-		offset += int64(rl)
-		frame := newFrame(head, chunk)
-		req, _ := http.NewRequest(http.MethodPost, url, &frame)
-		req.Header.Set("Accept", "*/*")
-		req.Header.Set("Connection", "Keep-Alive")
-		req.Header.Set("User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)")
-		req.Header.Set("Pragma", "no-cache")
-		req.ContentLength = int64(len(head) + len(chunk) + 10)
-		rsp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, errors.Wrap(err, "request error")
-		}
-		body, _ := io.ReadAll(rsp.Body)
-		_ = rsp.Body.Close()
-		r := binary.NewReader(body)
-		r.ReadByte()
-		hl := r.ReadInt32()
-		_ = r.ReadInt32()
-		h := r.ReadBytes(int(hl))
-		rspHead := new(pb.RspDataHighwayHead)
-		if err = proto.Unmarshal(h, rspHead); err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-		}
-		if rspHead.ErrorCode != 0 {
-			return nil, errors.Errorf("upload failed: %d", rspHead.ErrorCode)
-		}
-		if rspHead.RspExtendinfo != nil {
-			rspExt = rspHead.RspExtendinfo
-		}
-	}
-	return rspExt, nil
-}
-
 func (s *Session) nextSeq() int32 {
 	return atomic.AddInt32(&s.seq, 2)
 }
 
-func (s *Session) dataHighwayHead(cmd string, flag, cmdID, locale int32) *pb.DataHighwayHead {
-	return &pb.DataHighwayHead{
-		Version:   1,
-		Uin:       s.Uin,
-		Command:   cmd,
-		Seq:       s.nextSeq(),
-		Appid:     s.AppID,
-		Dataflag:  flag,
-		CommandId: cmdID,
-		LocaleId:  locale,
-	}
-}
-
 func (s *Session) sendHeartbreak(conn net.Conn) error {
 	head, _ := proto.Marshal(&pb.ReqDataHighwayHead{
-		MsgBasehead: s.dataHighwayHead(_REQ_CMD_HEART_BREAK, 4096, 0, 2052),
+		MsgBasehead: &pb.DataHighwayHead{
+			Version:   1,
+			Uin:       s.Uin,
+			Command:   _REQ_CMD_HEART_BREAK,
+			Seq:       s.nextSeq(),
+			Appid:     s.AppID,
+			Dataflag:  4096,
+			CommandId: 0,
+			LocaleId:  2052,
+		},
 	})
-	frame := newFrame(head, nil)
-	_, err := frame.WriteTo(conn)
+	buffers := frame(head, nil)
+	_, err := buffers.WriteTo(conn)
 	return err
 }
 
@@ -179,3 +112,23 @@ func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, error) {
 	}
 	return rsp, nil
 }
+
+/*
+const maxIdleConn = 5
+
+type idle struct {
+	conn  net.Conn
+	delay int64
+	next  *idle
+}
+
+// getConn ...
+func (s *Session) getConn() net.Conn {
+	s.idleMu.Lock()
+	defer s.idleMu.Unlock()
+
+	conn := s.idle.conn
+	s.idle = s.idle.next
+	return conn
+}
+*/
