@@ -13,6 +13,38 @@ const (
 	AndroidPad            // Android Pad
 )
 
+// see oicq/wlogin_sdk/request/WtloginHelper.java  class SigType
+const (
+	_ = 1 << iota
+	WLOGIN_A5
+	_
+	_
+	WLOGIN_RESERVED
+	WLOGIN_STWEB
+	WLOGIN_A2
+	WLOGIN_ST
+	_
+	WLOGIN_LSKEY
+	_
+	_
+	WLOGIN_SKEY
+	WLOGIN_SIG64
+	WLOGIN_OPENKEY
+	WLOGIN_TOKEN
+	_
+	WLOGIN_VKEY
+	WLOGIN_D2
+	WLOGIN_SID
+	WLOGIN_PSKEY
+	WLOGIN_AQSIG
+	WLOGIN_LHSIG
+	WLOGIN_PAYTOKEN
+	WLOGIN_PF
+	WLOGIN_DA2
+	WLOGIN_QRPUSH
+	WLOGIN_PT4Token
+)
+
 type AppVersion struct {
 	ApkSign         []byte
 	ApkId           string
@@ -40,8 +72,10 @@ var (
 		SSOVersion:      19,
 		MiscBitmap:      150470524,
 		SubSigmap:       0x10400,
-		MainSigMap:      16724722,
-		Protocol:        AndroidPhone,
+		MainSigMap: WLOGIN_A5 | WLOGIN_RESERVED | WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST |
+			WLOGIN_LSKEY | WLOGIN_SKEY | WLOGIN_SIG64 | 1<<16 | WLOGIN_VKEY | WLOGIN_D2 |
+			WLOGIN_SID | WLOGIN_PSKEY | WLOGIN_AQSIG | WLOGIN_LHSIG | WLOGIN_PAYTOKEN, // 16724722
+		Protocol: AndroidPhone,
 	}
 
 	aPad = &AppVersion{
@@ -55,8 +89,10 @@ var (
 		SSOVersion:      19,
 		MiscBitmap:      150470524,
 		SubSigmap:       0x10400,
-		MainSigMap:      16724722,
-		Protocol:        AndroidPad,
+		MainSigMap: WLOGIN_A5 | WLOGIN_RESERVED | WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST |
+			WLOGIN_LSKEY | WLOGIN_SKEY | WLOGIN_SIG64 | 1<<16 | WLOGIN_VKEY | WLOGIN_D2 |
+			WLOGIN_SID | WLOGIN_PSKEY | WLOGIN_AQSIG | WLOGIN_LHSIG | WLOGIN_PAYTOKEN, // 16724722
+		Protocol: AndroidPad,
 	}
 
 	aWatch = &AppVersion{
@@ -70,7 +106,7 @@ var (
 		SSOVersion:      5,
 		MiscBitmap:      16252796,
 		SubSigmap:       0x10400,
-		MainSigMap:      34869472,
+		MainSigMap:      WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST | WLOGIN_SKEY | WLOGIN_D2 | WLOGIN_PSKEY | WLOGIN_DA2, // 34869472
 		Protocol:        AndroidWatch,
 	}
 
@@ -85,7 +121,7 @@ var (
 		SSOVersion:      12,
 		MiscBitmap:      150470524,
 		SubSigmap:       66560,
-		MainSigMap:      1970400,
+		MainSigMap:      WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST | WLOGIN_SKEY | WLOGIN_VKEY | WLOGIN_D2 | WLOGIN_SID | WLOGIN_PSKEY, // 1970400
 		Protocol:        IPad,
 	}
 
@@ -100,7 +136,7 @@ var (
 		SSOVersion:      12,
 		MiscBitmap:      150470524,
 		SubSigmap:       66560,
-		MainSigMap:      1970400,
+		MainSigMap:      WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST | WLOGIN_SKEY | WLOGIN_VKEY | WLOGIN_D2 | WLOGIN_SID | WLOGIN_PSKEY, // 1970400
 		Protocol:        MacOS,
 	}
 
@@ -115,7 +151,7 @@ var (
 		SSOVersion:      18,
 		MiscBitmap:      184024956,
 		SubSigmap:       66560,
-		MainSigMap:      34869472,
+		MainSigMap:      WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST | WLOGIN_SKEY | WLOGIN_D2 | WLOGIN_PSKEY | WLOGIN_DA2, // 34869472
 		Protocol:        QiDian,
 	}
 )
