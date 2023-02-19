@@ -40,11 +40,12 @@ type Session struct {
 	SigSession []byte
 	SessionKey []byte
 
+	seq int32
+
 	addrMu  sync.Mutex
 	idx     int
 	SsoAddr []Addr
 
-	seq       int32
 	idleMu    sync.Mutex
 	idleCount int
 	idle      *idle
@@ -209,6 +210,14 @@ func (s *Session) connect(addr Addr) (persistConn, error) {
 	return pc, nil
 }
 
+func (s *Session) nextAddr() Addr {
+	s.addrMu.Lock()
+	defer s.addrMu.Unlock()
+	addr := s.SsoAddr[s.idx]
+	s.idx = (s.idx + 1) % len(s.SsoAddr)
+	return addr
+}
+
 func (s *Session) selectConn() (pc persistConn, err error) {
 	for { // select from idle pc
 		pc = s.getIdleConn()
@@ -222,13 +231,9 @@ func (s *Session) selectConn() (pc persistConn, err error) {
 		}
 	}
 
-	s.addrMu.Lock()
-	defer s.addrMu.Unlock()
 	try := 0
-	idx := s.idx
 	for {
-		addr := s.SsoAddr[idx]
-		idx = (idx + 1) % len(s.SsoAddr) // move next
+		addr := s.nextAddr()
 		pc, err = s.connect(addr)
 		if err == nil {
 			break
@@ -238,6 +243,5 @@ func (s *Session) selectConn() (pc persistConn, err error) {
 			break
 		}
 	}
-	s.idx = idx
 	return
 }
