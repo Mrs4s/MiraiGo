@@ -219,7 +219,7 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 			buffers := frame(head, chunk)
 			_, err = buffers.WriteTo(conn)
 			if err != nil {
-				return errors.Wrap(err, "write pc error")
+				return errors.Wrap(err, "write conn error")
 			}
 			rspHead, err := readResponse(reader)
 			if err != nil {
