@@ -28,98 +28,112 @@ type AppVersion struct {
 	Protocol        Protocol
 }
 
+var (
+	aPhone = &AppVersion{
+		ApkId:           "com.tencent.mobileqq",
+		AppId:           537143097,
+		SubAppId:        537143097,
+		SortVersionName: "8.9.23.9425",
+		BuildTime:       1640921786,
+		ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
+		SdkVersion:      "6.0.0.2530",
+		SSOVersion:      19,
+		MiscBitmap:      150470524,
+		SubSigmap:       0x10400,
+		MainSigMap:      16724722,
+		Protocol:        AndroidPhone,
+	}
+
+	aPad = &AppVersion{
+		ApkId:           "com.tencent.mobileqq",
+		AppId:           537142586,
+		SubAppId:        537142586,
+		SortVersionName: "8.9.23.9425",
+		BuildTime:       1640921786,
+		ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
+		SdkVersion:      "6.0.0.2530",
+		SSOVersion:      19,
+		MiscBitmap:      150470524,
+		SubSigmap:       0x10400,
+		MainSigMap:      16724722,
+		Protocol:        AndroidPad,
+	}
+
+	aWatch = &AppVersion{
+		ApkId:           "com.tencent.qqlite",
+		AppId:           537064446,
+		SubAppId:        537064446,
+		SortVersionName: "2.0.5",
+		BuildTime:       1559564731,
+		ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
+		SdkVersion:      "6.0.0.236",
+		SSOVersion:      5,
+		MiscBitmap:      16252796,
+		SubSigmap:       0x10400,
+		MainSigMap:      34869472,
+		Protocol:        AndroidWatch,
+	}
+
+	ipad = &AppVersion{
+		ApkId:           "com.tencent.minihd.qq",
+		AppId:           537118796,
+		SubAppId:        537118796,
+		SortVersionName: "5.9.3",
+		BuildTime:       1595836208,
+		ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
+		SdkVersion:      "6.0.0.2433",
+		SSOVersion:      12,
+		MiscBitmap:      150470524,
+		SubSigmap:       66560,
+		MainSigMap:      1970400,
+		Protocol:        IPad,
+	}
+
+	macOS = &AppVersion{
+		ApkId:           "com.tencent.minihd.qq",
+		AppId:           537128930,
+		SubAppId:        537128930,
+		SortVersionName: "5.8.9",
+		BuildTime:       1595836208,
+		ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
+		SdkVersion:      "6.0.0.2433",
+		SSOVersion:      12,
+		MiscBitmap:      150470524,
+		SubSigmap:       66560,
+		MainSigMap:      1970400,
+		Protocol:        MacOS,
+	}
+
+	qidian = &AppVersion{
+		ApkId:           "com.tencent.qidian",
+		AppId:           537096038,
+		SubAppId:        537036590,
+		SortVersionName: "5.0.0",
+		BuildTime:       1630062176,
+		ApkSign:         []byte{160, 30, 236, 171, 133, 233, 227, 186, 43, 15, 106, 21, 140, 133, 92, 41},
+		SdkVersion:      "6.0.0.2484",
+		SSOVersion:      18,
+		MiscBitmap:      184024956,
+		SubSigmap:       66560,
+		MainSigMap:      34869472,
+		Protocol:        QiDian,
+	}
+)
+
 func (i Protocol) Version() *AppVersion {
 	switch i {
 	case AndroidPhone:
-		return &AppVersion{
-			ApkId:           "com.tencent.mobileqq",
-			AppId:           537143097,
-			SubAppId:        537143097,
-			SortVersionName: "8.9.23.9425",
-			BuildTime:       1640921786,
-			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2530",
-			SSOVersion:      19,
-			MiscBitmap:      150470524,
-			SubSigmap:       0x10400,
-			MainSigMap:      16724722,
-			Protocol:        i,
-		}
+		return aPhone
 	case AndroidPad:
-		return &AppVersion{
-			ApkId:           "com.tencent.mobileqq",
-			AppId:           537142586,
-			SubAppId:        537142586,
-			SortVersionName: "8.9.23.9425",
-			BuildTime:       1640921786,
-			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2530",
-			SSOVersion:      19,
-			MiscBitmap:      150470524,
-			SubSigmap:       0x10400,
-			MainSigMap:      16724722,
-			Protocol:        i,
-		}
+		return aPad
 	case AndroidWatch:
-		return &AppVersion{
-			ApkId:           "com.tencent.qqlite",
-			AppId:           537064446,
-			SubAppId:        537064446,
-			SortVersionName: "2.0.5",
-			BuildTime:       1559564731,
-			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.236",
-			SSOVersion:      5,
-			MiscBitmap:      16252796,
-			SubSigmap:       0x10400,
-			MainSigMap:      34869472,
-			Protocol:        i,
-		}
+		return aWatch
 	case IPad:
-		return &AppVersion{
-			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537118796,
-			SubAppId:        537118796,
-			SortVersionName: "5.9.3",
-			BuildTime:       1595836208,
-			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
-			SdkVersion:      "6.0.0.2433",
-			SSOVersion:      12,
-			MiscBitmap:      150470524,
-			SubSigmap:       66560,
-			MainSigMap:      1970400,
-			Protocol:        i,
-		}
+		return ipad
 	case MacOS:
-		return &AppVersion{
-			ApkId:           "com.tencent.minihd.qq",
-			AppId:           537128930,
-			SubAppId:        537128930,
-			SortVersionName: "5.8.9",
-			BuildTime:       1595836208,
-			ApkSign:         []byte{170, 57, 120, 244, 31, 217, 111, 249, 145, 74, 102, 158, 24, 100, 116, 199},
-			SdkVersion:      "6.0.0.2433",
-			SSOVersion:      12,
-			MiscBitmap:      150470524,
-			SubSigmap:       66560,
-			MainSigMap:      1970400,
-			Protocol:        i,
-		}
+		return macOS
 	case QiDian:
-		return &AppVersion{
-			ApkId:           "com.tencent.qidian",
-			AppId:           537096038,
-			SubAppId:        537036590,
-			SortVersionName: "5.0.0",
-			BuildTime:       1630062176,
-			ApkSign:         []byte{160, 30, 236, 171, 133, 233, 227, 186, 43, 15, 106, 21, 140, 133, 92, 41},
-			SdkVersion:      "6.0.0.2484",
-			SSOVersion:      18,
-			MiscBitmap:      184024956,
-			SubSigmap:       66560,
-			MainSigMap:      34869472,
-			Protocol:        i,
-		}
+		return qidian
 	}
 	return nil
 }
