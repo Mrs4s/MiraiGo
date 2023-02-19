@@ -6,7 +6,6 @@ import (
 	"net"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/pkg/errors"
 	"golang.org/x/sync/errgroup"
@@ -66,9 +65,7 @@ func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
 	}
 	defer s.putIdleConn(pc)
 
-	conn := pc.conn
-	reader := binary.NewNetworkReader(conn)
-
+	reader := binary.NewNetworkReader(pc.conn)
 	const chunkSize = 256 * 1024
 	var rspExt []byte
 	offset := 0
@@ -106,7 +103,7 @@ func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
 		})
 		offset += rl
 		buffers := frame(head, chunk)
-		_, err = buffers.WriteTo(conn)
+		_, err = buffers.WriteTo(pc.conn)
 		if err != nil {
 			return nil, errors.Wrap(err, "write pc error")
 		}
@@ -138,10 +135,16 @@ func (s *Session) UploadBDHMultiThread(trans Transaction) ([]byte, error) {
 	if err := trans.encrypt(s.SessionKey); err != nil {
 		return nil, err
 	}
-	return s.retry(uploadBDHMultiThread, &trans)
-}
 
-func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
+	// pick a address
+	// TODO: pick smarter
+	pc, err := s.selectConn()
+	if err != nil {
+		return nil, err
+	}
+	addr := pc.addr
+	s.putIdleConn(pc)
+
 	// TODO: use idle conn
 	const blockSize int64 = 256 * 1024
 	const threadCount = 4
@@ -160,16 +163,13 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 			cond.Signal()
 		}()
 
-		conn, err := net.DialTimeout("tcp", addr.String(), time.Second*20)
+		pc, err := s.connect(addr)
 		if err != nil {
 			return err
 		}
-		defer conn.Close()
-		reader := binary.NewNetworkReader(conn)
-		if err = s.ping(&persistConn{conn: conn}); err != nil {
-			return err
-		}
+		// defer s.putIdleConn(pc) // TODO: should we put back?
 
+		reader := binary.NewNetworkReader(pc.conn)
 		chunk := make([]byte, blockSize)
 		for {
 			cond.L.Lock() // lock protect reading
@@ -217,7 +217,7 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 				ReqExtendinfo: trans.Ext,
 			})
 			buffers := frame(head, chunk)
-			_, err = buffers.WriteTo(conn)
+			_, err = buffers.WriteTo(pc.conn)
 			if err != nil {
 				return errors.Wrap(err, "write conn error")
 			}

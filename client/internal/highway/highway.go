@@ -34,6 +34,10 @@ func (a Addr) String() string {
 	return fmt.Sprintf("%v:%v", binary.UInt32ToIPV4Address(a.IP), a.Port)
 }
 
+func (a Addr) empty() bool {
+	return a.IP == 0 || a.Port == 0
+}
+
 type Session struct {
 	Uin        string
 	AppID      int32
@@ -127,6 +131,7 @@ func readResponse(r *binary.NetworkReader) (*pb.RspDataHighwayHead, error) {
 
 type persistConn struct {
 	conn net.Conn
+	addr Addr
 	ping int64 // echo ping
 }
 
@@ -161,6 +166,11 @@ func (s *Session) getIdleConn() persistConn {
 func (s *Session) putIdleConn(pc persistConn) {
 	s.idleMu.Lock()
 	defer s.idleMu.Unlock()
+
+	// check persistConn
+	if pc.conn == nil || pc.addr.empty() {
+		panic("put bad idle conn")
+	}
 
 	cur := &idle{pc: pc}
 	s.idleCount++
@@ -203,7 +213,7 @@ func (s *Session) connect(addr Addr) (persistConn, error) {
 		_ = conn.Close()
 	})
 
-	pc := persistConn{conn: conn}
+	pc := persistConn{conn: conn, addr: addr}
 	if err = s.ping(&pc); err != nil {
 		return persistConn{}, err
 	}
@@ -225,6 +235,7 @@ func (s *Session) selectConn() (pc persistConn, err error) {
 			// no idle connection
 			break
 		}
+
 		err = s.ping(&pc) // ping
 		if err == nil {
 			return
