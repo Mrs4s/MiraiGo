@@ -59,7 +59,7 @@ func GenRandomDevice() *DeviceInfo {
 		APN:          []byte("wifi"),
 		VendorName:   []byte("MIUI"),
 		VendorOSName: []byte("mirai"),
-		Protocol:     IPad,
+		Protocol:     AndroidPad,
 		Version: &Version{
 			Incremental: []byte("5891938"),
 			Release:     []byte("10"),
