@@ -59,20 +59,15 @@ func (s *Session) UploadBDH(trans Transaction) ([]byte, error) {
 	if err := trans.encrypt(s.SessionKey); err != nil {
 		return nil, err
 	}
-	return s.retry(uploadBDH, &trans)
-}
 
-func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
-	conn, err := net.DialTimeout("tcp", addr.String(), time.Second*20)
+	pc, err := s.selectConn()
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer s.putIdleConn(pc)
 
+	conn := pc.conn
 	reader := binary.NewNetworkReader(conn)
-	if err = s.sendEcho(conn); err != nil {
-		return nil, err
-	}
 
 	const chunkSize = 256 * 1024
 	var rspExt []byte
@@ -113,7 +108,7 @@ func uploadBDH(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
 		buffers := frame(head, chunk)
 		_, err = buffers.WriteTo(conn)
 		if err != nil {
-			return nil, errors.Wrap(err, "write conn error")
+			return nil, errors.Wrap(err, "write pc error")
 		}
 		rspHead, err := readResponse(reader)
 		if err != nil {
@@ -147,6 +142,7 @@ func (s *Session) UploadBDHMultiThread(trans Transaction) ([]byte, error) {
 }
 
 func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, error) {
+	// TODO: use idle conn
 	const blockSize int64 = 256 * 1024
 	const threadCount = 4
 	var (
@@ -170,7 +166,7 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 		}
 		defer conn.Close()
 		reader := binary.NewNetworkReader(conn)
-		if err = s.sendEcho(conn); err != nil {
+		if err = s.ping(&persistConn{conn: conn}); err != nil {
 			return err
 		}
 
@@ -223,7 +219,7 @@ func uploadBDHMultiThread(s *Session, addr Addr, trans *Transaction) ([]byte, er
 			buffers := frame(head, chunk)
 			_, err = buffers.WriteTo(conn)
 			if err != nil {
-				return errors.Wrap(err, "write conn error")
+				return errors.Wrap(err, "write pc error")
 			}
 			rspHead, err := readResponse(reader)
 			if err != nil {
