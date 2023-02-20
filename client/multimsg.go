@@ -313,7 +313,7 @@ func (builder *ForwardMessageBuilder) Main(m *message.ForwardMessage) *message.F
 		Sum:       bodyHash[:],
 		Size:      int64(len(body)),
 	}
-	_, err = c.highwaySession.UploadBDH(input)
+	_, err = c.highwaySession.Upload(input)
 	if err != nil {
 		return nil
 	}

@@ -43,10 +43,10 @@ type imageUploadResponse struct {
 	IsExists      bool
 }
 
-func (c *QQClient) UploadImage(target message.Source, img io.ReadSeeker, thread ...int) (message.IMessageElement, error) {
+func (c *QQClient) UploadImage(target message.Source, img io.ReadSeeker) (message.IMessageElement, error) {
 	switch target.SourceType {
 	case message.SourceGroup, message.SourceGuildChannel, message.SourceGuildDirect:
-		return c.uploadGroupOrGuildImage(target, img, thread...)
+		return c.uploadGroupOrGuildImage(target, img)
 	case message.SourcePrivate:
 		return c.uploadPrivateImage(target.PrimaryID, img, 0)
 	default:
@@ -54,7 +54,7 @@ func (c *QQClient) UploadImage(target message.Source, img io.ReadSeeker, thread 
 	}
 }
 
-func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSeeker, thread ...int) (message.IMessageElement, error) {
+func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSeeker) (message.IMessageElement, error) {
 	_, _ = img.Seek(0, io.SeekStart) // safe
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
@@ -63,10 +63,6 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 	imgWaiter.Wait(key)
 	defer imgWaiter.Done(key)
 
-	tc := 1
-	if len(thread) > 0 {
-		tc = thread[0]
-	}
 	cmd := int32(2)
 	ext := EmptyBytes
 	if target.SourceType != message.SourceGroup { // guild
@@ -112,11 +108,7 @@ func (c *QQClient) uploadGroupOrGuildImage(target message.Source, img io.ReadSee
 		Ticket:    rsp.UploadKey,
 		Ext:       ext,
 	}
-	if tc > 1 && length > 3*1024*1024 {
-		_, err = c.highwaySession.UploadBDHMultiThread(input)
-	} else {
-		_, err = c.highwaySession.UploadBDH(input)
-	}
+	_, err = c.highwaySession.Upload(input)
 	if err != nil {
 		return nil, errors.Wrap(err, "upload failed")
 	}
@@ -306,7 +298,7 @@ func (c *QQClient) uploadOcrImage(img io.Reader, size int32, sum []byte) (string
 		Uuid:       binary.GenUUID(r),
 	})
 
-	rsp, err := c.highwaySession.UploadBDH(highway.Transaction{
+	rsp, err := c.highwaySession.Upload(highway.Transaction{
 		CommandID: 76,
 		Body:      img,
 		Size:      int64(size),

@@ -135,7 +135,7 @@ type persistConn struct {
 	ping int64 // echo ping
 }
 
-const maxIdleConn = 5
+const maxIdleConn = 7
 
 type idle struct {
 	pc   persistConn
@@ -207,6 +207,7 @@ func (s *Session) connect(addr Addr) (persistConn, error) {
 	if err != nil {
 		return persistConn{}, err
 	}
+	_ = conn.(*net.TCPConn).SetKeepAlive(true)
 
 	// close conn
 	runtime.SetFinalizer(conn, func(conn net.Conn) {

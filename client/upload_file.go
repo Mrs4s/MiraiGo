@@ -147,7 +147,7 @@ func (c *QQClient) UploadFile(target message.Source, file *LocalFile) error {
 		if target.SourceType == message.SourcePrivate {
 			input.CommandID = 69
 		}
-		if _, err := c.highwaySession.UploadBDHMultiThread(input); err != nil {
+		if _, err := c.highwaySession.Upload(input); err != nil {
 			return errors.Wrap(err, "upload failed")
 		}
 	}
