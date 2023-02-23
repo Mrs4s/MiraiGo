@@ -21,8 +21,8 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 	pos := w.FillUInt32()
 	if req.Type == RequestTypeLogin {
 		w.WriteUInt32(uint32(req.SequenceID))
-		w.WriteUInt32((*t.Version).AppId)
-		w.WriteUInt32((*t.Version).SubAppId)
+		w.WriteUInt32(t.Version.AppId)
+		w.WriteUInt32(t.Version.SubAppId)
 		w.Write([]byte{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00})
 		tgt := t.Sig.TGT
 		if len(tgt) == 0 || len(tgt) == 4 {

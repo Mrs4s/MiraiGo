@@ -253,7 +253,7 @@ func decodeTransEmpResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		}
 		sig := body.ReadBytesShort()
 		body.ReadUInt16()
-		m, err := tlv.NewDecoder(2, 2).DecodeRecordMap(reader.ReadAvailable())
+		m, err := tlv.NewDecoder(2, 2).DecodeRecordMap(body.ReadAvailable())
 		if err != nil {
 			return nil, err
 		}
