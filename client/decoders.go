@@ -299,7 +299,7 @@ func decodeTransEmpResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)
 		body.ReadInt32() // sig create time
 		body.ReadUInt16()
-		m, err := tlv.NewDecoder(2, 2).DecodeRecordMap(reader.ReadAvailable())
+		m, err := tlv.NewDecoder(2, 2).DecodeRecordMap(body.ReadAvailable())
 		if err != nil {
 			return nil, err
 		}
