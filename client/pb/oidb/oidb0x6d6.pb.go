@@ -89,6 +89,8 @@ type D6D6ReqBody struct {
 	// optional ResendReqBody resendFileReq = 2;
 	DownloadFileReq *DownloadFileReqBody `protobuf:"bytes,3,opt"`
 	DeleteFileReq   *DeleteFileReqBody   `protobuf:"bytes,4,opt"`
+	RenameFileReq   *RenameFileReqBody   `protobuf:"bytes,5,opt"`
+	MoveFileReq     *MoveFileReqBody     `protobuf:"bytes,6,opt"`
 	_               [0]func()
 }
 
