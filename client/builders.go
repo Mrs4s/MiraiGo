@@ -347,7 +347,7 @@ func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 
 func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := c.buildOicqRequestPacket(c.Uin, 0x0810, &oicq.TLV{
+	t := &oicq.TLV{
 		Command: 7,
 		List: [][]byte{
 			tlv.T8(2052),
@@ -358,7 +358,11 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 			tlv.T401(c.sig.G),
 			tlv.T198(),
 		},
-	})
+	}
+	if warpper.DandelionEnergy != nil {
+		t.Append(tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, warpper.DandelionEnergy))
+	}
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
 		EncryptType: network.EncryptTypeEmptyKey,
@@ -454,7 +458,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		EncryptionMethod: oicq.EM_ST,
 		Body:             t.Marshal(),
 	}
-	nreq := network.Request{
+	req := network.Request{
 		Type:        network.RequestTypeSimple,
 		EncryptType: network.EncryptTypeEmptyKey,
 		Uin:         c.Uin,
@@ -462,7 +466,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		CommandName: "wtlogin.exchange_emp",
 		Body:        c.oicq.Marshal(&m),
 	}
-	return seq, c.transport.PackPacket(&nreq)
+	return seq, c.transport.PackPacket(&req)
 }
 
 func (c *QQClient) buildRequestChangeSigPacket(changeD2 bool) (uint16, []byte) {
