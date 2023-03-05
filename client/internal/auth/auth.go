@@ -63,9 +63,9 @@ type AppVersion struct {
 var (
 	aPhone = &AppVersion{
 		ApkId:           "com.tencent.mobileqq",
-		AppId:           537143097,
-		SubAppId:        537143097,
-		SortVersionName: "8.9.23.9425",
+		AppId:           537151682,
+		SubAppId:        537151682,
+		SortVersionName: "8.9.33.10335",
 		BuildTime:       1640921786,
 		ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
 		SdkVersion:      "6.0.0.2530",
@@ -80,9 +80,9 @@ var (
 
 	aPad = &AppVersion{
 		ApkId:           "com.tencent.mobileqq",
-		AppId:           537142586,
-		SubAppId:        537142586,
-		SortVersionName: "8.9.23.9425",
+		AppId:           537151218,
+		SubAppId:        537151218,
+		SortVersionName: "8.9.33.10335",
 		BuildTime:       1640921786,
 		ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
 		SdkVersion:      "6.0.0.2530",
