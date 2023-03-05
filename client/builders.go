@@ -18,6 +18,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
+	"github.com/Mrs4s/MiraiGo/warpper"
 )
 
 var (
@@ -101,6 +102,17 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		tlv.T521(0),
 		tlv.T525(tlv.T536([]byte{0x01, 0x00})),
 	)
+	if warpper.DandelionEnergy != nil {
+		salt := binary.NewWriterF(func(w *binary.Writer) {
+			//  util.int64_to_buf(bArr42, 0, (int) uin2);
+			//  util.int16_to_buf(bArr42, 4, u.guid.length); // 故意的还是不小心的
+			w.Write(binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt64(uint64(c.Uin)) })[:4])
+			w.WriteBytesShort(c.Device().Guid)
+			w.WriteBytesShort([]byte(c.version().SdkVersion))
+			w.WriteUInt32(9) // sub command
+		})
+		t.Append(tlv.T544Custom("810_9", salt, warpper.DandelionEnergy))
+	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
@@ -371,6 +383,9 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	}
 	if c.sig.T547 != nil {
 		t.Append(tlv.T(0x547, c.sig.T547))
+	}
+	if warpper.DandelionEnergy != nil {
+		t.Append(tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, warpper.DandelionEnergy))
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
