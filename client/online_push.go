@@ -208,6 +208,10 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 		if m.DelFriend != nil {
 			frdUin := m.DelFriend.Uins[0]
 			if frd := c.FindFriend(int64(frdUin)); frd != nil {
+				c.DeleteFriendEvent.dispatch(c, &DeleteFriendEvent{
+					Uin:      frd.Uin,
+					Nickname: frd.Nickname,
+				})
 				if err := c.ReloadFriendList(); err != nil {
 					return errors.Wrap(err, "failed to reload friend list")
 				}

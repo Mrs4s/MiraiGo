@@ -732,6 +732,15 @@ func decodeOnlinePushTransPacket(c *QQClient, pkt *network.Packet) (any, error) 
 						Operator: g.FindMember(operator),
 					})
 				}
+			case 0x01, 0x81: // kosbot add: 群解散. 暂时这样 See https://github.com/lz1998/ricq/blob/064ddddca19aa0410e2514852e3a151fd9913371/ricq-core/src/command/online_push/decoder.rs#L86
+				c.GroupDisbandEvent.dispatch(c, &GroupDisbandEvent{
+					Group:    g,
+					Operator: g.FindMember(operator),
+					Time:     int64(info.MsgTime.Unwrap()),
+				})
+				if err = c.ReloadGroupList(); err != nil {
+					return nil, err
+				}
 			}
 		}
 	}

@@ -191,6 +191,17 @@ type (
 		DownloadUrl string
 	}
 
+	GroupDisbandEvent struct {
+		Group    *GroupInfo
+		Time     int64
+		Operator *GroupMemberInfo
+	}
+
+	DeleteFriendEvent struct {
+		Uin      int64
+		Nickname string
+	}
+
 	// GroupDigest 群精华消息
 	GroupDigest struct {
 		GroupCode         int64  `json:"group_code,string"`
