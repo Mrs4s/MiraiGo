@@ -27,6 +27,7 @@ type (
 
 	LoginResponse struct {
 		Success bool
+		Code    byte
 		Error   LoginError
 
 		// Captcha info

@@ -110,6 +110,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 			w.WriteBytesShort(c.Device().Guid)
 			w.WriteBytesShort([]byte(c.version().SdkVersion))
 			w.WriteUInt32(9) // sub command
+			w.WriteUInt32(0) // 被演了
 		})
 		t.Append(tlv.T544Custom("810_9", salt, warpper.DandelionEnergy))
 	}
