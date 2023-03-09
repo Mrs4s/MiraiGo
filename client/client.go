@@ -106,6 +106,8 @@ type QQClient struct {
 	GroupDigestEvent                  EventHandle[*GroupDigestEvent]
 	OtherClientStatusChangedEvent     EventHandle[*OtherClientStatusChangedEvent]
 	OfflineFileEvent                  EventHandle[*OfflineFileEvent]
+	GroupDisbandEvent                 EventHandle[*GroupDisbandEvent]
+	DeleteFriendEvent                 EventHandle[*DeleteFriendEvent]
 
 	// message state
 	msgSvcCache            *utils.Cache[unit]
