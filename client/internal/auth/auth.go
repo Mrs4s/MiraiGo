@@ -162,7 +162,7 @@ type AppVersion struct {
 }
 
 func (v *AppVersion) String() string {
-	return fmt.Sprintf("%s %s - %v", v.Protocol, v.SortVersionName, v.BuildTime)
+	return fmt.Sprintf("%s %s - %v", v.Protocol.String(), v.SortVersionName, v.BuildTime)
 }
 
 func (v *AppVersion) ReadJson(d []byte) error {
