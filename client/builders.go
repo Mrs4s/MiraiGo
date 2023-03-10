@@ -114,6 +114,11 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		})
 		t.Append(tlv.T544Custom("810_9", salt, wrapper.DandelionEnergy))
 	}
+	if c.Device().QImei36 != "" {
+		t.Append(tlv.T545([]byte(c.Device().QImei36)))
+	} else {
+		t.Append(tlv.T545([]byte(c.Device().IMEI)))
+	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
@@ -450,8 +455,12 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 			tlv.T516(),
 			tlv.T521(0),
 			tlv.T525(tlv.T536([]byte{0x01, 0x00})),
-			tlv.T545([]byte(c.Device().IMEI)),
 		},
+	}
+	if c.Device().QImei36 != "" {
+		t.Append(tlv.T545([]byte(c.Device().QImei36)))
+	} else {
+		t.Append(tlv.T545([]byte(c.Device().IMEI)))
 	}
 	m := oicq.Message{
 		Uin:              uint32(c.Uin),

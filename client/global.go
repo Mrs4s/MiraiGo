@@ -81,6 +81,7 @@ func GenRandomDevice() *DeviceInfo {
 	hex.Encode(device.AndroidId, r)
 	device.GenNewGuid()
 	device.GenNewTgtgtKey()
+	device.RequestQImei()
 	return device
 }
 

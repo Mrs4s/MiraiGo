@@ -45,6 +45,8 @@ type Device struct {
 	VendorOSName []byte
 	Guid         []byte
 	TgtgtKey     []byte
+	QImei16      string
+	QImei36      string
 	Protocol     ProtocolType
 	Version      *OSVersion
 }
@@ -149,6 +151,7 @@ func (info *Device) ReadJson(d []byte) error {
 
 	info.GenNewGuid()
 	info.GenNewTgtgtKey()
+	info.RequestQImei() // 应该可以缓存, 理论上同一设备每次请求都是一样的
 	return nil
 }
 

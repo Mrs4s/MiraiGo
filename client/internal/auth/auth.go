@@ -27,6 +27,7 @@ var (
 			ApkId:           "com.tencent.mobileqq",
 			AppId:           537151682,
 			SubAppId:        537151682,
+			AppKey:          "0S200MNJT807V3GE",
 			SortVersionName: "8.9.33.10335",
 			BuildTime:       1673599898,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
@@ -43,6 +44,7 @@ var (
 			ApkId:           "com.tencent.mobileqq",
 			AppId:           537151218,
 			SubAppId:        537151218,
+			AppKey:          "0S200MNJT807V3GE",
 			SortVersionName: "8.9.33.10335",
 			BuildTime:       1673599898,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
@@ -153,6 +155,7 @@ type AppVersion struct {
 	SdkVersion      string
 	AppId           uint32
 	SubAppId        uint32
+	AppKey          string
 	BuildTime       uint32
 	SSOVersion      uint32
 	MiscBitmap      uint32
@@ -173,6 +176,7 @@ func (v *AppVersion) ReadJson(d []byte) error {
 	v.ApkId = f.ApkId
 	v.AppId = f.AppId
 	v.SubAppId = f.SubAppId
+	v.AppKey = f.AppKey
 	v.SortVersionName = f.SortVersionName
 	v.BuildTime = f.BuildTime
 	v.ApkSign, _ = hex.DecodeString(f.ApkSign)
@@ -236,6 +240,7 @@ type appVersionFile struct {
 	ApkId           string       `json:"apk_id"`
 	AppId           uint32       `json:"app_id"`
 	SubAppId        uint32       `json:"sub_app_id"`
+	AppKey          string       `json:"app_key"`
 	SortVersionName string       `json:"sort_version_name"`
 	BuildTime       uint32       `json:"build_time"`
 	ApkSign         string       `json:"apk_sign"` // hex encoded
