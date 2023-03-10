@@ -151,7 +151,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		if oldInfo == nil {
 			info, err := c.GuildService.FetchChannelInfo(m.Head.RoutingHead.GuildId.Unwrap(), eventBody.ChangeChanInfo.ChanId.Unwrap())
 			if err != nil {
-				c.error("error to decode channel info updated event: fetch channel info failed: %v", err)
+				c.error("failed to decode channel info updated event: fetch channel info failed: %v", err)
 				return
 			}
 			guild.Channels = append(guild.Channels, info)
@@ -162,7 +162,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		}
 		newInfo, err := c.GuildService.FetchChannelInfo(m.Head.RoutingHead.GuildId.Unwrap(), eventBody.ChangeChanInfo.ChanId.Unwrap())
 		if err != nil {
-			c.error("error to decode channel info updated event: fetch channel info failed: %v", err)
+			c.error("failed to decode channel info updated event: fetch channel info failed: %v", err)
 			return
 		}
 		for i := range guild.Channels {
@@ -187,7 +187,7 @@ func (c *QQClient) processGuildEventBody(m *channel.ChannelMsgContent, eventBody
 		*/
 		profile, err := c.GuildService.FetchGuildMemberProfileInfo(guild.GuildId, eventBody.JoinGuild.MemberTinyid.Unwrap())
 		if err != nil {
-			c.error("error to decode member join guild event: get member profile error: %v", err)
+			c.error("failed to decode member join guild event: get member profile error: %v", err)
 			return
 		}
 		info := &GuildMemberInfo{

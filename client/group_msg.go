@@ -267,7 +267,7 @@ func decodeMsgSendResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	case 46:
 		c.error("sendPacket msg error: 需要使用安全设备验证")
 	case 55:
-		c.error("sendPacket msg error: %v Bot has blocked ta.'s content", rsp.Result.Unwrap())
+		c.error("sendPacket msg error: %v Bot has been blocked ta.'s content", rsp.Result.Unwrap())
 	default:
 		c.error("sendPacket msg error: %v %v", rsp.Result.Unwrap(), rsp.ErrMsg.Unwrap())
 	}
@@ -342,7 +342,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 		c.debug("sync group %v.", m.Head.GroupInfo.GroupCode.Unwrap())
 		info, err := c.GetGroupInfo(m.Head.GroupInfo.GroupCode.Unwrap())
 		if err != nil {
-			c.error("error to sync group %v : %+v", m.Head.GroupInfo.GroupCode.Unwrap(), err)
+			c.error("failed to sync group %v : %+v", m.Head.GroupInfo.GroupCode.Unwrap(), err)
 			return nil
 		}
 		group = info
@@ -351,7 +351,7 @@ func (c *QQClient) parseGroupMessage(m *msg.Message) *message.GroupMessage {
 	if len(group.Members) == 0 {
 		mem, err := c.GetGroupMembers(group)
 		if err != nil {
-			c.error("error to sync group %v member : %+v", m.Head.GroupInfo.GroupCode, err)
+			c.error("failed to sync group %v members : %+v", m.Head.GroupInfo.GroupCode, err)
 			return nil
 		}
 		group.Members = mem
