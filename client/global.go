@@ -105,6 +105,13 @@ func GenIMEI() string {
 	return final.String()
 }
 
+func UpdateAppVersion(protocolType auth.ProtocolType, data []byte) error {
+	if _, ok := auth.AppVersions[protocolType]; !ok {
+		return errors.New("unknown protocol type: " + strconv.Itoa(int(protocolType)))
+	}
+	return auth.AppVersions[protocolType].ReadJson(data)
+}
+
 func getSSOAddress(device *auth.Device) ([]netip.AddrPort, error) {
 	protocol := device.Protocol.Version()
 	key, _ := hex.DecodeString("F0441F5FF42DA58FDCF7949ABA62D411")

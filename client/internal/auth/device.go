@@ -45,7 +45,7 @@ type Device struct {
 	VendorOSName []byte
 	Guid         []byte
 	TgtgtKey     []byte
-	Protocol     Protocol
+	Protocol     ProtocolType
 	Version      *OSVersion
 }
 
@@ -135,7 +135,7 @@ func (info *Device) ReadJson(d []byte) error {
 
 	switch f.Protocol {
 	case 1, 2, 3, 4, 5, 6:
-		info.Protocol = Protocol(f.Protocol)
+		info.Protocol = ProtocolType(f.Protocol)
 	default:
 		info.Protocol = AndroidPad
 	}

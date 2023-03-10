@@ -23,7 +23,7 @@ type (
 
 	UserOnlineStatus int
 
-	ClientProtocol = auth.Protocol
+	ClientProtocol = auth.ProtocolType
 
 	LoginResponse struct {
 		Success bool
