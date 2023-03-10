@@ -117,7 +117,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		}
 	}
 	if c.Device().QImei36 != "" {
-		t.Append(tlv.T545([]byte(c.Device().QImei36)))
+		t.Append(tlv.T545([]byte(c.Device().QImei16)))
 	} else {
 		t.Append(tlv.T545([]byte(c.Device().IMEI)))
 	}
@@ -464,7 +464,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		},
 	}
 	if c.Device().QImei36 != "" {
-		t.Append(tlv.T545([]byte(c.Device().QImei36)))
+		t.Append(tlv.T545([]byte(c.Device().QImei16)))
 	} else {
 		t.Append(tlv.T545([]byte(c.Device().IMEI)))
 	}
