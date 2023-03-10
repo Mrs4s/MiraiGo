@@ -1,3 +1,3 @@
 package wrapper
 
-var DandelionEnergy func(string, []byte) []byte
+var DandelionEnergy func(uint64, string, []byte) ([]byte, error)

@@ -112,7 +112,9 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 			w.WriteUInt32(9) // sub command
 			w.WriteUInt32(0) // 被演了
 		})
-		t.Append(tlv.T544Custom("810_9", salt, wrapper.DandelionEnergy))
+		if t544 := tlv.T544Custom(uint64(c.Uin), "810_9", salt, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
 	}
 	if c.Device().QImei36 != "" {
 		t.Append(tlv.T545([]byte(c.Device().QImei36)))
@@ -366,7 +368,9 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 		},
 	}
 	if wrapper.DandelionEnergy != nil {
-		t.Append(tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy))
+		if t544 := tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
@@ -395,7 +399,9 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 		t.Append(tlv.T(0x547, c.sig.T547))
 	}
 	if wrapper.DandelionEnergy != nil {
-		t.Append(tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy))
+		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
