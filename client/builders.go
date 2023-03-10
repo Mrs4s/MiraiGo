@@ -18,7 +18,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
-	"github.com/Mrs4s/MiraiGo/warpper"
+	"github.com/Mrs4s/MiraiGo/wrapper"
 )
 
 var (
@@ -102,7 +102,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		tlv.T521(0),
 		tlv.T525(tlv.T536([]byte{0x01, 0x00})),
 	)
-	if warpper.DandelionEnergy != nil {
+	if wrapper.DandelionEnergy != nil {
 		salt := binary.NewWriterF(func(w *binary.Writer) {
 			//  util.int64_to_buf(bArr42, 0, (int) uin2);
 			//  util.int16_to_buf(bArr42, 4, u.guid.length); // 故意的还是不小心的
@@ -112,7 +112,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 			w.WriteUInt32(9) // sub command
 			w.WriteUInt32(0) // 被演了
 		})
-		t.Append(tlv.T544Custom("810_9", salt, warpper.DandelionEnergy))
+		t.Append(tlv.T544Custom("810_9", salt, wrapper.DandelionEnergy))
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
@@ -360,8 +360,8 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 			tlv.T198(),
 		},
 	}
-	if warpper.DandelionEnergy != nil {
-		t.Append(tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, warpper.DandelionEnergy))
+	if wrapper.DandelionEnergy != nil {
+		t.Append(tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy))
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
@@ -389,8 +389,8 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	if c.sig.T547 != nil {
 		t.Append(tlv.T(0x547, c.sig.T547))
 	}
-	if warpper.DandelionEnergy != nil {
-		t.Append(tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, warpper.DandelionEnergy))
+	if wrapper.DandelionEnergy != nil {
+		t.Append(tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy))
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
