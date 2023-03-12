@@ -110,7 +110,7 @@ func UpdateAppVersion(protocolType auth.ProtocolType, data []byte) error {
 	if _, ok := auth.AppVersions[protocolType]; !ok {
 		return errors.New("unknown protocol type: " + strconv.Itoa(int(protocolType)))
 	}
-	return auth.AppVersions[protocolType].ReadJson(data)
+	return auth.AppVersions[protocolType].UpdateFromJson(data)
 }
 
 func getSSOAddress(device *auth.Device) ([]netip.AddrPort, error) {
