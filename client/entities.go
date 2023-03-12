@@ -23,10 +23,11 @@ type (
 
 	UserOnlineStatus int
 
-	ClientProtocol = auth.Protocol
+	ClientProtocol = auth.ProtocolType
 
 	LoginResponse struct {
 		Success bool
+		Code    byte
 		Error   LoginError
 
 		// Captcha info
@@ -189,6 +190,17 @@ type (
 		FileSize    int64
 		Sender      int64
 		DownloadUrl string
+	}
+
+	GroupDisbandEvent struct {
+		Group    *GroupInfo
+		Time     int64
+		Operator *GroupMemberInfo
+	}
+
+	DeleteFriendEvent struct {
+		Uin      int64
+		Nickname string
 	}
 
 	// GroupDigest 群精华消息

@@ -51,6 +51,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	if m.Exists(0x546) {
 		c.sig.T547 = auth.CalcPow(m[0x546])
 	}
+	// c.logger.Info("login response %v", t)
 	if t == 0 { // login success
 		// if t150, ok := m[0x150]; ok {
 		//  	c.t150 = t150
@@ -71,6 +72,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		if m.Exists(0x192) {
 			return LoginResponse{
 				Success:   false,
+				Code:      t,
 				VerifyUrl: string(m[0x192]),
 				Error:     SliderNeededError,
 			}, nil
@@ -82,6 +84,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 			sign := imgData.ReadBytes(int(signLen))
 			return LoginResponse{
 				Success:      false,
+				Code:         t,
 				Error:        NeedCaptcha,
 				CaptchaImage: imgData.ReadAvailable(),
 				CaptchaSign:  sign,
@@ -89,6 +92,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		} else {
 			return LoginResponse{
 				Success: false,
+				Code:    t,
 				Error:   UnknownLoginError,
 			}, nil
 		}
@@ -97,6 +101,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	if t == 40 {
 		return LoginResponse{
 			Success:      false,
+			Code:         t,
 			ErrorMessage: "账号被冻结",
 			Error:        UnknownLoginError,
 		}, nil
@@ -115,6 +120,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 			if t204, ok := m[0x204]; ok { // 同时支持扫码验证 ?
 				return LoginResponse{
 					Success:      false,
+					Code:         t,
 					Error:        SMSOrVerifyNeededError,
 					VerifyUrl:    string(t204),
 					SMSPhone:     phone,
@@ -123,6 +129,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 			}
 			return LoginResponse{
 				Success:      false,
+				Code:         t,
 				Error:        SMSNeededError,
 				SMSPhone:     phone,
 				ErrorMessage: string(m[0x17e]),
@@ -133,6 +140,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 			c.sig.T104 = m[0x104]
 			return LoginResponse{
 				Success: false,
+				Code:    t,
 				Error:   SMSNeededError,
 			}, nil
 		}
@@ -140,6 +148,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		if t204, ok := m[0x204]; ok { // 扫码验证
 			return LoginResponse{
 				Success:      false,
+				Code:         t,
 				Error:        UnsafeDeviceError,
 				VerifyUrl:    string(t204),
 				ErrorMessage: "",
@@ -149,6 +158,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 
 	if t == 162 {
 		return LoginResponse{
+			Code:  t,
 			Error: TooManySMSRequestError,
 		}, nil
 	}
@@ -165,6 +175,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		t149r.ReadStringShort() // title
 		return LoginResponse{
 			Success:      false,
+			Code:         t,
 			Error:        OtherLoginError,
 			ErrorMessage: t149r.ReadStringShort(),
 		}, nil
@@ -176,6 +187,7 @@ func decodeLoginResponse(c *QQClient, pkt *network.Packet) (any, error) {
 		t146r.ReadStringShort() // title
 		return LoginResponse{
 			Success:      false,
+			Code:         t,
 			Error:        OtherLoginError,
 			ErrorMessage: t146r.ReadStringShort(),
 		}, nil
@@ -731,6 +743,15 @@ func decodeOnlinePushTransPacket(c *QQClient, pkt *network.Packet) (any, error) 
 						Member:   m,
 						Operator: g.FindMember(operator),
 					})
+				}
+			case 0x01, 0x81: // kosbot add: 群解散. 暂时这样 See https://github.com/lz1998/ricq/blob/064ddddca19aa0410e2514852e3a151fd9913371/ricq-core/src/command/online_push/decoder.rs#L86
+				c.GroupDisbandEvent.dispatch(c, &GroupDisbandEvent{
+					Group:    g,
+					Operator: g.FindMember(operator),
+					Time:     int64(info.MsgTime.Unwrap()),
+				})
+				if err = c.ReloadGroupList(); err != nil {
+					return nil, err
 				}
 			}
 		}

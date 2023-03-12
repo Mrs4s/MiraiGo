@@ -8,7 +8,6 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/binary/jce"
-	"github.com/Mrs4s/MiraiGo/client/internal/auth"
 	"github.com/Mrs4s/MiraiGo/client/internal/network"
 	"github.com/Mrs4s/MiraiGo/client/internal/oicq"
 	"github.com/Mrs4s/MiraiGo/client/pb"
@@ -19,6 +18,7 @@ import (
 	"github.com/Mrs4s/MiraiGo/client/pb/structmsg"
 	"github.com/Mrs4s/MiraiGo/internal/proto"
 	"github.com/Mrs4s/MiraiGo/internal/tlv"
+	"github.com/Mrs4s/MiraiGo/wrapper"
 )
 
 var (
@@ -102,6 +102,25 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		tlv.T521(0),
 		tlv.T525(tlv.T536([]byte{0x01, 0x00})),
 	)
+	if wrapper.DandelionEnergy != nil {
+		salt := binary.NewWriterF(func(w *binary.Writer) {
+			//  util.int64_to_buf(bArr42, 0, (int) uin2);
+			//  util.int16_to_buf(bArr42, 4, u.guid.length); // 故意的还是不小心的
+			w.Write(binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt64(uint64(c.Uin)) })[:4])
+			w.WriteBytesShort(c.Device().Guid)
+			w.WriteBytesShort([]byte(c.version().SdkVersion))
+			w.WriteUInt32(9) // sub command
+			w.WriteUInt32(0) // 被演了
+		})
+		if t544 := tlv.T544Custom(uint64(c.Uin), "810_9", salt, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
+	}
+	if c.Device().QImei36 != "" {
+		t.Append(tlv.T545([]byte(c.Device().QImei16)))
+	} else {
+		t.Append(tlv.T545([]byte(c.Device().IMEI)))
+	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
@@ -137,17 +156,15 @@ func (c *QQClient) buildDeviceLockLoginPacket() (uint16, []byte) {
 }
 
 func (c *QQClient) buildQRCodeFetchRequestPacket(size, margin, ecLevel uint32) (uint16, []byte) {
-	old := c.version()
-	watch := auth.AndroidWatch.Version()
-	c.transport.Version = watch
+	// old := c.version()
+	// watch := auth.AndroidWatch.Version()
+	// c.transport.Version = watch
 	seq := c.nextSeq()
 	req := oicq.Message{
 		Command:          0x0812,
 		EncryptionMethod: oicq.EM_ECDH,
 		Body: binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteHex(`0001110000001000000072000000`) // trans header
-			w.WriteUInt32(uint32(time.Now().Unix()))
-			w.Write(buildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
+			code2dPacket := buildCode2DRequestPacket(0, 0, 0x31, func(w *binary.Writer) {
 				w.WriteUInt16(0)  // const
 				w.WriteUInt32(16) // app id
 				w.WriteUInt64(0)  // const
@@ -155,13 +172,20 @@ func (c *QQClient) buildQRCodeFetchRequestPacket(size, margin, ecLevel uint32) (
 				w.WriteBytesShort(EmptyBytes)
 
 				w.WriteUInt16(6)
-				w.Write(tlv.T16(watch.SSOVersion, 16, watch.AppId, c.Device().Guid, []byte(watch.ApkId), []byte(watch.SortVersionName), watch.ApkSign))
+				w.Write(tlv.T16(c.transport.Version.SSOVersion, 16, c.transport.Version.AppId, c.Device().Guid, []byte(c.transport.Version.ApkId), []byte(c.transport.Version.SortVersionName), c.transport.Version.ApkSign))
 				w.Write(tlv.T1B(0, 0, size, margin, 72, ecLevel, 2))
-				w.Write(tlv.T1D(watch.MiscBitmap))
+				w.Write(tlv.T1D(c.transport.Version.MiscBitmap))
 				w.Write(tlv.T1F(false, c.Device().OSType, []byte("7.1.2"), []byte("China Mobile GSM"), c.Device().APN, 2))
 				w.Write(tlv.T33(c.Device().Guid))
 				w.Write(tlv.T35(8))
-			}))
+			})
+			w.WriteByte(0x0)
+			w.WriteUInt16(uint16(len(code2dPacket)) + 4)
+			w.WriteUInt32(16)
+			w.WriteUInt32(0x72)
+			w.WriteHex("000000")
+			w.WriteUInt32(uint32(time.Now().Unix()))
+			w.Write(code2dPacket)
 		}),
 	}
 	r := network.Request{
@@ -173,21 +197,19 @@ func (c *QQClient) buildQRCodeFetchRequestPacket(size, margin, ecLevel uint32) (
 		Body:        c.oicq.Marshal(&req),
 	}
 	payload := c.transport.PackPacket(&r)
-	c.transport.Version = old
+	// c.transport.Version = old
 	return seq, payload
 }
 
 func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []byte) {
-	old := c.version()
-	c.transport.Version = auth.AndroidWatch.Version()
+	// old := c.version()
+	// c.transport.Version = auth.AndroidWatch.Version()
 	seq := c.nextSeq()
 	req := oicq.Message{
 		Command:          0x0812,
 		EncryptionMethod: oicq.EM_ECDH,
 		Body: binary.NewWriterF(func(w *binary.Writer) {
-			w.WriteHex(`0000620000001000000072000000`) // trans header
-			w.WriteUInt32(uint32(time.Now().Unix()))
-			w.Write(buildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
+			code2dPacket := buildCode2DRequestPacket(1, 0, 0x12, func(w *binary.Writer) {
 				w.WriteUInt16(5)  // const
 				w.WriteByte(1)    // const
 				w.WriteUInt32(8)  // product type
@@ -197,7 +219,14 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 				w.WriteByte(8)   // const
 				w.WriteBytesShort(EmptyBytes)
 				w.WriteUInt16(0) // const
-			}))
+			})
+			w.WriteByte(0x0)
+			w.WriteUInt16(uint16(len(code2dPacket)) + 4)
+			w.WriteUInt32(16)
+			w.WriteUInt32(0x72)
+			w.WriteHex("000000")
+			w.WriteUInt32(uint32(time.Now().Unix()))
+			w.Write(code2dPacket)
 		}),
 	}
 	r := network.Request{
@@ -209,7 +238,7 @@ func (c *QQClient) buildQRCodeResultQueryRequestPacket(sig []byte) (uint16, []by
 		Body:        c.oicq.Marshal(&req),
 	}
 	payload := c.transport.PackPacket(&r)
-	c.transport.Version = old
+	// c.transport.Version = old
 	return seq, payload
 }
 
@@ -326,7 +355,7 @@ func (c *QQClient) buildSMSRequestPacket() (uint16, []byte) {
 
 func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 	seq := c.nextSeq()
-	req := c.buildOicqRequestPacket(c.Uin, 0x0810, &oicq.TLV{
+	t := &oicq.TLV{
 		Command: 7,
 		List: [][]byte{
 			tlv.T8(2052),
@@ -337,7 +366,13 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 			tlv.T401(c.sig.G),
 			tlv.T198(),
 		},
-	})
+	}
+	if wrapper.DandelionEnergy != nil {
+		if t544 := tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
+	}
+	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
 		EncryptType: network.EncryptTypeEmptyKey,
@@ -362,6 +397,11 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 	}
 	if c.sig.T547 != nil {
 		t.Append(tlv.T(0x547, c.sig.T547))
+	}
+	if wrapper.DandelionEnergy != nil {
+		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
 	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
@@ -421,8 +461,12 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 			tlv.T516(),
 			tlv.T521(0),
 			tlv.T525(tlv.T536([]byte{0x01, 0x00})),
-			tlv.T545([]byte(c.Device().IMEI)),
 		},
+	}
+	if c.Device().QImei36 != "" {
+		t.Append(tlv.T545([]byte(c.Device().QImei16)))
+	} else {
+		t.Append(tlv.T545([]byte(c.Device().IMEI)))
 	}
 	m := oicq.Message{
 		Uin:              uint32(c.Uin),
@@ -430,7 +474,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		EncryptionMethod: oicq.EM_ST,
 		Body:             t.Marshal(),
 	}
-	nreq := network.Request{
+	req := network.Request{
 		Type:        network.RequestTypeSimple,
 		EncryptType: network.EncryptTypeEmptyKey,
 		Uin:         c.Uin,
@@ -438,7 +482,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 		CommandName: "wtlogin.exchange_emp",
 		Body:        c.oicq.Marshal(&m),
 	}
-	return seq, c.transport.PackPacket(&nreq)
+	return seq, c.transport.PackPacket(&req)
 }
 
 func (c *QQClient) buildRequestChangeSigPacket(changeD2 bool) (uint16, []byte) {

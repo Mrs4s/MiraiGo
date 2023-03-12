@@ -81,6 +81,7 @@ func GenRandomDevice() *DeviceInfo {
 	hex.Encode(device.AndroidId, r)
 	device.GenNewGuid()
 	device.GenNewTgtgtKey()
+	device.RequestQImei()
 	return device
 }
 
@@ -103,6 +104,13 @@ func GenIMEI() string {
 	ctrlDigit := (sum * 9) % 10 // calculating the control digit
 	fmt.Fprintf(&final, "%d", ctrlDigit)
 	return final.String()
+}
+
+func UpdateAppVersion(protocolType auth.ProtocolType, data []byte) error {
+	if _, ok := auth.AppVersions[protocolType]; !ok {
+		return errors.New("unknown protocol type: " + strconv.Itoa(int(protocolType)))
+	}
+	return auth.AppVersions[protocolType].ReadJson(data)
 }
 
 func getSSOAddress(device *auth.Device) ([]netip.AddrPort, error) {
