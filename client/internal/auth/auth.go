@@ -168,7 +168,7 @@ func (v *AppVersion) String() string {
 	return fmt.Sprintf("%s %s - %v", v.Protocol.String(), v.SortVersionName, v.BuildTime)
 }
 
-func (v *AppVersion) ReadJson(d []byte) error {
+func (v *AppVersion) UpdateFromJson(d []byte) error {
 	var f appVersionFile
 	if err := json.Unmarshal(d, &f); err != nil {
 		return errors.Wrap(err, "failed to unmarshal json message")
