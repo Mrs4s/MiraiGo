@@ -123,7 +123,7 @@ func genRandomPayloadByDevice(info *Device) map[string]any {
 		"oz":         "UhYmelwouA+V2nPWbOvLTgN2/m8jwGB+yUB5v9tysQg=",
 		"oo":         "Xecjt+9S1+f8Pz2VLSxgpw==",
 		"kelong":     "0",
-		"uptimes":    time.Unix(now.Unix()-fixedRand.Int63n(86400), 0).Format(time.DateTime),
+		"uptimes":    time.Unix(now.Unix()-fixedRand.Int63n(14400), 0).Format(time.DateTime),
 		"multiUser":  "0",
 		"bod":        string(info.Board),
 		"brd":        string(info.Brand),
