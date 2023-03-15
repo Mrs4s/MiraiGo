@@ -93,7 +93,7 @@ func GenIMEI() string {
 	for i := 0; i < 14; i++ { // generating all the base digits
 		toAdd := randGen.Intn(10)
 		fmt.Fprintf(&final, "%d", toAdd) // printing them here!
-		if (i+1)%2 == 0 { // special proc for every 2nd one
+		if (i+1)%2 == 0 {                // special proc for every 2nd one
 			toAdd *= 2
 			if toAdd >= 10 {
 				toAdd = (toAdd % 10) + 1
