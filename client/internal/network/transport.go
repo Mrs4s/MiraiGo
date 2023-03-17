@@ -42,7 +42,10 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 		w.WriteUInt16(uint16(len(t.Sig.Ksid)) + 2)
 		w.Write(t.Sig.Ksid)
 	}
-	w.WriteUInt32(0x04)
+
+	w.WriteUInt32(0x04 + uint32(len(t.Device.QImei16)))
+	w.Write([]byte(t.Device.QImei16))
+
 	w.WriteUInt32At(pos, uint32(w.Len()-pos))
 
 	w.WriteUInt32(uint32(len(req.Body) + 4))
