@@ -63,6 +63,9 @@ func (info *Device) RequestQImei() {
 		return
 	}
 	encryptedResponse, _ := base64.StdEncoding.DecodeString(gjson.GetBytes(resp, "data").String())
+	if len(encryptedResponse) == 0 {
+		return
+	}
 	decryptedResponse := aesDecrypt(encryptedResponse, []byte(cryptKey))
 	info.QImei16 = gjson.GetBytes(decryptedResponse, "q16").String()
 	info.QImei36 = gjson.GetBytes(decryptedResponse, "q36").String()
