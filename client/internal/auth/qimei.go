@@ -63,6 +63,9 @@ func (info *Device) RequestQImei() {
 		return
 	}
 	encryptedResponse, _ := base64.StdEncoding.DecodeString(gjson.GetBytes(resp, "data").String())
+	if len(encryptedResponse) == 0 {
+		return
+	}
 	decryptedResponse := aesDecrypt(encryptedResponse, []byte(cryptKey))
 	info.QImei16 = gjson.GetBytes(decryptedResponse, "q16").String()
 	info.QImei36 = gjson.GetBytes(decryptedResponse, "q36").String()
@@ -115,14 +118,7 @@ func genRandomPayloadByDevice(info *Device) map[string]any {
 		seed += int64(b)
 	}
 	fixedRand := rand.New(rand.NewSource(seed))
-	years := now.Year()
-	month := now.Month()
-	if month == 1 {
-		years--
-		month = 12
-	} else {
-		month--
-	}
+
 	reserved := map[string]string{
 		"harmony":    "0",
 		"clone":      "0",
@@ -130,7 +126,7 @@ func genRandomPayloadByDevice(info *Device) map[string]any {
 		"oz":         "UhYmelwouA+V2nPWbOvLTgN2/m8jwGB+yUB5v9tysQg=",
 		"oo":         "Xecjt+9S1+f8Pz2VLSxgpw==",
 		"kelong":     "0",
-		"uptimes":    time.Date(years, month, fixedRand.Intn(27)+1, fixedRand.Intn(60), fixedRand.Intn(60), fixedRand.Intn(60), fixedRand.Intn(1e9), now.Location()).Format("2006-01-02 15:04:05"),
+		"uptimes":    time.Unix(now.Unix()-fixedRand.Int63n(14400), 0).Format(time.DateTime),
 		"multiUser":  "0",
 		"bod":        string(info.Board),
 		"brd":        string(info.Brand),

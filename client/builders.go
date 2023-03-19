@@ -103,16 +103,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		tlv.T525(tlv.T536([]byte{0x01, 0x00})),
 	)
 	if wrapper.DandelionEnergy != nil {
-		salt := binary.NewWriterF(func(w *binary.Writer) {
-			//  util.int64_to_buf(bArr42, 0, (int) uin2);
-			//  util.int16_to_buf(bArr42, 4, u.guid.length); // 故意的还是不小心的
-			w.Write(binary.NewWriterF(func(w *binary.Writer) { w.WriteUInt64(uint64(c.Uin)) })[:4])
-			w.WriteBytesShort(c.Device().Guid)
-			w.WriteBytesShort([]byte(c.version().SdkVersion))
-			w.WriteUInt32(9) // sub command
-			w.WriteUInt32(0) // 被演了
-		})
-		if t544 := tlv.T544Custom(uint64(c.Uin), "810_9", salt, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544v2(uint64(c.Uin), "810_9", 9, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
@@ -317,6 +308,11 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 	if c.sig.T547 != nil {
 		t.Append(tlv.T(0x547, c.sig.T547))
 	}
+	if wrapper.DandelionEnergy != nil {
+		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
+	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	r := network.Request{
 		Type:        network.RequestTypeLogin,
@@ -463,6 +459,13 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 			tlv.T525(tlv.T536([]byte{0x01, 0x00})),
 		},
 	}
+
+	if wrapper.DandelionEnergy != nil {
+		if t544 := tlv.T544v2(uint64(c.Uin), "810_f", 15, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
+	}
+
 	if c.Device().QImei16 != "" {
 		t.Append(tlv.T545([]byte(c.Device().QImei16)))
 	} else {
@@ -545,6 +548,11 @@ func (c *QQClient) buildRequestChangeSigPacket(changeD2 bool) (uint16, []byte) {
 		}),
 		tlv.T202(c.Device().WifiBSSID, c.Device().WifiSSID),
 	)
+	if wrapper.DandelionEnergy != nil && t.Command == 10 {
+		if t544 := tlv.T544v2(uint64(c.Uin), "810_a", 10, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+			t.Append(t544)
+		}
+	}
 	req := c.buildOicqRequestPacket(c.Uin, 0x0810, t)
 	req2 := network.Request{
 		Type:        network.RequestTypeLogin,
