@@ -55,6 +55,8 @@ func init() {
 	decoders["OidbSvc.0x6d6_0"] = decodeOIDB6d60Response
 	decoders["OidbSvc.0x6d6_2"] = decodeOIDB6d62Response
 	decoders["OidbSvc.0x6d6_3"] = decodeOIDB6d63Response
+	decoders["OidbSvc.0x6d6_4"] = decodeOIDB6d64Response
+	decoders["OidbSvc.0x6d6_5"] = decodeOIDB6d65Response
 	decoders["OidbSvc.0x6d7_0"] = decodeOIDB6d7Response
 	decoders["OidbSvc.0x6d7_1"] = decodeOIDB6d7Response
 	decoders["OidbSvc.0x6d7_2"] = decodeOIDB6d7Response
@@ -207,6 +209,26 @@ func (fs *GroupFileSystem) DeleteFile(parentFolderID, fileId string, busId int32
 	return i.(string)
 }
 
+// RenameFile 重命名群文件，需要管理权限或者是自己发的文件.
+// 返回错误, 空为重命名成功
+func (fs *GroupFileSystem) RenameFile(parentFolderID, fileId string, busId int32, newFileName string) string {
+	i, err := fs.client.sendAndWait(fs.client.buildGroupFileRenameReqPacket(fs.GroupCode, parentFolderID, fileId, busId, newFileName))
+	if err != nil {
+		return err.Error()
+	}
+	return i.(string)
+}
+
+// MoveFile 移动群文件，需要管理权限或者是自己发的文件.
+// 返回错误, 空为移动成功
+func (fs *GroupFileSystem) MoveFile(parentFolderID, fileId string, busId int32, DestFolderId string) string {
+	i, err := fs.client.sendAndWait(fs.client.buildGroupFileMoveReqPacket(fs.GroupCode, parentFolderID, fileId, busId, DestFolderId))
+	if err != nil {
+		return err.Error()
+	}
+	return i.(string)
+}
+
 func (c *QQClient) buildGroupFileUploadReqPacket(groupCode int64, file *LocalFile) (uint16, []byte) {
 	body := &oidb.D6D6ReqBody{UploadFileReq: &oidb.UploadFileReqBody{
 		GroupCode:          proto.Some(groupCode),
@@ -334,6 +356,33 @@ func (c *QQClient) buildGroupFileDeleteReqPacket(groupCode int64, parentFolderId
 	return c.uniPacket("OidbSvc.0x6d6_3", payload)
 }
 
+func (c *QQClient) buildGroupFileRenameReqPacket(groupCode int64, parentFolderId string, fileId string, busId int32, newFileName string) (uint16, []byte) {
+	body := &oidb.D6D6ReqBody{RenameFileReq: &oidb.RenameFileReqBody{
+		GroupCode:      proto.Some(groupCode),
+		AppId:          proto.Int32(5),
+		BusId:          proto.Some(busId),
+		FileId:         proto.Some(fileId),
+		ParentFolderId: proto.Some(parentFolderId),
+		NewFileName:    proto.Some(newFileName),
+	}}
+	payload := c.packOIDBPackageProto(1750, 4, body)
+	return c.uniPacket("OidbSvc.0x6d6_4", payload)
+}
+
+func (c *QQClient) buildGroupFileMoveReqPacket(groupCode int64, parentFolderId string, fileId string, busId int32, DestFolderId string) (uint16, []byte) {
+	body := &oidb.D6D6ReqBody{MoveFileReq: &oidb.MoveFileReqBody{
+		GroupCode:      proto.Some(groupCode),
+		AppId:          proto.Int32(5),
+		BusId:          proto.Some(busId),
+		FileId:         proto.Some(fileId),
+		ParentFolderId: proto.Some(parentFolderId),
+		DestFolderId:   proto.Some(DestFolderId),
+	}}
+	payload := c.packOIDBPackageProto(1750, 5, body)
+	return c.uniPacket("OidbSvc.0x6d6_5", payload)
+}
+
+// GroupFileListRespPacket
 func decodeOIDB6d81Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D8RspBody{}
 	err := unpackOIDBPackage(pkt.Payload, &rsp)
@@ -343,7 +392,7 @@ func decodeOIDB6d81Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	return &rsp, nil
 }
 
-// OidbSvc.0x6d6_2
+// OidbSvc.0x6d6_2 GroupFileDownloadRespPacket
 func decodeOIDB6d62Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D6RspBody{}
 	err := unpackOIDBPackage(pkt.Payload, &rsp)
@@ -358,6 +407,7 @@ func decodeOIDB6d62Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	return fmt.Sprintf("http://%s/ftn_handler/%s/", ip, url), nil
 }
 
+// GroupFileDeleteRespPacket
 func decodeOIDB6d63Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D6RspBody{}
 	err := unpackOIDBPackage(pkt.Payload, &rsp)
@@ -367,6 +417,7 @@ func decodeOIDB6d63Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	return rsp.DeleteFileRsp.ClientWording.Unwrap(), nil
 }
 
+// GroupFileUploadRespPacket
 func decodeOIDB6d60Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D6RspBody{}
 	err := unpackOIDBPackage(pkt.Payload, &rsp)
@@ -385,6 +436,7 @@ func decodeOIDB6d60Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	return r, nil
 }
 
+// GroupFileCreateFolderPacket, GroupFileDeleteFolderPacket, GroupFileRenameFolderPacket
 func decodeOIDB6d7Response(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D6D7RspBody{}
 	err := unpackOIDBPackage(pkt.Payload, &rsp)
@@ -407,4 +459,24 @@ func decodeOIDB6d7Response(_ *QQClient, pkt *network.Packet) (any, error) {
 		}
 	}
 	return nil, nil
+}
+
+// GroupFileRenameRespPacket
+func decodeOIDB6d64Response(_ *QQClient, pkt *network.Packet) (any, error) {
+	rsp := oidb.D6D6RspBody{}
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
+	if err != nil {
+		return nil, err
+	}
+	return rsp.RenameFileRsp.ClientWording.Unwrap(), nil
+}
+
+// GroupFileMoveRespPacket
+func decodeOIDB6d65Response(_ *QQClient, pkt *network.Packet) (any, error) {
+	rsp := oidb.D6D6RspBody{}
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
+	if err != nil {
+		return nil, err
+	}
+	return rsp.MoveFileRsp.ClientWording.Unwrap(), nil
 }
