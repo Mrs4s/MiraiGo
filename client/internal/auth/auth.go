@@ -59,17 +59,19 @@ var (
 		},
 		AndroidWatch: {
 			ApkId:           "com.tencent.qqlite",
-			AppId:           537064446,
-			SubAppId:        537064446,
-			SortVersionName: "2.0.5",
+			AppId:           537065138,
+			SubAppId:        537065138,
+			SortVersionName: "2.0.8",
 			BuildTime:       1559564731,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.236",
+			SdkVersion:      "6.0.0.2365",
 			SSOVersion:      5,
 			MiscBitmap:      16252796,
 			SubSigmap:       0x10400,
-			MainSigMap:      WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST | WLOGIN_SKEY | WLOGIN_D2 | WLOGIN_PSKEY | WLOGIN_DA2, // 34869472
-			Protocol:        AndroidWatch,
+			MainSigMap: WLOGIN_A5 | WLOGIN_RESERVED | WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST |
+				WLOGIN_LSKEY | WLOGIN_SKEY | WLOGIN_SIG64 | 1<<16 | WLOGIN_VKEY | WLOGIN_D2 |
+				WLOGIN_SID | WLOGIN_PSKEY | WLOGIN_AQSIG | WLOGIN_LHSIG | WLOGIN_PAYTOKEN, // 16724722
+			Protocol: AndroidWatch,
 		},
 		IPad: {
 			ApkId:           "com.tencent.minihd.qq",
