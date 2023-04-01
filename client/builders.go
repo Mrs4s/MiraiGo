@@ -103,7 +103,7 @@ func (c *QQClient) buildLoginPacket() (uint16, []byte) {
 		tlv.T525(tlv.T536([]byte{0x01, 0x00})),
 	)
 	if wrapper.DandelionEnergy != nil {
-		if t544 := tlv.T544v2(uint64(c.Uin), "810_9", 9, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544v2(uint64(c.Uin), "810_9", 9, c.version().SdkVersion, c.Device().Guid, c.version().SortVersionName, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
@@ -309,7 +309,7 @@ func (c *QQClient) buildCaptchaPacket(result string, sign []byte) (uint16, []byt
 		t.Append(tlv.T(0x547, c.sig.T547))
 	}
 	if wrapper.DandelionEnergy != nil {
-		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, c.version().SortVersionName, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
@@ -364,7 +364,7 @@ func (c *QQClient) buildSMSCodeSubmitPacket(code string) (uint16, []byte) {
 		},
 	}
 	if wrapper.DandelionEnergy != nil {
-		if t544 := tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544(uint64(c.Uin), "810_7", 7, c.version().SdkVersion, c.Device().Guid, c.version().SortVersionName, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
@@ -395,7 +395,7 @@ func (c *QQClient) buildTicketSubmitPacket(ticket string) (uint16, []byte) {
 		t.Append(tlv.T(0x547, c.sig.T547))
 	}
 	if wrapper.DandelionEnergy != nil {
-		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544(uint64(c.Uin), "810_2", 2, c.version().SdkVersion, c.Device().Guid, c.version().SortVersionName, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
@@ -461,7 +461,7 @@ func (c *QQClient) buildRequestTgtgtNopicsigPacket() (uint16, []byte) {
 	}
 
 	if wrapper.DandelionEnergy != nil {
-		if t544 := tlv.T544v2(uint64(c.Uin), "810_f", 15, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544v2(uint64(c.Uin), "810_f", 15, c.version().SdkVersion, c.Device().Guid, c.version().SortVersionName, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
@@ -549,7 +549,7 @@ func (c *QQClient) buildRequestChangeSigPacket(changeD2 bool) (uint16, []byte) {
 		tlv.T202(c.Device().WifiBSSID, c.Device().WifiSSID),
 	)
 	if wrapper.DandelionEnergy != nil && t.Command == 10 {
-		if t544 := tlv.T544v2(uint64(c.Uin), "810_a", 10, c.version().SdkVersion, c.Device().Guid, wrapper.DandelionEnergy); t544 != nil {
+		if t544 := tlv.T544v2(uint64(c.Uin), "810_a", 10, c.version().SdkVersion, c.Device().Guid, c.version().SortVersionName, wrapper.DandelionEnergy); t544 != nil {
 			t.Append(t544)
 		}
 	}
