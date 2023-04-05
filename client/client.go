@@ -202,7 +202,7 @@ func NewClientMd5(uin int64, passwordMd5 [16]byte) *QQClient {
 	cli.transport = &network.Transport{Sig: cli.sig}
 	cli.oicq = oicq.NewCodec(cli.Uin)
 	{ // init atomic values
-		cli.SequenceId.Store(0x3635)
+		cli.SequenceId.Store(int32(rand.Intn(100000)))
 		cli.requestPacketRequestID.Store(1921334513)
 		cli.groupSeq.Store(int32(rand.Intn(20000)))
 		cli.friendSeq.Store(22911)
@@ -764,7 +764,12 @@ func (c *QQClient) registerClient() error {
 }
 
 func (c *QQClient) nextSeq() uint16 {
-	return uint16(c.SequenceId.Add(1) & 0x7FFF)
+	seq := c.SequenceId.Add(1)
+	if seq > 1000000 {
+		seq = int32(rand.Intn(100000)) + 60000
+		c.SequenceId.Store(seq)
+	}
+	return uint16(seq)
 }
 
 func (c *QQClient) nextPacketSeq() int32 {
