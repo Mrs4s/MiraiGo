@@ -5,6 +5,10 @@ import (
 
 	"github.com/Mrs4s/MiraiGo/binary"
 	"github.com/Mrs4s/MiraiGo/client/internal/auth"
+	"github.com/Mrs4s/MiraiGo/client/pb"
+	"github.com/Mrs4s/MiraiGo/internal/proto"
+	"github.com/Mrs4s/MiraiGo/wrapper"
+	"github.com/pkg/errors"
 )
 
 // Transport is a network transport.
@@ -41,6 +45,15 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 
 		w.WriteUInt16(uint16(len(t.Sig.Ksid)) + 2)
 		w.Write(t.Sig.Ksid)
+
+		secSign := t.PackSecSign(req)
+		w.WriteUInt32(uint32(len(secSign) + 4))
+		w.Write(secSign)
+	}
+	if wrapper.AllowSignSendMsg() && req.CommandName == "MessageSvc.PbSendMsg" {
+		secSign := t.PackSecSign(req)
+		w.WriteUInt32(uint32(len(secSign) + 4))
+		w.Write(secSign)
 	}
 
 	w.WriteUInt32(0x04 + uint32(len(t.Device.QImei16)))
@@ -50,6 +63,34 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 
 	w.WriteUInt32(uint32(len(req.Body) + 4))
 	w.Write(req.Body)
+}
+
+func (t *Transport) PackSecSign(req *Request) []byte {
+	if wrapper.FekitGetSign == nil {
+		return []byte{}
+	}
+	sign, extra, token, err := wrapper.FekitGetSign(uint64(req.SequenceID), strconv.FormatInt(req.Uin, 10), req.CommandName, "V1_AND_SQ_8.9.50_3898_YYB_D", req.Body)
+	m := &pb.SSOReserveField{
+		Flag:        0,
+		Qimei:       t.Device.QImei16,
+		NewconnFlag: 0,
+		Uid:         strconv.FormatInt(req.Uin, 10),
+		Imsi:        0,
+		NetworkType: 1,
+		IpStackType: 1,
+		MessageType: 0,
+		SecInfo: &pb.SsoSecureInfo{
+			SecSig:         sign,
+			SecDeviceToken: token,
+			SecExtra:       extra,
+		},
+		SsoIpOrigin: 0,
+	}
+	data, err := proto.Marshal(m)
+	if err != nil {
+		panic(errors.Wrap(err, "failed to unmarshal protobuf SSOReserveField"))
+	}
+	return data
 }
 
 // PackPacket packs a packet.

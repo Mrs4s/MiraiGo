@@ -2,6 +2,25 @@ syntax = "proto3";
 
 option go_package = "github.com/Mrs4s/MiraiGo/client/pb";
 
+message SSOReserveField {
+  int32 flag = 9;
+  string qimei = 12;
+  int32 newconn_flag = 14;
+  string uid = 16;
+  int32 imsi = 18;
+  int32 network_type = 19;
+  int32 ip_stack_type = 20;
+  int32 message_type = 21;
+  SsoSecureInfo sec_info = 24;
+  int32 sso_ip_origin = 28;
+}
+
+message SsoSecureInfo {
+  bytes sec_sig = 1;
+  bytes sec_device_token = 2;
+  bytes sec_extra = 3;
+}
+
 message DeviceInfo {
   string bootloader = 1;
   string procVersion = 2;
