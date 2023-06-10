@@ -158,6 +158,10 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	count++
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
+	i, _, _ := imgsz.DecodeSize(img)
+	_, _ = img.Seek(0, io.SeekStart)
+	width := int32(i.Width)
+	height := int32(i.Height)
 	e, err := c.QueryFriendImage(target, fh, int32(length))
 	if errors.Is(err, ErrNotExists) {
 		groupSource := message.Source{
@@ -176,6 +180,8 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	if err != nil {
 		return nil, err
 	}
+	e.Height = height
+	e.Width = width
 	return e, nil
 }
 
