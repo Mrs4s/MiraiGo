@@ -50,7 +50,7 @@ func (t *Transport) packBody(req *Request, w *binary.Writer) {
 		w.WriteUInt32(uint32(len(secSign) + 4))
 		w.Write(secSign)
 	}
-	if wrapper.AllowSignSendMsg() && req.CommandName == "MessageSvc.PbSendMsg" {
+	if wrapper.AllowSignSendMsg != nil && wrapper.AllowSignSendMsg() && req.CommandName == "MessageSvc.PbSendMsg" {
 		secSign := t.PackSecSign(req)
 		w.WriteUInt32(uint32(len(secSign) + 4))
 		w.Write(secSign)

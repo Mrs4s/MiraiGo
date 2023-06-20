@@ -158,6 +158,10 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	count++
 	fh, length := utils.ComputeMd5AndLength(img)
 	_, _ = img.Seek(0, io.SeekStart)
+	i, _, _ := imgsz.DecodeSize(img)
+	_, _ = img.Seek(0, io.SeekStart)
+	width := int32(i.Width)
+	height := int32(i.Height)
 	e, err := c.QueryFriendImage(target, fh, int32(length))
 	if errors.Is(err, ErrNotExists) {
 		groupSource := message.Source{
@@ -176,6 +180,8 @@ func (c *QQClient) uploadPrivateImage(target int64, img io.ReadSeeker, count int
 	if err != nil {
 		return nil, err
 	}
+	e.Height = height
+	e.Width = width
 	return e, nil
 }
 
@@ -227,6 +233,7 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 		return &message.FriendImageElement{
 			ImageId: rsp.ResourceId,
 			Md5:     hash,
+			Size:    size,
 			Url:     "https://c2cpicdw.qpic.cn/offpic_new/0/" + rsp.ResourceId + "/0?term=2",
 		}, errors.WithStack(ErrNotExists)
 	}
@@ -234,6 +241,9 @@ func (c *QQClient) QueryFriendImage(target int64, hash []byte, size int32) (*mes
 		ImageId: rsp.ResourceId,
 		Md5:     hash,
 		Url:     "https://c2cpicdw.qpic.cn/offpic_new/0/" + rsp.ResourceId + "/0?term=2",
+		Size:    size,
+		Height:  rsp.Height,
+		Width:   rsp.Width,
 	}, nil
 }
 
