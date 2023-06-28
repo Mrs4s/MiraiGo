@@ -25,36 +25,38 @@ var (
 	AppVersions = map[ProtocolType]*AppVersion{
 		AndroidPhone: {
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537153294,
-			SubAppId:        537153294,
+			AppId:           537164840,
+			SubAppId:        537164840,
 			AppKey:          "0S200MNJT807V3GE",
-			SortVersionName: "8.9.35.10440",
-			BuildTime:       1676531414,
+			SortVersionName: "8.9.63.11390",
+			BuildTime:       1685069178,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2535",
-			SSOVersion:      19,
+			SdkVersion:      "6.0.0.2546",
+			SSOVersion:      20,
 			MiscBitmap:      150470524,
 			SubSigmap:       0x10400,
 			MainSigMap: WLOGIN_A5 | WLOGIN_RESERVED | WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST |
 				WLOGIN_LSKEY | WLOGIN_SKEY | WLOGIN_SIG64 | 1<<16 | WLOGIN_VKEY | WLOGIN_D2 |
 				WLOGIN_SID | WLOGIN_PSKEY | WLOGIN_AQSIG | WLOGIN_LHSIG | WLOGIN_PAYTOKEN, // 16724722
+			QUA:      "V1_AND_SQ_8.9.63_4194_YYB_D",
 			Protocol: AndroidPhone,
 		},
 		AndroidPad: {
 			ApkId:           "com.tencent.mobileqq",
-			AppId:           537152242,
-			SubAppId:        537152242,
+			AppId:           537164888,
+			SubAppId:        537164888,
 			AppKey:          "0S200MNJT807V3GE",
-			SortVersionName: "8.9.35.10440",
-			BuildTime:       1676531414,
+			SortVersionName: "8.9.63.11390",
+			BuildTime:       1685069178,
 			ApkSign:         []byte{0xA6, 0xB7, 0x45, 0xBF, 0x24, 0xA2, 0xC2, 0x77, 0x52, 0x77, 0x16, 0xF6, 0xF3, 0x6E, 0xB6, 0x8D},
-			SdkVersion:      "6.0.0.2535",
-			SSOVersion:      19,
+			SdkVersion:      "6.0.0.2546",
+			SSOVersion:      20,
 			MiscBitmap:      150470524,
 			SubSigmap:       0x10400,
 			MainSigMap: WLOGIN_A5 | WLOGIN_RESERVED | WLOGIN_STWEB | WLOGIN_A2 | WLOGIN_ST |
 				WLOGIN_LSKEY | WLOGIN_SKEY | WLOGIN_SIG64 | 1<<16 | WLOGIN_VKEY | WLOGIN_D2 |
 				WLOGIN_SID | WLOGIN_PSKEY | WLOGIN_AQSIG | WLOGIN_LHSIG | WLOGIN_PAYTOKEN, // 16724722
+			QUA:      "V1_AND_SQ_8.9.63_4194_YYB_D",
 			Protocol: AndroidPad,
 		},
 		AndroidWatch: {
@@ -163,6 +165,7 @@ type AppVersion struct {
 	MiscBitmap      uint32
 	SubSigmap       uint32
 	MainSigMap      uint32
+	QUA             string
 	Protocol        ProtocolType
 }
 
@@ -251,5 +254,6 @@ type appVersionFile struct {
 	MiscBitmap      uint32       `json:"misc_bitmap"`
 	MainSigMap      uint32       `json:"main_sig_map"`
 	SubSigmap       uint32       `json:"sub_sig_map"`
+	QUA             string       `json:"qua"`
 	ProtocolType    ProtocolType `json:"protocol_type"`
 }
