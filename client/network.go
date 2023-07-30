@@ -310,6 +310,13 @@ func (c *QQClient) sendAndWaitDynamic(seq uint16, pkt []byte) ([]byte, error) {
 	}
 }
 
+// SendSsoPacket
+// 发送签名回调包给服务器并获取返回结果供提交
+func (c *QQClient) SendSsoPacket(cmd string, body []byte) ([]byte, error) {
+	seq, data := c.uniPacket(cmd, body)
+	return c.sendAndWaitDynamic(seq, data)
+}
+
 // plannedDisconnect 计划中断线事件
 func (c *QQClient) plannedDisconnect(_ *network.TCPClient) {
 	c.debug("planned disconnect.")
