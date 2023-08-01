@@ -44,7 +44,7 @@ func ChunkString(s string, chunkSize int) []string {
 }
 
 func ConvertSubVersionToInt(str string) int32 {
-	i, _ := strconv.ParseInt(strings.Join(strings.Split(str, "."), ""), 10, 64)
+	i, _ := strconv.ParseInt(strings.Join(strings.Split(str, "."), ""), 10, 32)
 	return int32(i) * 10
 }
 
