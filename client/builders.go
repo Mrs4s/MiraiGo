@@ -1016,7 +1016,7 @@ func (c *QQClient) buildGroupMuteAllPacket(groupCode int64, mute bool) (uint16, 
 }
 
 // OidbSvc.0x8a0_0
-func (c *QQClient) buildGroupKickPacket(groupCode int64, memberUins []int64, kickMsg string, block bool) (uint16, []byte) {
+func (c *QQClient) buildGroupKickPacket(groupCode int64, kickMsg string, block bool, memberUins ...int64) (uint16, []byte) {
 	flagBlock := 0
 	if block {
 		flagBlock = 1
