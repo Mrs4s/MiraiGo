@@ -389,7 +389,7 @@ func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 
 func (m *GroupMemberInfo) Kick(msg string, block bool) error {
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
+		m.Group.client.KickGroupMembers(m.Group.Code, msg, block, m.Uin)
 		return nil
 	} else {
 		return errors.New("not manageable")
