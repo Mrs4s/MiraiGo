@@ -379,7 +379,7 @@ func (c *QQClient) RequestSMS() bool {
 
 func (c *QQClient) init(tokenLogin bool) error {
 	if len(c.sig.G) == 0 {
-		c.warning("device lock is disable. http api may fail.")
+		c.warning("device lock is disabled. HTTP API may fail.")
 	}
 	c.highwaySession.Uin = strconv.FormatInt(c.Uin, 10)
 	if err := c.registerClient(); err != nil {
@@ -567,7 +567,7 @@ func (c *QQClient) getGroupMembers(group *GroupInfo, interner *intern.StringInte
 			return nil, err
 		}
 		if data == nil {
-			return nil, errors.New("group member list unavailable: rsp is nil")
+			return nil, errors.New("group members list is unavailable: rsp is nil")
 		}
 		rsp := data.(*groupMemberListResponse)
 		nextUin = rsp.NextUin

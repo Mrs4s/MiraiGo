@@ -225,7 +225,7 @@ func troopAddMemberBroadcastDecoder(c *QQClient, pMsg *msg.Message, _ network.Re
 		if group != nil && group.FindMember(pMsg.Head.AuthUin.Unwrap()) == nil {
 			mem, err := c.GetMemberInfo(group.Code, pMsg.Head.AuthUin.Unwrap())
 			if err != nil {
-				c.debug("error to fetch new member info: %v", err)
+				c.debug("failed to fetch new member info: %v", err)
 				return
 			}
 			group.Update(func(info *GroupInfo) {
