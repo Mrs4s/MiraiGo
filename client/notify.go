@@ -62,7 +62,7 @@ func (c *QQClient) grayTipProcessor(groupCode int64, tipInfo *notify.GeneralGray
 			}
 		}
 		if sender != 0 {
-			c.dispatchGroupNotifyEvent(&GroupPokeNotifyEvent{
+			c.GroupNotifyEvent.dispatch(c, &GroupPokeNotifyEvent{
 				GroupCode: groupCode,
 				Sender:    sender,
 				Receiver:  receiver,
@@ -81,7 +81,7 @@ func (c *QQClient) grayTipProcessor(groupCode int64, tipInfo *notify.GeneralGray
 				uin, _ = strconv.ParseInt(templ.Value, 10, 64)
 			}
 		}
-		c.dispatchGroupNotifyEvent(&MemberHonorChangedNotifyEvent{
+		c.GroupNotifyEvent.dispatch(c, &MemberHonorChangedNotifyEvent{
 			GroupCode: groupCode,
 			Honor: func() HonorType {
 				switch tipInfo.TemplId {
@@ -127,8 +127,7 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 		}
 	}
 	// 好像只能这么判断
-	switch {
-	case strings.Contains(content, "头衔"):
+	if strings.Contains(content, "头衔") {
 		event := &MemberSpecialTitleUpdatedEvent{GroupCode: groupCode}
 		for _, cmd := range tipCmds {
 			if cmd.Command == 5 {
@@ -139,13 +138,13 @@ func (c *QQClient) msgGrayTipProcessor(groupCode int64, tipInfo *notify.AIOGrayT
 			}
 		}
 		if event.Uin == 0 {
-			c.Error("process special title updated tips error: missing cmd")
+			c.error("process special title updated tips error: missing cmd")
 			return
 		}
 		if mem := c.FindGroup(groupCode).FindMember(event.Uin); mem != nil {
 			mem.SpecialTitle = event.NewTitle
 		}
-		c.dispatchMemberSpecialTitleUpdateEvent(event)
+		c.MemberSpecialTitleUpdatedEvent.dispatch(c, event)
 	}
 }
 
@@ -185,6 +184,7 @@ func (e *MemberHonorChangedNotifyEvent) Content() string {
 		return fmt.Sprintf("%s(%d) 在群 %d 里连续发消息超过7天, 获得 群聊之火 标识。", e.Nick, e.Uin, e.GroupCode)
 	case Emotion:
 		return fmt.Sprintf("%s(%d) 在群聊 %d 中连续发表情包超过3天，且累计数量超过20条，获得 快乐源泉 标识。", e.Nick, e.Uin, e.GroupCode)
+	default:
+		return "ERROR"
 	}
-	return "ERROR"
 }

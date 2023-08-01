@@ -3,674 +3,136 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type ChannelMsg struct {
-	GuildId     *uint64              `protobuf:"varint,1,opt"`
-	ChannelId   *uint64              `protobuf:"varint,2,opt"`
-	Result      *uint32              `protobuf:"varint,3,opt"`
-	RspBeginSeq *uint64              `protobuf:"varint,4,opt"`
-	RspEndSeq   *uint64              `protobuf:"varint,5,opt"`
+	GuildId     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId   proto.Option[uint64] `protobuf:"varint,2,opt"`
+	Result      proto.Option[uint32] `protobuf:"varint,3,opt"`
+	RspBeginSeq proto.Option[uint64] `protobuf:"varint,4,opt"`
+	RspEndSeq   proto.Option[uint64] `protobuf:"varint,5,opt"`
 	Msgs        []*ChannelMsgContent `protobuf:"bytes,6,rep"`
 }
 
-func (x *ChannelMsg) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ChannelMsg) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *ChannelMsg) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *ChannelMsg) GetRspBeginSeq() uint64 {
-	if x != nil && x.RspBeginSeq != nil {
-		return *x.RspBeginSeq
-	}
-	return 0
-}
-
-func (x *ChannelMsg) GetRspEndSeq() uint64 {
-	if x != nil && x.RspEndSeq != nil {
-		return *x.RspEndSeq
-	}
-	return 0
-}
-
-func (x *ChannelMsg) GetMsgs() []*ChannelMsgContent {
-	if x != nil {
-		return x.Msgs
-	}
-	return nil
-}
-
 type ChannelMsgReq struct {
-	ChannelParam      *ChannelParam `protobuf:"bytes,1,opt"`
-	WithVersionFlag   *uint32       `protobuf:"varint,2,opt"`
-	DirectMessageFlag *uint32       `protobuf:"varint,3,opt"`
-}
-
-func (x *ChannelMsgReq) GetChannelParam() *ChannelParam {
-	if x != nil {
-		return x.ChannelParam
-	}
-	return nil
-}
-
-func (x *ChannelMsgReq) GetWithVersionFlag() uint32 {
-	if x != nil && x.WithVersionFlag != nil {
-		return *x.WithVersionFlag
-	}
-	return 0
-}
-
-func (x *ChannelMsgReq) GetDirectMessageFlag() uint32 {
-	if x != nil && x.DirectMessageFlag != nil {
-		return *x.DirectMessageFlag
-	}
-	return 0
+	ChannelParam      *ChannelParam        `protobuf:"bytes,1,opt"`
+	WithVersionFlag   proto.Option[uint32] `protobuf:"varint,2,opt"`
+	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_                 [0]func()
 }
 
 type ChannelMsgRsp struct {
-	Result          *uint32     `protobuf:"varint,1,opt"`
-	ErrMsg          []byte      `protobuf:"bytes,2,opt"`
-	ChannelMsg      *ChannelMsg `protobuf:"bytes,3,opt"`
-	WithVersionFlag *uint32     `protobuf:"varint,4,opt"`
-	GetMsgTime      *uint64     `protobuf:"varint,5,opt"`
-}
-
-func (x *ChannelMsgRsp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *ChannelMsgRsp) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *ChannelMsgRsp) GetChannelMsg() *ChannelMsg {
-	if x != nil {
-		return x.ChannelMsg
-	}
-	return nil
-}
-
-func (x *ChannelMsgRsp) GetWithVersionFlag() uint32 {
-	if x != nil && x.WithVersionFlag != nil {
-		return *x.WithVersionFlag
-	}
-	return 0
-}
-
-func (x *ChannelMsgRsp) GetGetMsgTime() uint64 {
-	if x != nil && x.GetMsgTime != nil {
-		return *x.GetMsgTime
-	}
-	return 0
+	Result          proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ErrMsg          []byte               `protobuf:"bytes,2,opt"`
+	ChannelMsg      *ChannelMsg          `protobuf:"bytes,3,opt"`
+	WithVersionFlag proto.Option[uint32] `protobuf:"varint,4,opt"`
+	GetMsgTime      proto.Option[uint64] `protobuf:"varint,5,opt"`
 }
 
 type ChannelNode struct {
-	ChannelId        *uint64 `protobuf:"varint,1,opt"`
-	Seq              *uint64 `protobuf:"varint,2,opt"`
-	CntSeq           *uint64 `protobuf:"varint,3,opt"`
-	Time             *uint64 `protobuf:"varint,4,opt"`
-	MemberReadMsgSeq *uint64 `protobuf:"varint,5,opt"`
-	MemberReadCntSeq *uint64 `protobuf:"varint,6,opt"`
-	NotifyType       *uint32 `protobuf:"varint,7,opt"`
-	ChannelName      []byte  `protobuf:"bytes,8,opt"`
-	ChannelType      *uint32 `protobuf:"varint,9,opt"`
-	Meta             []byte  `protobuf:"bytes,10,opt"`
-	ReadMsgMeta      []byte  `protobuf:"bytes,11,opt"`
-	EventTime        *uint32 `protobuf:"varint,12,opt"`
-}
-
-func (x *ChannelNode) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetSeq() uint64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetCntSeq() uint64 {
-	if x != nil && x.CntSeq != nil {
-		return *x.CntSeq
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetTime() uint64 {
-	if x != nil && x.Time != nil {
-		return *x.Time
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetMemberReadMsgSeq() uint64 {
-	if x != nil && x.MemberReadMsgSeq != nil {
-		return *x.MemberReadMsgSeq
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetMemberReadCntSeq() uint64 {
-	if x != nil && x.MemberReadCntSeq != nil {
-		return *x.MemberReadCntSeq
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetNotifyType() uint32 {
-	if x != nil && x.NotifyType != nil {
-		return *x.NotifyType
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetChannelName() []byte {
-	if x != nil {
-		return x.ChannelName
-	}
-	return nil
-}
-
-func (x *ChannelNode) GetChannelType() uint32 {
-	if x != nil && x.ChannelType != nil {
-		return *x.ChannelType
-	}
-	return 0
-}
-
-func (x *ChannelNode) GetMeta() []byte {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
-}
-
-func (x *ChannelNode) GetReadMsgMeta() []byte {
-	if x != nil {
-		return x.ReadMsgMeta
-	}
-	return nil
-}
-
-func (x *ChannelNode) GetEventTime() uint32 {
-	if x != nil && x.EventTime != nil {
-		return *x.EventTime
-	}
-	return 0
+	ChannelId        proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Seq              proto.Option[uint64] `protobuf:"varint,2,opt"`
+	CntSeq           proto.Option[uint64] `protobuf:"varint,3,opt"`
+	Time             proto.Option[uint64] `protobuf:"varint,4,opt"`
+	MemberReadMsgSeq proto.Option[uint64] `protobuf:"varint,5,opt"`
+	MemberReadCntSeq proto.Option[uint64] `protobuf:"varint,6,opt"`
+	NotifyType       proto.Option[uint32] `protobuf:"varint,7,opt"`
+	ChannelName      []byte               `protobuf:"bytes,8,opt"`
+	ChannelType      proto.Option[uint32] `protobuf:"varint,9,opt"`
+	Meta             []byte               `protobuf:"bytes,10,opt"`
+	ReadMsgMeta      []byte               `protobuf:"bytes,11,opt"`
+	EventTime        proto.Option[uint32] `protobuf:"varint,12,opt"`
 }
 
 type ChannelParam struct {
-	GuildId   *uint64    `protobuf:"varint,1,opt"`
-	ChannelId *uint64    `protobuf:"varint,2,opt"`
-	BeginSeq  *uint64    `protobuf:"varint,3,opt"`
-	EndSeq    *uint64    `protobuf:"varint,4,opt"`
-	Time      *uint64    `protobuf:"varint,5,opt"`
-	Version   []uint64   `protobuf:"varint,6,rep"`
-	Seqs      []*MsgCond `protobuf:"bytes,7,rep"`
-}
-
-func (x *ChannelParam) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *ChannelParam) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
-}
-
-func (x *ChannelParam) GetBeginSeq() uint64 {
-	if x != nil && x.BeginSeq != nil {
-		return *x.BeginSeq
-	}
-	return 0
-}
-
-func (x *ChannelParam) GetEndSeq() uint64 {
-	if x != nil && x.EndSeq != nil {
-		return *x.EndSeq
-	}
-	return 0
-}
-
-func (x *ChannelParam) GetTime() uint64 {
-	if x != nil && x.Time != nil {
-		return *x.Time
-	}
-	return 0
-}
-
-func (x *ChannelParam) GetVersion() []uint64 {
-	if x != nil {
-		return x.Version
-	}
-	return nil
-}
-
-func (x *ChannelParam) GetSeqs() []*MsgCond {
-	if x != nil {
-		return x.Seqs
-	}
-	return nil
+	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
+	BeginSeq  proto.Option[uint64] `protobuf:"varint,3,opt"`
+	EndSeq    proto.Option[uint64] `protobuf:"varint,4,opt"`
+	Time      proto.Option[uint64] `protobuf:"varint,5,opt"`
+	Version   []uint64             `protobuf:"varint,6,rep"`
+	Seqs      []*MsgCond           `protobuf:"bytes,7,rep"`
 }
 
 type DirectMessageSource struct {
-	TinyId     *uint64 `protobuf:"varint,1,opt"`
-	GuildId    *uint64 `protobuf:"varint,2,opt"`
-	GuildName  []byte  `protobuf:"bytes,3,opt"`
-	MemberName []byte  `protobuf:"bytes,4,opt"`
-	NickName   []byte  `protobuf:"bytes,5,opt"`
-}
-
-func (x *DirectMessageSource) GetTinyId() uint64 {
-	if x != nil && x.TinyId != nil {
-		return *x.TinyId
-	}
-	return 0
-}
-
-func (x *DirectMessageSource) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *DirectMessageSource) GetGuildName() []byte {
-	if x != nil {
-		return x.GuildName
-	}
-	return nil
-}
-
-func (x *DirectMessageSource) GetMemberName() []byte {
-	if x != nil {
-		return x.MemberName
-	}
-	return nil
-}
-
-func (x *DirectMessageSource) GetNickName() []byte {
-	if x != nil {
-		return x.NickName
-	}
-	return nil
+	TinyId     proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GuildId    proto.Option[uint64] `protobuf:"varint,2,opt"`
+	GuildName  []byte               `protobuf:"bytes,3,opt"`
+	MemberName []byte               `protobuf:"bytes,4,opt"`
+	NickName   []byte               `protobuf:"bytes,5,opt"`
 }
 
 type FirstViewMsg struct {
-	PushFlag                *uint32       `protobuf:"varint,1,opt"`
-	Seq                     *uint32       `protobuf:"varint,2,opt"`
-	GuildNodes              []*GuildNode  `protobuf:"bytes,3,rep"`
-	ChannelMsgs             []*ChannelMsg `protobuf:"bytes,4,rep"`
-	GetMsgTime              *uint64       `protobuf:"varint,5,opt"`
-	DirectMessageGuildNodes []*GuildNode  `protobuf:"bytes,6,rep"`
-}
-
-func (x *FirstViewMsg) GetPushFlag() uint32 {
-	if x != nil && x.PushFlag != nil {
-		return *x.PushFlag
-	}
-	return 0
-}
-
-func (x *FirstViewMsg) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *FirstViewMsg) GetGuildNodes() []*GuildNode {
-	if x != nil {
-		return x.GuildNodes
-	}
-	return nil
-}
-
-func (x *FirstViewMsg) GetChannelMsgs() []*ChannelMsg {
-	if x != nil {
-		return x.ChannelMsgs
-	}
-	return nil
-}
-
-func (x *FirstViewMsg) GetGetMsgTime() uint64 {
-	if x != nil && x.GetMsgTime != nil {
-		return *x.GetMsgTime
-	}
-	return 0
-}
-
-func (x *FirstViewMsg) GetDirectMessageGuildNodes() []*GuildNode {
-	if x != nil {
-		return x.DirectMessageGuildNodes
-	}
-	return nil
+	PushFlag                proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Seq                     proto.Option[uint32] `protobuf:"varint,2,opt"`
+	GuildNodes              []*GuildNode         `protobuf:"bytes,3,rep"`
+	ChannelMsgs             []*ChannelMsg        `protobuf:"bytes,4,rep"`
+	GetMsgTime              proto.Option[uint64] `protobuf:"varint,5,opt"`
+	DirectMessageGuildNodes []*GuildNode         `protobuf:"bytes,6,rep"`
 }
 
 type FirstViewReq struct {
-	LastMsgTime       *uint64 `protobuf:"varint,1,opt"`
-	UdcFlag           *uint32 `protobuf:"varint,2,opt"`
-	Seq               *uint32 `protobuf:"varint,3,opt"`
-	DirectMessageFlag *uint32 `protobuf:"varint,4,opt"`
-}
-
-func (x *FirstViewReq) GetLastMsgTime() uint64 {
-	if x != nil && x.LastMsgTime != nil {
-		return *x.LastMsgTime
-	}
-	return 0
-}
-
-func (x *FirstViewReq) GetUdcFlag() uint32 {
-	if x != nil && x.UdcFlag != nil {
-		return *x.UdcFlag
-	}
-	return 0
-}
-
-func (x *FirstViewReq) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *FirstViewReq) GetDirectMessageFlag() uint32 {
-	if x != nil && x.DirectMessageFlag != nil {
-		return *x.DirectMessageFlag
-	}
-	return 0
+	LastMsgTime       proto.Option[uint64] `protobuf:"varint,1,opt"`
+	UdcFlag           proto.Option[uint32] `protobuf:"varint,2,opt"`
+	Seq               proto.Option[uint32] `protobuf:"varint,3,opt"`
+	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,4,opt"`
+	_                 [0]func()
 }
 
 type FirstViewRsp struct {
-	Result                  *uint32 `protobuf:"varint,1,opt"`
-	ErrMsg                  []byte  `protobuf:"bytes,2,opt"`
-	Seq                     *uint32 `protobuf:"varint,3,opt"`
-	UdcFlag                 *uint32 `protobuf:"varint,4,opt"`
-	GuildCount              *uint32 `protobuf:"varint,5,opt"`
-	SelfTinyid              *uint64 `protobuf:"varint,6,opt"`
-	DirectMessageSwitch     *uint32 `protobuf:"varint,7,opt"`
-	DirectMessageGuildCount *uint32 `protobuf:"varint,8,opt"`
-}
-
-func (x *FirstViewRsp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *FirstViewRsp) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *FirstViewRsp) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *FirstViewRsp) GetUdcFlag() uint32 {
-	if x != nil && x.UdcFlag != nil {
-		return *x.UdcFlag
-	}
-	return 0
-}
-
-func (x *FirstViewRsp) GetGuildCount() uint32 {
-	if x != nil && x.GuildCount != nil {
-		return *x.GuildCount
-	}
-	return 0
-}
-
-func (x *FirstViewRsp) GetSelfTinyid() uint64 {
-	if x != nil && x.SelfTinyid != nil {
-		return *x.SelfTinyid
-	}
-	return 0
-}
-
-func (x *FirstViewRsp) GetDirectMessageSwitch() uint32 {
-	if x != nil && x.DirectMessageSwitch != nil {
-		return *x.DirectMessageSwitch
-	}
-	return 0
-}
-
-func (x *FirstViewRsp) GetDirectMessageGuildCount() uint32 {
-	if x != nil && x.DirectMessageGuildCount != nil {
-		return *x.DirectMessageGuildCount
-	}
-	return 0
+	Result                  proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ErrMsg                  []byte               `protobuf:"bytes,2,opt"`
+	Seq                     proto.Option[uint32] `protobuf:"varint,3,opt"`
+	UdcFlag                 proto.Option[uint32] `protobuf:"varint,4,opt"`
+	GuildCount              proto.Option[uint32] `protobuf:"varint,5,opt"`
+	SelfTinyid              proto.Option[uint64] `protobuf:"varint,6,opt"`
+	DirectMessageSwitch     proto.Option[uint32] `protobuf:"varint,7,opt"`
+	DirectMessageGuildCount proto.Option[uint32] `protobuf:"varint,8,opt"`
 }
 
 type GuildNode struct {
-	GuildId      *uint64              `protobuf:"varint,1,opt"`
-	GuildCode    *uint64              `protobuf:"varint,2,opt"`
+	GuildId      proto.Option[uint64] `protobuf:"varint,1,opt"`
+	GuildCode    proto.Option[uint64] `protobuf:"varint,2,opt"`
 	ChannelNodes []*ChannelNode       `protobuf:"bytes,3,rep"`
 	GuildName    []byte               `protobuf:"bytes,4,opt"`
 	PeerSource   *DirectMessageSource `protobuf:"bytes,5,opt"`
 }
 
-func (x *GuildNode) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *GuildNode) GetGuildCode() uint64 {
-	if x != nil && x.GuildCode != nil {
-		return *x.GuildCode
-	}
-	return 0
-}
-
-func (x *GuildNode) GetChannelNodes() []*ChannelNode {
-	if x != nil {
-		return x.ChannelNodes
-	}
-	return nil
-}
-
-func (x *GuildNode) GetGuildName() []byte {
-	if x != nil {
-		return x.GuildName
-	}
-	return nil
-}
-
-func (x *GuildNode) GetPeerSource() *DirectMessageSource {
-	if x != nil {
-		return x.PeerSource
-	}
-	return nil
-}
-
 type MsgCond struct {
-	Seq          *uint64 `protobuf:"varint,1,opt"`
-	EventVersion *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *MsgCond) GetSeq() uint64 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *MsgCond) GetEventVersion() uint64 {
-	if x != nil && x.EventVersion != nil {
-		return *x.EventVersion
-	}
-	return 0
+	Seq          proto.Option[uint64] `protobuf:"varint,1,opt"`
+	EventVersion proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_            [0]func()
 }
 
 type MultiChannelMsg struct {
-	PushFlag    *uint32       `protobuf:"varint,1,opt"`
-	Seq         *uint32       `protobuf:"varint,2,opt"`
-	ChannelMsgs []*ChannelMsg `protobuf:"bytes,3,rep"`
-	GetMsgTime  *uint64       `protobuf:"varint,4,opt"`
-}
-
-func (x *MultiChannelMsg) GetPushFlag() uint32 {
-	if x != nil && x.PushFlag != nil {
-		return *x.PushFlag
-	}
-	return 0
-}
-
-func (x *MultiChannelMsg) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *MultiChannelMsg) GetChannelMsgs() []*ChannelMsg {
-	if x != nil {
-		return x.ChannelMsgs
-	}
-	return nil
-}
-
-func (x *MultiChannelMsg) GetGetMsgTime() uint64 {
-	if x != nil && x.GetMsgTime != nil {
-		return *x.GetMsgTime
-	}
-	return 0
+	PushFlag    proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Seq         proto.Option[uint32] `protobuf:"varint,2,opt"`
+	ChannelMsgs []*ChannelMsg        `protobuf:"bytes,3,rep"`
+	GetMsgTime  proto.Option[uint64] `protobuf:"varint,4,opt"`
 }
 
 type MultiChannelMsgReq struct {
-	ChannelParams     []*ChannelParam `protobuf:"bytes,1,rep"`
-	Seq               *uint32         `protobuf:"varint,2,opt"`
-	DirectMessageFlag *uint32         `protobuf:"varint,3,opt"`
-}
-
-func (x *MultiChannelMsgReq) GetChannelParams() []*ChannelParam {
-	if x != nil {
-		return x.ChannelParams
-	}
-	return nil
-}
-
-func (x *MultiChannelMsgReq) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
-}
-
-func (x *MultiChannelMsgReq) GetDirectMessageFlag() uint32 {
-	if x != nil && x.DirectMessageFlag != nil {
-		return *x.DirectMessageFlag
-	}
-	return 0
+	ChannelParams     []*ChannelParam      `protobuf:"bytes,1,rep"`
+	Seq               proto.Option[uint32] `protobuf:"varint,2,opt"`
+	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type MultiChannelMsgRsp struct {
-	Result *uint32 `protobuf:"varint,1,opt"`
-	ErrMsg []byte  `protobuf:"bytes,2,opt"`
-	Seq    *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *MultiChannelMsgRsp) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *MultiChannelMsgRsp) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *MultiChannelMsgRsp) GetSeq() uint32 {
-	if x != nil && x.Seq != nil {
-		return *x.Seq
-	}
-	return 0
+	Result proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ErrMsg []byte               `protobuf:"bytes,2,opt"`
+	Seq    proto.Option[uint32] `protobuf:"varint,3,opt"`
 }
 
 type ReqBody struct {
-	ChannelParam      *ChannelParam `protobuf:"bytes,1,opt"`
-	DirectMessageFlag *uint32       `protobuf:"varint,2,opt"`
-}
-
-func (x *ReqBody) GetChannelParam() *ChannelParam {
-	if x != nil {
-		return x.ChannelParam
-	}
-	return nil
-}
-
-func (x *ReqBody) GetDirectMessageFlag() uint32 {
-	if x != nil && x.DirectMessageFlag != nil {
-		return *x.DirectMessageFlag
-	}
-	return 0
+	ChannelParam      *ChannelParam        `protobuf:"bytes,1,opt"`
+	DirectMessageFlag proto.Option[uint32] `protobuf:"varint,2,opt"`
+	_                 [0]func()
 }
 
 type RspBody struct {
-	Result     *uint32     `protobuf:"varint,1,opt"`
-	ErrMsg     []byte      `protobuf:"bytes,2,opt"`
-	ChannelMsg *ChannelMsg `protobuf:"bytes,3,opt"`
-}
-
-func (x *RspBody) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *RspBody) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *RspBody) GetChannelMsg() *ChannelMsg {
-	if x != nil {
-		return x.ChannelMsg
-	}
-	return nil
+	Result     proto.Option[uint32] `protobuf:"varint,1,opt"`
+	ErrMsg     []byte               `protobuf:"bytes,2,opt"`
+	ChannelMsg *ChannelMsg          `protobuf:"bytes,3,opt"`
 }

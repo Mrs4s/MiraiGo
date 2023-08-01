@@ -16,7 +16,7 @@ const (
 	troopSystemMsgDecoders
 )
 
-func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, *network.IncomingPacketInfo), decoderType uint8) {
+func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, network.RequestParams), decoderType uint8) {
 	switch msgType {
 	case 9:
 		return privateMessageDecoder, privateMsgDecoders

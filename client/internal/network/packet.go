@@ -1,12 +1,13 @@
 package network
 
-type IncomingPacketInfo struct {
-	CommandName string
+type Packet struct {
 	SequenceId  uint16
+	CommandName string
+	Payload     []byte
 	Params      RequestParams
 }
 
-type RequestParams map[string]interface{}
+type RequestParams map[string]any
 
 func (p RequestParams) Bool(k string) bool {
 	if p == nil {

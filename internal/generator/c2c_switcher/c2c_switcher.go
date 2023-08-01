@@ -27,7 +27,7 @@ const (
 {{end}}
 )
 
-func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, *network.IncomingPacketInfo), decoderType uint8) {
+func peekC2CDecoder(msgType int32) (decoder func(*QQClient, *msg.Message, network.RequestParams), decoderType uint8) {
     switch msgType {
 {{range .Decoders}}	case {{.Id}}:
 		return {{.Func}}, {{.DecoderType}}

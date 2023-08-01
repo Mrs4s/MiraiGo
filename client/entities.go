@@ -23,10 +23,11 @@ type (
 
 	UserOnlineStatus int
 
-	ClientProtocol = auth.Protocol
+	ClientProtocol = auth.ProtocolType
 
 	LoginResponse struct {
 		Success bool
+		Code    byte
 		Error   LoginError
 
 		// Captcha info
@@ -77,6 +78,7 @@ type (
 		Mobile    string
 		LoginDays int64
 		Qid       string
+		VipLevel  string
 	}
 
 	OtherClientInfo struct {
@@ -175,12 +177,6 @@ type (
 		client *QQClient
 	}
 
-	LogEvent struct {
-		Type    string
-		Message string
-		Dump    []byte
-	}
-
 	ServerUpdatedEvent struct {
 		Servers []jce.SsoServerInfo
 	}
@@ -194,6 +190,17 @@ type (
 		FileSize    int64
 		Sender      int64
 		DownloadUrl string
+	}
+
+	GroupDisbandEvent struct {
+		Group    *GroupInfo
+		Time     int64
+		Operator *GroupMemberInfo
+	}
+
+	DeleteFriendEvent struct {
+		Uin      int64
+		Nickname string
 	}
 
 	// GroupDigest 群精华消息
@@ -296,8 +303,12 @@ type (
 		SigSession []byte
 		SessionKey []byte
 	}
+
+	// unit is an alias for struct{}, like `()` in rust
+	unit = struct{}
 )
 
+//go:generate stringer -type=LoginError
 const (
 	NeedCaptcha            LoginError = 1
 	OtherLoginError        LoginError = 3
@@ -350,6 +361,7 @@ const (
 	MacOS        = auth.MacOS
 	QiDian       = auth.QiDian
 	IPad         = auth.IPad
+	AndroidPad   = auth.AndroidPad
 )
 
 func (r *UserJoinGroupRequest) Accept() {

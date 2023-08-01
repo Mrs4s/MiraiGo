@@ -77,9 +77,9 @@ func (c *QQClient) RefreshStatus() error {
 // SyncSessions 同步会话列表
 func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 	ret := &SessionSyncResponse{}
-	notifyChan := make(chan bool)
+	notifyChan := make(chan bool, 4)
 	var groupNum int32 = -1
-	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i interface{}, err error) {
+	stop := c.waitPacket("RegPrxySvc.PbSyncMsg", func(i any, err error) {
 		if err != nil {
 			return
 		}
@@ -90,7 +90,7 @@ func (c *QQClient) SyncSessions() (*SessionSyncResponse, error) {
 		if e.GroupNum != -1 {
 			groupNum = e.GroupNum
 		}
-		c.Debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
+		c.debug("sync session %v/%v", len(ret.GroupSessions), groupNum)
 		if groupNum != -1 && len(ret.GroupSessions) >= int(groupNum) {
 			notifyChan <- true
 		}
@@ -121,7 +121,7 @@ func (c *QQClient) MarkPrivateMessageReaded(uin, time int64) {
 // StatSvc.GetDevLoginInfo
 func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 	req := &jce.SvcReqGetDevLoginInfo{
-		Guid:           c.deviceInfo.Guid,
+		Guid:           c.Device().Guid,
 		LoginType:      1,
 		AppName:        "com.tencent.mobileqq",
 		RequireMax:     20,
@@ -141,17 +141,15 @@ func (c *QQClient) buildDeviceListRequestPacket() (uint16, []byte) {
 
 // RegPrxySvc.getOffMsg
 func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
+	t := c.stat.LastMessageTime.Load()
+	if t == 0 {
+		t = 1
+	}
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional: 0x101C2 | 32,
 		C2CMsg: &jce.SvcReqGetMsgV2{
-			Uin: c.Uin,
-			DateTime: func() int32 {
-				t := c.stat.LastMessageTime.Load()
-				if t == 0 {
-					return 1
-				}
-				return int32(t)
-			}(),
+			Uin:              c.Uin,
+			DateTime:         int32(t),
 			RecivePic:        1,
 			Ability:          15,
 			Channel:          4,
@@ -171,7 +169,7 @@ func (c *QQClient) buildGetOfflineMsgRequestPacket() (uint16, []byte) {
 	}
 	flag := msg.SyncFlag_START
 	msgReq, _ := proto.Marshal(&msg.GetMessageRequest{
-		SyncFlag:           &flag,
+		SyncFlag:           proto.Some(flag),
 		SyncCookie:         c.sig.SyncCookie,
 		RambleFlag:         proto.Int32(0),
 		ContextFlag:        proto.Int32(1),
@@ -207,18 +205,16 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 			},
 		},
 	})
+	t := c.stat.LastMessageTime.Load()
+	if t == 0 {
+		t = 1
+	}
 	regReq := &jce.SvcReqRegisterNew{
 		RequestOptional:   128 | 64 | 256 | 2 | 8192 | 16384 | 65536,
 		DisGroupMsgFilter: 1,
 		C2CMsg: &jce.SvcReqGetMsgV2{
-			Uin: c.Uin,
-			DateTime: func() int32 {
-				t := c.stat.LastMessageTime.Load()
-				if t == 0 {
-					return 1
-				}
-				return int32(t)
-			}(),
+			Uin:              c.Uin,
+			DateTime:         int32(t),
 			RecivePic:        1,
 			Ability:          15,
 			Channel:          4,
@@ -236,7 +232,7 @@ func (c *QQClient) buildSyncMsgRequestPacket() (uint16, []byte) {
 	}
 	flag := msg.SyncFlag_START
 	msgReq := &msg.GetMessageRequest{
-		SyncFlag:           &flag,
+		SyncFlag:           proto.Some(flag),
 		SyncCookie:         c.sig.SyncCookie,
 		RambleFlag:         proto.Int32(0),
 		ContextFlag:        proto.Int32(1),
@@ -285,9 +281,9 @@ func (c *QQClient) buildPrivateMsgReadedPacket(uin, time int64) (uint16, []byte)
 }
 
 // StatSvc.GetDevLoginInfo
-func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeDevListResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(pkt.Payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	rsp := jce.NewJceReader(data.Map["SvcRspGetDevLoginInfo"]["QQService.SvcRspGetDevLoginInfo"][1:])
@@ -307,9 +303,9 @@ func decodeDevListResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload [
 }
 
 // RegPrxySvc.PushParam
-func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodePushParamPacket(c *QQClient, pkt *network.Packet) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(pkt.Payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	reader := jce.NewJceReader(data.Map["SvcRespParam"]["RegisterProxySvcPack.SvcRespParam"][1:])
@@ -318,51 +314,47 @@ func decodePushParamPacket(c *QQClient, _ *network.IncomingPacketInfo, payload [
 	allowedClients, _ := c.GetAllowedClients()
 	c.OnlineClients = []*OtherClientInfo{}
 	for _, i := range rsp.OnlineInfos {
+		name, kind := i.SubPlatform, i.SubPlatform
+		for _, ac := range allowedClients {
+			if ac.AppId == int64(i.InstanceId) {
+				name = ac.DeviceName
+			}
+		}
+		switch i.UClientType {
+		case 65793:
+			kind = "Windows"
+		case 65805, 68104:
+			kind = "aPad"
+		case 66818, 66831, 81154:
+			kind = "Mac"
+		case 68361, 72194:
+			kind = "iPad"
+		case 75023, 78082, 78096:
+			kind = "Watch"
+		case 77313:
+			kind = "Windows TIM"
+		}
 		c.OnlineClients = append(c.OnlineClients, &OtherClientInfo{
-			AppId: int64(i.InstanceId),
-			DeviceName: func() string {
-				for _, ac := range allowedClients {
-					if ac.AppId == int64(i.InstanceId) {
-						return ac.DeviceName
-					}
-				}
-				return i.SubPlatform
-			}(),
-			DeviceKind: func() string {
-				switch i.UClientType {
-				case 65793:
-					return "Windows"
-				case 65805, 68104:
-					return "aPad"
-				case 66818, 66831, 81154:
-					return "Mac"
-				case 68361, 72194:
-					return "iPad"
-				case 75023, 78082, 78096:
-					return "Watch"
-				case 77313:
-					return "Windows TIM"
-				default:
-					return i.SubPlatform
-				}
-			}(),
+			AppId:      int64(i.InstanceId),
+			DeviceName: name,
+			DeviceKind: kind,
 		})
 	}
 	return nil, nil
 }
 
 // RegPrxySvc.PbSyncMsg
-func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgSyncResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	rsp := &msf.SvcRegisterProxyMsgResp{}
-	if err := proto.Unmarshal(payload, rsp); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, rsp); err != nil {
 		return nil, err
 	}
 	ret := &sessionSyncEvent{
-		IsEnd:    (rsp.GetFlag() & 2) == 2,
+		IsEnd:    (rsp.Flag.Unwrap() & 2) == 2,
 		GroupNum: -1,
 	}
 	if rsp.Info != nil {
-		ret.GroupNum = int32(rsp.Info.GetGroupNum())
+		ret.GroupNum = int32(rsp.Info.GroupNum.Unwrap())
 	}
 	if len(rsp.GroupMsg) > 0 {
 		for _, gm := range rsp.GroupMsg {
@@ -372,7 +364,7 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 			}
 			var latest []*message.GroupMessage
 			for _, m := range gmRsp.Msg {
-				if m.Head.GetFromUin() != 0 {
+				if m.Head.FromUin.Unwrap() != 0 {
 					pm := c.parseGroupMessage(m)
 					if pm != nil {
 						latest = append(latest, pm)
@@ -380,8 +372,8 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 				}
 			}
 			ret.GroupSessions = append(ret.GroupSessions, &GroupSessionInfo{
-				GroupCode:      int64(gmRsp.GetGroupCode()),
-				UnreadCount:    uint32(gmRsp.GetReturnEndSeq() - gm.GetMemberSeq()),
+				GroupCode:      int64(gmRsp.GroupCode.Unwrap()),
+				UnreadCount:    uint32(gmRsp.ReturnEndSeq.Unwrap() - gm.MemberSeq.Unwrap()),
 				LatestMessages: latest,
 			})
 		}
@@ -389,30 +381,30 @@ func decodeMsgSyncResponse(c *QQClient, info *network.IncomingPacketInfo, payloa
 	if len(rsp.C2CMsg) > 4 {
 		c2cRsp := &msg.GetMessageResponse{}
 		if proto.Unmarshal(rsp.C2CMsg[4:], c2cRsp) == nil {
-			c.c2cMessageSyncProcessor(c2cRsp, info)
+			c.c2cMessageSyncProcessor(c2cRsp, pkt.Params)
 		}
 	}
 	return ret, nil
 }
 
 // OnlinePush.PbC2CMsgSync
-func decodeC2CSyncPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeC2CSyncPacket(c *QQClient, pkt *network.Packet) (any, error) {
 	m := msg.PbPushMsg{}
-	if err := proto.Unmarshal(payload, &m); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, &m); err != nil {
 		return nil, err
 	}
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.GetSvrip(), m.GetPushToken(), info.SequenceId, nil))
-	c.commMsgProcessor(m.Msg, info)
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(c.Uin, m.Svrip.Unwrap(), m.PushToken, pkt.SequenceId, nil))
+	c.commMsgProcessor(m.Msg, pkt.Params)
 	return nil, nil
 }
 
-func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeMsgReadedResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	rsp := msg.PbMsgReadedReportResp{}
-	if err := proto.Unmarshal(payload, &rsp); err != nil {
+	if err := proto.Unmarshal(pkt.Payload, &rsp); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
 	}
 	if len(rsp.GrpReadReport) > 0 {
-		return rsp.GrpReadReport[0].GetResult() == 0, nil
+		return rsp.GrpReadReport[0].Result.Unwrap() == 0, nil
 	}
 	return nil, nil
 }
@@ -420,9 +412,9 @@ func decodeMsgReadedResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload
 var loginNotifyLock sync.Mutex
 
 // StatSvc.SvcReqMSFLoginNotify
-func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeLoginNotifyPacket(c *QQClient, pkt *network.Packet) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(pkt.Payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	reader := jce.NewJceReader(data.Map["SvcReqMSFLoginNotify"]["QQService.SvcReqMSFLoginNotify"][1:])
@@ -443,7 +435,7 @@ func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload
 				t := ac
 				if ac.AppId == notify.AppId {
 					c.OnlineClients = append(c.OnlineClients, t)
-					c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+					c.OtherClientStatusChangedEvent.dispatch(c, &OtherClientStatusChangedEvent{
 						Client: t,
 						Online: true,
 					})
@@ -462,7 +454,7 @@ func decodeLoginNotifyPacket(c *QQClient, _ *network.IncomingPacketInfo, payload
 		if rmi != -1 {
 			rmc := c.OnlineClients[rmi]
 			c.OnlineClients = append(c.OnlineClients[:rmi], c.OnlineClients[rmi+1:]...)
-			c.dispatchOtherClientStatusChangedEvent(&OtherClientStatusChangedEvent{
+			c.OtherClientStatusChangedEvent.dispatch(c, &OtherClientStatusChangedEvent{
 				Client: rmc,
 				Online: false,
 			})

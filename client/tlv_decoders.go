@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Mrs4s/MiraiGo/client/internal/tlv"
 	"github.com/Mrs4s/MiraiGo/utils"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -12,22 +13,20 @@ import (
 
 // --- tlv decoders for qq client ---
 
+/*
 func (c *QQClient) decodeT161(data []byte) {
-	/*
-		reader := binary.NewReader(data)
-		reader.ReadBytes(2)
-		t := reader.ReadTlvMap(2)
-		if t172, ok := t[0x172]; ok {
-			c.rollbackSig = t172
-		}
-	*/
+	reader := binary.NewReader(data)
+	reader.ReadBytes(2)
+	t := reader.ReadTlvMap(2)
+	if t172, ok := t[0x172]; ok {
+		c.rollbackSig = t172
+	}
 }
+*/
 
 func (c *QQClient) decodeT119(data, ek []byte) {
 	tea := binary.NewTeaCipher(ek)
-	reader := binary.NewReader(tea.Decrypt(data))
-	reader.ReadBytes(2)
-	m := reader.ReadTlvMap(2)
+	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(tea.Decrypt(data)[2:])
 	if t130, ok := m[0x130]; ok {
 		c.decodeT130(t130)
 	}
@@ -63,33 +62,32 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		pt4TokenMap map[string][]byte
 	)
 
-	if _, ok := m[0x125]; ok {
-		// openId, openKey = readT125(t125)
-	}
-	if t186, ok := m[0x186]; ok {
-		c.decodeT186(t186)
-	}
 	if t11a, ok := m[0x11a]; ok {
 		nick, age, gender = readT11A(t11a)
 	}
-	if _, ok := m[0x199]; ok {
-		// openId, payToken = readT199(t199)
-	}
-	if _, ok := m[0x200]; ok {
-		// pf, pfkey = readT200(t200)
-	}
+	/*
+		if _, ok := m[0x125]; ok {
+			openId, openKey = readT125(t125)
+		}
+		if t186, ok := m[0x186]; ok {
+		 	c.decodeT186(t186)
+		}
+		if _, ok := m[0x199]; ok {
+			openId, payToken = readT199(t199)
+		}
+		if _, ok := m[0x200]; ok {
+			pf, pfkey = readT200(t200)
+		}
+		if _, ok := m[0x531]; ok {
+			a1, noPicSig = readT531(t531)
+		}
+		if _, ok := m[0x138]; ok {
+			readT138(t138) // chg time
+		}
+	*/
 	if t512, ok := m[0x512]; ok {
 		psKeyMap, pt4TokenMap = readT512(t512)
 	}
-	if _, ok := m[0x531]; ok {
-		// a1, noPicSig = readT531(t531)
-	}
-
-	if _, ok := m[0x138]; ok {
-		// readT138(t138) // chg time
-	}
-
-
 	c.oicq.WtSessionTicketKey = utils.Select(m[0x134], c.oicq.WtSessionTicketKey)
 
 	// we don't use `c.sigInfo = &auth.SigInfo{...}` here,
@@ -123,7 +121,7 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 		if len(decrypted) > 51+16 {
 			dr := binary.NewReader(decrypted)
 			dr.ReadBytes(51)
-			c.deviceInfo.TgtgtKey = dr.ReadBytes(16)
+			c.Device().TgtgtKey = dr.ReadBytes(16)
 		}
 	}
 	c.Nickname = nick
@@ -133,18 +131,16 @@ func (c *QQClient) decodeT119(data, ek []byte) {
 
 // wtlogin.exchange_emp
 func (c *QQClient) decodeT119R(data []byte) {
-	tea := binary.NewTeaCipher(c.deviceInfo.TgtgtKey)
-	reader := binary.NewReader(tea.Decrypt(data))
-	reader.ReadBytes(2)
-	m := reader.ReadTlvMap(2)
+	tea := binary.NewTeaCipher(c.Device().TgtgtKey)
+	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(tea.Decrypt(data)[2:])
 	if t120, ok := m[0x120]; ok {
 		c.sig.SKey = t120
 		c.sig.SKeyExpiredTime = time.Now().Unix() + 21600
-		c.Debug("skey updated: %v", c.sig.SKey)
+		c.debug("skey updated: %v", c.sig.SKey)
 	}
 	if t11a, ok := m[0x11a]; ok {
 		c.Nickname, c.Age, c.Gender = readT11A(t11a)
-		c.Debug("account info updated: " + c.Nickname)
+		c.debug("account info updated: " + c.Nickname)
 	}
 }
 
@@ -161,9 +157,11 @@ func (c *QQClient) decodeT113(data []byte) {
 	fmt.Println("got t113 uin:", uin)
 }
 
+/*
 func (c *QQClient) decodeT186(data []byte) {
 	// c.pwdFlag = data[1] == 1
 }
+*/
 
 // --- tlv readers ---
 
@@ -222,8 +220,7 @@ func readT512(data []byte) (psKeyMap map[string][]byte, pt4TokenMap map[string][
 }
 
 func readT531(data []byte) (a1, noPicSig []byte) {
-	reader := binary.NewReader(data)
-	m := reader.ReadTlvMap(2)
+	m, _ := tlv.NewDecoder(2, 2).DecodeRecordMap(data)
 	if m.Exists(0x103) && m.Exists(0x16a) && m.Exists(0x113) && m.Exists(0x10c) {
 		a1 = append(m[0x106], m[0x10c]...)
 		noPicSig = m[0x16a]

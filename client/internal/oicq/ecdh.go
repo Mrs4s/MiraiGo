@@ -1,7 +1,7 @@
-package crypto
+package oicq
 
 import (
-	"crypto/elliptic"
+	"crypto/ecdh"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
@@ -10,35 +10,22 @@ import (
 	"strconv"
 )
 
-type ECDH struct {
+// session is ecdh session in oicq.
+type session struct {
 	SvrPublicKeyVer uint16
 	PublicKey       []byte
 	ShareKey        []byte
 }
 
-type EncryptSession struct {
-	T133 []byte
-}
-
 const serverPublicKey = "04EBCA94D733E399B2DB96EACDD3F69A8BB0F74224E2B44E3357812211D2E62EFBC91BB553098E25E33A799ADC7F76FEB208DA7C6522CDB0719A305180CC54A82E"
 
-func NewECDH() *ECDH {
-	e := &ECDH{
+func newSession() *session {
+	e := &session{
 		SvrPublicKeyVer: 1,
 	}
-	e.generateKey(serverPublicKey)
+	key, _ := hex.DecodeString(serverPublicKey)
+	e.init(key)
 	return e
-}
-
-func (e *ECDH) generateKey(sPubKey string) {
-	pub, _ := hex.DecodeString(sPubKey)
-	p256 := elliptic.P256()
-	key, sx, sy, _ := elliptic.GenerateKey(p256, rand.Reader)
-	tx, ty := elliptic.Unmarshal(p256, pub)
-	x, _ := p256.ScalarMult(tx, ty, key)
-	hash := md5.Sum(x.Bytes()[:16])
-	e.ShareKey = hash[:]
-	e.PublicKey = elliptic.Marshal(p256, sx, sy)
 }
 
 type pubKeyResp struct {
@@ -48,8 +35,8 @@ type pubKeyResp struct {
 	} `json:"PubKeyMeta"`
 }
 
-// FetchPubKey 从服务器获取PubKey
-func (e *ECDH) FetchPubKey(uin int64) {
+// fetchPubKey 从服务器获取PubKey
+func (e *session) fetchPubKey(uin int64) {
 	resp, err := http.Get("https://keyrotate.qq.com/rotate_key?cipher_suite_ver=305&uin=" + strconv.FormatInt(uin, 10))
 	if err != nil {
 		return
@@ -61,5 +48,18 @@ func (e *ECDH) FetchPubKey(uin int64) {
 		return
 	}
 	e.SvrPublicKeyVer = pubKey.Meta.PubKeyVer
-	e.generateKey(pubKey.Meta.PubKey) // todo check key sign
+	key, _ := hex.DecodeString(pubKey.Meta.PubKey)
+	e.init(key) // todo check key sign
+}
+
+func (e *session) init(svrPubKey []byte) {
+	p256 := ecdh.P256()
+	local, _ := p256.GenerateKey(rand.Reader)
+	remote, _ := p256.NewPublicKey(svrPubKey)
+	share, _ := local.ECDH(remote)
+
+	hash := md5.New()
+	hash.Write(share[:16])
+	e.ShareKey = hash.Sum(nil)
+	e.PublicKey = local.PublicKey().Bytes()
 }

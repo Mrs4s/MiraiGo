@@ -48,9 +48,8 @@ func (c *QQClient) getGtk(domain string) int {
 			accu = accu + (accu << 5) + int(b)
 		}
 		return 2147483647 & accu
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
@@ -60,7 +59,7 @@ func (c *QQClient) GetModelShow(modelName string) ([]*ModelVariant, error) {
 				Uin:            c.Uin,
 				Model:          strings.ReplaceAll(url.QueryEscape(modelName), "+", "%20"),
 				AppType:        0,
-				IMei:           c.deviceInfo.IMEI,
+				IMei:           c.Device().IMEI,
 				ShowInfo:       true,
 				ModelShow:      "",
 				RecoverDefault: false,
@@ -97,7 +96,7 @@ func (c *QQClient) SetModelShow(modelName string, modelShow string) error {
 				Uin:            c.Uin,
 				Model:          strings.ReplaceAll(url.QueryEscape(modelName), "+", "%20"),
 				AppType:        0,
-				IMei:           c.deviceInfo.IMEI,
+				IMei:           c.Device().IMEI,
 				ShowInfo:       true,
 				ModelShow:      strings.ReplaceAll(url.QueryEscape(modelShow), "+", "%20"),
 				RecoverDefault: modelShow == "",

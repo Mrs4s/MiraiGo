@@ -37,7 +37,7 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 			Type:        proto.Uint32(2),
 			SendUin:     proto.Uint64(uint64(c.Uin)),
 			ReqType:     proto.String("webview"),
-			OriginalUrl: &url,
+			OriginalUrl: proto.Some(url),
 			IsArk:       proto.Bool(false),
 			IsFinish:    proto.Bool(false),
 			SrcUrls:     []string{url},
@@ -48,22 +48,19 @@ func (c *QQClient) buildUrlCheckRequest(url string) (uint16, []byte) {
 	return c.uniPacket("OidbSvc.0xbcb_0", payload)
 }
 
-func decodeUrlCheckResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := &oidb.OIDBSSOPkg{}
-	rsp := &oidb.DBCBRspBody{}
-	if err := proto.Unmarshal(payload, pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+func decodeUrlCheckResponse(_ *QQClient, pkt *network.Packet) (any, error) {
+	rsp := oidb.DBCBRspBody{}
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if rsp.CheckUrlRsp == nil || len(rsp.CheckUrlRsp.Results) == 0 {
 		return nil, errors.New("response is empty")
 	}
-	if rsp.CheckUrlRsp.Results[0].JumpUrl != nil {
+	if rsp.CheckUrlRsp.Results[0].JumpUrl.IsSome() {
 		return Danger, nil
 	}
-	if rsp.CheckUrlRsp.Results[0].GetUmrtype() == 2 {
+	if rsp.CheckUrlRsp.Results[0].Umrtype.Unwrap() == 2 {
 		return Safe, nil
 	}
 	return Unknown, nil

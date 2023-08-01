@@ -17,8 +17,6 @@ type NetworkReader struct {
 	conn net.Conn
 }
 
-type TlvMap map[uint16][]byte
-
 // --- ByteStream reader ---
 
 func NewReader(data []byte) *Reader {
@@ -52,17 +50,20 @@ func (r *Reader) ReadBytesShort() []byte {
 }
 
 func (r *Reader) ReadUInt16() uint16 {
-	b := r.ReadBytes(2)
+	b := make([]byte, 2)
+	_, _ = r.buf.Read(b)
 	return binary.BigEndian.Uint16(b)
 }
 
 func (r *Reader) ReadInt32() int32 {
-	b := r.ReadBytes(4)
+	b := make([]byte, 4)
+	_, _ = r.buf.Read(b)
 	return int32(binary.BigEndian.Uint32(b))
 }
 
 func (r *Reader) ReadInt64() int64 {
-	b := r.ReadBytes(8)
+	b := make([]byte, 8)
+	_, _ = r.buf.Read(b)
 	return int64(binary.BigEndian.Uint64(b))
 }
 
@@ -89,44 +90,12 @@ func (r *Reader) ReadAvailable() []byte {
 	return r.ReadBytes(r.buf.Len())
 }
 
-func (r *Reader) ReadTlvMap(tagSize int) (m TlvMap) {
-	defer func() {
-		if r := recover(); r != nil {
-			// TODO: error
-		}
-	}()
-	m = make(map[uint16][]byte)
-	for {
-		if r.Len() < tagSize {
-			return m
-		}
-		var k uint16
-		switch tagSize {
-		case 1:
-			k = uint16(r.ReadByte())
-		case 2:
-			k = r.ReadUInt16()
-		case 4:
-			k = uint16(r.ReadInt32())
-		}
-		if k == 255 {
-			return m
-		}
-		m[k] = r.ReadBytes(int(r.ReadUInt16()))
-	}
-}
-
 func (r *Reader) Len() int {
 	return r.buf.Len()
 }
 
 func (r *Reader) Index() int64 {
 	return r.buf.Size()
-}
-
-func (tlv TlvMap) Exists(key uint16) bool {
-	_, ok := tlv[key]
-	return ok
 }
 
 // --- Network reader ---
@@ -154,7 +123,8 @@ func (r *NetworkReader) ReadBytes(len int) ([]byte, error) {
 }
 
 func (r *NetworkReader) ReadInt32() (int32, error) {
-	b, err := r.ReadBytes(4)
+	b := make([]byte, 4)
+	_, err := r.conn.Read(b)
 	if err != nil {
 		return 0, err
 	}

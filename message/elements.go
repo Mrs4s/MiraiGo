@@ -28,10 +28,7 @@ type GroupVoiceElement struct {
 	Ptt  *msg.Ptt
 }
 
-type PrivateVoiceElement struct {
-	Data []byte
-	Ptt  *msg.Ptt
-}
+type PrivateVoiceElement = GroupVoiceElement
 
 type FaceElement struct {
 	Index int32
@@ -106,8 +103,10 @@ type AnimatedSticker struct {
 	Name string
 }
 
-type RedBagMessageType int
-type AtType int
+type (
+	RedBagMessageType int
+	AtType            int
+)
 
 // /com/tencent/mobileqq/data/MessageForQQWalletMsg.java
 const (
@@ -253,10 +252,6 @@ func (e *GroupFileElement) Type() ElementType {
 }
 
 func (e *GroupVoiceElement) Type() ElementType {
-	return Voice
-}
-
-func (e *PrivateVoiceElement) Type() ElementType {
 	return Voice
 }
 

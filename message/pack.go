@@ -1,7 +1,6 @@
 package message
 
 import (
-	"encoding/hex"
 	"fmt"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -20,7 +19,7 @@ var imgOld = []byte{
 func (e *TextElement) Pack() (r []*msg.Elem) {
 	r = append(r, &msg.Elem{
 		Text: &msg.Text{
-			Str: &e.Content,
+			Str: proto.Some(e.Content),
 		},
 	})
 	return
@@ -45,7 +44,7 @@ func (e *FaceElement) Pack() (r []*msg.Elem) {
 	} else {
 		r = append(r, &msg.Elem{
 			Face: &msg.Face{
-				Index: &e.Index,
+				Index: proto.Some(e.Index),
 				Old:   binary.ToBytes(int16(0x1445 - 4 + e.Index)),
 				Buf:   []byte{0x00, 0x01, 0x00, 0x04, 0x52, 0xCC, 0xF5, 0xD0},
 			},
@@ -60,7 +59,7 @@ func (e *AtElement) Pack() (r []*msg.Elem) {
 	case AtTypeGroupMember:
 		r = append(r, &msg.Elem{
 			Text: &msg.Text{
-				Str: &e.Display,
+				Str: proto.Some(e.Display),
 				Attr6Buf: binary.NewWriterF(func(w *binary.Writer) {
 					w.WriteUInt16(1)
 					w.WriteUInt16(0)
@@ -79,7 +78,7 @@ func (e *AtElement) Pack() (r []*msg.Elem) {
 		pb, _ := proto.Marshal(&msg.TextResvAttr{AtType: proto.Uint32(2), AtMemberTinyid: proto.Uint64(uint64(e.Target))})
 		r = append(r, &msg.Elem{
 			Text: &msg.Text{
-				Str:       &e.Display,
+				Str:       proto.Some(e.Display),
 				PbReserve: pb,
 			},
 		})
@@ -93,13 +92,13 @@ func (e *ServiceElement) Pack() (r []*msg.Elem) {
 	// id =35 已移至 ForwardElement
 	if e.Id == 1 {
 		r = append(r, &msg.Elem{
-			Text: &msg.Text{Str: &e.ResId},
+			Text: &msg.Text{Str: proto.Some(e.ResId)},
 		})
 	}
 	r = append(r, &msg.Elem{
 		RichMsg: &msg.RichMsg{
 			Template1: append([]byte{1}, binary.ZlibCompress([]byte(e.Content))...),
-			ServiceId: &e.Id,
+			ServiceId: proto.Some(e.Id),
 		},
 	})
 	return
@@ -126,7 +125,7 @@ func (e *ShortVideoElement) Pack() (r []*msg.Elem) {
 	video := &msg.VideoFile{
 		FileUuid:               e.Uuid,
 		FileMd5:                e.Md5,
-		FileName:               []byte(hex.EncodeToString(e.Md5) + ".mp4"),
+		FileName:               []byte(fmt.Sprintf("%x.mp4", e.Md5)),
 		FileFormat:             proto.Int32(3),
 		FileTime:               proto.Int32(10),
 		FileSize:               proto.Int32(e.Size),
@@ -180,14 +179,14 @@ func (e *AnimatedSticker) Pack() []*msg.Elem {
 		CommonElem: &msg.CommonElem{
 			ServiceType:  proto.Int32(37),
 			PbElem:       pbElem,
-			BusinessType: &business,
+			BusinessType: proto.Some(business),
 		},
 	}
 
 	pbReverse, _ := proto.Marshal(&msg.Text{Str: proto.String(fmt.Sprintf("[%s]请使用最新版手机QQ体验新功能", e.Name))})
 	text := &msg.Elem{
 		Text: &msg.Text{
-			Str:       &name,
+			Str:       proto.Some(name),
 			PbReserve: pbReverse,
 		},
 	}

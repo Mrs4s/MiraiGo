@@ -21,10 +21,10 @@ func NewJceReader(data []byte) *JceReader {
 	return &JceReader{buf: data}
 }
 
-func (r *JceReader) readHead() (hd HeadData, l int) {
-	hd, l = r.peakHead()
+func (r *JceReader) readHead() HeadData {
+	hd, l := r.peakHead()
 	r.off += l
-	return
+	return hd
 }
 
 func (r *JceReader) peakHead() (hd HeadData, l int) {
@@ -49,7 +49,7 @@ func (r *JceReader) skipHead() {
 }
 
 func (r *JceReader) skip(l int) {
-	r.skipBytes(l)
+	r.off += l
 }
 
 func (r *JceReader) skipField(t byte) {
@@ -86,7 +86,7 @@ func (r *JceReader) skipField(t byte) {
 }
 
 func (r *JceReader) skipNextField() {
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	r.skipField(hd.Type)
 }
 
@@ -105,17 +105,6 @@ func (r *JceReader) readBytes(n int) []byte {
 	return b
 }
 
-func (r *JceReader) skipBytes(n int) {
-	if r.off+n > len(r.buf) {
-		panic("skipBytes: EOF")
-	}
-	lremain := len(r.buf[r.off:])
-	if lremain < n {
-		n = lremain
-	}
-	r.off += n
-}
-
 func (r *JceReader) readByte() byte {
 	if r.off >= len(r.buf) {
 		panic("readByte: EOF")
@@ -126,15 +115,21 @@ func (r *JceReader) readByte() byte {
 }
 
 func (r *JceReader) readUInt16() uint16 {
-	return goBinary.BigEndian.Uint16(r.readBytes(2))
+	b := make([]byte, 2)
+	r.off += copy(b, r.buf[r.off:])
+	return goBinary.BigEndian.Uint16(b)
 }
 
 func (r *JceReader) readUInt32() uint32 {
-	return goBinary.BigEndian.Uint32(r.readBytes(4))
+	b := make([]byte, 4)
+	r.off += copy(b, r.buf[r.off:])
+	return goBinary.BigEndian.Uint32(b)
 }
 
 func (r *JceReader) readUInt64() uint64 {
-	return goBinary.BigEndian.Uint64(r.readBytes(8))
+	b := make([]byte, 8)
+	r.off += copy(b, r.buf[r.off:])
+	return goBinary.BigEndian.Uint64(b)
 }
 
 func (r *JceReader) readFloat32() float32 {
@@ -156,10 +151,10 @@ func (r *JceReader) skipToTag(tag int) bool {
 }
 
 func (r *JceReader) skipToStructEnd() {
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	for hd.Type != 11 {
 		r.skipField(hd.Type)
-		hd, _ = r.readHead()
+		hd = r.readHead()
 	}
 }
 
@@ -167,7 +162,7 @@ func (r *JceReader) ReadByte(tag int) byte {
 	if !r.skipToTag(tag) {
 		return 0
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 12:
 		return 0
@@ -186,7 +181,7 @@ func (r *JceReader) ReadInt16(tag int) int16 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 12:
 		return 0
@@ -203,7 +198,7 @@ func (r *JceReader) ReadInt32(tag int) int32 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 12:
 		return 0
@@ -222,7 +217,7 @@ func (r *JceReader) ReadInt64(tag int) int64 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 12:
 		return 0
@@ -243,7 +238,7 @@ func (r *JceReader) ReadFloat32(tag int) float32 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 12:
 		return 0
@@ -258,7 +253,7 @@ func (r *JceReader) ReadFloat64(tag int) float64 {
 	if !r.skipToTag(tag) {
 		return 0
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 12:
 		return 0
@@ -275,7 +270,7 @@ func (r *JceReader) ReadString(tag int) string {
 	if !r.skipToTag(tag) {
 		return ""
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 6:
 		return utils.B2S(r.readBytes(int(r.readByte())))
@@ -290,7 +285,7 @@ func (r *JceReader) ReadBytes(tag int) []byte {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -311,7 +306,7 @@ func (r *JceReader) ReadByteArrArr(tag int) (baa [][]byte) {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -378,7 +373,7 @@ func (r *JceReader) ReadJceStruct(obj IJceStruct, tag int) {
 	if !r.skipToTag(tag) {
 		return
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	if hd.Type != 10 {
 		return
 	}
@@ -390,7 +385,7 @@ func (r *JceReader) ReadMapStrStr(tag int) map[string]string {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 8:
 		s := r.ReadInt32(0)
@@ -408,7 +403,7 @@ func (r *JceReader) ReadMapStrByte(tag int) map[string][]byte {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 8:
 		s := r.ReadInt32(0)
@@ -422,11 +417,37 @@ func (r *JceReader) ReadMapStrByte(tag int) map[string][]byte {
 	}
 }
 
+func (r *JceReader) ReadMapIntVipInfo(tag int) map[int]*VipInfo {
+	if !r.skipToTag(tag) {
+		return nil
+	}
+	r.skipHead()
+	hd := r.readHead()
+	switch hd.Type {
+	case 8:
+		s := r.ReadInt32(0)
+		m := make(map[int]*VipInfo, s)
+		for i := 0; i < int(s); i++ {
+			k := r.ReadInt64(0)
+			v := new(VipInfo)
+			r.readHead()
+			v.ReadFrom(r)
+			r.skipToStructEnd()
+			m[int(k)] = v
+		}
+		r.skipToStructEnd()
+		return m
+	default:
+		r.skipToStructEnd()
+		return nil
+	}
+}
+
 func (r *JceReader) ReadMapStrMapStrByte(tag int) map[string]map[string][]byte {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 8:
 		s := r.ReadInt32(0)
@@ -491,7 +512,7 @@ func (r *JceReader) ReadFileStorageServerInfos(tag int) []FileStorageServerInfo 
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -511,7 +532,7 @@ func (r *JceReader) ReadBigDataIPLists(tag int) []BigDataIPList {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -531,7 +552,7 @@ func (r *JceReader) ReadBigDataIPInfos(tag int) []BigDataIPInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -551,7 +572,7 @@ func (r *JceReader) ReadOnlineInfos(tag int) []OnlineInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -571,7 +592,7 @@ func (r *JceReader) ReadInstanceInfos(tag int) []InstanceInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -591,7 +612,7 @@ func (r *JceReader) ReadSsoServerInfos(tag int) []SsoServerInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -611,7 +632,7 @@ func (r *JceReader) ReadFriendInfos(tag int) []FriendInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -631,7 +652,7 @@ func (r *JceReader) ReadTroopNumbers(tag int) []TroopNumber {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -651,7 +672,7 @@ func (r *JceReader) ReadTroopMemberInfos(tag int) []TroopMemberInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -671,7 +692,7 @@ func (r *JceReader) ReadPushMessageInfos(tag int) []PushMessageInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)
@@ -691,7 +712,7 @@ func (r *JceReader) ReadSvcDevLoginInfos(tag int) []SvcDevLoginInfo {
 	if !r.skipToTag(tag) {
 		return nil
 	}
-	hd, _ := r.readHead()
+	hd := r.readHead()
 	switch hd.Type {
 	case 9:
 		s := r.ReadInt32(0)

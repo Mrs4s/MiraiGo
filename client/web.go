@@ -16,7 +16,7 @@ import (
 type UnidirectionalFriendInfo struct {
 	Uin      int64
 	Nickname string
-	Age      int32
+	Age      uint32
 	Source   string
 }
 
@@ -25,8 +25,8 @@ func (c *QQClient) GetUnidirectionalFriendList() (ret []*UnidirectionalFriendInf
 		BlockList []struct {
 			Uin         int64  `json:"uint64_uin"`
 			NickBytes   string `json:"bytes_nick"`
-			Age         int32  `json:"uint32_age"`
-			Sex         int32  `json:"uint32_sex"`
+			Age         uint32 `json:"uint32_age"`
+			Sex         uint32 `json:"uint32_sex"`
 			SourceBytes string `json:"bytes_source"`
 		} `json:"rpt_block_list"`
 		ErrorCode int32 `json:"ErrorCode"`
@@ -88,7 +88,7 @@ func (c *QQClient) webSsoRequest(host, webCmd, data string) (string, error) {
 	cmd := "MQUpdateSvc_" + sub + ".web." + webCmd
 	req, _ := proto.Marshal(&web.WebSsoRequestBody{
 		Type: proto.Uint32(0),
-		Data: &data,
+		Data: proto.Some(data),
 	})
 	rspData, err := c.sendAndWaitDynamic(c.uniPacket(cmd, req))
 	if err != nil {
@@ -98,5 +98,5 @@ func (c *QQClient) webSsoRequest(host, webCmd, data string) (string, error) {
 	if err = proto.Unmarshal(rspData, rsp); err != nil {
 		return "", errors.Wrap(err, "unmarshal response error")
 	}
-	return rsp.GetData(), nil
+	return rsp.Data.Unwrap(), nil
 }

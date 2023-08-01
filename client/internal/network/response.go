@@ -46,6 +46,7 @@ func (t *Transport) ReadResponse(head []byte) (*Response, error) {
 	case EncryptTypeD2Key:
 		body = binary.NewTeaCipher(t.Sig.D2Key).Decrypt(body)
 	case EncryptTypeEmptyKey:
+		emptyKey := make([]byte, 16)
 		body = binary.NewTeaCipher(emptyKey).Decrypt(body)
 	}
 	err := t.readSSOFrame(resp, body)
@@ -55,7 +56,7 @@ func (t *Transport) ReadResponse(head []byte) (*Response, error) {
 func (t *Transport) readSSOFrame(resp *Response, payload []byte) error {
 	reader := binary.NewReader(payload)
 	headLen := reader.ReadInt32()
-	if headLen-4 > int32(reader.Len()) {
+	if headLen < 4 || headLen-4 > int32(reader.Len()) {
 		return errors.WithStack(ErrPacketDropped)
 	}
 

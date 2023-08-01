@@ -2,13 +2,11 @@ package binary
 
 import (
 	"bytes"
+	"compress/gzip"
+	"compress/zlib"
 	binary2 "encoding/binary"
 	"encoding/hex"
-	"io"
 	"net"
-
-	"github.com/klauspost/compress/gzip"
-	"github.com/klauspost/compress/zlib"
 
 	"github.com/Mrs4s/MiraiGo/utils"
 )
@@ -35,7 +33,7 @@ func ZlibUncompress(src []byte) []byte {
 	var out bytes.Buffer
 	r, _ := zlib.NewReader(b)
 	defer r.Close()
-	io.Copy(&out, r)
+	_, _ = out.ReadFrom(r)
 	return out.Bytes()
 }
 
@@ -43,7 +41,8 @@ func ZlibCompress(data []byte) []byte {
 	zw := acquireZlibWriter()
 	_, _ = zw.w.Write(data)
 	_ = zw.w.Close()
-	ret := append([]byte(nil), zw.buf.Bytes()...)
+	ret := make([]byte, len(zw.buf.Bytes()))
+	copy(ret, zw.buf.Bytes())
 	releaseZlibWriter(zw)
 	return ret
 }
@@ -52,7 +51,8 @@ func GZipCompress(data []byte) []byte {
 	gw := AcquireGzipWriter()
 	_, _ = gw.Write(data)
 	_ = gw.Close()
-	ret := append([]byte(nil), gw.buf.Bytes()...)
+	ret := make([]byte, len(gw.buf.Bytes()))
+	copy(ret, gw.buf.Bytes())
 	ReleaseGzipWriter(gw)
 	return ret
 }
@@ -62,7 +62,7 @@ func GZipUncompress(src []byte) []byte {
 	var out bytes.Buffer
 	r, _ := gzip.NewReader(b)
 	defer r.Close()
-	_, _ = io.Copy(&out, r)
+	_, _ = out.ReadFrom(r)
 	return out.Bytes()
 }
 
@@ -98,28 +98,13 @@ func AppendUUID(dst []byte, uuid []byte) []byte {
 	return dst
 }
 
-func ToIPV4Address(arr []byte) string {
-	ip := (net.IP)(arr)
-	return ip.String()
-}
-
 func UInt32ToIPV4Address(i uint32) string {
 	ip := net.IP{0, 0, 0, 0}
 	binary2.LittleEndian.PutUint32(ip, i)
 	return ip.String()
 }
 
-func ToChunkedBytesF(b []byte, size int, f func([]byte)) {
-	r := NewReader(b)
-	for r.Len() >= size {
-		f(r.ReadBytes(size))
-	}
-	if r.Len() > 0 {
-		f(r.ReadAvailable())
-	}
-}
-
-func ToBytes(i interface{}) []byte {
+func ToBytes(i any) []byte {
 	return NewWriterF(func(w *Writer) {
 		// TODO: more types
 		switch t := i.(type) {

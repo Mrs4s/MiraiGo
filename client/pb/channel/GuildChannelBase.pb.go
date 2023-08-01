@@ -3,259 +3,74 @@
 
 package channel
 
+import (
+	proto "github.com/RomiChan/protobuf/proto"
+)
+
 type ChannelUserInfo struct {
 	ClientIdentity *ClientIdentity        `protobuf:"bytes,1,opt"`
-	MemberType     *uint32                `protobuf:"varint,2,opt"`
+	MemberType     proto.Option[uint32]   `protobuf:"varint,2,opt"`
 	Permission     *ChannelUserPermission `protobuf:"bytes,3,opt"`
 	RoleGroups     []*BaseRoleGroupInfo   `protobuf:"bytes,4,rep"`
 }
 
-func (x *ChannelUserInfo) GetClientIdentity() *ClientIdentity {
-	if x != nil {
-		return x.ClientIdentity
-	}
-	return nil
-}
-
-func (x *ChannelUserInfo) GetMemberType() uint32 {
-	if x != nil && x.MemberType != nil {
-		return *x.MemberType
-	}
-	return 0
-}
-
-func (x *ChannelUserInfo) GetPermission() *ChannelUserPermission {
-	if x != nil {
-		return x.Permission
-	}
-	return nil
-}
-
-func (x *ChannelUserInfo) GetRoleGroups() []*BaseRoleGroupInfo {
-	if x != nil {
-		return x.RoleGroups
-	}
-	return nil
-}
-
 type ChannelUserPermission struct {
-	AllowReadFeed  *bool `protobuf:"varint,1,opt"`
-	AllowWriteFeed *bool `protobuf:"varint,2,opt"`
-}
-
-func (x *ChannelUserPermission) GetAllowReadFeed() bool {
-	if x != nil && x.AllowReadFeed != nil {
-		return *x.AllowReadFeed
-	}
-	return false
-}
-
-func (x *ChannelUserPermission) GetAllowWriteFeed() bool {
-	if x != nil && x.AllowWriteFeed != nil {
-		return *x.AllowWriteFeed
-	}
-	return false
+	AllowReadFeed  proto.Option[bool] `protobuf:"varint,1,opt"`
+	AllowWriteFeed proto.Option[bool] `protobuf:"varint,2,opt"`
+	_              [0]func()
 }
 
 type ClientIdentity struct {
-	ClientId *uint32 `protobuf:"varint,1,opt"`
-	Desc     *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *ClientIdentity) GetClientId() uint32 {
-	if x != nil && x.ClientId != nil {
-		return *x.ClientId
-	}
-	return 0
-}
-
-func (x *ClientIdentity) GetDesc() string {
-	if x != nil && x.Desc != nil {
-		return *x.Desc
-	}
-	return ""
+	ClientId proto.Option[uint32] `protobuf:"varint,1,opt"`
+	Desc     proto.Option[string] `protobuf:"bytes,2,opt"`
+	_        [0]func()
 }
 
 type BaseGuildInfo struct {
-	GuildId  *uint64 `protobuf:"varint,1,opt"`
-	Name     *string `protobuf:"bytes,2,opt"`
-	JoinTime *uint64 `protobuf:"varint,3,opt"`
-}
-
-func (x *BaseGuildInfo) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *BaseGuildInfo) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *BaseGuildInfo) GetJoinTime() uint64 {
-	if x != nil && x.JoinTime != nil {
-		return *x.JoinTime
-	}
-	return 0
+	GuildId  proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Name     proto.Option[string] `protobuf:"bytes,2,opt"`
+	JoinTime proto.Option[uint64] `protobuf:"varint,3,opt"`
+	_        [0]func()
 }
 
 type BaseRoleGroupInfo struct {
-	RoleId *uint64 `protobuf:"varint,1,opt"`
-	Name   *string `protobuf:"bytes,2,opt"`
-	Color  *uint32 `protobuf:"varint,3,opt"`
-}
-
-func (x *BaseRoleGroupInfo) GetRoleId() uint64 {
-	if x != nil && x.RoleId != nil {
-		return *x.RoleId
-	}
-	return 0
-}
-
-func (x *BaseRoleGroupInfo) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *BaseRoleGroupInfo) GetColor() uint32 {
-	if x != nil && x.Color != nil {
-		return *x.Color
-	}
-	return 0
+	RoleId proto.Option[uint64] `protobuf:"varint,1,opt"`
+	Name   proto.Option[string] `protobuf:"bytes,2,opt"`
+	Color  proto.Option[uint32] `protobuf:"varint,3,opt"`
+	_      [0]func()
 }
 
 type StChannelInfo struct {
-	Sign    *StChannelSign `protobuf:"bytes,1,opt"`
-	Name    *string        `protobuf:"bytes,2,opt"`
-	IconUrl *string        `protobuf:"bytes,3,opt"`
-}
-
-func (x *StChannelInfo) GetSign() *StChannelSign {
-	if x != nil {
-		return x.Sign
-	}
-	return nil
-}
-
-func (x *StChannelInfo) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *StChannelInfo) GetIconUrl() string {
-	if x != nil && x.IconUrl != nil {
-		return *x.IconUrl
-	}
-	return ""
+	Sign    *StChannelSign       `protobuf:"bytes,1,opt"`
+	Name    proto.Option[string] `protobuf:"bytes,2,opt"`
+	IconUrl proto.Option[string] `protobuf:"bytes,3,opt"`
+	_       [0]func()
 }
 
 type StChannelSign struct {
-	GuildId   *uint64 `protobuf:"varint,1,opt"`
-	ChannelId *uint64 `protobuf:"varint,2,opt"`
-}
-
-func (x *StChannelSign) GetGuildId() uint64 {
-	if x != nil && x.GuildId != nil {
-		return *x.GuildId
-	}
-	return 0
-}
-
-func (x *StChannelSign) GetChannelId() uint64 {
-	if x != nil && x.ChannelId != nil {
-		return *x.ChannelId
-	}
-	return 0
+	GuildId   proto.Option[uint64] `protobuf:"varint,1,opt"`
+	ChannelId proto.Option[uint64] `protobuf:"varint,2,opt"`
+	_         [0]func()
 }
 
 type StEmotionReactionInfo struct {
-	Id                *string          `protobuf:"bytes,1,opt"`
-	EmojiReactionList []*EmojiReaction `protobuf:"bytes,2,rep"`
-}
-
-func (x *StEmotionReactionInfo) GetId() string {
-	if x != nil && x.Id != nil {
-		return *x.Id
-	}
-	return ""
-}
-
-func (x *StEmotionReactionInfo) GetEmojiReactionList() []*EmojiReaction {
-	if x != nil {
-		return x.EmojiReactionList
-	}
-	return nil
+	Id                proto.Option[string] `protobuf:"bytes,1,opt"`
+	EmojiReactionList []*EmojiReaction     `protobuf:"bytes,2,rep"`
 }
 
 type StCommonExt struct {
-	MapInfo      []*CommonEntry `protobuf:"bytes,1,rep"`
-	AttachInfo   *string        `protobuf:"bytes,2,opt"`
-	MapBytesInfo []*BytesEntry  `protobuf:"bytes,3,rep"`
-}
-
-func (x *StCommonExt) GetMapInfo() []*CommonEntry {
-	if x != nil {
-		return x.MapInfo
-	}
-	return nil
-}
-
-func (x *StCommonExt) GetAttachInfo() string {
-	if x != nil && x.AttachInfo != nil {
-		return *x.AttachInfo
-	}
-	return ""
-}
-
-func (x *StCommonExt) GetMapBytesInfo() []*BytesEntry {
-	if x != nil {
-		return x.MapBytesInfo
-	}
-	return nil
+	MapInfo      []*CommonEntry       `protobuf:"bytes,1,rep"`
+	AttachInfo   proto.Option[string] `protobuf:"bytes,2,opt"`
+	MapBytesInfo []*BytesEntry        `protobuf:"bytes,3,rep"`
 }
 
 type BytesEntry struct {
-	Key   *string `protobuf:"bytes,1,opt"`
-	Value []byte  `protobuf:"bytes,2,opt"`
-}
-
-func (x *BytesEntry) GetKey() string {
-	if x != nil && x.Key != nil {
-		return *x.Key
-	}
-	return ""
-}
-
-func (x *BytesEntry) GetValue() []byte {
-	if x != nil {
-		return x.Value
-	}
-	return nil
+	Key   proto.Option[string] `protobuf:"bytes,1,opt"`
+	Value []byte               `protobuf:"bytes,2,opt"`
 }
 
 type CommonEntry struct {
-	Key   *string `protobuf:"bytes,1,opt"`
-	Value *string `protobuf:"bytes,2,opt"`
-}
-
-func (x *CommonEntry) GetKey() string {
-	if x != nil && x.Key != nil {
-		return *x.Key
-	}
-	return ""
-}
-
-func (x *CommonEntry) GetValue() string {
-	if x != nil && x.Value != nil {
-		return *x.Value
-	}
-	return ""
+	Key   proto.Option[string] `protobuf:"bytes,1,opt"`
+	Value proto.Option[string] `protobuf:"bytes,2,opt"`
+	_     [0]func()
 }

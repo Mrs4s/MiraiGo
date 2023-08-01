@@ -1,15 +1,16 @@
 syntax = "proto2";
 
-option go_package = "./;exciting";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/exciting";
 
-message GroupFileUploadExt {
+message FileUploadExt {
   optional int32 unknown1 = 1;
   optional int32 unknown2 = 2;
-  optional GroupFileUploadEntry entry = 100;
   optional int32 unknown3 = 3;
+  optional FileUploadEntry entry = 100;
+  optional int32 unknown200 = 200;
 }
 
-message GroupFileUploadEntry {
+message FileUploadEntry {
   optional ExcitingBusiInfo busiBuff = 100;
   optional ExcitingFileEntry fileEntry = 200;
   optional ExcitingClientInfo clientInfo = 300;

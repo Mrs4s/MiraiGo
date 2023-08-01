@@ -527,6 +527,12 @@ type (
 		DelType byte  `jceId:"2"`
 		Version int32 `jceId:"3"`
 	}
+
+	VipInfo struct {
+		Open  byte  `jceId:"0"` // 1 为开通
+		Type  int32 `jceId:"1"` // 1 为年费
+		Level int32 `jceId:"2"`
+	}
 )
 
 func (pkt *RequestPacket) ReadFrom(r *JceReader) {
@@ -735,4 +741,10 @@ func (pkt *InstanceInfo) ReadFrom(r *JceReader) {
 	pkt.Platform = r.ReadInt64(2)
 	pkt.ProductType = r.ReadInt64(3)
 	pkt.ClientType = r.ReadInt64(4)
+}
+
+func (pkt *VipInfo) ReadFrom(r *JceReader) {
+	pkt.Open = r.ReadByte(0)
+	pkt.Type = r.ReadInt32(1)
+	pkt.Level = r.ReadInt32(2)
 }

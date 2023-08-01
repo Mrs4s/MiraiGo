@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package msg;
 
-option go_package = "pb/msg;msg";
+option go_package = "github.com/Mrs4s/MiraiGo/client/pb/msg";
 
 message GetMessageRequest {
   optional SyncFlag syncFlag = 1;
@@ -101,6 +101,7 @@ message RoutingHead {
   optional Grp grp = 2;
   optional GrpTmp grpTmp = 3;
   optional WPATmp wpaTmp = 6;
+  optional Trans0x211 trans_0X211 = 15;
   /*
   Dis dis = 4;
   DisTmp disTmp = 5;
@@ -112,7 +113,6 @@ message RoutingHead {
   TransCmd? transCmd = 12;
   AccostTmp? accostTmp = 13;
   PubGroupTmp? pubGroupTmp = 14;
-  Trans0x211? trans0x211 = 15;
   BusinessWPATmp? businessWpaTmp = 16;
   AuthTmp? authTmp = 17;
   BsnsTmp? bsnsTmp = 18;
@@ -121,6 +121,11 @@ message RoutingHead {
   NearByAssistantTmp? nearbyAssistantTmp = 21;
   CommTmp? commTmp = 22;
   */
+}
+
+message Trans0x211 {
+  optional uint64 toUin = 1;
+  optional uint32 ccCmd = 2;
 }
 
 message WPATmp {
@@ -201,7 +206,7 @@ message Elem {
   optional MarketFace marketFace = 6;
   //ElemFlags elemFlags = 7;
   optional CustomFace customFace = 8;
-  optional ElemFlags2 elemFlags2 = 9;
+  //optional ElemFlags2 elemFlags2 = 9;
   //FunFace funFace = 10;
   //SecretFileMsg secretFile = 11;
   optional RichMsg richMsg = 12;
@@ -450,7 +455,12 @@ message NotOnlineImage {
   optional int32 fileId = 23;
   optional int32 showLen = 24;
   optional int32 downloadLen = 25;
-  optional bytes pbReserve = 29;
+
+  // TODO: find this message
+  message PbReserve {
+    optional string url = 30;
+  }
+  optional PbReserve pbReserve = 29;
 }
 
 message NotOnlineFile {
@@ -627,7 +637,7 @@ message MessageHead {
   optional int32 fromAppid = 10;
   optional int32 fromInstid = 11;
   optional int32 userActive = 12;
-  optional DiscussInfo discussInfo = 13;
+  // optional DiscussInfo discussInfo = 13;
   optional string fromNick = 14;
   optional int64 authUin = 15;
   optional string authNick = 16;
@@ -635,11 +645,11 @@ message MessageHead {
   optional string authRemark = 18;
   optional string groupName = 19;
   optional MutilTransHead mutiltransHead = 20;
-  optional InstCtrl msgInstCtrl = 21;
+  // optional InstCtrl msgInstCtrl = 21;
   optional int32 publicAccountGroupSendFlag = 22;
   optional int32 wseqInC2cMsghead = 23;
   optional int64 cpid = 24;
-  optional ExtGroupKeyInfo extGroupKeyInfo = 25;
+  // optional ExtGroupKeyInfo extGroupKeyInfo = 25;
   optional string multiCompatibleText = 26;
   optional int32 authSex = 27;
   optional bool isSrcMsg = 28;

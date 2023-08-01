@@ -27,7 +27,6 @@ type (
 		Uin             int64
 		Code            int64
 		Name            string
-		Memo            string
 		OwnerUin        int64
 		GroupCreateTime uint32
 		GroupLevel      uint32
@@ -43,18 +42,17 @@ type (
 	}
 
 	GroupMemberInfo struct {
-		Group                  *GroupInfo
-		Uin                    int64
-		Gender                 byte
-		Nickname               string
-		CardName               string
-		Level                  uint16
-		JoinTime               int64
-		LastSpeakTime          int64
-		SpecialTitle           string
-		SpecialTitleExpireTime int64
-		ShutUpTimestamp        int64
-		Permission             MemberPermission
+		Group           *GroupInfo
+		Uin             int64
+		Nickname        string
+		CardName        string
+		JoinTime        int64
+		LastSpeakTime   int64
+		SpecialTitle    string
+		ShutUpTimestamp int64
+		Permission      MemberPermission
+		Level           uint16
+		Gender          byte
 	}
 
 	// GroupSearchInfo 通过搜索得到的群信息
@@ -81,7 +79,7 @@ func (c *QQClient) GetGroupInfo(groupCode int64) (*GroupInfo, error) {
 // OidbSvc.0x88d_0
 func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte) {
 	body := &oidb.D88DReqBody{
-		AppId: proto.Uint32(c.version.AppId),
+		AppId: proto.Uint32(c.version().AppId),
 		ReqGroupInfo: []*oidb.ReqGroupInfo{
 			{
 				GroupCode: proto.Uint64(uint64(groupCode)),
@@ -116,12 +114,7 @@ func (c *QQClient) buildGroupInfoRequestPacket(groupCode int64) (uint16, []byte)
 		},
 		PcClientVersion: proto.Uint32(0),
 	}
-	b, _ := proto.Marshal(body)
-	req := &oidb.OIDBSSOPkg{
-		Command:    2189,
-		Bodybuffer: b,
-	}
-	payload, _ := proto.Marshal(req)
+	payload := c.packOIDBPackageProto(2189, 0, body)
 	return c.uniPacket("OidbSvc.0x88d_0", payload)
 }
 
@@ -147,7 +140,7 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 	search, _ := proto.Marshal(&profilecard.AccountSearch{
 		Start:     proto.Int32(0),
 		End:       proto.Uint32(4),
-		Keyword:   &keyword,
+		Keyword:   proto.Some(keyword),
 		Highlight: []string{keyword},
 		UserLocation: &profilecard.Location{
 			Latitude:  proto.Float64(0),
@@ -188,9 +181,9 @@ func (c *QQClient) buildGroupSearchPacket(keyword string) (uint16, []byte) {
 }
 
 // SummaryCard.ReqSearch
-func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeGroupSearchResponse(_ *QQClient, pkt *network.Packet) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(pkt.Payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	if len(data.Map["RespHead"]["SummaryCard.RespHead"]) > 20 {
@@ -213,11 +206,11 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 			return nil, errors.Wrap(err, "get search result failed")
 		}
 		var ret []GroupSearchInfo
-		for _, g := range searchRsp.GetList() {
+		for _, g := range searchRsp.List {
 			ret = append(ret, GroupSearchInfo{
-				Code: int64(g.GetCode()),
-				Name: g.GetName(),
-				Memo: g.GetBrief(),
+				Code: int64(g.Code.Unwrap()),
+				Name: g.Name.Unwrap(),
+				Memo: g.Brief.Unwrap(),
 			})
 		}
 		return ret, nil
@@ -226,14 +219,11 @@ func decodeGroupSearchResponse(_ *QQClient, _ *network.IncomingPacketInfo, paylo
 }
 
 // OidbSvc.0x88d_0
-func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
-	pkg := oidb.OIDBSSOPkg{}
+func decodeGroupInfoResponse(c *QQClient, pkt *network.Packet) (any, error) {
 	rsp := oidb.D88DRspBody{}
-	if err := proto.Unmarshal(payload, &pkg); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
-	}
-	if err := proto.Unmarshal(pkg.Bodybuffer, &rsp); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal protobuf message")
+	err := unpackOIDBPackage(pkt.Payload, &rsp)
+	if err != nil {
+		return nil, err
 	}
 	if len(rsp.RspGroupInfo) == 0 {
 		return nil, errors.New(string(rsp.StrErrorInfo))
@@ -243,17 +233,16 @@ func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 		return nil, errors.New("group info not found")
 	}
 	return &GroupInfo{
-		Uin:             int64(*info.GroupInfo.GroupUin),
-		Code:            int64(*info.GroupCode),
+		Uin:             int64(info.GroupInfo.GroupUin.Unwrap()),
+		Code:            int64(info.GroupCode.Unwrap()),
 		Name:            string(info.GroupInfo.GroupName),
-		Memo:            string(info.GroupInfo.GroupMemo),
-		GroupCreateTime: *info.GroupInfo.GroupCreateTime,
-		GroupLevel:      *info.GroupInfo.GroupLevel,
-		OwnerUin:        int64(*info.GroupInfo.GroupOwner),
-		MemberCount:     uint16(*info.GroupInfo.GroupMemberNum),
-		MaxMemberCount:  uint16(*info.GroupInfo.GroupMemberMaxNum),
+		GroupCreateTime: info.GroupInfo.GroupCreateTime.Unwrap(),
+		GroupLevel:      info.GroupInfo.GroupLevel.Unwrap(),
+		OwnerUin:        int64(info.GroupInfo.GroupOwner.Unwrap()),
+		MemberCount:     uint16(info.GroupInfo.GroupMemberNum.Unwrap()),
+		MaxMemberCount:  uint16(info.GroupInfo.GroupMemberMaxNum.Unwrap()),
 		Members:         []*GroupMemberInfo{},
-		LastMsgSeq:      int64(info.GroupInfo.GetGroupCurMsgSeq()),
+		LastMsgSeq:      int64(info.GroupInfo.GroupCurMsgSeq.Unwrap()),
 		client:          c,
 	}, nil
 }
@@ -261,7 +250,7 @@ func decodeGroupInfoResponse(c *QQClient, _ *network.IncomingPacketInfo, payload
 func (c *QQClient) uploadGroupHeadPortrait(groupCode int64, img []byte) error {
 	url := fmt.Sprintf("http://htdata3.qq.com/cgi-bin/httpconn?htcmd=0x6ff0072&ver=5520&ukey=%v&range=0&uin=%v&seq=23&groupuin=%v&filetype=3&imagetype=5&userdata=0&subcmd=1&subver=101&clip=0_0_0_0&filesize=%v",
 		c.getSKey(), c.Uin, groupCode, len(img))
-	req, _ := http.NewRequest("POST", url, bytes.NewReader(img))
+	req, _ := http.NewRequest(http.MethodPost, url, bytes.NewReader(img))
 	req.Header["User-Agent"] = []string{"Dalvik/2.1.0 (Linux; U; Android 7.1.2; PCRT00 Build/N2G48H)"}
 	req.Header["Content-Type"] = []string{"multipart/form-data;boundary=****"}
 	rsp, err := http.DefaultClient.Do(req)
@@ -276,13 +265,6 @@ func (g *GroupInfo) UpdateName(newName string) {
 	if g.AdministratorOrOwner() && newName != "" && strings.Count(newName, "") <= 20 {
 		g.client.updateGroupName(g.Code, newName)
 		g.Name = newName
-	}
-}
-
-func (g *GroupInfo) UpdateMemo(newMemo string) {
-	if g.AdministratorOrOwner() {
-		g.client.updateGroupMemo(g.Code, newMemo)
-		g.Memo = newMemo
 	}
 }
 
@@ -336,7 +318,7 @@ func (g *GroupInfo) AdministratorOrOwner() bool {
 }
 
 func (g *GroupInfo) FindMember(uin int64) *GroupMemberInfo {
-	r := g.Read(func(info *GroupInfo) interface{} {
+	r := g.Read(func(info *GroupInfo) any {
 		return info.FindMemberWithoutLock(uin)
 	})
 	if r == nil {
@@ -368,7 +350,7 @@ func (g *GroupInfo) Update(f func(*GroupInfo)) {
 	f(g)
 }
 
-func (g *GroupInfo) Read(f func(*GroupInfo) interface{}) interface{} {
+func (g *GroupInfo) Read(f func(*GroupInfo) any) any {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
 	return f(g)
@@ -407,7 +389,7 @@ func (m *GroupMemberInfo) EditSpecialTitle(title string) {
 
 func (m *GroupMemberInfo) Kick(msg string, block bool) error {
 	if m.Uin != m.Group.client.Uin && m.Manageable() {
-		m.Group.client.kickGroupMember(m.Group.Code, m.Uin, msg, block)
+		m.Group.client.KickGroupMembers(m.Group.Code, msg, block, m.Uin)
 		return nil
 	} else {
 		return errors.New("not manageable")
@@ -423,6 +405,12 @@ func (m *GroupMemberInfo) Mute(time uint32) error {
 		return nil
 	} else {
 		return errors.New("not manageable")
+	}
+}
+
+func (g *GroupInfo) SetAnonymous(enable bool) {
+	if g.AdministratorOrOwner() {
+		g.client.setGroupAnonymous(g.Code, enable)
 	}
 }
 

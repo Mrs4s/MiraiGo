@@ -23,21 +23,21 @@ var msg0x210Decoders = map[int64]func(*QQClient, []byte) error{
 }
 
 // OnlinePush.ReqPush
-func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, payload []byte) (interface{}, error) {
+func decodeOnlinePushReqPacket(c *QQClient, pkt *network.Packet) (any, error) {
 	request := &jce.RequestPacket{}
-	request.ReadFrom(jce.NewJceReader(payload))
+	request.ReadFrom(jce.NewJceReader(pkt.Payload))
 	data := &jce.RequestDataVersion2{}
 	data.ReadFrom(jce.NewJceReader(request.SBuffer))
 	jr := jce.NewJceReader(data.Map["req"]["OnlinePushPack.SvcReqPushMsg"][1:])
 	uin := jr.ReadInt64(0)
 	msgInfos := jr.ReadPushMessageInfos(2)
-	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(uin, 0, nil, info.SequenceId, msgInfos))
+	_ = c.sendPacket(c.buildDeleteOnlinePushPacket(uin, 0, nil, pkt.SequenceId, msgInfos))
 	for _, m := range msgInfos {
 		k := fmt.Sprintf("%v%v%v", m.MsgSeq, m.MsgTime, m.MsgUid)
 		if _, ok := c.onlinePushCache.Get(k); ok {
 			continue
 		}
-		c.onlinePushCache.Add(k, "", time.Second*30)
+		c.onlinePushCache.Add(k, unit{}, time.Second*30)
 		// 0x2dc
 		if m.MsgType == 732 {
 			r := binary.NewReader(m.VMsg)
@@ -53,7 +53,17 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 				r.ReadBytes(6)
 				target := int64(uint32(r.ReadInt32()))
 				t := r.ReadInt32()
-				c.dispatchGroupMuteEvent(&GroupMuteEvent{
+
+				if target != 0 {
+					member := c.FindGroup(groupCode).FindMember(target)
+					if t > 0 {
+						member.ShutUpTimestamp = time.Now().Add(time.Second * time.Duration(t)).Unix()
+					} else {
+						member.ShutUpTimestamp = 0
+					}
+				}
+
+				c.GroupMuteEvent.dispatch(c, &GroupMuteEvent{
 					GroupCode:   groupCode,
 					OperatorUin: operator,
 					TargetUin:   target,
@@ -68,7 +78,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 						if rm.MsgType == 2 {
 							continue
 						}
-						c.dispatchGroupMessageRecalledEvent(&GroupMessageRecalledEvent{
+						c.GroupMessageRecalledEvent.dispatch(c, &GroupMessageRecalledEvent{
 							GroupCode:   groupCode,
 							OperatorUin: b.OptMsgRecall.Uin,
 							AuthorUin:   rm.AuthorUin,
@@ -82,7 +92,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 				}
 				if b.OptMsgRedTips != nil {
 					if b.OptMsgRedTips.LuckyFlag == 1 { // 运气王提示
-						c.dispatchGroupNotifyEvent(&GroupRedBagLuckyKingNotifyEvent{
+						c.GroupNotifyEvent.dispatch(c, &GroupRedBagLuckyKingNotifyEvent{
 							GroupCode: groupCode,
 							Sender:    int64(b.OptMsgRedTips.SenderUin),
 							LuckyKing: int64(b.OptMsgRedTips.LuckyUin),
@@ -91,7 +101,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 				}
 				if b.QqGroupDigestMsg != nil {
 					digest := b.QqGroupDigestMsg
-					c.dispatchGroupDigestEvent(&GroupDigestEvent{
+					c.GroupDigestEvent.dispatch(c, &GroupDigestEvent{
 						GroupCode:         int64(digest.GroupCode),
 						MessageID:         int32(digest.Seq),
 						InternalMessageID: int32(digest.Random),
@@ -118,7 +128,7 @@ func decodeOnlinePushReqPacket(c *QQClient, info *network.IncomingPacketInfo, pa
 					return nil, errors.Wrap(err, "decode online push 0x210 error")
 				}
 			} else {
-				c.Debug("unknown online push 0x210 sub type 0x%v", strconv.FormatInt(subType, 16))
+				c.debug("unknown online push 0x210 sub type 0x%v", strconv.FormatInt(subType, 16))
 			}
 		}
 	}
@@ -132,7 +142,7 @@ func msgType0x210Sub8ADecoder(c *QQClient, protobuf []byte) error {
 	}
 	for _, m := range s8a.MsgInfo {
 		if m.ToUin == c.Uin {
-			c.dispatchFriendMessageRecalledEvent(&FriendMessageRecalledEvent{
+			c.FriendMessageRecalledEvent.dispatch(c, &FriendMessageRecalledEvent{
 				FriendUin: m.FromUin,
 				MessageId: m.MsgSeq,
 				Time:      m.MsgTime,
@@ -152,7 +162,7 @@ func msgType0x210SubB3Decoder(c *QQClient, protobuf []byte) error {
 		Nickname: b3.MsgAddFrdNotify.Nick,
 	}
 	c.FriendList = append(c.FriendList, frd)
-	c.dispatchNewFriendEvent(&NewFriendEvent{Friend: frd})
+	c.NewFriendEvent.dispatch(c, &NewFriendEvent{Friend: frd})
 	return nil
 }
 
@@ -167,7 +177,7 @@ func msgType0x210SubD4Decoder(c *QQClient, protobuf []byte) error {
 			groupLeaveLock.Unlock()
 			return err
 		}
-		c.dispatchLeaveGroupEvent(&GroupLeaveEvent{Group: g})
+		c.GroupLeaveEvent.dispatch(c, &GroupLeaveEvent{Group: g})
 	}
 	groupLeaveLock.Unlock()
 	return nil
@@ -181,15 +191,15 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 	for _, m := range s27.ModInfos {
 		if m.ModGroupProfile != nil {
 			for _, info := range m.ModGroupProfile.GroupProfileInfos {
-				if info.GetField() == 1 {
-					if g := c.FindGroup(int64(m.ModGroupProfile.GetGroupCode())); g != nil {
+				if info.Field.Unwrap() == 1 {
+					if g := c.FindGroup(int64(m.ModGroupProfile.GroupCode.Unwrap())); g != nil {
 						old := g.Name
-						g.Name = string(info.GetValue())
-						c.dispatchGroupNameUpdatedEvent(&GroupNameUpdatedEvent{
+						g.Name = string(info.Value)
+						c.GroupNameUpdatedEvent.dispatch(c, &GroupNameUpdatedEvent{
 							Group:       g,
 							OldName:     old,
 							NewName:     g.Name,
-							OperatorUin: int64(m.ModGroupProfile.GetCmdUin()),
+							OperatorUin: int64(m.ModGroupProfile.CmdUin.Unwrap()),
 						})
 					}
 				}
@@ -198,6 +208,10 @@ func msgType0x210Sub27Decoder(c *QQClient, protobuf []byte) error {
 		if m.DelFriend != nil {
 			frdUin := m.DelFriend.Uins[0]
 			if frd := c.FindFriend(int64(frdUin)); frd != nil {
+				c.DeleteFriendEvent.dispatch(c, &DeleteFriendEvent{
+					Uin:      frd.Uin,
+					Nickname: frd.Nickname,
+				})
 				if err := c.ReloadFriendList(); err != nil {
 					return errors.Wrap(err, "failed to reload friend list")
 				}
@@ -221,7 +235,10 @@ func msgType0x210Sub122Decoder(c *QQClient, protobuf []byte) error {
 	if sender == 0 {
 		return nil
 	}
-	c.dispatchFriendNotifyEvent(&FriendPokeNotifyEvent{
+	if receiver == 0 {
+		receiver = c.Uin
+	}
+	c.FriendNotifyEvent.dispatch(c, &FriendPokeNotifyEvent{
 		Sender:   sender,
 		Receiver: receiver,
 	})
@@ -238,11 +255,11 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 	}
 	groupJoinLock.Lock()
 	defer groupJoinLock.Unlock()
-	if s44.GroupSyncMsg.GetGrpCode() == 0 { // member sync
+	if s44.GroupSyncMsg.GrpCode == 0 { // member sync
 		return errors.New("invalid group code")
 	}
-	c.Debug("syncing members.")
-	if group := c.FindGroup(s44.GroupSyncMsg.GetGrpCode()); group != nil {
+	c.debug("syncing members.")
+	if group := c.FindGroup(s44.GroupSyncMsg.GrpCode); group != nil {
 		group.lock.Lock()
 		defer group.lock.Unlock()
 
@@ -257,7 +274,7 @@ func msgType0x210Sub44Decoder(c *QQClient, protobuf []byte) error {
 			group.Members = newMem
 			for _, m := range newMem {
 				if lastJoinTime < m.JoinTime {
-					go c.dispatchNewMemberEvent(&MemberJoinGroupEvent{
+					c.GroupMemberJoinEvent.dispatch(c, &MemberJoinGroupEvent{
 						Group:  group,
 						Member: m,
 					})

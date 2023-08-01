@@ -6,12 +6,12 @@ import (
 )
 
 //go:noinline
-func (c *QQClient) buildOicqRequestPacket(uin int64, command uint16, body []byte) []byte {
+func (c *QQClient) buildOicqRequestPacket(uin int64, command uint16, body *oicq.TLV) []byte {
 	req := oicq.Message{
 		Uin:              uint32(uin),
 		Command:          command,
 		EncryptionMethod: oicq.EM_ECDH,
-		Body:             body,
+		Body:             body.Marshal(),
 	}
 	return c.oicq.Marshal(&req)
 }

@@ -5,117 +5,28 @@ package channel
 
 import (
 	msg "github.com/Mrs4s/MiraiGo/client/pb/msg"
+	proto "github.com/RomiChan/protobuf/proto"
 )
 
 type DF62ReqBody struct {
 	Msg *ChannelMsgContent `protobuf:"bytes,1,opt"`
-}
-
-func (x *DF62ReqBody) GetMsg() *ChannelMsgContent {
-	if x != nil {
-		return x.Msg
-	}
-	return nil
+	_   [0]func()
 }
 
 type DF62RspBody struct {
-	Result        *uint32               `protobuf:"varint,1,opt"`
+	Result        proto.Option[uint32]  `protobuf:"varint,1,opt"`
 	Errmsg        []byte                `protobuf:"bytes,2,opt"`
-	SendTime      *uint32               `protobuf:"varint,3,opt"`
+	SendTime      proto.Option[uint32]  `protobuf:"varint,3,opt"`
 	Head          *ChannelMsgHead       `protobuf:"bytes,4,opt"`
-	ErrType       *uint32               `protobuf:"varint,5,opt"`
+	ErrType       proto.Option[uint32]  `protobuf:"varint,5,opt"`
 	TransSvrInfo  *TransSvrInfo         `protobuf:"bytes,6,opt"`
 	FreqLimitInfo *ChannelFreqLimitInfo `protobuf:"bytes,7,opt"`
 	Body          *msg.MessageBody      `protobuf:"bytes,8,opt"`
 }
 
-func (x *DF62RspBody) GetResult() uint32 {
-	if x != nil && x.Result != nil {
-		return *x.Result
-	}
-	return 0
-}
-
-func (x *DF62RspBody) GetErrmsg() []byte {
-	if x != nil {
-		return x.Errmsg
-	}
-	return nil
-}
-
-func (x *DF62RspBody) GetSendTime() uint32 {
-	if x != nil && x.SendTime != nil {
-		return *x.SendTime
-	}
-	return 0
-}
-
-func (x *DF62RspBody) GetHead() *ChannelMsgHead {
-	if x != nil {
-		return x.Head
-	}
-	return nil
-}
-
-func (x *DF62RspBody) GetErrType() uint32 {
-	if x != nil && x.ErrType != nil {
-		return *x.ErrType
-	}
-	return 0
-}
-
-func (x *DF62RspBody) GetTransSvrInfo() *TransSvrInfo {
-	if x != nil {
-		return x.TransSvrInfo
-	}
-	return nil
-}
-
-func (x *DF62RspBody) GetFreqLimitInfo() *ChannelFreqLimitInfo {
-	if x != nil {
-		return x.FreqLimitInfo
-	}
-	return nil
-}
-
-func (x *DF62RspBody) GetBody() *msg.MessageBody {
-	if x != nil {
-		return x.Body
-	}
-	return nil
-}
-
 type TransSvrInfo struct {
-	SubType   *uint32 `protobuf:"varint,1,opt"`
-	RetCode   *int32  `protobuf:"varint,2,opt"`
-	ErrMsg    []byte  `protobuf:"bytes,3,opt"`
-	TransInfo []byte  `protobuf:"bytes,4,opt"`
-}
-
-func (x *TransSvrInfo) GetSubType() uint32 {
-	if x != nil && x.SubType != nil {
-		return *x.SubType
-	}
-	return 0
-}
-
-func (x *TransSvrInfo) GetRetCode() int32 {
-	if x != nil && x.RetCode != nil {
-		return *x.RetCode
-	}
-	return 0
-}
-
-func (x *TransSvrInfo) GetErrMsg() []byte {
-	if x != nil {
-		return x.ErrMsg
-	}
-	return nil
-}
-
-func (x *TransSvrInfo) GetTransInfo() []byte {
-	if x != nil {
-		return x.TransInfo
-	}
-	return nil
+	SubType   proto.Option[uint32] `protobuf:"varint,1,opt"`
+	RetCode   proto.Option[int32]  `protobuf:"varint,2,opt"`
+	ErrMsg    []byte               `protobuf:"bytes,3,opt"`
+	TransInfo []byte               `protobuf:"bytes,4,opt"`
 }

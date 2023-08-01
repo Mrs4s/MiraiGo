@@ -1,9 +1,9 @@
 package message
 
 import (
-	"bytes"
 	"crypto/md5"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/Mrs4s/MiraiGo/binary"
@@ -14,13 +14,13 @@ import (
 
 // *----- Definitions -----* //
 
-// ForwardMessage 添加 Node 请用 AddNode 方法
+// ForwardMessage 合并转发消息
 type ForwardMessage struct {
 	Nodes []*ForwardNode
-	items []*msg.PbMultiMsgItem
 }
 
-type ForwardNode struct {
+type ForwardNode struct { // todo 加一个group_id
+	GroupId    int64
 	SenderId   int64
 	SenderName string
 	Time       int32
@@ -72,9 +72,6 @@ func (f *ForwardMessage) AddNode(node *ForwardNode) *ForwardMessage {
 		if item.Type() != Forward { // quick path
 			continue
 		}
-		if forward, ok := item.(*ForwardElement); ok {
-			f.items = append(f.items, forward.Items...)
-		}
 	}
 	return f
 }
@@ -83,7 +80,7 @@ func (f *ForwardMessage) AddNode(node *ForwardNode) *ForwardMessage {
 func (f *ForwardMessage) Length() int { return len(f.Nodes) }
 
 func (f *ForwardMessage) Brief() string {
-	var brief bytes.Buffer
+	var brief strings.Builder
 	for _, n := range f.Nodes {
 		brief.WriteString(ToReadableString(n.Message))
 		if brief.Len() >= 27 {
@@ -94,7 +91,7 @@ func (f *ForwardMessage) Brief() string {
 }
 
 func (f *ForwardMessage) Preview() string {
-	var pv bytes.Buffer
+	var pv strings.Builder
 	for i, node := range f.Nodes {
 		if i >= 4 {
 			break
@@ -109,7 +106,7 @@ func (f *ForwardMessage) Preview() string {
 }
 
 func (f *ForwardMessage) CalculateValidationData(seq, random int32, groupCode int64) ([]byte, []byte) {
-	msgs := f.packForwardMsg(seq, random, groupCode)
+	msgs := f.PackForwardMessage(seq, random, groupCode)
 	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
 		{
 			FileName: proto.String("MultiMsg"),
@@ -122,40 +119,24 @@ func (f *ForwardMessage) CalculateValidationData(seq, random int32, groupCode in
 	return data, hash[:]
 }
 
-// CalculateValidationDataForward 屎代码
-func (f *ForwardMessage) CalculateValidationDataForward(seq, random int32, groupCode int64) ([]byte, []byte, []*msg.PbMultiMsgItem) {
-	msgs := f.packForwardMsg(seq, random, groupCode)
-	trans := &msg.PbMultiMsgTransmit{Msg: msgs, PbItemList: []*msg.PbMultiMsgItem{
-		{
-			FileName: proto.String("MultiMsg"),
-			Buffer:   &msg.PbMultiMsgNew{Msg: msgs},
-		},
-	}}
-	trans.PbItemList = append(trans.PbItemList, f.items...)
-	b, _ := proto.Marshal(trans)
-	data := binary.GZipCompress(b)
-	hash := md5.Sum(data)
-	return data, hash[:], trans.PbItemList
-}
-
-func (f *ForwardMessage) packForwardMsg(seq int32, random int32, groupCode int64) []*msg.Message {
+func (f *ForwardMessage) PackForwardMessage(seq int32, random int32, groupCode int64) []*msg.Message {
 	ml := make([]*msg.Message, 0, len(f.Nodes))
 	for _, node := range f.Nodes {
 		ml = append(ml, &msg.Message{
 			Head: &msg.MessageHead{
-				FromUin: &node.SenderId,
-				MsgSeq:  &seq,
-				MsgTime: &node.Time,
+				FromUin: proto.Some(node.SenderId),
+				MsgSeq:  proto.Some(seq),
+				MsgTime: proto.Some(node.Time),
 				MsgUid:  proto.Int64(0x0100_0000_0000_0000 | (int64(random) & 0xFFFFFFFF)),
 				MutiltransHead: &msg.MutilTransHead{
 					MsgId: proto.Int32(1),
 				},
 				MsgType: proto.Int32(82),
 				GroupInfo: &msg.GroupInfo{
-					GroupCode: &groupCode,
+					GroupCode: proto.Some(groupCode),
 					GroupRank: []byte{},
 					GroupName: []byte{},
-					GroupCard: &node.SenderName,
+					GroupCard: proto.Some(node.SenderName),
 				},
 			},
 			Body: &msg.MessageBody{

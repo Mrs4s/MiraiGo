@@ -2,9 +2,9 @@ package auth
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"math/rand"
 
 	"github.com/pkg/errors"
 
@@ -45,7 +45,9 @@ type Device struct {
 	VendorOSName []byte
 	Guid         []byte
 	TgtgtKey     []byte
-	Protocol     Protocol
+	QImei16      string
+	QImei36      string
+	Protocol     ProtocolType
 	Version      *OSVersion
 }
 
@@ -134,13 +136,22 @@ func (info *Device) ReadJson(d []byte) error {
 	}
 
 	switch f.Protocol {
-	case 1, 2, 3, 4, 5:
-		info.Protocol = Protocol(f.Protocol)
+	case 1, 2, 3, 4, 5, 6:
+		info.Protocol = ProtocolType(f.Protocol)
 	default:
-		info.Protocol = IPad
+		info.Protocol = AndroidPad
 	}
+
+	v := new(OSVersion)
+	v.SDK = f.Version.Sdk
+	v.Release = []byte(f.Version.Release)
+	v.CodeName = []byte(f.Version.Codename)
+	v.Incremental = []byte(f.Version.Incremental)
+	info.Version = v
+
 	info.GenNewGuid()
 	info.GenNewTgtgtKey()
+	info.RequestQImei() // 应该可以缓存, 理论上同一设备每次请求都是一样的
 	return nil
 }
 

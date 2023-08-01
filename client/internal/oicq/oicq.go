@@ -1,17 +1,16 @@
 package oicq
 
 import (
+	"crypto/rand"
 	goBinary "encoding/binary"
-	"math/rand"
 
 	"github.com/pkg/errors"
 
 	"github.com/Mrs4s/MiraiGo/binary"
-	"github.com/Mrs4s/MiraiGo/internal/crypto"
 )
 
 type Codec struct {
-	ecdh      *crypto.ECDH
+	ecdh      *session
 	randomKey []byte
 
 	WtSessionTicketKey []byte
@@ -19,11 +18,11 @@ type Codec struct {
 
 func NewCodec(uin int64) *Codec {
 	c := &Codec{
-		ecdh:      crypto.NewECDH(),
+		ecdh:      newSession(),
 		randomKey: make([]byte, 16),
 	}
 	rand.Read(c.randomKey)
-	c.ecdh.FetchPubKey(uin)
+	c.ecdh.fetchPubKey(uin)
 	return c
 }
 
@@ -84,7 +83,8 @@ func (c *Codec) Marshal(m *Message) []byte {
 	}
 	w.WriteByte(0x03)
 
-	buf := append([]byte(nil), w.Bytes()...)
+	buf := make([]byte, len(w.Bytes()))
+	copy(buf, w.Bytes())
 	goBinary.BigEndian.PutUint16(buf[1:3], uint16(len(buf)))
 	return buf
 }
@@ -110,16 +110,13 @@ func (c *Codec) Unmarshal(data []byte) (*Message, error) {
 	reader.ReadByte()
 	switch encryptType {
 	case 0:
-		m.Body = func() (decrypted []byte) {
-			d := reader.ReadBytes(reader.Len() - 1)
-			defer func() {
-				if pan := recover(); pan != nil {
-					tea := binary.NewTeaCipher(c.randomKey)
-					decrypted = tea.Decrypt(d)
-				}
-			}()
-			return binary.NewTeaCipher(c.ecdh.ShareKey).Decrypt(d)
+		d := reader.ReadBytes(reader.Len() - 1)
+		defer func() {
+			if pan := recover(); pan != nil {
+				m.Body = binary.NewTeaCipher(c.randomKey).Decrypt(d)
+			}
 		}()
+		m.Body = binary.NewTeaCipher(c.ecdh.ShareKey).Decrypt(d)
 	case 3:
 		d := reader.ReadBytes(reader.Len() - 1)
 		m.Body = binary.NewTeaCipher(c.WtSessionTicketKey).Decrypt(d)
@@ -127,4 +124,26 @@ func (c *Codec) Unmarshal(data []byte) (*Message, error) {
 		return nil, ErrUnknownEncryptType
 	}
 	return m, nil
+}
+
+type TLV struct {
+	Command uint16
+	List    [][]byte
+}
+
+func (t *TLV) Marshal() []byte {
+	w := binary.SelectWriter()
+	defer binary.PutWriter(w)
+
+	w.WriteUInt16(t.Command)
+	w.WriteUInt16(uint16(len(t.List)))
+	for _, elem := range t.List {
+		w.Write(elem)
+	}
+
+	return append([]byte(nil), w.Bytes()...)
+}
+
+func (t *TLV) Append(b ...[]byte) {
+	t.List = append(t.List, b...)
 }

@@ -1,11 +1,10 @@
 package utils
 
 import (
-	"encoding/xml"
 	"math/rand"
-	"reflect"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 	"unsafe"
 )
 
@@ -50,10 +49,12 @@ func ConvertSubVersionToInt(str string) int32 {
 }
 
 // B2S converts byte slice to a string without memory allocation.
-// See https://groups.google.com/forum/#!msg/Golang-Nuts/ENgbUzYvCuU/90yGx7GUAgAJ .
-// from github.com/savsgio/gotils/strconv
 func B2S(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	size := len(b)
+	if size == 0 {
+		return ""
+	}
+	return unsafe.String(&b[0], size)
 }
 
 // S2B converts string to a byte slice without memory allocation.
@@ -61,17 +62,66 @@ func B2S(b []byte) string {
 // Note it may break if string and/or slice header will change
 // in the future go versions.
 func S2B(s string) (b []byte) {
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	bh.Data = sh.Data
-	bh.Cap = sh.Len
-	bh.Len = sh.Len
-	return
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+
+const (
+	escQuot = "&#34;" // shorter than "&quot;"
+	escApos = "&#39;" // shorter than "&apos;"
+	escAmp  = "&amp;"
+	escLT   = "&lt;"
+	escGT   = "&gt;"
+	escTab  = "&#x9;"
+	escNL   = "&#xA;"
+	escCR   = "&#xD;"
+	escFFFD = "\uFFFD" // Unicode replacement character
+)
+
+func isInCharacterRange(r rune) (inrange bool) {
+	return r == 0x09 ||
+		r == 0x0A ||
+		r == 0x0D ||
+		r >= 0x20 && r <= 0xD7FF ||
+		r >= 0xE000 && r <= 0xFFFD ||
+		r >= 0x10000 && r <= 0x10FFFF
 }
 
 // XmlEscape xml escape string
-func XmlEscape(c string) string {
-	buf := new(strings.Builder)
-	_ = xml.EscapeText(buf, []byte(c))
-	return buf.String()
+func XmlEscape(s string) string {
+	var esc string
+	var sb strings.Builder
+	sb.Grow(len(s))
+	last := 0
+	for i, r := range s {
+		width := utf8.RuneLen(r)
+		switch r {
+		case '"':
+			esc = escQuot
+		case '\'':
+			esc = escApos
+		case '&':
+			esc = escAmp
+		case '<':
+			esc = escLT
+		case '>':
+			esc = escGT
+		case '\t':
+			esc = escTab
+		case '\n':
+			esc = escNL
+		case '\r':
+			esc = escCR
+		default:
+			if !isInCharacterRange(r) || (r == 0xFFFD && width == 1) {
+				esc = escFFFD
+				break
+			}
+			continue
+		}
+		sb.WriteString(s[last:i])
+		sb.WriteString(esc)
+		last = i + width
+	}
+	sb.WriteString(s[last:])
+	return sb.String()
 }
