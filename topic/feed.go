@@ -159,7 +159,7 @@ func DecodeFeed(p *channel.StFeed) *Feed {
 			f.Contents = append(f.Contents, &TextElement{Content: c.TextContent.Text.Unwrap()})
 		}
 		if c.EmojiContent != nil {
-			id, _ := strconv.ParseInt(c.EmojiContent.Id.Unwrap(), 10, 64)
+			id, _ := strconv.ParseInt(c.EmojiContent.Id.Unwrap(), 10, 32)
 			f.Contents = append(f.Contents, &EmojiElement{
 				Index: int32(id),
 				Id:    c.EmojiContent.Id.Unwrap(),

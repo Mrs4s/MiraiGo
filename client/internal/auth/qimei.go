@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
+	crand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -42,7 +43,7 @@ func (info *Device) RequestQImei() {
 
 	// init rsa key and aes key
 	publicKey := initPublicKey()
-	encryptedAesKey, _ := rsa.EncryptPKCS1v15(rand.New(rand.NewSource(time.Now().UnixNano())), publicKey, []byte(cryptKey))
+	encryptedAesKey, _ := rsa.EncryptPKCS1v15(crand.Reader, publicKey, []byte(cryptKey))
 
 	encryptedPayload := aesEncrypt(payload, []byte(cryptKey))
 

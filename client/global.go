@@ -92,8 +92,8 @@ func GenIMEI() string {
 	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
 	for i := 0; i < 14; i++ { // generating all the base digits
 		toAdd := randGen.Intn(10)
-		fmt.Fprintf(&final, "%d", toAdd) // printing them here!
-		if (i+1)%2 == 0 {                // special proc for every 2nd one
+		final.WriteString(strconv.Itoa(toAdd))
+		if (i+1)%2 == 0 { // special proc for every 2nd one
 			toAdd *= 2
 			if toAdd >= 10 {
 				toAdd = (toAdd % 10) + 1
@@ -102,7 +102,7 @@ func GenIMEI() string {
 		sum += toAdd // and even add them here!
 	}
 	ctrlDigit := (sum * 9) % 10 // calculating the control digit
-	fmt.Fprintf(&final, "%d", ctrlDigit)
+	final.WriteString(strconv.Itoa(ctrlDigit))
 	return final.String()
 }
 
