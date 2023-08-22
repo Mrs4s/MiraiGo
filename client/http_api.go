@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 
@@ -73,25 +72,8 @@ func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*Gro
 	if len(matched) == 0 {
 		return nil, errors.New("无匹配结果")
 	}
-	matchedString := utils.B2S(matched[1]) // "{..."
-	var builder strings.Builder
-	var s string
-	end := 0
-	for _, c := range matchedString {
-		s = string(c)
-		builder.WriteString(s)
-		switch s {
-		case "{":
-			end++
-		case "}":
-			end--
-		}
-		if end == 0 {
-			break
-		}
-	}
 	ret := GroupHonorInfo{}
-	err = json.Unmarshal(utils.S2B(builder.String()), &ret)
+	err = json.NewDecoder(bytes.NewReader(matched[1])).Decode(&ret)
 	if err != nil {
 		return nil, err
 	}
