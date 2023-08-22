@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -59,15 +61,37 @@ const (
 	Emotion      HonorType = 6 // 快乐源泉
 )
 
+// 匹配 window.__INITIAL_STATE__ = 后的内容
+var honorRe = regexp.MustCompile(`window\.__INITIAL_STATE__\s*?=\s*?(\{.*\})`)
+
 func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
 	b, err := utils.HttpGetBytes(fmt.Sprintf("https://qun.qq.com/interactive/honorlist?gc=%d&type=%d", groupCode, honorType), c.getCookiesWithDomain("qun.qq.com"))
 	if err != nil {
 		return nil, err
 	}
-	b = b[bytes.Index(b, []byte(`window.__INITIAL_STATE__=`))+25:]
-	b = b[:bytes.Index(b, []byte("</script>"))]
+	matched := honorRe.FindSubmatch(b)
+	if len(matched) == 0 {
+		return nil, errors.New("无匹配结果")
+	}
+	matchedString := utils.B2S(matched[1]) // "{..."
+	var builder strings.Builder
+	var s string
+	end := 0
+	for _, c := range matchedString {
+		s = string(c)
+		builder.WriteString(s)
+		switch s {
+		case "{":
+			end++
+		case "}":
+			end--
+		}
+		if end == 0 {
+			break
+		}
+	}
 	ret := GroupHonorInfo{}
-	err = json.Unmarshal(b, &ret)
+	err = json.Unmarshal(utils.S2B(builder.String()), &ret)
 	if err != nil {
 		return nil, err
 	}
