@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/textproto"
 	"net/url"
+	"regexp"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -59,15 +60,20 @@ const (
 	Emotion      HonorType = 6 // 快乐源泉
 )
 
+// 匹配 window.__INITIAL_STATE__ = 后的内容
+var honorRe = regexp.MustCompile(`window\.__INITIAL_STATE__\s*?=\s*?(\{.*\})`)
+
 func (c *QQClient) GetGroupHonorInfo(groupCode int64, honorType HonorType) (*GroupHonorInfo, error) {
 	b, err := utils.HttpGetBytes(fmt.Sprintf("https://qun.qq.com/interactive/honorlist?gc=%d&type=%d", groupCode, honorType), c.getCookiesWithDomain("qun.qq.com"))
 	if err != nil {
 		return nil, err
 	}
-	b = b[bytes.Index(b, []byte(`window.__INITIAL_STATE__=`))+25:]
-	b = b[:bytes.Index(b, []byte("</script>"))]
+	matched := honorRe.FindSubmatch(b)
+	if len(matched) == 0 {
+		return nil, errors.New("无匹配结果")
+	}
 	ret := GroupHonorInfo{}
-	err = json.Unmarshal(b, &ret)
+	err = json.NewDecoder(bytes.NewReader(matched[1])).Decode(&ret)
 	if err != nil {
 		return nil, err
 	}
