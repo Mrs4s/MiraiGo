@@ -877,3 +877,41 @@ message MsgElemInfo_servtype37 {
   optional bytes surpriseid = 8;
   optional uint32 randomtype = 9;
 }
+
+message PbMultiMediaElement {
+  message Elem1 {
+    message Meta {
+      message Data {
+        optional int32 FileLen = 1;
+        optional bytes PicMd5 = 2;
+      }
+      optional Data data = 1;
+      optional string FilePath = 2;
+    }
+    optional Meta meta = 1;
+
+    message Data {
+      optional string ImgURL = 2;
+      optional string Domain = 3;
+    }
+    optional Data data = 2;
+  }
+  optional Elem1 elem1 = 1;
+
+  message Elem2 {
+    message Data {
+      message Friend {
+        optional string RKey = 30;
+      }
+      optional Friend friend = 11;
+      message Group {
+        optional string RKey = 30;
+      }
+      optional Group group = 12;
+    }
+    optional Data data = 1;
+  }
+  optional Elem2 elem2 = 2;
+}
+
+
