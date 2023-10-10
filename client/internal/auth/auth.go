@@ -178,18 +178,20 @@ func (v *AppVersion) UpdateFromJson(d []byte) error {
 	if err := json.Unmarshal(d, &f); err != nil {
 		return errors.Wrap(err, "failed to unmarshal json message")
 	}
+	// 按 AppVersion 字段顺序赋值，以免遗漏
+	v.ApkSign, _ = hex.DecodeString(f.ApkSign)
 	v.ApkId = f.ApkId
+	v.SortVersionName = f.SortVersionName
+	v.SdkVersion = f.SdkVersion
 	v.AppId = f.AppId
 	v.SubAppId = f.SubAppId
 	v.AppKey = f.AppKey
-	v.SortVersionName = f.SortVersionName
 	v.BuildTime = f.BuildTime
-	v.ApkSign, _ = hex.DecodeString(f.ApkSign)
-	v.SdkVersion = f.SdkVersion
 	v.SSOVersion = f.SSOVersion
 	v.MiscBitmap = f.MiscBitmap
 	v.SubSigmap = f.SubSigmap
 	v.MainSigMap = f.MainSigMap
+	v.QUA = f.QUA
 	v.Protocol = f.ProtocolType
 	return nil
 }
