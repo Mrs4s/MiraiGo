@@ -387,6 +387,7 @@ func ToSrcProtoElems(elems []IMessageElement) []*msg.Elem {
 
 func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 	var res []IMessageElement
+	var newImg = false
 	for _, elem := range elems {
 		if elem.SrcMsg != nil && len(elem.SrcMsg.OrigSeqs) != 0 {
 			r := &ReplyElement{
@@ -537,16 +538,18 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					bizType = ImageBizType(attr.ImageBizType.Unwrap())
 				}
 			}
-			res = append(res, &GroupImageElement{
-				FileId:       int64(elem.CustomFace.FileId.Unwrap()),
-				ImageId:      elem.CustomFace.FilePath.Unwrap(),
-				Size:         elem.CustomFace.Size.Unwrap(),
-				Width:        elem.CustomFace.Width.Unwrap(),
-				Height:       elem.CustomFace.Height.Unwrap(),
-				Url:          url,
-				ImageBizType: bizType,
-				Md5:          elem.CustomFace.Md5,
-			})
+			if !newImg {
+				res = append(res, &GroupImageElement{
+					FileId:       int64(elem.CustomFace.FileId.Unwrap()),
+					ImageId:      elem.CustomFace.FilePath.Unwrap(),
+					Size:         elem.CustomFace.Size.Unwrap(),
+					Width:        elem.CustomFace.Width.Unwrap(),
+					Height:       elem.CustomFace.Height.Unwrap(),
+					Url:          url,
+					ImageBizType: bizType,
+					Md5:          elem.CustomFace.Md5,
+				})
+			}
 		}
 		if elem.MarketFace != nil {
 			face := &MarketFaceElement{
@@ -582,6 +585,7 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 			}
 			return []IMessageElement{face}
 		}
+
 		if elem.NotOnlineImage != nil {
 			img := elem.NotOnlineImage
 
@@ -603,13 +607,17 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 				url += downloadPath + "/0?term=3"
 			}
 
-			res = append(res, &FriendImageElement{
-				ImageId: img.FilePath.Unwrap(),
-				Size:    img.FileLen.Unwrap(),
-				Url:     url,
-				Md5:     img.PicMd5,
-			})
+			if !newImg {
+				res = append(res, &FriendImageElement{
+					ImageId: img.FilePath.Unwrap(),
+					Size:    img.FileLen.Unwrap(),
+					Url:     url,
+					Md5:     img.PicMd5,
+				})
+			}
+
 		}
+
 		if elem.QQWalletMsg != nil && elem.QQWalletMsg.AioBody != nil {
 			// /com/tencent/mobileqq/data/MessageForQQWalletMsg.java#L366
 			msgType := elem.QQWalletMsg.AioBody.MsgType.Unwrap()
@@ -663,7 +671,36 @@ func ParseMessageElems(elems []*msg.Elem) []IMessageElement {
 					Name: strings.TrimPrefix(string(animatedStickerMsg.Text), "/"),
 				}
 				return []IMessageElement{sticker} // sticker 永远为单独消息
+			case 48:
+				img := &msg.PbMultiMediaElement{}
+				_ = proto.Unmarshal(elem.CommonElem.PbElem, img)
+				domain := img.Elem1.Data.Domain.Unwrap()
+				imgURL := img.Elem1.Data.ImgURL.Unwrap()
+
+				if img.Elem2.Data.Friend != nil {
+					rKey := img.Elem2.Data.Friend.RKey.Unwrap()
+					url := fmt.Sprintf("https://%s%s%s&spec=0&rf=naio", domain, imgURL, rKey)
+					res = append(res, &FriendImageElement{
+						ImageId: img.Elem1.Meta.FilePath.Unwrap(),
+						Size:    img.Elem1.Meta.Data.FileLen.Unwrap(),
+						Url:     url,
+						Md5:     img.Elem1.Meta.Data.PicMd5,
+					})
+					newImg = true
+				}
+				if img.Elem2.Data.Group != nil {
+					rKey := img.Elem2.Data.Group.RKey.Unwrap()
+					url := fmt.Sprintf("https://%s%s%s&spec=0&rf=naio", domain, imgURL, rKey)
+					res = append(res, &GroupImageElement{
+						ImageId: img.Elem1.Meta.FilePath.Unwrap(),
+						Size:    img.Elem1.Meta.Data.FileLen.Unwrap(),
+						Url:     url,
+						Md5:     img.Elem1.Meta.Data.PicMd5,
+					})
+					newImg = true
+				}
 			}
+
 		}
 	}
 	return res

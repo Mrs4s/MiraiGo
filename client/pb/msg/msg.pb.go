@@ -892,3 +892,31 @@ type NotOnlineImage_PbReserve struct {
 	Url proto.Option[string] `protobuf:"bytes,30,opt"`
 	_   [0]func()
 }
+
+type PbMultiMediaElement struct {
+	Elem1 *struct {
+		Meta *struct {
+			Data *struct {
+				FileLen proto.Option[int32] `protobuf:"varint,1,opt"`
+				PicMd5  []byte              `protobuf:"bytes,2,opt"`
+			} `protobuf:"bytes,1,opt"`
+			FilePath proto.Option[string] `protobuf:"bytes,2,opt"`
+		} `protobuf:"bytes,1,opt"`
+
+		Data *struct {
+			ImgURL proto.Option[string] `protobuf:"bytes,1,opt"`
+			Domain proto.Option[string] `protobuf:"bytes,3,opt"`
+		} `protobuf:"bytes,2,opt"`
+	} `protobuf:"bytes,1,opt"`
+
+	Elem2 *struct {
+		Data *struct {
+			Friend *struct {
+				RKey proto.Option[string] `protobuf:"bytes,30,opt"`
+			} `protobuf:"bytes,11,opt"`
+			Group *struct {
+				RKey proto.Option[string] `protobuf:"bytes,30,opt"`
+			} `protobuf:"bytes,12,opt"`
+		} `protobuf:"bytes,1,opt"`
+	} `protobuf:"bytes,2,opt"`
+}
