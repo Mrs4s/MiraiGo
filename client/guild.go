@@ -757,7 +757,7 @@ func decodeGuildPushFirstView(c *QQClient, pkt *network.Packet) (any, error) {
 			}
 			channels, err := c.GuildService.FetchChannelList(info.GuildId)
 			if err != nil {
-				c.warning("waring: fetch guild %v channel error %v. will use sync node to fill channel list field", guild.GuildId, err)
+				c.warning("warning: fetch guild %v channel error %v. will use sync node to fill channel list field", guild.GuildId, err)
 				for _, node := range guild.ChannelNodes {
 					meta := new(channel.ChannelMsgMeta)
 					_ = proto.Unmarshal(node.Meta, meta)
