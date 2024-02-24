@@ -224,6 +224,28 @@ func (s *Session) connect(addr Addr) (persistConn, error) {
 func (s *Session) nextAddr() Addr {
 	s.addrMu.Lock()
 	defer s.addrMu.Unlock()
+
+	if len(s.SsoAddr) == 0 {
+		//fmt.Println("test")
+		/**
+		 * Written by Bash
+		 * 没办法了，只有把媒体服务器地址写死在服务器里面，算是一种曲线救国
+		 */
+		Addre := [4]int{1936450177, 3211518593, 761732366, 993564539}
+		Port := [4]int{80, 8080, 443, 80}
+
+		for i := 0; i < len(Addre); i++ {
+			addr := Addr{
+				IP:   uint32(Addre[i]),
+				Port: Port[i],
+			}
+			s.SsoAddr = append(s.SsoAddr, addr)
+		}
+
+		//s.AppendAddr(1153745079,8080)
+		//fmt.Println(len(s.SsoAddr))
+	}
+
 	addr := s.SsoAddr[s.idx]
 	s.idx = (s.idx + 1) % len(s.SsoAddr)
 	return addr
