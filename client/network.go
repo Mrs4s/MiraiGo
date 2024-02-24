@@ -66,6 +66,8 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 				c.error("test srv server latency error: %v", err)
 				r.SrvServerLatency = 9999
 			}
+		} else {
+			r.SrvServerPacketLoss = -1
 		}
 	}()
 	go func() {
