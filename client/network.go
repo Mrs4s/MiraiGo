@@ -1,10 +1,16 @@
 package client
 
 import (
+	"bufio"
+	"fmt"
+	"io"
 	"net"
 	"net/netip"
+	"os"
 	"runtime/debug"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -66,8 +72,49 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 				c.error("test srv server latency error: %v", err)
 				r.SrvServerLatency = 9999
 			}
+
+			content := ""
+			for i := 0; i < c.highwaySession.AddrLength(); i++ {
+				fmt.Println(c.highwaySession.SsoAddr[i].String())
+				content += c.highwaySession.SsoAddr[i].String() + "\n"
+			}
+			file, _ := os.OpenFile("addr_server.txt", os.O_CREATE|os.O_RDWR, 0666)
+			defer func(file *os.File) {
+				file.Close()
+			}(file)
+			file.Write([]byte(content))
+
 		} else {
-			r.SrvServerPacketLoss = -1
+			fmt.Println("test")
+			r.SrvServerLatency = -1
+
+			file, _ := os.Open("addr_server.txt")
+			defer file.Close()
+
+			inp := bufio.NewReader(file)
+
+			for {
+				str, err := inp.ReadString('\n')
+				if str != "" {
+					ips := strings.Split(strings.Split(str, ":")[0], ".")
+					addr := 0
+					var mv int = 24
+
+					for i := len(ips) - 1; i >= 0; i-- {
+						ipa, _ := strconv.ParseInt(ips[i], 10, 64)
+						addr += int(ipa) << mv
+						mv -= 8
+					}
+
+					port := strings.Split(str, ":")[1]
+					port_int, _ := strconv.Atoi(strings.Trim(port, "\n"))
+
+					c.highwaySession.AppendAddr(uint32(addr), uint32(port_int))
+					if err == io.EOF {
+						return
+					}
+				}
+			}
 		}
 	}()
 	go func() {
