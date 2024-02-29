@@ -2,7 +2,6 @@ package client
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"net"
 	"net/netip"
@@ -75,7 +74,6 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 
 			content := ""
 			for i := 0; i < c.highwaySession.AddrLength(); i++ {
-				fmt.Println(c.highwaySession.SsoAddr[i].String())
 				content += c.highwaySession.SsoAddr[i].String() + "\n"
 			}
 			file, _ := os.OpenFile("addr_server.txt", os.O_CREATE|os.O_RDWR, 0666)
@@ -85,7 +83,6 @@ func (c *QQClient) ConnectionQualityTest() *ConnectionQualityInfo {
 			file.Write([]byte(content))
 
 		} else {
-			fmt.Println("test")
 			r.SrvServerLatency = -1
 
 			file, _ := os.Open("addr_server.txt")
